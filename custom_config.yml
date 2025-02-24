@@ -1,7 +1,7 @@
 directories:
-  mirror_module_path: True
-  removed_mirror_prefix: "/Users/grant/cs/videos/"
-  base: "/Users/grant/3Blue1Brown Dropbox/3Blue1Brown/"
+  mirror_module_path: False
+  removed_mirror_prefix: "/Users/stephen/Stephencwelch Dropbox/Stephen Welch"
+  base: "/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/deepseek/videos"
   subdirs:
     raster_images: "images/raster"
     vector_images: "images/vector"
@@ -11,7 +11,7 @@ directories:
 universal_import_line: "from manim_imports_ext import *"
 window:
   position_string: UR
-  monitor_index: 0
+  monitor_index: 1
   full_screen: False
 camera:
   resolution: (3840, 2160)

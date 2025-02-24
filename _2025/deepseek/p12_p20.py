@@ -76,16 +76,16 @@ def get_input_x(svg_path='/Users/stephen/welch_labs/deepseek/graphics/to_manim',
            img_path='/Users/stephen/welch_labs/deepseek/hackin/linux_workdir/deepseek/flowchart_graphics'):
 
 
-    x1=ImageMobject(str(img_path/'input_1_1.png'))
+    x1=ImageMobject(str(Path(img_path)/'input_1_1.png'))
     x1.scale([0.075,0.125, 1]) 
     x1.move_to([-1.45,-0.03,0])
 
-    x2=ImageMobject(str(img_path/'input_2_1.png'))
+    x2=ImageMobject(str(Path(img_path)/'input_2_1.png'))
     x2.scale([0.075,0.125, 1]) 
     x2.move_to([-1.225,-0.03,0])
     
     all_images=Group(x1, x2)
-    svg_image=SVGMobject(str(svg_path/svg_file))
+    svg_image=SVGMobject(str(Path(svg_path)/svg_file))
     x_labels_1=svg_image[1:45] 
 
     return Group(all_images,x_labels_1)
@@ -101,6 +101,36 @@ class p12_20(InteractiveScene):
         i=0
         a=get_attention_head(svg_path=svg_path,svg_file='mha_2d_segments-',
                                     img_path=img_path/'gpt_2_attention_viz_1'/str(i))
+
+        x=get_input_x(svg_path='/Users/stephen/welch_labs/deepseek/graphics/to_manim',
+           svg_file='mha_2d_grouping_test.svg',
+           img_path='/Users/stephen/welch_labs/deepseek/hackin/linux_workdir/deepseek/flowchart_graphics')
+
+        self.frame.reorient(0, 0, 0, (-1.39, -0.06, -0.0), 1.16)
+        self.wait()
+        # self.add(x[0][0])
+        # self.add(x[0][1])
+
+        self.play(FadeIn(x[0]))
+        self.add(a[1][1]) #xlabels
+        self.add(a[1][2]) #xlabels
+        self.wait()
+
+        self.add(a[1][16]) #deepseek dim
+        self.wait()
+        self.remove(a[1][16])
+        self.wait()
+
+        self.play(FadeIn(a[1][6]), self.frame.animate.reorient(0, 0, 0, (-0.65, 0.02, 0.0), 1.36), run_time=2)
+        self.wait()
+
+        self.play(FadeIn(a[1][3]), FadeIn(a[1][4]), FadeIn(a[0][0]), FadeIn(a[0][1]))
+        self.wait()
+
+        # self.add(a[1][3])
+        # self.add(a[1][4])
+
+
 
 
         self.wait()

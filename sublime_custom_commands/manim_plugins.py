@@ -38,6 +38,11 @@ def get_command(view, window):
     scene_name = matching_class_str[len("class "):matching_class_str.index("(")]
 
     cmds = ["manimgl", file_path, scene_name]
+
+    #Quick hacky SW Addition - cloudn't figure out how to get manim to pick up custom config
+    cmds.append('--config_file') 
+    cmds.append('/Users/stephen/manim_videos/custom_config.yml')
+    
     enter = False
 
     if row != scene_line_no:

@@ -155,20 +155,46 @@ class p12_20(InteractiveScene):
         # self.remove(k_rows)
 
         self.wait()
-        self.play(FadeIn(a[1][3]), FadeIn(a[1][4]), FadeIn(k_rows), FadeIn(q_rows))
+        self.play(FadeIn(a[1][3]), FadeIn(a[1][4]), FadeIn(k_rows), FadeIn(q_rows)) #Queries and Keys 
         self.wait()
 
-        #Pan over, create space for captions, while expanding all rows, uust a bit?
-        # for row_id in range(9):
-        #     q_rows[row_id].shift(0.01*(8-row_id)*UP)
-
-        # self.play()
-
+        #Pan over, create space for captions, while expanding all rows
         self.play(*[q_rows[row_id].animate.shift(0.01*(8-row_id)*UP) for row_id in range(9)]+
                    [k_rows[row_id].animate.shift(0.01*(8-row_id)*UP) for row_id in range(9)]+
-                   [self.frame.animate.reorient(0, 0, 0, (-0.24, 0.19, 0.0), 1.20)], lag_ratio=0.2, run_time=3)
+                   [self.frame.animate.reorient(0, 0, 0, (-0.23, 0.18, 0.0), 1.20)], lag_ratio=0.2, run_time=3)
 
         self.wait()
+
+        self.play(FadeOut(x[0]), FadeOut(a[1][1]), FadeOut(a[1][2]), FadeOut(a[1][6]))
+        a[1][18].scale(0.595)
+        a[1][18].move_to([-0.75,0.2,0])
+        self.add(a[1][18]) #Add american flag text
+        self.wait()
+
+        a[1][19].scale(0.6)
+        a[1][19].move_to([0.49,0.37,0])
+        self.add(a[1][19][:30]) #Key and Query Questions
+        self.wait()
+        self.add(a[1][19][30:])
+        self.wait()
+
+        #Multistep option
+        self.play(FadeOut(a[1][18][:11]), FadeOut(a[1][18][14:32]), FadeOut(a[1][18][40:]), FadeOut(a[1][19]), 
+                  FadeOut(a[1][3]), FadeOut(a[1][4]), FadeOut(q_rows[:2]), FadeOut(q_rows[3:]), FadeOut(k_rows[0]), 
+                  FadeOut(k_rows[2:]), run_time=2)
+        # self.wait()
+        self.play(q_rows[2].animate.shift(0.12*DOWN), k_rows[1].animate.shift(0.12*UP),
+                  a[1][18][11:14].animate.shift(0.12*DOWN), a[1][18][32:40].animate.shift(0.12*UP))
+        self.wait()
+
+        #All at once option
+        # self.play(FadeOut(a[1][18][:11]), FadeOut(a[1][18][14:32]), FadeOut(a[1][18][40:]), FadeOut(a[1][19]), 
+        #       FadeOut(a[1][3]), FadeOut(a[1][4]), FadeOut(q_rows[:2]), FadeOut(q_rows[3:]), FadeOut(k_rows[0]), 
+        #       FadeOut(k_rows[2:]), q_rows[2].animate.shift(0.15*DOWN), k_rows[1].animate.shift(0.15*UP), run_time=2)     
+        # self.wait()
+
+
+
 
 
 

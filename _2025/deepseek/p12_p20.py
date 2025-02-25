@@ -245,7 +245,7 @@ class p12_20(InteractiveScene):
         # self.play(kt.animate.rotate(PI,RIGHT).rotate([0, 0, -PI/2]))
         self.add(a[1][7])
         self.wait()
-        self.remove(kt)
+        # self.remove(kt)
 
 
         self.play(FadeIn(a[1][8]), FadeIn(a[0][4]), self.frame.animate.reorient(0, 0, 0, (0.16, 0.17, 0.0), 1.20), run_time=1.2)

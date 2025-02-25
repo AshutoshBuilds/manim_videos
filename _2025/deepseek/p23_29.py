@@ -187,6 +187,29 @@ class p23_29(InteractiveScene):
         self.wait()  
 
 
+        self.play(self.frame.animate.reorient(0, 0, 0, (0.02, 0.18, 0.0), 0.97), run_time=2)
+        self.wait()
+
+        full_k=Group(a[0][1], k1n)
+        kt=full_k.copy()
+        # kt.scale(np.array([0.0215,0.035, 1])/np.array([0.0415, 0.08, 1])).rotate([0, 0, -PI/2]).rotate(PI,UP).move_to([0.405,0.305,0])
+        # self.add(kt)
+        # a[1][7].set_opacity(1.0)
+
+
+        self.play(kt.animate.scale(np.array([0.0215,0.035, 1])/np.array([0.0415, 0.08, 1])).rotate([0, 0, -PI/2]).rotate(PI,UP).move_to([0.405,0.305,0]), 
+                  run_time=2)
+        a[1][7].set_opacity(1.0)
+        self.wait()
+        
+        a2[1][9:13].set_opacity(0.2)
+        self.play(FadeIn(a2[0][4]), FadeIn(a2[1][8:13]), FadeOut(a[1][8:13]))
+        self.remove(a[0][4])
+        self.wait()
+
+
+
+
         self.wait(20)
         self.embed()
 

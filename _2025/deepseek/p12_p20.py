@@ -124,8 +124,8 @@ class p12_20(InteractiveScene):
         self.play(FadeIn(a[1][6]), self.frame.animate.reorient(0, 0, 0, (-0.65, 0.02, 0.0), 1.36), run_time=2)
         self.wait()
 
-        self.play(FadeIn(a[1][3]), FadeIn(a[1][4]), FadeIn(a[0][0]), FadeIn(a[0][1]))
-        self.wait()
+        # self.play(FadeIn(a[1][3]), FadeIn(a[1][4]), FadeIn(a[0][0]), FadeIn(a[0][1]))
+        # self.wait()
 
         # self.add(a[1][3])
         # self.add(a[1][4])
@@ -142,18 +142,34 @@ class p12_20(InteractiveScene):
             q.scale([0.0127, 0.024, 1]) 
             q.move_to([-0.2,0.492-0.028*row_id,0]) 
             q_rows.add(q)
-        self.add(q_rows)
+        # self.add(q_rows)
         # self.remove(q_rows)
 
         k_rows=Group()
         for row_id in range(9):
             k=ImageMobject(separate_row_im_path+'/key_row_'+str(row_id)+'.png')
             k.scale([0.0127, 0.024, 1]) 
-            k.move_to([-0.2,0.1-0.028*row_id,0]) 
+            k.move_to([-0.2,0.05-0.028*row_id,0]) 
             k_rows.add(k)
-        self.add(k_rows)
+        # self.add(k_rows)
+        # self.remove(k_rows)
 
-        self.remove(k_rows)
+        self.wait()
+        self.play(FadeIn(a[1][3]), FadeIn(a[1][4]), FadeIn(k_rows), FadeIn(q_rows))
+        self.wait()
+
+        #Pan over, create space for captions, while expanding all rows, uust a bit?
+        # for row_id in range(9):
+        #     q_rows[row_id].shift(0.01*(8-row_id)*UP)
+
+        # self.play()
+
+        self.play(*[q_rows[row_id].animate.shift(0.01*(8-row_id)*UP) for row_id in range(9)]+
+                   [k_rows[row_id].animate.shift(0.01*(8-row_id)*UP) for row_id in range(9)]+
+                   [self.frame.animate.reorient(0, 0, 0, (-0.24, 0.19, 0.0), 1.20)], lag_ratio=0.2, run_time=3)
+
+        self.wait()
+
 
 
 

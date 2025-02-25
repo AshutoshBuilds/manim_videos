@@ -309,22 +309,70 @@ class p12_20(InteractiveScene):
                                         img_path=img_path/'gpt_2_attention_viz_4'/str(i))
             a_select=Group(a[0], a[1][0], a[1][3:6], a[1][6:13], a[1][17])
             a_select.rotate([PI/2,0,0], axis=RIGHT)
-            a_select.move_to([0, spacing*i,0])
+            a_select.move_to([0.27, spacing*i,0])
             attention_heads.add(a_select)
 
-        #Hmm I'm going to possibly run into some rendering order stuff? 
-        #maybe not if I render them off screen in the right order and then bring them in?
-        for i in range(10, 0, -1):
-            attention_heads[i].set_opacity(0.75)
-
-            attention_heads[i].shift(6*LEFT) #Not sure what starting position is?
-            self.add(attention_heads[i])
-        self.add(head_0_3d) #Re add as top layer
         self.wait()
+        # self.frame.reorient(-27, 74, 0, (-0.29, 0.14, -0.1), 2.56)
+
+        #What if I add heads and then set all their opacities to zero? Is ordering preserved then?
+        for i in range(10, -1, -1):
+            self.add(attention_heads[i])
+        self.add(head_0_3d)
+
+        attention_heads.set_opacity(0.0) #Ok ordering seems to survive this simple test
+        # attention_heads.set_opacity(1.0)
+
+        animations = [attention_heads[i].animate.set_opacity(0.85) for i in range(11)]
+        staggered_animations = AnimationGroup(*animations, lag_ratio=1.5)
+        self.play(staggered_animations, run_time=2)
+
+        #Well shit I may just have to call this one a loss for now and try later if I have time
+        #The behavior I can't seem to create is bringin in the heads on at a time, front to back, without fucking occlusions. 
 
         
 
-        self.play(*[attention_heads[i].animate.shift(6*RIGHT) for i in range(11)], run_time=3, lag_ratio=1.5)
+
+
+        #Hmm I'm going to possibly run into some rendering order stuff? 
+        #maybe not if I render them off screen in the right order and then bring them in?
+        # for i in range(10, -1, -1):
+        # for i in range(10,-1,-1):
+        #     attention_heads[i].set_opacity(0.0)
+
+        #     # attention_heads[i].shift(6*LEFT) #Not sure what starting position is?
+        #     self.add(attention_heads[i])
+        # Set z_index based on depth - higher values render on top
+        # for i in range(11):
+        #     # Calculate z_index based on depth (negative z_coordinate)
+        #     z_coord = attention_heads[i].get_center()[2]
+        #     # Convert z coordinate to z_index - smaller z should have higher z_index to be on top
+        #     z_index = -int(z_coord * 100)  # Scale appropriately for your scene
+        #     attention_heads[i].set_z_index(z_index)
+        #     attention_heads[i].set_opacity(1.0)
+        #     self.add(attention_heads[i])
+
+        # self.add(head_0_3d) #Re add as top layer
+        self.wait()
+
+        # attention_heads.shift(0.25*RIGHT)
+
+        self.frame.reorient(-27, 74, 0, (-0.29, 0.14, -0.1), 2.56)
+
+        # animations = [attention_heads[i].animate.shift(6*RIGHT) for i in range(11)]
+        animations = [FadeIn(attention_heads[i]) for i in range(11)]
+        staggered_animations = AnimationGroup(*animations, lag_ratio=1.5)
+        self.play(staggered_animations, run_time=2)
+
+        # head_0_3d.set_z_index(100) #Doesn't seem eo work. 
+        # self.add(head_0_3d)
+
+        #Man this is tricky! No matter how I introduce the additional layers, I can't seem to get the occlusion 
+        #ordering right, even with seeing z order manually. Am I missing something here?
+
+
+
+        # self.play(*[attention_heads[i].animate.shift(6*RIGHT) for i in range(11)], run_time=3, lag_ratio=1.5)
 
 
         self.wait()

@@ -237,8 +237,29 @@ class p12_20(InteractiveScene):
         self.add(a[1][4][:4], a[1][4][-4:]) #Key labels
         self.wait()
 
+        #Ok time to transpose a copy of the keys and add next set of labels and results -> how can i do this smoothy?
+        # self.add(a[0][3])
+
+        kt=a[0][1].copy()
+        self.play(kt.animate.scale(np.array([0.0215,0.035, 1])/np.array([0.0415, 0.08, 1])).rotate([0, 0, -PI/2]).move_to([0.405,0.305,0]), run_time=2)  
+        self.add(a[1][7])
+        self.wait()
+
+
+        self.play(FadeIn(a[1][8]), FadeIn(a[0][4]), self.frame.animate.reorient(0, 0, 0, (0.16, 0.17, 0.0), 1.20), run_time=1.2)
+        self.wait()
+
+        self.add(a[1][9])
+        self.wait()
+        self.play(FadeIn(a[0][5]), self.frame.animate.reorient(0, 0, 0, (0.45, 0.18, 0.0), 1.46))
+        self.wait()
+        self.add(a[1][10])
+        self.wait()
+
+
 
         self.wait()
+        self.embed()
 
 
 

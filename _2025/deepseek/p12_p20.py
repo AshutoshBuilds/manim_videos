@@ -324,15 +324,38 @@ class p12_20(InteractiveScene):
         for i in range(10, -1, -1): 
             attention_heads[i].shift(6*LEFT)
 
-        self.wait()
+        # self.wait()
         # self.frame.reorient(-38, 72, 0, (-0.37, 0.29, 0.02), 2.56)
         self.play(self.frame.animate.reorient(-38, 72, 0, (-0.37, 0.29, 0.02), 2.56), run_time=3)
 
         # self.play(attention_heads[0].animate.shift(6*RIGHT)) #Works
         # self.play(attention_heads[1].animate.shift(6*RIGHT)) #Works
 
+        self.wait(0)
         for i in range(11): #not my favorite, but gets the job done. 
             self.play(attention_heads[i].animate.shift(6*RIGHT), run_time=1, rate_func=linear)
+
+        self.wait()
+
+        self.play(self.frame.animate.reorient(36, 83, 0, (0.8, 0.62, -0.11), 2.65), run_time=4)
+        self.wait()
+
+        #P20 -> pull out output matrices
+        out_matrices=[attention_heads[i][0][-1] for i in range(10, -1, -1)] + [head_0_3d[0][0][-1]]
+
+        # for i,o in enumerate(out_matrices):
+        #     o.scale(0.2).move_to([3+i*0.2, 0, 0])
+
+        self.play(*[o.animate.scale(0.2).move_to([3+i*0.2, 0, 0]) for i,o in enumerate(out_matrices)]+
+                  [self.frame.animate.reorient(1, 81, 0, (4.24, 0.83, -0.21), 3.29)], run_time=3)
+        self.wait()
+
+
+        # for i in range(10, -1, -1):
+            # out_matrix=attention_heads[i][0][-1]
+            # out_matrix.scale(0.2).move_to([2.25+i*0.25, 0, 0])
+        # head_0_3d[0][0][-1].scale(0.25).move_to([2.25+(i-1)*0.25, 0, 0])
+
 
 
 

@@ -312,26 +312,51 @@ class p12_20(InteractiveScene):
             a_select.move_to([0.27, spacing*i,0])
             attention_heads.add(a_select)
 
-        self.wait()
+        # self.wait()
         # self.frame.reorient(-27, 74, 0, (-0.29, 0.14, -0.1), 2.56)
 
         #What if I add heads and then set all their opacities to zero? Is ordering preserved then?
-        for i in range(10, -1, -1):
+        for i in range(10, -1, -1): #-1):
+            # print(i)
             self.add(attention_heads[i])
         self.add(head_0_3d)
 
-        attention_heads.set_opacity(0.0) #Ok ordering seems to survive this simple test
+        for i in range(10, -1, -1): 
+            attention_heads[i].shift(6*LEFT)
+
+        self.wait()
+        # self.frame.reorient(-38, 72, 0, (-0.37, 0.29, 0.02), 2.56)
+        self.play(self.frame.animate.reorient(-38, 72, 0, (-0.37, 0.29, 0.02), 2.56), run_time=3)
+
+        # self.play(attention_heads[0].animate.shift(6*RIGHT)) #Works
+        # self.play(attention_heads[1].animate.shift(6*RIGHT)) #Works
+
+        for i in range(11): #not my favorite, but gets the job done. 
+            self.play(attention_heads[i].animate.shift(6*RIGHT), run_time=1, rate_func=linear)
+
+
+
+        # self.play(*[attention_heads[i].animate.shift(6*RIGHT) for i in range(11)], lag_ratio=1.2) #Breaks things down wrong 
+
+        # animations = [attention_heads[i].animate.shift(6*RIGHT) for i in range(11)]
+        # staggered_animations = AnimationGroup(*animations, lag_ratio=1.5)
+        # self.play(staggered_animations, run_time=2)
+
+
+        # self.play(attention_heads[i].animate.shift(6*RIGHT))
+        # self.frame.reorient(-27, 74, 0, (-0.29, 0.14, -0.1), 2.56)
+
+
+        # attention_heads.set_opacity(0.0) #Ok ordering seems to survive this simple test
         # attention_heads.set_opacity(1.0)
 
-        animations = [attention_heads[i].animate.set_opacity(0.85) for i in range(11)]
-        staggered_animations = AnimationGroup(*animations, lag_ratio=1.5)
-        self.play(staggered_animations, run_time=2)
+        #Ok seems like the animation group was actually fucking me in terms of occlusions???
+        # animations = [attention_heads[i].animate.set_opacity(0.85) for i in range(11)]
+        # staggered_animations = AnimationGroup(*animations, lag_ratio=1.5)
+        # self.play(staggered_animations, run_time=2)
 
         #Well shit I may just have to call this one a loss for now and try later if I have time
         #The behavior I can't seem to create is bringin in the heads on at a time, front to back, without fucking occlusions. 
-
-        
-
 
 
         #Hmm I'm going to possibly run into some rendering order stuff? 
@@ -353,16 +378,16 @@ class p12_20(InteractiveScene):
         #     self.add(attention_heads[i])
 
         # self.add(head_0_3d) #Re add as top layer
-        self.wait()
+        # self.wait()
 
         # attention_heads.shift(0.25*RIGHT)
 
-        self.frame.reorient(-27, 74, 0, (-0.29, 0.14, -0.1), 2.56)
+        # self.frame.reorient(-27, 74, 0, (-0.29, 0.14, -0.1), 2.56)
 
-        # animations = [attention_heads[i].animate.shift(6*RIGHT) for i in range(11)]
-        animations = [FadeIn(attention_heads[i]) for i in range(11)]
-        staggered_animations = AnimationGroup(*animations, lag_ratio=1.5)
-        self.play(staggered_animations, run_time=2)
+        # # animations = [attention_heads[i].animate.shift(6*RIGHT) for i in range(11)]
+        # animations = [FadeIn(attention_heads[i]) for i in range(11)]
+        # staggered_animations = AnimationGroup(*animations, lag_ratio=1.5)
+        # self.play(staggered_animations, run_time=2)
 
         # head_0_3d.set_z_index(100) #Doesn't seem eo work. 
         # self.add(head_0_3d)
@@ -375,14 +400,14 @@ class p12_20(InteractiveScene):
         # self.play(*[attention_heads[i].animate.shift(6*RIGHT) for i in range(11)], run_time=3, lag_ratio=1.5)
 
 
-        self.wait()
+        # self.wait()
 
 
 
 
 
 
-        self.wait()
+        self.wait(20)
         self.embed()
 
 

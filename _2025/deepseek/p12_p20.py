@@ -444,9 +444,259 @@ class p12_20(InteractiveScene):
 
 
 
+class p21_pan(InteractiveScene):
+    '''BUnch of extra stuff in here but meh'''
+    def construct(self):
+
+        img_path=Path('/Users/stephen/welch_labs/deepseek/hackin/linux_workdir/deepseek')
+        svg_path=Path('/Users/stephen/welch_labs/deepseek/graphics/to_manim')
+
+        i=0
+        a=get_attention_head(svg_path=svg_path,svg_file='mha_2d_segments-',
+                                    img_path=img_path/'gpt_2_attention_viz_4'/str(i))
+
+        x=get_input_x(svg_path='/Users/stephen/welch_labs/deepseek/graphics/to_manim',
+           svg_file='mha_2d_grouping_test.svg',
+           img_path='/Users/stephen/welch_labs/deepseek/hackin/linux_workdir/deepseek/flowchart_graphics')
+
+        self.frame.reorient(0, 0, 0, (-1.39, -0.06, -0.0), 1.16)
+        self.wait()
+        # self.add(x[0][0])
+        # self.add(x[0][1])
+
+        self.play(FadeIn(x[0]))
+        self.add(a[1][1]) #xlabels
+        self.add(a[1][2]) #xlabels
+        self.wait()
+
+        self.add(a[1][16]) #deepseek dim
+        self.wait()
+        self.remove(a[1][16])
+        self.wait()
+
+        self.play(FadeIn(a[1][6]), self.frame.animate.reorient(0, 0, 0, (-0.65, 0.02, 0.0), 1.36), run_time=2)
+        self.wait()
+
+        # self.play(FadeIn(a[1][3]), FadeIn(a[1][4]), FadeIn(a[0][0]), FadeIn(a[0][1]))
+        # self.wait()
+
+        # self.add(a[1][3])
+        # self.add(a[1][4])
+        # Can i, withoug going insane, actually have these matrices be made up of rows and 
+        # then break them apart and pull one out of each?
+
+        #Ok hack on row by row version here then break into subfuncrion
+
+
+        separate_row_im_path='/Users/stephen/welch_labs/deepseek/hackin/linux_workdir/deepseek/gpt_2_attention_viz_4'
+        q_rows=Group()
+        for row_id in range(9):
+            q=ImageMobject(separate_row_im_path+'/query_row_'+str(row_id)+'.png')
+            q.scale([0.0127, 0.024, 1]) 
+            q.move_to([-0.2,0.492-0.028*row_id,0]) 
+            q_rows.add(q)
+        # self.add(q_rows)
+        # self.remove(q_rows)
+
+        k_rows=Group()
+        for row_id in range(9):
+            k=ImageMobject(separate_row_im_path+'/key_row_'+str(row_id)+'.png')
+            k.scale([0.0127, 0.024, 1]) 
+            k.move_to([-0.2,0.05-0.028*row_id,0]) 
+            k_rows.add(k)
+        # self.add(k_rows)
+        # self.remove(k_rows)
+
+        self.wait()
+        self.play(FadeIn(a[1][3]), FadeIn(a[1][4]), FadeIn(k_rows), FadeIn(q_rows)) #Queries and Keys 
+        self.wait()
+
+        #Pan over, create space for captions, while expanding all rows
+        self.play(*[q_rows[row_id].animate.shift(0.01*(8-row_id)*UP) for row_id in range(9)]+
+                   [k_rows[row_id].animate.shift(0.01*(8-row_id)*UP) for row_id in range(9)]+
+                   [self.frame.animate.reorient(0, 0, 0, (-0.23, 0.18, 0.0), 1.20)], lag_ratio=0.2, run_time=3)
+
+        self.wait()
+
+        self.play(FadeOut(x[0]), FadeOut(a[1][1]), FadeOut(a[1][2]), FadeOut(a[1][6]))
+        a[1][18].scale(0.595)
+        a[1][18].move_to([-0.75,0.2,0])
+        self.add(a[1][18]) #Add american flag text
+        self.wait()
+
+        a[1][19].scale(0.6)
+        a[1][19].move_to([0.49,0.37,0])
+        self.add(a[1][19][:30]) #Key and Query Questions
+        self.wait()
+        self.add(a[1][19][30:])
+        self.wait()
+
+        #Multistep option
+        self.play(FadeOut(a[1][18][:11]), FadeOut(a[1][18][14:32]), FadeOut(a[1][18][40:]), FadeOut(a[1][19]), 
+                  FadeOut(a[1][3]), FadeOut(a[1][4]), FadeOut(q_rows[:2]), FadeOut(q_rows[3:]), FadeOut(k_rows[0]), 
+                  FadeOut(k_rows[2:]), run_time=2)
+        # self.wait()
+        self.play(q_rows[2].animate.shift(0.12*DOWN), k_rows[1].animate.shift(0.12*UP),
+                  a[1][18][11:14].animate.shift(0.12*DOWN), a[1][18][32:40].animate.shift(0.12*UP))
+        self.wait()
+
+        #All at once option - feels like to much
+        # self.play(FadeOut(a[1][18][:11]), FadeOut(a[1][18][14:32]), FadeOut(a[1][18][40:]), FadeOut(a[1][19]), 
+        #       FadeOut(a[1][3]), FadeOut(a[1][4]), FadeOut(q_rows[:2]), FadeOut(q_rows[3:]), FadeOut(k_rows[0]), 
+        #       FadeOut(k_rows[2:]), q_rows[2].animate.shift(0.15*DOWN), k_rows[1].animate.shift(0.15*UP), run_time=2)     
+        # self.wait()
+
+        #Dot Product Dot
+        d=Dot(stroke_color=None, fill_color=WHITE)
+        d.scale(0.15)
+        d.move_to([-0.2, 0.295, 0])
+        # d.set_color(WHITE)
+        self.add(d)
+
+        t=Tex("=524.2").set_color(WHITE)
+        t.scale(0.1)
+        t.move_to([-0.2, 0.12, 0])
+        self.add(t)
+        self.wait()
+
+        self.remove(d,t)
+
+        # So here's just a pure reversal and everything back, but I wonder if I want to actually return to non-broken rows
+        # so I can go straight into the transpose?
+        # self.play(q_rows[2].animate.shift(0.12*UP), k_rows[1].animate.shift(0.12*DOWN),
+        #           a[1][18][11:14].animate.shift(0.12*UP), a[1][18][32:40].animate.shift(0.12*DOWN))
+        # self.wait()
+
+        # self.add(a[1][18][:11], a[1][18][14:32], a[1][18][40:])
+        # self.add(a[1][3], a[1][4])
+        # self.add(q_rows[:2], q_rows[3:], k_rows[0], k_rows[2:])
+        # self.wait()
+
+        #Ok try to smoothly move back to full matrix
+
+        # self.wait()
+        self.play(q_rows[2].animate.shift(0.059*UP), k_rows[1].animate.shift(0.188*DOWN),
+                  FadeOut(a[1][18][11:14]), FadeOut(a[1][18][32:40]))
+        
+        # self.add(a[0][0].set_opacity(0.5)) #Query image
+        # q_rows[2].shift(0.059*UP)
+        # self.wait()
+        # self.add(a[0][1].set_opacity(0.5)) #Key image
+        # k_rows[1].shift(0.188*DOWN)
+
+        self.play(FadeIn(a[0][0]), FadeIn(a[0][1]))
+        self.remove(q_rows[2], k_rows[1])
+        self.add(a[1][3][:10], a[1][3][-1:]) #Queryt labels
+        self.add(a[1][4][:4], a[1][4][-4:]) #Key labels
+        self.wait()
+
+        #Ok time to transpose a copy of the keys and add next set of labels and results -> how can i do this smoothy?
+        # self.add(a[0][3])
+
+        kt=a[0][1].copy()
+        self.play(kt.animate.scale(np.array([0.0215,0.035, 1])/np.array([0.0415, 0.08, 1])).rotate([0, 0, -PI/2]).move_to([0.405,0.305,0]), run_time=2)  
+        self.add(a[1][7])
+        self.wait()
+
+
+        self.play(FadeIn(a[1][8]), FadeIn(a[0][4]), self.frame.animate.reorient(0, 0, 0, (0.16, 0.17, 0.0), 1.20), run_time=1.2)
+        self.wait()
+
+        self.add(a[1][9])
+        self.wait()
+        self.play(FadeIn(a[0][5]), self.frame.animate.reorient(0, 0, 0, (0.46, 0.18, 0.0), 1.43))
+        self.wait()
+        self.add(a[1][10])
+        self.wait()
+
+        #P18 - move then add option
+        self.play(self.frame.animate.reorient(0, 0, 0, (0, 0, 0.0), 2.00))
+        self.remove(a[1][3][:10], a[1][3][-1:]) #Remove partial labels, add back in full. 
+        self.remove(a[1][4][:4], a[1][4][-4:])
+        self.add(a[1][3], a[1][4]) #Key query value labels
+        self.add(x[0], a[1][1], a[1][2], a[1][6]) #X inputs and intiial arrows
+        self.wait()
+
+        self.play(FadeIn(a[1][17]), FadeIn(a[1][5]), FadeIn(a[0][2])) #Value Stuff
+        self.wait()
+
+        #P19
+        self.add(a[1][11])
+        self.wait()
+
+        self.play(FadeIn(a[0][6]), FadeIn(a[1][12]))
+        self.wait()
+
+        #Attention head border 
+        self.play(Write(a[1][0]), run_time=1) #kind cool kind cheesy, switch to fade in if I hate it 
+        # self.play(FadeIn(a[1][0]))
+        self.wait()
+
+        # Ok now we're getting serious. I need to load up the other 11 heads, bring them in, and maybe like
+        # pan to the side as I do it. Maybe I can do a lag ratio thing. Oh yeah shoot and my camera is 
+        # top down right now, and for decent pan I need to rotate everything up. Hmm. 
+        # Would it be insane to rotate the attention head up like as I did it?
+
+        #Quick hacky test - a little weird but might work?
+        #Oh man can my patters slot in from the left one after eachother as the camera moves alittle?
+        #That would be dope. 
+        head_0_3d_images=Group(a[0], kt) #a[0][:2], a[3:], kt)
+        head_0_3d_vectors=Group(a[1][0], a[1][3:6], a[1][6:13], a[1][17])
+        head_0_3d=Group(head_0_3d_images, head_0_3d_vectors)
+
+        # Ok here's my alternative solution - there should not appear to be a camera jump in theory, we'll see - 
+        # If there is a little one, by be able to fix in Premier
+        self.remove(x, a[1][1], a[1][2])
+        head_0_3d.rotate([PI/2,0,0], axis=RIGHT)
+        self.frame.reorient(0, 90, 0, (0, 0, 0.0), 2.0)
+        self.wait()
+
+        # self.play(head_0_3d.animate.rotate([PI/2,0,0], axis=RIGHT), 
+        #          self.frame.animate.reorient(0, 90, 0, (0, 0, 0.0), 2.0), run_time=2)
+
+        #Ok now the cool stuff, can I slot in new heads from the left while panning to left?!
+        attention_heads=Group()
+        spacing=0.25
+        for i in range(1, 12): 
+            a=get_attention_head(svg_path=svg_path,svg_file='mha_2d_segments-',
+                                        img_path=img_path/'gpt_2_attention_viz_4'/str(i))
+            a_select=Group(a[0], a[1][0], a[1][3:6], a[1][6:13], a[1][17])
+            a_select.rotate([PI/2,0,0], axis=RIGHT)
+            a_select.move_to([0.27, spacing*i,0])
+            attention_heads.add(a_select)
+
+        # self.wait()
+        # self.frame.reorient(-27, 74, 0, (-0.29, 0.14, -0.1), 2.56)
+
+        #What if I add heads and then set all their opacities to zero? Is ordering preserved then?
+        for i in range(10, -1, -1): #-1):
+            # print(i)
+            self.add(attention_heads[i])
+        self.add(head_0_3d)
+
+        for i in range(10, -1, -1): 
+            attention_heads[i].shift(6*LEFT)
+
+        self.wait()
+        # self.frame.reorient(-38, 72, 0, (-0.37, 0.29, 0.02), 2.56)
+        self.play(self.frame.animate.reorient(-38, 72, 0, (-0.37, 0.29, 0.02), 2.56), run_time=3)
+
+
+        for i in range(11): #not my favorite, but gets the job done. 
+            self.play(attention_heads[i].animate.shift(6*RIGHT), run_time=1, rate_func=linear)
+
+        self.wait()
+
+        ### --- Do fun pannning here ---- ###
+        self.frame.reorient(51, 74, 0, (0.05, 0.82, -0.29), 3.44)
+
+        self.play(self.frame.animate.reorient(-48, 70, 0, (0.05, 0.82, -0.29), 3.44), run_time=10, rate_func=linear)
+        self.wait()
 
 
 
+        self.wait(20)
+        self.embed()
 
 
 
@@ -463,8 +713,8 @@ class p12_20(InteractiveScene):
 
 
 
-        self.wait()
-        self.embed()
+        # self.wait()
+        # self.embed()
 
         #         attention_heads=Group()
         # spacing=0.25

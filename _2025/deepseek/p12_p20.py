@@ -251,13 +251,13 @@ class p12_20(InteractiveScene):
 
         self.add(a[1][9])
         self.wait()
-        self.play(FadeIn(a[0][5]), self.frame.animate.reorient(0, 0, 0, (0.45, 0.18, 0.0), 1.46))
+        self.play(FadeIn(a[0][5]), self.frame.animate.reorient(0, 0, 0, (0.46, 0.18, 0.0), 1.43))
         self.wait()
         self.add(a[1][10])
         self.wait()
 
         #P18 - move then add option
-        self.play(self.frame.animate.reorient(0, 0, 0, (-0.09, -0.02, 0.0), 1.93))
+        self.play(self.frame.animate.reorient(0, 0, 0, (0, 0, 0.0), 2.00))
         self.remove(a[1][3][:10], a[1][3][-1:]) #Remove partial labels, add back in full. 
         self.remove(a[1][4][:4], a[1][4][-4:])
         self.add(a[1][3], a[1][4]) #Key query value labels
@@ -265,12 +265,71 @@ class p12_20(InteractiveScene):
         self.wait()
 
         self.play(FadeIn(a[1][17]), FadeIn(a[1][5]), FadeIn(a[0][2])) #Value Stuff
-        # self.add(a[1][17]) #Value stuff. 
-        # self.add(a[1][5])
-        # self.add(a[0][2])
+        self.wait()
 
         #P19
+        self.add(a[1][11])
+        self.wait()
+
+        self.play(FadeIn(a[0][6]), FadeIn(a[1][12]))
+        self.wait()
+
+        #Attention head border 
+        self.play(Write(a[1][0]), run_time=1) #kind cool kind cheesy, switch to fade in if I hate it 
+        # self.play(FadeIn(a[1][0]))
+        self.wait()
+
+        # Ok now we're getting serious. I need to load up the other 11 heads, bring them in, and maybe like
+        # pan to the side as I do it. Maybe I can do a lag ratio thing. Oh yeah shoot and my camera is 
+        # top down right now, and for decent pan I need to rotate everything up. Hmm. 
+        # Would it be insane to rotate the attention head up like as I did it?
+
+        #Quick hacky test - a little weird but might work?
+        #Oh man can my patters slot in from the left one after eachother as the camera moves alittle?
+        #That would be dope. 
+        head_0_3d_images=Group(a[0], kt) #a[0][:2], a[3:], kt)
+        head_0_3d_vectors=Group(a[1][0], a[1][3:6], a[1][6:13], a[1][17])
+        head_0_3d=Group(head_0_3d_images, head_0_3d_vectors)
+
+        # Ok here's my alternative solution - there should not appear to be a camera jump in theory, we'll see - 
+        # If there is a little one, by be able to fix in Premier
+        self.remove(x, a[1][1], a[1][2])
+        head_0_3d.rotate([PI/2,0,0], axis=RIGHT)
+        self.frame.reorient(0, 90, 0, (0, 0, 0.0), 2.0)
+        self.wait()
+
+        # self.play(head_0_3d.animate.rotate([PI/2,0,0], axis=RIGHT), 
+        #          self.frame.animate.reorient(0, 90, 0, (0, 0, 0.0), 2.0), run_time=2)
+
+        #Ok now the cool stuff, can I slot in new heads from the left while panning to left?!
+        attention_heads=Group()
+        spacing=0.25
+        for i in range(1, 12): 
+            a=get_attention_head(svg_path=svg_path,svg_file='mha_2d_segments-',
+                                        img_path=img_path/'gpt_2_attention_viz_4'/str(i))
+            a_select=Group(a[0], a[1][0], a[1][3:6], a[1][6:13], a[1][17])
+            a_select.rotate([PI/2,0,0], axis=RIGHT)
+            a_select.move_to([0, spacing*i,0])
+            attention_heads.add(a_select)
+
+        #Hmm I'm going to possibly run into some rendering order stuff? 
+        #maybe not if I render them off screen in the right order and then bring them in?
+        for i in range(10, 0, -1):
+            attention_heads[i].set_opacity(0.75)
+
+            attention_heads[i].shift(6*LEFT) #Not sure what starting position is?
+            self.add(attention_heads[i])
+        self.add(head_0_3d) #Re add as top layer
+        self.wait()
+
         
+
+        self.play(*[attention_heads[i].animate.shift(6*RIGHT) for i in range(11)], run_time=3, lag_ratio=1.5)
+
+
+        self.wait()
+
+
 
 
 

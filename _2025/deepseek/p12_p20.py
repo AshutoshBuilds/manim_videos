@@ -256,6 +256,23 @@ class p12_20(InteractiveScene):
         self.add(a[1][10])
         self.wait()
 
+        #P18 - move then add option
+        self.play(self.frame.animate.reorient(0, 0, 0, (-0.09, -0.02, 0.0), 1.93))
+        self.remove(a[1][3][:10], a[1][3][-1:]) #Remove partial labels, add back in full. 
+        self.remove(a[1][4][:4], a[1][4][-4:])
+        self.add(a[1][3], a[1][4]) #Key query value labels
+        self.add(x[0], a[1][1], a[1][2], a[1][6]) #X inputs and intiial arrows
+        self.wait()
+
+        self.play(FadeIn(a[1][17]), FadeIn(a[1][5]), FadeIn(a[0][2])) #Value Stuff
+        # self.add(a[1][17]) #Value stuff. 
+        # self.add(a[1][5])
+        # self.add(a[0][2])
+
+        #P19
+        
+
+
 
 
         self.wait()

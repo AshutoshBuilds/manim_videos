@@ -347,8 +347,16 @@ class p12_20(InteractiveScene):
         #     o.scale(0.2).move_to([3+i*0.2, 0, 0])
 
         self.play(*[o.animate.scale(0.2).move_to([3+i*0.2, 0, 0]) for i,o in enumerate(out_matrices)]+
-                  [self.frame.animate.reorient(1, 81, 0, (4.24, 0.83, -0.21), 3.29)], run_time=3)
+                  [self.frame.animate.reorient(-1, 86, 0, (4.32, 0.84, -0.21), 3.29)], run_time=3)
         self.wait()
+
+        p20_overlay=SVGMobject('/Users/stephen/welch_labs/deepseek/graphics/to_manim/p20_svg_overay_1.svg')[1:]
+        p20_overlay.rotate([PI/2,0,0], axis=RIGHT)
+        p20_overlay.scale(1.3)
+        p20_overlay.move_to([4.62,0,-0.26])
+        self.add(p20_overlay)
+
+        # self.remove(p20_overlay)
 
 
         # for i in range(10, -1, -1):

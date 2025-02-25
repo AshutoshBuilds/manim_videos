@@ -100,7 +100,7 @@ class p12_20(InteractiveScene):
 
         i=0
         a=get_attention_head(svg_path=svg_path,svg_file='mha_2d_segments-',
-                                    img_path=img_path/'gpt_2_attention_viz_1'/str(i))
+                                    img_path=img_path/'gpt_2_attention_viz_2'/str(i))
 
         x=get_input_x(svg_path='/Users/stephen/welch_labs/deepseek/graphics/to_manim',
            svg_file='mha_2d_grouping_test.svg',
@@ -129,7 +129,43 @@ class p12_20(InteractiveScene):
 
         # self.add(a[1][3])
         # self.add(a[1][4])
+        # Can i, withoug going insane, actually have these matrices be made up of rows and 
+        # then break them apart and pull one out of each?
 
+        #Ok hack on row by row version here then break into subfuncrion
+
+
+        separate_row_im_path='/Users/stephen/welch_labs/deepseek/hackin/linux_workdir/deepseek/gpt_2_attention_viz_3'
+        q_rows=Group()
+        for row_id in range(9):
+            q=ImageMobject(separate_row_im_path+'/query_row_'+str(row_id)+'.png')
+            q.scale([0.0127, 0.024, 1]) 
+            q.move_to([-0.2,0.492-0.028*row_id,0]) 
+            q_rows.add(q)
+        self.add(q_rows)
+        # self.remove(q_rows)
+
+        k_rows=Group()
+        for row_id in range(9):
+            k=ImageMobject(separate_row_im_path+'/key_row_'+str(row_id)+'.png')
+            k.scale([0.0127, 0.024, 1]) 
+            k.move_to([-0.2,0.1-0.028*row_id,0]) 
+            k_rows.add(k)
+        self.add(k_rows)
+
+        self.remove(k_rows)
+
+
+
+        # q1=ImageMobject(str(img_path/'q_1.png'))
+        # q1.scale([0.0415, 0.08, 1]) 
+        # q1.move_to([-0.2,0.38,0]) 
+        # # self.add(q1)
+        # # self.remove(q1)      
+
+        # k1=ImageMobject(str(img_path/'k_1.png'))
+        # k1.scale([0.0415, 0.08, 1]) 
+        # k1.move_to([-0.2,-0.06,0]) 
 
 
 

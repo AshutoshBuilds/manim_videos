@@ -100,7 +100,7 @@ class p12_20(InteractiveScene):
 
         i=0
         a=get_attention_head(svg_path=svg_path,svg_file='mha_2d_segments-',
-                                    img_path=img_path/'gpt_2_attention_viz_2'/str(i))
+                                    img_path=img_path/'gpt_2_attention_viz_4'/str(i))
 
         x=get_input_x(svg_path='/Users/stephen/welch_labs/deepseek/graphics/to_manim',
            svg_file='mha_2d_grouping_test.svg',
@@ -135,7 +135,7 @@ class p12_20(InteractiveScene):
         #Ok hack on row by row version here then break into subfuncrion
 
 
-        separate_row_im_path='/Users/stephen/welch_labs/deepseek/hackin/linux_workdir/deepseek/gpt_2_attention_viz_3'
+        separate_row_im_path='/Users/stephen/welch_labs/deepseek/hackin/linux_workdir/deepseek/gpt_2_attention_viz_4'
         q_rows=Group()
         for row_id in range(9):
             q=ImageMobject(separate_row_im_path+'/query_row_'+str(row_id)+'.png')
@@ -187,11 +187,62 @@ class p12_20(InteractiveScene):
                   a[1][18][11:14].animate.shift(0.12*DOWN), a[1][18][32:40].animate.shift(0.12*UP))
         self.wait()
 
-        #All at once option
+        #All at once option - feels like to much
         # self.play(FadeOut(a[1][18][:11]), FadeOut(a[1][18][14:32]), FadeOut(a[1][18][40:]), FadeOut(a[1][19]), 
         #       FadeOut(a[1][3]), FadeOut(a[1][4]), FadeOut(q_rows[:2]), FadeOut(q_rows[3:]), FadeOut(k_rows[0]), 
         #       FadeOut(k_rows[2:]), q_rows[2].animate.shift(0.15*DOWN), k_rows[1].animate.shift(0.15*UP), run_time=2)     
         # self.wait()
+
+        #Dot Product Dot
+        d=Dot(stroke_color=None, fill_color=WHITE)
+        d.scale(0.15)
+        d.move_to([-0.2, 0.295, 0])
+        # d.set_color(WHITE)
+        self.add(d)
+
+        t=Tex("=524.2").set_color(WHITE)
+        t.scale(0.1)
+        t.move_to([-0.2, 0.12, 0])
+        self.add(t)
+        self.wait()
+
+        self.remove(d,t)
+
+        # So here's just a pure reversal and everything back, but I wonder if I want to actually return to non-broken rows
+        # so I can go straight into the transpose?
+        # self.play(q_rows[2].animate.shift(0.12*UP), k_rows[1].animate.shift(0.12*DOWN),
+        #           a[1][18][11:14].animate.shift(0.12*UP), a[1][18][32:40].animate.shift(0.12*DOWN))
+        # self.wait()
+
+        # self.add(a[1][18][:11], a[1][18][14:32], a[1][18][40:])
+        # self.add(a[1][3], a[1][4])
+        # self.add(q_rows[:2], q_rows[3:], k_rows[0], k_rows[2:])
+        # self.wait()
+
+        #Ok try to smoothly move back to full matrix
+
+        # self.wait()
+        self.play(q_rows[2].animate.shift(0.059*UP), k_rows[1].animate.shift(0.188*DOWN),
+                  FadeOut(a[1][18][11:14]), FadeOut(a[1][18][32:40]))
+        
+        # self.add(a[0][0].set_opacity(0.5)) #Query image
+        # q_rows[2].shift(0.059*UP)
+        # self.wait()
+        # self.add(a[0][1].set_opacity(0.5)) #Key image
+        # k_rows[1].shift(0.188*DOWN)
+
+        self.play(FadeIn(a[0][0]), FadeIn(a[0][1]))
+        self.remove(q_rows[2], k_rows[1])
+        self.add(a[1][3][:10], a[1][3][-1:]) #Queryt labels
+        self.add(a[1][4][:4], a[1][4][-4:]) #Key labels
+        self.wait()
+
+
+        self.wait()
+
+
+
+
 
 
 

@@ -91,7 +91,7 @@ def get_input_x(svg_path='/Users/stephen/welch_labs/deepseek/graphics/to_manim',
     return Group(all_images,x_labels_1)
 
 
-class p12_29(InteractiveScene):
+class p23_29(InteractiveScene):
     def construct(self):
 
         #Start with previous 9 token input, and propaage 10 input thorugh
@@ -109,10 +109,12 @@ class p12_29(InteractiveScene):
         self.frame.reorient(0, 0, 0, (-0.01, -0.04, 0.0), 2.01)
         self.wait()
 
-        self.add(a[0], a[1][:13], a[1][17], x[0])
+        self.add(a[0], a[1][1:13], a[1][17], x[0])
 
         #Ok, first zoom in and change input text
         self.play(self.frame.animate.reorient(0, 0, 0, (-1.06, -0.05, 0.0), 0.88), run_time=2)
+        a[0][3:].set_opacity(0.2) #Lower opacity of stuff were not using yet. 
+        a[1][7:14].set_opacity(0.2)
 
         i=0
         a2=get_attention_head(svg_path=svg_path,svg_file='mha_2d_segments_10_input-',
@@ -143,15 +145,46 @@ class p12_29(InteractiveScene):
         # self.wait()
         self.play(FadeIn(x1n), FadeIn(x2n), FadeOut(a[1][1][-1]), FadeIn(a2[1][1][-2:]))
 
+        ## Now add row to Queries, keys, and values. 
         self.wait()
-
-
-
+        self.play(self.frame.animate.reorient(0, 0, 0, (-0.59, -0.07, 0.0), 1.36), run_time=2)
+        self.wait()
 
         img_path_full=img_path/'gpt_2_attention_viz_5'/str(i)
         q1n=ImageMobject(str(img_path_full/'q_1n.png'))
-        q1n.scale([0.0415, 0.08, 1]) 
-        q1n.move_to([-0.2,0.38,0]) 
+        q1n.scale([0.0127, 0.022, 1]) 
+        q1n.move_to([-0.2,0.264,0])
+        # self.add(q1n) 
+
+        self.wait()
+        self.play(a[0][0].animate.scale([1, 0.92, 1]).shift(0.012*UP))
+        self.play(FadeIn(q1n), Transform(a[1][3][-1], a2[1][3][-2:]))
+        self.wait()
+
+        img_path_full=img_path/'gpt_2_attention_viz_5'/str(i)
+        k1n=ImageMobject(str(img_path_full/'k_1n.png'))
+        k1n.scale([0.0127, 0.022, 1]) 
+        k1n.move_to([-0.2,-0.17,0])
+        # self.add(k1n)  
+        # self.remove(k1n)       
+        
+        self.wait()
+        self.play(a[0][1].animate.scale([1, 0.92, 1]).shift(0.012*UP))
+        self.play(FadeIn(k1n), Transform(a[1][4][-1], a2[1][4][-2:]))
+        self.wait()  
+        
+
+        img_path_full=img_path/'gpt_2_attention_viz_5'/str(i)
+        v1n=ImageMobject(str(img_path_full/'v_1n.png'))
+        v1n.scale([0.0127, 0.022, 1]) 
+        v1n.move_to([-0.2,-0.595,0])
+        # self.add(v1n)  
+        # self.remove(v1n)       
+        
+        self.wait()
+        self.play(a[0][2].animate.scale([1, 0.92, 1]).shift(0.012*UP))
+        self.play(FadeIn(v1n), Transform(a[1][5][-1], a2[1][5][-2:]))
+        self.wait()  
 
 
         self.wait(20)

@@ -203,10 +203,53 @@ class p23_29(InteractiveScene):
         self.wait()
         
         a2[1][9:13].set_opacity(0.2)
+        # a2[1][5].set_opacity(0.2)
+        # a2[1][16].set_opacity(0.2)
+        a[0][2].set_opacity(0.2)
+        v1n.set_opacity(0.2)
+        self.add(a2[0][5].set_opacity(0.2)) #add in last two images we'll need later
+        self.add(a2[0][6].set_opacity(0.2))
         self.play(FadeIn(a2[0][4]), FadeIn(a2[1][8:13]), FadeOut(a[1][8:13]))
         self.remove(a[0][4])
         self.wait()
 
+        #Let's do these recangles and the following ones in Illustrator/premier/post manim - I think that will be faster
+        # r1=Rectangle(width=0.92, height=0.23)
+        # r1.move_to([-0.2, 0.393, 0])
+        # r1.set_stroke('#FF00FF')
+        # self.add(r1)
+        # self.wait()
+
+
+        # r2=Rectangle(width=0.1, height=0.48)
+        # r2.move_to([0.4, 0.305, 0])
+        # r2.set_stroke('#FF00FF')
+        # self.add(r2)
+        # self.wait()
+
+        # r3=Rectangle(width=0.185, height=0.185)
+        # r3.move_to([0.649, 0.38, 0])
+        # r3.set_stroke('#FF00FF')
+        # self.add(r3)
+        # self.wait()
+
+        self.play(self.frame.animate.reorient(0, 0, 0, (0.42, 0.2, 0.0), 1.32),
+                a2[0][5].animate.set_opacity(1.0),
+                a2[1][9:11].animate.set_opacity(1.0),
+                run_time=2.0)
+        # self.add(a2[0][5])
+        # self.frame.reorient(0, 0, 0, (0.27, -0.01, 0.0), 1.50)
+        self.wait()
+
+        self.play(self.frame.animate.reorient(0, 0, 0, (0.31, -0.02, 0.0), 1.49),
+                a[0][2].animate.set_opacity(1.0),
+                v1n.animate.set_opacity(1.0),
+                a2[0][-1].animate.set_opacity(1.0),
+                a2[1][11:13].animate.set_opacity(1.0), run_time=2.0)
+        self.wait()
+
+        self.play(self.frame.animate.reorient(0, 0, 0, (0.0, -0.03, 0.0), 2.03), run_time=2.0)
+        self.wait()
 
 
 

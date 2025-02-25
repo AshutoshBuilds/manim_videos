@@ -104,7 +104,7 @@ class p12_20(InteractiveScene):
 
         x=get_input_x(svg_path='/Users/stephen/welch_labs/deepseek/graphics/to_manim',
            svg_file='mha_2d_grouping_test.svg',
-           img_path='/Users/stephen/welch_labs/deepseek/hackin/linux_workdir/deepseek/flowchart_graphics')
+           img_path=img_path/'gpt_2_attention_viz_4')
 
         self.frame.reorient(0, 0, 0, (-1.39, -0.06, -0.0), 1.16)
         self.wait()

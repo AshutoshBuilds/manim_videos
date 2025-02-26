@@ -450,8 +450,14 @@ class p29(InteractiveScene):
                   run_time=2)
         self.wait()
 
+
+        self.play(full_panel[0].animate.move_to([-0.2, -0.01976856, -0.1]),
+                  full_panel[1].animate.move_to([-0.2, -0.01976856, -0.37]),
+                  run_time=1)
+        self.wait()    
+
         attention_heads=Group()
-        spacing=0.25
+        spacing=0.1
         for i in range(1, 12): 
             a=get_attention_head(svg_path=svg_path,svg_file='mha_2d_segments-',
                                         img_path=img_path/'gpt_2_attention_viz_4'/str(i))
@@ -459,12 +465,39 @@ class p29(InteractiveScene):
             a_select.rotate([PI/2,0,0], axis=RIGHT)
             a_select.move_to([0.27, spacing*i,0])
 
-            a_select[0][0].scale([1, 0.92, 1]).shift(0.012*UP)
-            a_select[0][1].scale([1, 0.92, 1]).shift(0.012*UP)
+            a_select[0][1].scale([1, 1, 0.92])
+            a_select[0][1].move_to([-0.2, spacing*i, -0.1])
+            a_select[0][2].scale([1, 1, 0.92])
+            a_select[0][2].move_to([-0.2, spacing*i, -0.37])
 
             attention_heads.add(a_select)
 
+        for i in range(10, -1, -1):
+            self.add(attention_heads[i][0][1])
+            self.add(attention_heads[i][0][2])
 
+        self.add(full_panel[:2])
+        self.play(self.frame.animate.reorient(-37, 71, 0, (-0.18, -0.02, -0.25), 1.55), run_time=2)
+
+        self.wait()
+        #Now add in other layers - getting there with full 3d view - gotta noodle a little more. 
+        layer=Group(*[Group(attention_heads[i][0][1], attention_heads[i][0][2]) for i in range(10, -1, -1)])
+        layer.add(full_panel[:2])
+
+        layer_2=layer.copy()
+        layer_2.rotate(5*PI/180, IN)
+        layer_2.shift(1.25*RIGHT+0.75*DOWN)
+        self.add(layer_2)
+
+        layer_3=layer.copy()
+        layer_3.rotate(15*PI/180, IN)
+        layer_3.shift(2.5*1.25*RIGHT+2.5*0.75*DOWN)
+        self.add(layer_3fd)
+
+        self.remove(layer_2)
+        self.remove(layer_3)
+
+        self.frame.reorient(-37, 71, 0, (1.01, -0.83, -0.87), 3.45)
 
 
         # full_panel[0].move_to([-0.2, -0.01976856, -0.1])

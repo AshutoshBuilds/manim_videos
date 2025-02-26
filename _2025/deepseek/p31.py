@@ -145,15 +145,43 @@ class p31(InteractiveScene):
         self.frame.reorient(0, 83, 0, (0.37, -0.06, 0.01), 2.04)
         self.wait()
 
-        #Option with camera move
+        #Option with camera move - ok yeah this looks nice. 
         self.play(*[attention_heads[i][0][0].animate.set_opacity(0.0) for i in range(12)]+
 	       [attention_heads[0][1][3].animate.set_opacity(0.0)]+
- 		   [attention_heads[i][0][1].animate.move_to([-0.53 ,  1.391,  0.06 ]) for i in range(12)]+
- 		   [attention_heads[0][1][4].animate.move_to([-0.53 ,  1.391,  -0.10 ])]+
- 		   [attention_heads[i][0][2].animate.move_to([-0.53 ,  1.391, -0.34]) for i in range(12)]+
- 		   [attention_heads[0][1][5].animate.move_to([-0.53 ,  1.391,  -0.51 ])]+
+ 		   [attention_heads[i][0][1].animate.move_to([-0.6 ,  1.391,  -0.08 ]) for i in range(12)]+ #Keys [-0.53 ,  1.391,  0.06 ]
+ 		   [attention_heads[0][1][4].animate.move_to([-0.6 ,  1.391,  -0.24 ])]+                   #[-0.53 ,  1.391,  -0.10 ]
+ 		   [attention_heads[i][0][2].animate.move_to([-0.6 ,  1.391, -0.48]) for i in range(12)]+ #Values [-0.53 ,  1.391, -0.34]
+ 		   [attention_heads[0][1][5].animate.move_to([-0.6 ,  1.391,  -0.65 ])]+                  #[-0.53 ,  1.391,  -0.51 ]
  		   [self.frame.animate.reorient(-53, 71, 0, (-0.36, 0.7, 0.07), 1.81)],
 	       run_time=3)
+
+        #Let's fade in connectors here. 
+
+        connector_1=SVGMobject('/Users/stephen/welch_labs/deepseek/graphics/to_manim/thick_white_connector_1.svg')
+        connector_1.scale([1.0, 1.39, 1])
+        connector_1.move_to([0.2, 1.389, -0.11]) #0.05 #[-0.12, 1.375, -0.08]
+        # (np.array([0.2, 1.386, 0.05])-np.array([-0.12, 1.375, -0.08]))+np.array([-0.85, 1.38, -0.07])
+        # self.add(connector_1) 
+
+        connector_1b=SVGMobject('/Users/stephen/welch_labs/deepseek/graphics/to_manim/thick_white_connector_1.svg')
+        connector_1b.scale([1.0, 1.39, 1])
+        connector_1b.move_to([ 0.14 ,  1.386, -0.499 ])
+        # (np.array([0.2, 1.386, 0.05])-np.array([-0.12, 1.375, -0.08]))+np.array([-0.18, 1.375, -0.47])
+        # self.add(connector_1b)
+
+        # for i in range(12): self.add(attention_heads[i][2])
+        white_arrows=Group(*[attention_heads[i][2] for i in range(12)])
+
+        self.play(FadeIn(connector_1b), FadeIn(connector_1), FadeIn(white_arrows), 
+        		 self.frame.animate.reorient(-34, 69, 0, (0.04, 0.58, 0.09), 2.10))
+        self.add(attention_heads[0][0][1]) #Occlusion
+        self.add(attention_heads[0][0][2]) #Occlusion
+        self.wait()
+
+
+        # self.play(self.frame.animate.reorient(-15, 67, 0, (0.34, 0.45, -0.07), 2.10)) #Optional Extra motion
+
+        # reorient(-34, 69, 0, (0.04, 0.58, 0.09), 2.10)
 
 
         #Camera move then collapse. 
@@ -207,16 +235,16 @@ class p31(InteractiveScene):
         self.add(connector_1b)
 
         #Values
-        attention_heads[0][0][2].move_to([-0.53 ,  1.391, -0.34])
-        self.add(attention_heads[0][0][2]) 
-        self.add(attention_heads[0][1][5].move_to([-0.53 ,  1.391,  -0.51 ]))# Values labels
+        # attention_heads[0][0][2].move_to([-0.53 ,  1.391, -0.34])
+        # self.add(attention_heads[0][0][2]) 
+        # self.add(attention_heads[0][1][5].move_to([-0.53 ,  1.391,  -0.51 ]))# Values labels
         # (np.array([0.2, 1.386, 0.05])-np.array([-0.12, 1.375, -0.08]))+np.array([-0.85, 1.38, -0.47])
 
         # head_connector=SVGMobject('/Users/stephen/welch_labs/deepseek/graphics/to_manim/head_connector_1.svg')
         # head_connector.scale([0.35, 1.385, 1])
         # head_connector.move_to([-1.45, 1.375, -0.047])
         # self.add(head_connector)
-        self.wait()
+        # self.wait()
         
         # attention_heads[:-1].set_opacity(0.5)
         # self.add(attention_heads)

@@ -487,17 +487,20 @@ class p29(InteractiveScene):
         layer_2=layer.copy()
         layer_2.rotate(5*PI/180, IN)
         layer_2.shift(1.25*RIGHT+0.75*DOWN)
-        self.add(layer_2)
+        # self.add(layer_2)
 
         layer_3=layer.copy()
-        layer_3.rotate(15*PI/180, IN)
+        layer_3.rotate(12*PI/180, IN)
         layer_3.shift(2.5*1.25*RIGHT+2.5*0.75*DOWN)
-        self.add(layer_3fd)
+        # self.add(layer_3)
 
-        self.remove(layer_2)
-        self.remove(layer_3)
+        # self.remove(layer_2)
+        # self.remove(layer_3)
+        # self.frame.reorient(-34, 70, 0, (0.93, -1.16, -0.9), 3.39)
+        self.play(FadeIn(layer_2), FadeIn(layer_3),self.frame.animate.reorient(-34, 70, 0, (0.93, -1.16, -0.9), 3.39), run_time=2)
 
-        self.frame.reorient(-37, 71, 0, (1.01, -0.83, -0.87), 3.45)
+
+        self.wait()
 
 
         # full_panel[0].move_to([-0.2, -0.01976856, -0.1])

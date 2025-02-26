@@ -173,7 +173,7 @@ class p31(InteractiveScene):
         white_arrows=Group(*[attention_heads[i][2] for i in range(12)])
 
         self.play(FadeIn(connector_1b), FadeIn(connector_1), FadeIn(white_arrows), 
-        		 self.frame.animate.reorient(-34, 69, 0, (0.04, 0.58, 0.09), 2.10))
+        		 self.frame.animate.reorient(-34, 69, 0, (0.04, 0.58, 0.09), 2.10), run_time=2)
         self.add(attention_heads[0][0][1]) #Occlusion
         self.add(attention_heads[0][0][2]) #Occlusion
         self.wait()

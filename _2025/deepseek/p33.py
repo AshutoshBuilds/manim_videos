@@ -90,7 +90,7 @@ class p33(InteractiveScene):
         # self.frame.reorient(0, 0, 0, (0.00, 0.00, 0.00), 2.80)
         # self.wait()
 
-        self.frame.reorient(0, 86, 0, (-0.07, -0.06, 0.06), 2.39)
+        # self.frame.reorient(0, 86, 0, (-0.07, -0.06, 0.06), 2.39)
 
         # x=get_input_x(svg_path=svg_path, img_path=img_path/'gpt_2_attention_viz_1', 
         #                             svg_file='mha_2d_grouped_separate_lines.svg')
@@ -116,38 +116,109 @@ class p33(InteractiveScene):
             self.add(attention_heads[i][1][13].set_opacity(0.9)) #Arrows on right side
             # self.add(attention_heads[i][1][0].set_opacity(0.9)) #Outlines
 
-            # self.add(attention_heads[i][0][0].set_opacity(0.8)) #queries
-            # self.add(attention_heads[i][0][1].set_opacity(0.8)) #keys
-            # self.add(attention_heads[i][0][2].set_opacity(0.8)) #values
+            self.add(attention_heads[i][0][0].set_opacity(0.8)) #queries
+            self.add(attention_heads[i][0][1].set_opacity(0.8)) #keys
+            self.add(attention_heads[i][0][2].set_opacity(0.8)) #values
             
             ##should replace kt with same matrix in each head ->
             self.add(attention_heads[i][0][3:].set_opacity(0.8)) #attention patterns and output
-            self.add(attention_heads[i][2]) #Thick white lines
+            # self.add(attention_heads[i][2]) #Thick white lines
             
 
         # -- Now do first layer a little differently
         # self.add(attention_heads[0][0][0].set_opacity(0.4)) #Queries
         self.add(attention_heads[0][0][3:].set_opacity(0.8)) #attention patterns and output.
         self.add(attention_heads[0][1][13].set_opacity(0.9)) #Arrows on right side
-        # self.add(attention_heads[0][0][0].set_opacity(0.8)) #queries
-        # self.add(attention_heads[0][0][1].set_opacity(0.8)) #keys
-        # self.add(attention_heads[0][0][2].set_opacity(0.8)) #values
-        # self.add(attention_heads[0][1][3].set_opacity(1.0)) #Query Label
-        # self.add(attention_heads[0][1][4].set_opacity(1.0)) #Key Label
-        # self.add(attention_heads[0][1][5].set_opacity(1.0)) #Vakye Label
+        self.add(attention_heads[0][0][0].set_opacity(0.8)) #queries
+        self.add(attention_heads[0][0][1].set_opacity(0.8)) #keys
+        self.add(attention_heads[0][0][2].set_opacity(0.8)) #values
+        self.add(attention_heads[0][1][3].set_opacity(1.0)) #Query Label
+        self.add(attention_heads[0][1][4].set_opacity(1.0)) #Key Label
+        self.add(attention_heads[0][1][5].set_opacity(1.0)) #Vakye Label
         
 
         #Opationally add labels/variable names on front head
         self.add(attention_heads[0][1][14].set_opacity(0.5)) #Yea I'm 50/50 on this - nice to have the option i think
-        self.add(attention_heads[0][2]) #Thick white lines
+        # self.add(attention_heads[0][2]) #Thick white lines
 
         ## -- So, I think a really good option would be showing the keys and values collapsing down into a single matrix
         ## -- and then add in the connector. 
-        self.wait()
+        # self.wait()
         self.frame.reorient(0, 83, 0, (0.37, -0.06, 0.01), 2.04)
         self.wait()
 
 
+        self.play(*[self.frame.animate.reorient(-51, 66, 0, (-0.37, 0.6, -0.12), 2.37)]+
+                [attention_heads[i][0][0].animate.set_opacity(0.0) for i in range(12)]+ #Turn down queries
+                [attention_heads[0][1][3].animate.set_opacity(0.0)]+ #Query Labels
+                [attention_heads[i][0][1].animate.move_to([-0.53,  0.39,  -0.1  ]) for i in range(4)]+ #First key grouping
+                [attention_heads[i][0][1].animate.move_to([-0.53 ,  1.391,  -0.1 ]) for i in range(4,8)]+
+                [attention_heads[i][0][1].animate.move_to([-0.53,  2.38,  -0.1  ]) for i in range(8,12)]+
+                [attention_heads[0][1][4].animate.move_to([-0.53 ,  0.38,  -0.26 ])]+    #Move key labels 
+                [attention_heads[i][0][2].animate.move_to([-0.53 ,  0.39,  -0.5 ]) for i in range(4)]+ #First value grouping
+                [attention_heads[i][0][2].animate.move_to([-0.53 ,  1.38, -0.5 ]) for i in range(4,8)]+
+                [attention_heads[i][0][2].animate.move_to([-0.53 ,  2.39, -0.5]) for i in range(8,12)]+
+                [attention_heads[0][1][5].animate.move_to([-0.53 ,  0.38,  -0.66 ])], #Move value labels.
+                run_time=5) 
+        self.wait()
+
+
+        ##Keys
+        connector_1=SVGMobject('/Users/stephen/welch_labs/deepseek/graphics/to_manim/thick_small_white_connector.svg')
+        connector_1.scale([0.3, 0.39, 1])
+        connector_1.move_to([0.18, 1.39, -0.11]) #[0.18, 1.38, 0.05]
+        
+        connector_1b=connector_1.copy()
+        connector_1b.move_to([0.18, 2.39, -0.11]) #0.05
+
+        connector_1c=connector_1.copy()
+        connector_1c.move_to([0.18, 0.385, -0.11])
+
+        ##Values
+        connector_2=SVGMobject('/Users/stephen/welch_labs/deepseek/graphics/to_manim/thick_small_white_connector.svg')
+        connector_2.scale([0.3, 0.39, 1])
+        connector_2.move_to([ 0.18 ,  1.38, -0.5 ])
+
+        connector_2b=connector_2.copy()
+        connector_2b.move_to([0.18, 2.39, -0.5])
+
+        connector_2c=connector_2.copy()
+        connector_2c.move_to([ 0.18 ,  0.39, -0.5 ])     
+
+        white_arrows=Group(*[attention_heads[i][2] for i in range(12)])
+
+        self.play(FadeIn(connector_1b), FadeIn(connector_1), FadeIn(white_arrows), 
+                  FadeIn(connector_1c), FadeIn(connector_2), FadeIn(connector_2b),  FadeIn(connector_2c),
+                 self.frame.animate.reorient(-38, 59, 0, (0.05, 0.56, 0.06), 2.54), run_time=2)
+        self.add(attention_heads[4][0][1]) #Occlusion
+        self.add(attention_heads[4][0][2]) #Occlusion
+        self.add(attention_heads[0][0][1]) #Occlusion
+        self.add(attention_heads[0][0][2]) #Occlusion
+        self.wait()          
+
+
+
+
+        # self.add(connector_1b, keys_b) #, keys_b_labels)
+        # self.add(connector_2b, values_b) #, values_b_labels)
+        # self.add(connector_1, keys_a) #, keys_a_labels)
+        # self.add(connector_2, values_a) #, values_a_labels)
+        # self.add(connector_1c, keys_c, keys_c_labels)
+        # self.add(connector_2c, values_c, values_c_labels)
+        # self.wait()
+
+        # ----
+        # self.frame.reorient(-51, 66, 0, (-0.37, 0.6, -0.12), 2.37)
+        # [attention_heads[i][0][0].set_opacity(0.0) for i in range(12)] #Turn down queries
+        # [attention_heads[0][1][3].set_opacity(0.0)] #Query Labels
+        # [attention_heads[i][0][1].move_to([-0.53,  0.39,  -0.1  ]) for i in range(4)] #First key grouping
+        # [attention_heads[i][0][1].move_to([-0.53 ,  1.391,  -0.1 ]) for i in range(4,8)]
+        # [attention_heads[i][0][1].move_to([-0.53,  2.38,  -0.1  ]) for i in range(8,12)]
+        # [attention_heads[0][1][4].move_to([-0.53 ,  0.38,  -0.26 ])]    #Move key labels 
+        # [attention_heads[i][0][2].move_to([-0.53 ,  0.39,  -0.5 ]) for i in range(4)] #First value grouping
+        # [attention_heads[i][0][2].move_to([-0.53 ,  1.38, -0.5 ]) for i in range(4,8)]
+        # [attention_heads[i][0][2].move_to([-0.53 ,  2.39, -0.5]) for i in range(8,12)]
+        # [attention_heads[0][1][5].move_to([-0.53 ,  0.38,  -0.66 ])] #Move value labels. 
 
 
         #Option with camera move - ok yeah this looks nice. 
@@ -184,63 +255,64 @@ class p33(InteractiveScene):
         # self.wait()
 
 
-        #Start with end with connectors and work backwards 
+        ## ---- Start with end with connectors and work backwards --- ##
 
 
         #Keys
-        connector_1=SVGMobject('/Users/stephen/welch_labs/deepseek/graphics/to_manim/thick_small_white_connector.svg')
-        connector_1.scale([0.3, 0.39, 1])
-        connector_1.move_to([0.18, 1.39, -0.11]) #[0.18, 1.38, 0.05]
+        # connector_1=SVGMobject('/Users/stephen/welch_labs/deepseek/graphics/to_manim/thick_small_white_connector.svg')
+        # connector_1.scale([0.3, 0.39, 1])
+        # connector_1.move_to([0.18, 1.39, -0.11]) #[0.18, 1.38, 0.05]
         
-        keys_a=attention_heads[0][0][1].move_to([-0.53 ,  1.391,  -0.1 ])
-        # keys_a_labels=attention_heads[0][1][4].move_to([-0.53 ,  1.391,  -0.10 ])# Key labels
+        # keys_a=attention_heads[0][0][1].move_to([-0.53 ,  1.391,  -0.1 ])
+        # # keys_a_labels=attention_heads[0][1][4].move_to([-0.53 ,  1.391,  -0.10 ])# Key labels
 
-        connector_1b=connector_1.copy()
-        keys_b=keys_a.copy()
-        keys_b_labels=attention_heads[0][1][4].copy()
-        connector_1b.move_to([0.18, 2.39, -0.11]) #0.05
-        keys_b.move_to([-0.53,  2.38,  -0.1  ])
-        # keys_b_labels.move_to([-0.53 ,  2.38,  -0.10 ])
+        # connector_1b=connector_1.copy()
+        # keys_b=keys_a.copy()
+        # keys_b_labels=attention_heads[0][1][4].copy()
+        # connector_1b.move_to([0.18, 2.39, -0.11]) #0.05
+        # keys_b.move_to([-0.53,  2.38,  -0.1  ])
+        # # keys_b_labels.move_to([-0.53 ,  2.38,  -0.10 ])
 
 
-        connector_1c=connector_1.copy()
-        keys_c=attention_heads[0][0][1].copy()
-        keys_c_labels=attention_heads[0][1][4].copy()
-        connector_1c.move_to([0.18, 0.39, -0.11])
-        keys_c.move_to([-0.53,  0.39,  -0.1  ])
-        keys_c_labels.move_to([-0.53 ,  0.38,  -0.26 ])
+        # connector_1c=connector_1.copy()
+        # keys_c=attention_heads[0][0][1].copy()
+        # keys_c_labels=attention_heads[0][1][4].copy()
+        # connector_1c.move_to([0.18, 0.39, -0.11])
+        # keys_c.move_to([-0.53,  0.39,  -0.1  ])
+        # keys_c_labels.move_to([-0.53 ,  0.38,  -0.26 ])
         
 
-        #Values
-        connector_2=SVGMobject('/Users/stephen/welch_labs/deepseek/graphics/to_manim/thick_small_white_connector.svg')
-        connector_2.scale([0.3, 0.39, 1])
-        connector_2.move_to([ 0.18 ,  1.38, -0.5 ])
+        # #Values
+        # connector_2=SVGMobject('/Users/stephen/welch_labs/deepseek/graphics/to_manim/thick_small_white_connector.svg')
+        # connector_2.scale([0.3, 0.39, 1])
+        # connector_2.move_to([ 0.18 ,  1.38, -0.5 ])
 
-        values_a=attention_heads[0][0][2].move_to([-0.53 ,  1.38, -0.5])
-        # values_a_labels=attention_heads[0][1][5].move_to([-0.53 ,  1.38,  -0.51 ])
+        # values_a=attention_heads[0][0][2].move_to([-0.53 ,  1.38, -0.5])
+        # # values_a_labels=attention_heads[0][1][5].move_to([-0.53 ,  1.38,  -0.51 ])
 
-        connector_2b=connector_2.copy()
-        values_b=values_a.copy()
-        values_b_labels=attention_heads[0][1][5].copy()
-        connector_2b.move_to([0.18, 2.39, -0.5])
-        values_b.move_to([-0.53 ,  2.39, -0.5])
-        # values_b_labels.move_to([-0.53 ,  2.38,  -0.51 ])
+        # connector_2b=connector_2.copy()
+        # values_b=values_a.copy()
+        # values_b_labels=attention_heads[0][1][5].copy()
+        # connector_2b.move_to([0.18, 2.39, -0.5])
+        # values_b.move_to([-0.53 ,  2.39, -0.5])
+        # # values_b_labels.move_to([-0.53 ,  2.38,  -0.51 ])
 
-        connector_2c=connector_2.copy()
-        values_c=values_a.copy()
-        values_c_labels=attention_heads[0][1][5].copy()
-        connector_2c.move_to([ 0.18 ,  0.39, -0.5 ])
-        values_c.move_to([-0.53 ,  0.39, -0.5])
-        values_c_labels.move_to([-0.53 ,  0.38,  -0.66 ])        
+        # connector_2c=connector_2.copy()
+        # values_c=values_a.copy()
+        # values_c_labels=attention_heads[0][1][5].copy()
+        # connector_2c.move_to([ 0.18 ,  0.39, -0.5 ])
+        # values_c.move_to([-0.53 ,  0.39, -0.5])
+        # values_c_labels.move_to([-0.53 ,  0.38,  -0.66 ])        
 
 
-        self.add(connector_1b, keys_b) #, keys_b_labels)
-        self.add(connector_2b, values_b) #, values_b_labels)
-        self.add(connector_1, keys_a) #, keys_a_labels)
-        self.add(connector_2, values_a) #, values_a_labels)
-        self.add(connector_1c, keys_c, keys_c_labels)
-        self.add(connector_2c, values_c, values_c_labels)
-        self.wait()
+        # self.add(connector_1b, keys_b) #, keys_b_labels)
+        # self.add(connector_2b, values_b) #, values_b_labels)
+        # self.add(connector_1, keys_a) #, keys_a_labels)
+        # self.add(connector_2, values_a) #, values_a_labels)
+        # self.add(connector_1c, keys_c, keys_c_labels)
+        # self.add(connector_2c, values_c, values_c_labels)
+        # self.wait()
+
 
 
 

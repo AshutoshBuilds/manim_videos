@@ -280,10 +280,48 @@ class p34_42(InteractiveScene):
         self.wait()
         # Hmm do i actually just want the names of the matrices to move? And the arrows and boxes just fade in/out?
         # That might be cleaner
-        self.remove(attention_heads[0][1][0][53:61]) #85 elements gross, let me see here...
-        self.add(attention_heads[0][1][0][40:])
+
+        old_query_arrow_and_box = Group(attention_heads[0][1][0][53:62], #Dimensions of WQ
+                                        attention_heads[0][1][0][43:46], #Bounding Box and one arrow
+                                        attention_heads[0][1][0][37:39], #Part of arrow
+                                        attention_heads[0][1][0][76])
+
+        self.wait()
+        self.play(FadeOut(old_query_arrow_and_box), FadeOut(attention_heads[0][1][3]), 
+                  FadeOut(attention_heads[0][1][7][3:]), 
+                  self.frame.animate.reorient(0, 89, 0, (-0.55, 0.79, 0.21), 2.03))
+        self.play(attention_heads[0][1][0][41:43].animate.move_to([-0.96,  0., 0.6]),
+                  attention_heads[0][1][7][:3].animate.move_to([-0.855,0,0.604]))
+        self.play(FadeOut(attention_heads[0][1][0][41:43]), FadeOut(attention_heads[0][1][7][:3]),
+                 FadeIn(mla_heads[0][1][1]))
+
+        self.wait()
+
+        #man so many little piece to align. 
+
+        
+
+
+        # self.add(mla_heads[0][1][1])
+
+        #ok so I guess I also remove the key arrow and stupid box? Ah dope I think it's one panel! Sick. 
+        # self.remove(attention_heads[0][1][3])
+        # self.remove(attention_heads[0][1][7][3:]) #Dimensions of WUK
+
+        # self.remove(attention_heads[0][1][0][53:62]) #Dimensions of WQ
+        # self.remove(attention_heads[0][1][0][43:46]) #Bounding Box and one arrow
+        # self.remove(attention_heads[0][1][0][37:39]) #Part of arrow
+        # self.remove(attention_heads[0][1][0][76]) #Rest of arrow dafuq - i regret everything. 
+
+
+        # attention_heads[0][1][0][41:43] #WQ to nudge around
+        ## attention_heads[0][1][7][3:] #WUK
+
+
+        # self.add(attention_heads[0][1][0][40:])
 
         self.add(mla_heads[0][1][1].move_to([-0.9,  0, 0.45]))
+
 
 
         self.remove(mla_heads[0][1][1])

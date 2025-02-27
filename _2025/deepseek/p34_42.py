@@ -298,7 +298,7 @@ class p34_42(InteractiveScene):
         self.wait()
 
         #man so many little piece to align. 
-        mla_heads[0][1][11].move_to([1.75, 0, -0.26]) #Output matrix multiply
+        mla_heads[0][1][11].move_to([1.75, 0, -0.26]) #Output matrix multiply, add when off sscreen
         self.add(mla_heads[0][1][11])
         self.remove(mla_heads[0][1][11][1:4]) #Wuv final
 
@@ -317,23 +317,36 @@ class p34_42(InteractiveScene):
         # This should help with continuity and shouldn't be too bad. 
         self.frame.reorient(0, 89, 0, (0.13, 0.78, -0.05), 2.86)
 
+
+        self.add(mla_heads[0][1][4])
+        # self.add(mla_heads[0][1][6])
+        # self.add(mla_heads[0][1][8:11])
+        # self.add(mla_heads[0][1])
+
+        labels_to_remove=Group(attention_heads[0][1][1:3], attention_heads[0][1][6][3:], 
+                                 attention_heads[0][1][1:3], attention_heads[0][1][0][69:],
+                                 attention_heads[0][1][0][39:41], attention_heads[0][1][8:17]) 
+        labels_to_add=Group(mla_heads[0][1][2:5], mla_heads[0][1][6], mla_heads[0][1][8:12])
+
+        combined_out_matrix_multiply=Group(mla_heads[0][1][11][0], mla_heads[0][1][11][4:], attention_heads[0][1][6][:3])
+        # combined_out_matrix_multiply.move_to([1.57, 0, -0.21])
+
         # self.play(attention_heads[0][0][2].animate.move_to())
+        self.remove(labels_to_remove)
         self.play(Transform(attention_heads[0][0][2], mla_heads[0][0][1]),
                   Transform(attention_heads[0][0][7], mla_heads[0][0][3]),
                   Transform(attention_heads[0][0][8], mla_heads[0][0][4]), 
                   FadeOut(attention_heads[0][0][3:7]), FadeOut(attention_heads[0][0][9]), 
-                  FadeIn(mla_heads[0][0][0]), FadeIn(mla_heads[0][0][2]), FadeIn(mla_heads[0][0][5]))
-
-        labels_to_fade_out=Group(attention_heads[0][1][1:3], attention_heads[0][1][6][3:], 
-                                 attention_heads[0][1][1:3], attention_heads[0][1][0][69:],
-                                 attention_heads[0][1][0][39:41], attention_heads[0][1][8:17]) 
-        # self.wait()
+                  FadeIn(mla_heads[0][0][0]), FadeIn(mla_heads[0][0][2]), FadeIn(mla_heads[0][0][5]),
+                  combined_out_matrix_multiply.animate.move_to([1.57, 0, -0.21]), run_time=1.5)
+        self.add(labels_to_add) #Fading these in makes for weird arrow overlaps. 
+        self.wait()
 
         # self.remove(labels_to_fade_out)
 
         # self.remove(attention_heads[0][1][0][39])
 
-        labels_to_fade_in=Group()
+        
 
 
         # self.play(Transform(attention_heads[0][0][2], mla_heads[0][0][1])) #Nice! This would be pretty easy to do wiht a few other images

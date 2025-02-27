@@ -318,7 +318,7 @@ class p34_42(InteractiveScene):
         self.frame.reorient(0, 89, 0, (0.13, 0.78, -0.05), 2.86)
 
 
-        self.add(mla_heads[0][1][4])
+        # self.add(mla_heads[0][1][4])
         # self.add(mla_heads[0][1][6])
         # self.add(mla_heads[0][1][8:11])
         # self.add(mla_heads[0][1])
@@ -327,6 +327,10 @@ class p34_42(InteractiveScene):
                                  attention_heads[0][1][1:3], attention_heads[0][1][0][69:],
                                  attention_heads[0][1][0][39:41], attention_heads[0][1][8:17]) 
         labels_to_add=Group(mla_heads[0][1][2:5], mla_heads[0][1][6], mla_heads[0][1][8:12])
+
+        self.add(labels_to_remove)
+        self.remove(labels_to_remove)
+        # self.remove(labels_to_add)
 
         combined_out_matrix_multiply=Group(mla_heads[0][1][11][0], mla_heads[0][1][11][4:], attention_heads[0][1][6][:3])
         # combined_out_matrix_multiply.move_to([1.57, 0, -0.21])
@@ -339,14 +343,21 @@ class p34_42(InteractiveScene):
                   FadeOut(attention_heads[0][0][3:7]), FadeOut(attention_heads[0][0][9]), 
                   FadeIn(mla_heads[0][0][0]), FadeIn(mla_heads[0][0][2]), FadeIn(mla_heads[0][0][5]),
                   combined_out_matrix_multiply.animate.move_to([1.57, 0, -0.21]), run_time=1.5)
-        self.add(labels_to_add) #Fading these in makes for weird arrow overlaps. 
+        self.add(labels_to_add) #Fading these in makes for weird arrow overlaps - ah actualy I'm getting them both ways
         self.wait()
+
+        #Getting close here - a few problems left
+        # Two dangling Ws, and weird overlapping arrows. 
+
+
+
+        # self.remove(labels_to_add)
 
         # self.remove(labels_to_fade_out)
 
         # self.remove(attention_heads[0][1][0][39])
 
-        
+        # self.add(combined_out_matrix_multiply)
 
 
         # self.play(Transform(attention_heads[0][0][2], mla_heads[0][0][1])) #Nice! This would be pretty easy to do wiht a few other images

@@ -298,8 +298,69 @@ class p34_42(InteractiveScene):
         self.wait()
 
         #man so many little piece to align. 
+        mla_heads[0][1][11].move_to([1.75, 0, -0.26]) #Output matrix multiply
+        self.add(mla_heads[0][1][11])
+        self.remove(mla_heads[0][1][11][1:4]) #Wuv final
 
-        
+
+        self.play(self.frame.animate.reorient(0, 89, 0, (0.51, 0.78, -0.15), 2.43))
+        self.play(attention_heads[0][1][6][:3].animate.move_to([1.78, 0, -0.24]), run_time=2)
+        # self.remove(attention_heads[0][1][6][:3])
+        # self.add(mla_heads[0][1][11][1:4]) #Swapping out these is kinda jarring - just keep old and group if I need to move stuff?
+        self.wait()
+
+
+        # Ok so I think this will fall on the last sentence of 39, we need to make all the other freaking changes
+        # that fall out of weight absoprtion I'm really hoping that I can get away with a simple fade in/fade out
+        # we'll see! I want the weight matrices I just put together to stick around - but if I need to shift them a little
+        # I think that's fine? Hmm lookin at how stuff falls, I do kinda want to at least animate my latent matrix moving over
+        # This should help with continuity and shouldn't be too bad. 
+        self.frame.reorient(0, 89, 0, (0.13, 0.78, -0.05), 2.86)
+
+        # self.play(attention_heads[0][0][2].animate.move_to())
+        self.play(Transform(attention_heads[0][0][2], mla_heads[0][0][1]),
+                  Transform(attention_heads[0][0][7], mla_heads[0][0][3]),
+                  Transform(attention_heads[0][0][8], mla_heads[0][0][4]), 
+                  FadeOut(attention_heads[0][0][3:7]), FadeOut(attention_heads[0][0][9]), 
+                  FadeIn(mla_heads[0][0][0]), FadeIn(mla_heads[0][0][2]), FadeIn(mla_heads[0][0][5]))
+
+        labels_to_fade_out=Group(attention_heads[0][1][1:3], attention_heads[0][1][6][3:], 
+                                 attention_heads[0][1][1:3], attention_heads[0][1][0][69:],
+                                 attention_heads[0][1][0][39:41], attention_heads[0][1][8:17]) 
+        # self.wait()
+
+        # self.remove(labels_to_fade_out)
+
+        # self.remove(attention_heads[0][1][0][39])
+
+        labels_to_fade_in=Group()
+
+
+        # self.play(Transform(attention_heads[0][0][2], mla_heads[0][0][1])) #Nice! This would be pretty easy to do wiht a few other images
+        # self.remove(attention_heads[0][0][2]); self.add(mla_heads[0][0][1])
+
+        # self.play(Transform(attention_heads[0][0][7], mla_heads[0][0][3])) #Attention scores
+        # self.remove(attention_heads[0][0][7]); self.add(mla_heads[0][0][3])
+
+        # self.play(Transform(attention_heads[0][0][8], mla_heads[0][0][4])) #Attention pattern
+        # self.remove(attention_heads[0][0][8]); self.add(mla_heads[0][0][4])
+
+
+        # self.remove(attention_heads[0][0][2:])
+
+        # self.add(mla_heads[0][0])
+
+
+        # self.add(attention_heads[0][0][2])
+
+
+
+        # mla_heads[0][1][11].move_to([1.75, 0, -0.26])
+        # self.remove(mla_heads[0][1][11][1:4]) #Wuv final
+        # self.add(attention_heads[0][1][6][:3].move_to([1.78, 0, -0.24])) #Wuv to move
+
+        # self.add(mla_heads[0][1][11])
+
 
 
         # self.add(mla_heads[0][1][1])

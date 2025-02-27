@@ -280,7 +280,10 @@ class p34_42(InteractiveScene):
         self.wait()
         # Hmm do i actually just want the names of the matrices to move? And the arrows and boxes just fade in/out?
         # That might be cleaner
-        self.add(mla_heads[0][1][1].move_to([-0.,  0, 0.45]))
+        self.remove(attention_heads[0][1][0][53:61]) #85 elements gross, let me see here...
+        self.add(attention_heads[0][1][0][40:])
+
+        self.add(mla_heads[0][1][1].move_to([-0.9,  0, 0.45]))
 
 
         self.remove(mla_heads[0][1][1])

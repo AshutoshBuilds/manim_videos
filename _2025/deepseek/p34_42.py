@@ -22,7 +22,7 @@ class p34_38(InteractiveScene):
         # Ok I don't have 3d naive MLA preped, so first this is to probably build the 2d version live here
         # and then roll up into a support function
 
-
+        self.frame.reorient(0, 0, 0, (-0.12, 0.02, 0.0), 2.36)
 
         layer_id=0
 
@@ -49,14 +49,14 @@ class p34_38(InteractiveScene):
 
         x1=ImageMobject(str(Path(input_image_path)/'input_1_1.png'))
         x1.scale([0.075,0.125, 1]) 
-        x1.move_to([-1.45,-0.03,0])
-        # self.add(x1)
+        x1.move_to([-1.47,0.155,0])
+        self.add(x1)
         # self.remove(x1)    
 
         x2=ImageMobject(str(Path(input_image_path)/'input_2_1.png'))
         x2.scale([0.075,0.125, 1]) 
-        x2.move_to([-1.225,-0.03,0])
-        # self.add(x2)
+        x2.move_to([-1.24,0.155,0])
+        self.add(x2)
         # self.remove(x2)        
 
         q1=ImageMobject(str(img_path/str(layer_id)/'q_1.png'))

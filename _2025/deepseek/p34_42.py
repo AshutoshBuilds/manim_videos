@@ -125,25 +125,53 @@ class p34_38(InteractiveScene):
 
         for i in range(11, 0, -1): #Render in reverse order for occlusions
             self.add(attention_heads[i][0][3:].set_opacity(0.8)) #Images
-            self.add(attention_heads[i][1][4:6]) #Flow chart
+            self.add(attention_heads[i][1][2:4]) #Flow chart
+            self.add(attention_heads[i][1][11:13])
+            self.add(attention_heads[i][1][14])
+            self.add(attention_heads[i][1][4:6]) #Flow chart - thick white lines
 
 
-        #     self.add(attention_heads[i][1][7].set_opacity(0.9)) #Brown arrows on right side
-        #     self.add(attention_heads[i][1][8]) #Thick white arrows
-        #     self.add(attention_heads[i][0][2:].set_opacity(0.8)) #Images on right side
-        #     # self.add(attention_heads[i][0][0].set_opacity(0.8)) #Proably show queries? We'll see
+        # --- Add some then all of first head info -> unclear when I fade out other heads yet
+        self.add(attention_heads[0][0][3:].set_opacity(0.9)) #Images on right side
+        self.add(attention_heads[0][1][2:4])
+        self.add(attention_heads[0][1][6:17]) #Flow chart
+        self.add(attention_heads[0][1][4:6])
 
-        # ## -- Now do first layer a little differently
-        # self.add(attention_heads[0][0][2:].set_opacity(0.9)) #Images on right side
-        # # self.add(attention_heads[0][1][5].set_opacity(0.8)) #query labels
-        # self.add(attention_heads[0][1][7].set_opacity(0.9)) #Brown arrows on right side
-        # self.add(attention_heads[0][1][8].set_opacity(0.9)) #Thick white arrows
-        # self.add(attention_heads[0][1][9].set_opacity(0.9)) #Rigth side text
-        # self.add(attention_heads[0][1][11].set_opacity(0.9)) #Weighted latents labels
+        ## Now need single latents and connector - need latents to come forward aw se collapse down to 2D
+        # Let's sstart with trying latents fully "beneath", move to to the left if that doesn't work. 
+        #I may want to make my white connectors shorter?
+        og_kv_cache_center=attention_heads[0][0][2].get_center().copy()
+        self.add(attention_heads[0][0][2].move_to([-1.0780741 ,  1.38,  -0.714-0.15])) #KV Cache
 
-        self.frame.reorient(0, 86, 0, (-0.07, -0.06, 0.06), 2.39)
+        connector_1=SVGMobject('/Users/stephen/welch_labs/deepseek/graphics/to_manim/medium_white_connector.svg')
+        connector_1.rotate(PI/2, DOWN)
+        connector_1.scale([0.4, 1.39, 1])
+        connector_1.move_to([ -0.99 ,  1.38, -0.56 ])
+        self.add(connector_1)
+
+        # self.remove(connector_1)
+
+        self.frame.reorient(-41, 72, 0, (-0.28, 0.77, -0.13), 2.98)
+        # self.frame.reorient(-37, 67, 0, (-0.84, 1.04, -0.56), 2.47) #Option to start more zoomed in on kv cache
+        self.add(attention_heads[0][1][4:6]) #These aren't sticking on top for some reaon, add again. 
         self.wait()
 
+        # Now pan camera to front while bringing KV cache forward and fading out think white connector - maybe leaving behind 
+        # more chill brown ones?
+
+        self.play(*[FadeOut(attention_heads[i][1][4:6]) for i in range(12)]+
+                   [FadeOut(connector_1)]+
+                   [attention_heads[0][0][2].animate.move_to(og_kv_cache_center)]+
+                   [self.frame.animate.reorient(0, 90, 0, (-0.05, 0.79, -0.04), 2.70)], #Placeholder position will need to tweak
+                   run_time=4) #Do an option with cranked up runtime - this covers a couple paragraphs
+        
+        for i in range(1, 12): self.remove(attention_heads[i])
+        self.add(attention_heads[0][0][:2])
+        self.add(attention_heads[0][1][:2])
+
+        self.wait()
+
+        # self.frame.reorient(0, 89, 0, (-0.05, 0.79, -0.04), 2.67)
 
 
         self.wait(20)

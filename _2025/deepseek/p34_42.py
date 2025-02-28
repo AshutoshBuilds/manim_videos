@@ -230,8 +230,17 @@ class p34_42(InteractiveScene):
                    [FadeOut(connector_1)]+
                    [attention_heads[0][0][2].animate.move_to(og_kv_cache_center)]+
                    [self.frame.animate.reorient(0, 90, 0, (-0.05, 0.79, -0.04), 2.70)], 
-                   run_time=4) #Do an option with cranked up runtime - this covers a couple paragraphs
-        
+                   run_time=10) #Do an option with cranked up runtime - this covers a couple paragraphs
+  
+        #Tried a nice fade out here, couldn't quite get it - sratchign this plan      
+        # to_fade_out_a=Group(*[attention_heads[i][0][3:] for i in range(1,12)]+
+        #                      [attention_heads[i][1][2:4] for i in range(1,12)]+
+        #                      [attention_heads[i][1][11:13] for i in range(1,12)]+
+        #                      [attention_heads[i][1][14] for i in range(1,12)])
+
+        # self.wait()
+        # self.play(to_fade_out_a.animate.set_opacity(0)) #, FadeIn(attention_heads[0][0][:2]), FadeIn(attention_heads[0][1][:2]))
+
         for i in range(1, 12): 
             self.remove(attention_heads[i])
         self.add(attention_heads[0][0][:2])

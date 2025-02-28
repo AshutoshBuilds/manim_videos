@@ -315,7 +315,8 @@ class p34_42(InteractiveScene):
         # we'll see! I want the weight matrices I just put together to stick around - but if I need to shift them a little
         # I think that's fine? Hmm lookin at how stuff falls, I do kinda want to at least animate my latent matrix moving over
         # This should help with continuity and shouldn't be too bad. 
-        self.frame.reorient(0, 89, 0, (0.13, 0.78, -0.05), 2.86)
+        self.play(self.frame.animate.reorient(0, 89, 0, (0.13, 0.78, -0.05), 2.86))
+        self.wait()
 
 
         # self.add(mla_heads[0][1][4])

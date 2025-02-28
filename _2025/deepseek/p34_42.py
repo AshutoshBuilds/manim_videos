@@ -352,14 +352,31 @@ class p34_42(InteractiveScene):
         self.play(self.frame.animate.reorient(0, 89, 0, (0.03, 0.78, 0.03), 2.72))
         self.wait()
 
+        #Alrighty, just one last thing to do here - got back to 3d full absorbed MLA view and pan around. 
+        for i in range(11, 0, -1): #Render in reverse order for occlusions
+            self.add(mla_heads[i][1][6].set_opacity(0.9)) #Brown arrows on right side
+            self.add(mla_heads[i][1][7]) #Thick white arrows
+            self.add(mla_heads[i][0][2:].set_opacity(0.8)) #Images on right side
+            # self.add(attention_heads[i][0][0].set_opacity(0.8)) #Proably show queries? We'll see       
+
+        #Occlusions
+        # self.add(mla_heads[0][0][5])
+        self.add(mla_heads[0][0][2:6])
+        self.add(labels_to_add)
+        self.remove(mla_heads[0][1][11][1:4])
+        ## Not sure if I want to fade - just remove for now 
+        
+
+
+        self.wait()
+
+ 
+
 
 
 
         #Getting close here - a few problems left
         # Two dangling Ws, and weird overlapping arrows. 
-
-
-
         # self.remove(labels_to_add)
 
         # self.remove(labels_to_fade_out)
@@ -382,8 +399,6 @@ class p34_42(InteractiveScene):
         # self.remove(attention_heads[0][0][2:])
 
         # self.add(mla_heads[0][0])
-
-
         # self.add(attention_heads[0][0][2])
 
 

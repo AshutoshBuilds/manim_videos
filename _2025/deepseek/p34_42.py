@@ -359,13 +359,28 @@ class p34_42(InteractiveScene):
             self.add(mla_heads[i][0][2:].set_opacity(0.8)) #Images on right side
             # self.add(attention_heads[i][0][0].set_opacity(0.8)) #Proably show queries? We'll see       
 
-        #Occlusions
-        # self.add(mla_heads[0][0][5])
+        #Re add top layer items to avoid occlusions
         self.add(mla_heads[0][0][2:6])
         self.add(labels_to_add)
         self.remove(mla_heads[0][1][11][1:4])
+
+        #add bold white arrows on top layer
+        self.add(mla_heads[0][1][7])
+
         ## Not sure if I want to fade - just remove for now 
-        
+        self.remove(attention_heads[0][0][0])
+        self.remove(attention_heads[0][0][1])
+        self.remove(attention_heads[0][1][0])
+        self.remove(mla_heads[0][1][1:5])
+        self.remove(mla_heads[0][0][0])
+
+        #Ok now we pan, move back kv cache, and add connectors. 
+        self.add(mla_heads[0][0][1]) #Move in front of occlusions array([-0.28100926,  0.        , -0.00469434]) 
+        self.add(mla_heads[0][1][3]) #Maybe just don't remove above? array([-0.27804634,  0.        , -0.21206473])
+
+
+        mla_heads[0][0][1].move_to([-0.63,  1.35,  -0.25 ]) #KV Cache
+        mla_heads[0][1][3].move_to([-0.63 ,  1.35,  -0.46  ]) #Key labels
 
 
         self.wait()

@@ -352,35 +352,57 @@ class p34_42(InteractiveScene):
         self.play(self.frame.animate.reorient(0, 89, 0, (0.03, 0.78, 0.03), 2.72))
         self.wait()
 
+
+        ## -- Probably want to do some kinda fade in and pan - let me get everything added first. 
+        connector_1=SVGMobject('/Users/stephen/welch_labs/deepseek/graphics/to_manim/medium_white_connector.svg')
+        connector_1.scale([0.75, 1.39, 1])
+        connector_1.move_to([0.08, 1.38, 0.070]) #[-0.12, 1.375, -0.08]
+
+        connector_2=connector_1.copy()
+        connector_2.move_to([0.08, 1.38, -0.095])
+
+        self.wait()
+
+
         #Alrighty, just one last thing to do here - got back to 3d full absorbed MLA view and pan around. 
         for i in range(11, 0, -1): #Render in reverse order for occlusions
             self.add(mla_heads[i][1][6].set_opacity(0.9)) #Brown arrows on right side
             self.add(mla_heads[i][1][7]) #Thick white arrows
             self.add(mla_heads[i][0][2:].set_opacity(0.8)) #Images on right side
-            # self.add(attention_heads[i][0][0].set_opacity(0.8)) #Proably show queries? We'll see       
+            self.add(mla_heads[i][0][0].set_opacity(0.8)) #Proably show queries? We'll see       
 
         #Re add top layer items to avoid occlusions
         self.add(mla_heads[0][0][2:6])
         self.add(labels_to_add)
         self.remove(mla_heads[0][1][11][1:4])
 
-        #add bold white arrows on top layer
-        self.add(mla_heads[0][1][7])
+
 
         ## Not sure if I want to fade - just remove for now 
         self.remove(attention_heads[0][0][0])
         self.remove(attention_heads[0][0][1])
         self.remove(attention_heads[0][1][0])
         self.remove(mla_heads[0][1][1:5])
-        self.remove(mla_heads[0][0][0])
+        # self.remove(mla_heads[0][0][0]) #Queries
 
         #Ok now we pan, move back kv cache, and add connectors. 
         self.add(mla_heads[0][0][1]) #Move in front of occlusions array([-0.28100926,  0.        , -0.00469434]) 
         self.add(mla_heads[0][1][3]) #Maybe just don't remove above? array([-0.27804634,  0.        , -0.21206473])
 
+        #add bold white arrows on top layer
+        self.add(mla_heads[0][1][7])
 
-        mla_heads[0][0][1].move_to([-0.63,  1.35,  -0.25 ]) #KV Cache
-        mla_heads[0][1][3].move_to([-0.63 ,  1.35,  -0.46  ]) #Key labels
+
+
+        self.add(connector_1)
+        self.add(connector_2)
+
+        self.remove(attention_heads[0][0][2])
+        mla_heads[0][0][1].move_to([-0.5,  1.35,  0 ]) #KV Cache
+        mla_heads[0][1][3].move_to([-0.5 ,  1.35,  -0.2 ]) #Key labels
+
+        self.remove(mla_heads[0][1][11]) #Output matrix multiply. 
+        self.remove(attention_heads[0][1][6][:3]) #Wuv in matrix multipy
 
 
         self.wait()

@@ -364,45 +364,85 @@ class p34_42(InteractiveScene):
         self.wait()
 
 
-        #Alrighty, just one last thing to do here - got back to 3d full absorbed MLA view and pan around. 
-        for i in range(11, 0, -1): #Render in reverse order for occlusions
-            self.add(mla_heads[i][1][6].set_opacity(0.9)) #Brown arrows on right side
-            self.add(mla_heads[i][1][7]) #Thick white arrows
-            self.add(mla_heads[i][0][2:].set_opacity(0.8)) #Images on right side
-            self.add(mla_heads[i][0][0].set_opacity(0.8)) #Proably show queries? We'll see       
+        full_mla_3d_layers=Group(*[mla_heads[i][0][2:] for i in range(11, 0, -1)]+
+                                  [mla_heads[i][1][6] for i in range(11, 0, -1)]+
+                                  [mla_heads[i][1][7] for i in range(11, 0, -1)]+#thick white arrows
+                                  [mla_heads[i][0][0] for i in range(11, 0, -1)]) #Queries
+
+        to_fade_out_2d=Group(attention_heads[0][0][0], attention_heads[0][0][1], mla_heads[0][1][1:3],
+                             mla_heads[0][1][4], mla_heads[0][1][11], attention_heads[0][1][6][:3], 
+                             attention_heads[0][1][0][:37], attention_heads[0][1][0][41:43], attention_heads[0][1][0][46:54],
+                             attention_heads[0][1][0][62:69]) #, attention_heads[0][1][0][77:])
+
+        # self.add(to_fade_out_2d)
+        # self.remove(to_fade_out_2d)
+        # self.remove(attention_heads[0][1][0][85])
+
+        # self.remove(attention_heads[0][1][0][39:41])
+        # self.remove(attention_heads[0][1][0][70])
+
+        # self.remove(to_fade_out_2d)
+        # self.remove(attention_heads[0][1])
+        # self.add(attention_heads[0][1][0])
+        # old_query_arrow_and_box = Group(attention_heads[0][1][0][:37]   #[54:62], #Dimensions of WQ
+        #                             attention_heads[0][1][0][39:43]   #[43:46], #Bounding Box and one arrow
+        #                             attention_heads[0][1][0][46:54]   #[37:39], #Part of arrow
+        #                             attention_heads[0][1][0][62:76]   #[76])    
+
+
+        # self.add(mla_heads[0][1][4])
+        # self.remove(mla_heads[0][1][1:5])
+        # self.add(attention_heads[0][1][0])
+
+        full_mla_3d_layers.set_opacity(0)
+        self.play(full_mla_3d_layers.animate.set_opacity(0.85), 
+                 FadeOut(to_fade_out_2d), run_time=3)
 
         #Re add top layer items to avoid occlusions
         self.add(mla_heads[0][0][2:6])
         self.add(labels_to_add)
         self.remove(mla_heads[0][1][11][1:4])
+        self.add(mla_heads[0][0][1]) #Move in front of occlusions array
+        self.add(mla_heads[0][1][3]) 
+        self.add(mla_heads[0][0][0])
+        self.add(mla_heads[0][1][7]) #add bold white arrows on top layer
+
+
+        # #Alrighty, just one last thing to do here - got back to 3d full absorbed MLA view and pan around. 
+        # for i in range(11, 0, -1): #Render in reverse order for occlusions
+        #     self.add(mla_heads[i][1][6].set_opacity(0.9)) #Brown arrows on right side
+        #     self.add(mla_heads[i][1][7]) #Thick white arrows
+        #     self.add(mla_heads[i][0][2:].set_opacity(0.8)) #Images on right side
+        #     self.add(mla_heads[i][0][0].set_opacity(0.8)) #Proably show queries? We'll see       
 
 
 
         ## Not sure if I want to fade - just remove for now 
-        self.remove(attention_heads[0][0][0])
-        self.remove(attention_heads[0][0][1])
-        self.remove(attention_heads[0][1][0])
-        self.remove(mla_heads[0][1][1:5])
+        # self.remove(attention_heads[0][0][0])
+        # self.remove(attention_heads[0][0][1])
+        # self.remove(attention_heads[0][1][0])
+        # self.remove(mla_heads[0][1][1:5])
+        # self.remove(mla_heads[0][1][11]) #Output matrix multiply. 
+        # self.remove(attention_heads[0][1][6][:3]) #Wuv in matrix multipy
+
         # self.remove(mla_heads[0][0][0]) #Queries
 
         #Ok now we pan, move back kv cache, and add connectors. 
-        self.add(mla_heads[0][0][1]) #Move in front of occlusions array([-0.28100926,  0.        , -0.00469434]) 
-        self.add(mla_heads[0][1][3]) #Maybe just don't remove above? array([-0.27804634,  0.        , -0.21206473])
-
-        #add bold white arrows on top layer
-        self.add(mla_heads[0][1][7])
 
 
 
-        self.add(connector_1)
-        self.add(connector_2)
 
         self.remove(attention_heads[0][0][2])
         mla_heads[0][0][1].move_to([-0.5,  1.35,  0 ]) #KV Cache
         mla_heads[0][1][3].move_to([-0.5 ,  1.35,  -0.2 ]) #Key labels
 
-        self.remove(mla_heads[0][1][11]) #Output matrix multiply. 
-        self.remove(attention_heads[0][1][6][:3]) #Wuv in matrix multipy
+
+        self.add(connector_1)
+        self.add(connector_2)
+
+
+        self.frame.reorient(-33, 76, 0, (-0.11, 0.84, 0.01), 2.86)
+
 
 
         self.wait()

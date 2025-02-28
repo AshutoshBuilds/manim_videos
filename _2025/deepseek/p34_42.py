@@ -281,7 +281,7 @@ class p34_42(InteractiveScene):
         # Hmm do i actually just want the names of the matrices to move? And the arrows and boxes just fade in/out?
         # That might be cleaner
 
-        old_query_arrow_and_box = Group(attention_heads[0][1][0][53:62], #Dimensions of WQ
+        old_query_arrow_and_box = Group(attention_heads[0][1][0][54:62], #Dimensions of WQ
                                         attention_heads[0][1][0][43:46], #Bounding Box and one arrow
                                         attention_heads[0][1][0][37:39], #Part of arrow
                                         attention_heads[0][1][0][76])
@@ -328,12 +328,16 @@ class p34_42(InteractiveScene):
                                  attention_heads[0][1][0][39:41], attention_heads[0][1][8:17]) 
         labels_to_add=Group(mla_heads[0][1][2:5], mla_heads[0][1][6], mla_heads[0][1][8:12])
 
-        self.add(labels_to_remove)
-        self.remove(labels_to_remove)
+        # self.add(labels_to_remove)
+        # self.remove(labels_to_remove)
         # self.remove(labels_to_add)
 
         combined_out_matrix_multiply=Group(mla_heads[0][1][11][0], mla_heads[0][1][11][4:], attention_heads[0][1][6][:3])
         # combined_out_matrix_multiply.move_to([1.57, 0, -0.21])
+
+        # self.remove(labels_to_add)
+
+        # self.remove(combined_out_matrix_multiply)
 
         # self.play(attention_heads[0][0][2].animate.move_to())
         self.remove(labels_to_remove)
@@ -344,7 +348,12 @@ class p34_42(InteractiveScene):
                   FadeIn(mla_heads[0][0][0]), FadeIn(mla_heads[0][0][2]), FadeIn(mla_heads[0][0][5]),
                   combined_out_matrix_multiply.animate.move_to([1.57, 0, -0.21]), run_time=1.5)
         self.add(labels_to_add) #Fading these in makes for weird arrow overlaps - ah actualy I'm getting them both ways
+        self.remove(mla_heads[0][1][11][1:4])
+        self.play(self.frame.animate.reorient(0, 89, 0, (0.03, 0.78, 0.03), 2.72))
         self.wait()
+
+
+
 
         #Getting close here - a few problems left
         # Two dangling Ws, and weird overlapping arrows. 

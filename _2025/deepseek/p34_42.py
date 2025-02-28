@@ -361,9 +361,6 @@ class p34_42(InteractiveScene):
         connector_2=connector_1.copy()
         connector_2.move_to([0.08, 1.38, -0.095])
 
-        self.wait()
-
-
         full_mla_3d_layers=Group(*[mla_heads[i][0][2:] for i in range(11, 0, -1)]+
                                   [mla_heads[i][1][6] for i in range(11, 0, -1)]+
                                   [mla_heads[i][1][7] for i in range(11, 0, -1)]+#thick white arrows
@@ -373,6 +370,44 @@ class p34_42(InteractiveScene):
                              mla_heads[0][1][4], mla_heads[0][1][11], attention_heads[0][1][6][:3], 
                              attention_heads[0][1][0][:37], attention_heads[0][1][0][41:43], attention_heads[0][1][0][46:54],
                              attention_heads[0][1][0][62:69]) #, attention_heads[0][1][0][77:])
+
+
+        full_mla_3d_layers.set_opacity(0)
+        self.remove(attention_heads[0][0][2])
+        self.add(mla_heads[0][0][1])
+
+        self.wait()
+        self.play(full_mla_3d_layers.animate.set_opacity(0.85), 
+                 FadeOut(to_fade_out_2d),
+                 mla_heads[0][0][1].animate.move_to([-0.5,  1.35,  0 ]), #KV Cache
+                 mla_heads[0][1][3].animate.move_to([-0.5 ,  1.35,  -0.2 ]), #Key labels
+                 self.frame.animate.reorient(-38, 72, 0, (0.08, 0.71, 0.08), 2.62),
+                  run_time=3)
+
+        #Re add top layer items to avoid occlusions
+        self.add(mla_heads[0][0][2:6])
+        self.add(mla_heads[0][1][3:5])
+        self.add(mla_heads[0][1][6])
+        self.add(mla_heads[0][1][8:11])
+        self.remove(mla_heads[0][1][11][1:4])
+        self.add(mla_heads[0][1][3]) 
+        self.add(mla_heads[0][0][0])
+        self.add(mla_heads[0][1][7]) #add bold white arrows on top layer
+        self.add(connector_1)
+        self.add(connector_2)
+        self.add(mla_heads[0][0][1]) #Move in front of occlusions array
+
+        self.wait()
+
+
+        self.play(self.frame.animate.reorient(4, 81, 0, (0.08, 0.71, 0.08), 2.62), run_time=10)
+        self.wait()
+
+        # self.remove(attention_heads[0][0][2])
+
+
+        # self.frame.reorient(-33, 76, 0, (-0.11, 0.84, 0.01), 2.86)
+
 
         # self.add(to_fade_out_2d)
         # self.remove(to_fade_out_2d)
@@ -393,19 +428,6 @@ class p34_42(InteractiveScene):
         # self.add(mla_heads[0][1][4])
         # self.remove(mla_heads[0][1][1:5])
         # self.add(attention_heads[0][1][0])
-
-        full_mla_3d_layers.set_opacity(0)
-        self.play(full_mla_3d_layers.animate.set_opacity(0.85), 
-                 FadeOut(to_fade_out_2d), run_time=3)
-
-        #Re add top layer items to avoid occlusions
-        self.add(mla_heads[0][0][2:6])
-        self.add(labels_to_add)
-        self.remove(mla_heads[0][1][11][1:4])
-        self.add(mla_heads[0][0][1]) #Move in front of occlusions array
-        self.add(mla_heads[0][1][3]) 
-        self.add(mla_heads[0][0][0])
-        self.add(mla_heads[0][1][7]) #add bold white arrows on top layer
 
 
         # #Alrighty, just one last thing to do here - got back to 3d full absorbed MLA view and pan around. 
@@ -428,28 +450,6 @@ class p34_42(InteractiveScene):
         # self.remove(mla_heads[0][0][0]) #Queries
 
         #Ok now we pan, move back kv cache, and add connectors. 
-
-
-
-
-        self.remove(attention_heads[0][0][2])
-        mla_heads[0][0][1].move_to([-0.5,  1.35,  0 ]) #KV Cache
-        mla_heads[0][1][3].move_to([-0.5 ,  1.35,  -0.2 ]) #Key labels
-
-
-        self.add(connector_1)
-        self.add(connector_2)
-
-
-        self.frame.reorient(-33, 76, 0, (-0.11, 0.84, 0.01), 2.86)
-
-
-
-        self.wait()
-
- 
-
-
 
 
         #Getting close here - a few problems left
@@ -506,11 +506,11 @@ class p34_42(InteractiveScene):
 
         # self.add(attention_heads[0][1][0][40:])
 
-        self.add(mla_heads[0][1][1].move_to([-0.9,  0, 0.45]))
+        # self.add(mla_heads[0][1][1].move_to([-0.9,  0, 0.45]))
 
 
 
-        self.remove(mla_heads[0][1][1])
+        # self.remove(mla_heads[0][1][1])
 
 
 

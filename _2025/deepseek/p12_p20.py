@@ -92,7 +92,7 @@ def get_input_x(svg_path='/Users/stephen/welch_labs/deepseek/graphics/to_manim',
 
 
 
-class p12_20(InteractiveScene):
+class p12_20c(InteractiveScene):
     def construct(self):
 
         img_path=Path('/Users/stephen/welch_labs/deepseek/hackin/linux_workdir/deepseek')
@@ -269,6 +269,18 @@ class p12_20(InteractiveScene):
         self.play(FadeIn(a[1][17]), FadeIn(a[1][5]), FadeIn(a[0][2])) #Value Stuff
         self.wait()
 
+        ## Zoom in on values
+        self.play(self.frame.animate.reorient(0, 0, 0, (-0.22, -0.49, -0.0), 1.15))
+        self.wait()
+
+        ## Zoom out partially to make comparison to keys
+        self.play(self.frame.animate.reorient(0, 0, 0, (-0.16, -0.09, 0.0), 1.35))
+        self.wait()
+
+        ## Fully Zoom out
+        self.play(self.frame.animate.reorient(0, 0, 0, (0, 0, 0.0), 2.00))
+        self.wait()
+
         #P19
         self.add(a[1][11])
         self.wait()
@@ -339,7 +351,7 @@ class p12_20(InteractiveScene):
 
         self.wait()
 
-        self.play(self.frame.animate.reorient(36, 83, 0, (0.8, 0.62, -0.11), 2.65), run_time=4)
+        self.play(self.frame.animate.reorient(36, 83, 0, (0.8, 0.62, -0.11), 2.65), run_time=6)
         self.wait()
 
         #P20 -> pull out output matrices

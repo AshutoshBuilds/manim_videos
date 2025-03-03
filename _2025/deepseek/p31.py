@@ -71,7 +71,7 @@ def get_attention_head(svg_path='/Users/stephen/welch_labs/deepseek/graphics/to_
 
     return Group(all_images, all_labels, large_white_connectors[1:])
 
-class p31(InteractiveScene):
+class p31c(InteractiveScene):
     def construct(self):
 
         img_path=Path('/Users/stephen/welch_labs/deepseek/hackin/linux_workdir/deepseek')
@@ -90,7 +90,7 @@ class p31(InteractiveScene):
         # self.frame.reorient(0, 0, 0, (0.00, 0.00, 0.00), 2.80)
         # self.wait()
 
-        self.frame.reorient(0, 86, 0, (-0.07, -0.06, 0.06), 2.39)
+        # self.frame.reorient(0, 86, 0, (-0.07, -0.06, 0.06), 2.39)
 
         # x=get_input_x(svg_path=svg_path, img_path=img_path/'gpt_2_attention_viz_1', 
         #                             svg_file='mha_2d_grouped_separate_lines.svg')
@@ -141,8 +141,10 @@ class p31(InteractiveScene):
 
         ## -- So, I think a really good option would be showing the keys and values collapsing down into a single matrix
         ## -- and then add in the connector. 
+        self.frame.reorient(0, 82, 0, (0.45, -0.07, -0.02), 1.43)
         self.wait()
-        self.frame.reorient(0, 83, 0, (0.37, -0.06, 0.01), 2.04)
+        # self.frame.reorient(0, 83, 0, (0.37, -0.06, 0.01), 2.04)
+        self.play(self.frame.animate.reorient(0, 83, 0, (0.37, -0.06, 0.01), 2.04), run_time=3)
         self.wait()
 
         #Option with camera move - ok yeah this looks nice. 
@@ -153,7 +155,7 @@ class p31(InteractiveScene):
  		   [attention_heads[i][0][2].animate.move_to([-0.6 ,  1.391, -0.48]) for i in range(12)]+ #Values [-0.53 ,  1.391, -0.34]
  		   [attention_heads[0][1][5].animate.move_to([-0.6 ,  1.391,  -0.65 ])]+                  #[-0.53 ,  1.391,  -0.51 ]
  		   [self.frame.animate.reorient(-53, 71, 0, (-0.36, 0.7, 0.07), 1.81)],
-	       run_time=3)
+	       run_time=5)
 
         #Let's fade in connectors here. 
 
@@ -173,10 +175,13 @@ class p31(InteractiveScene):
         white_arrows=Group(*[attention_heads[i][2] for i in range(12)])
 
         self.play(FadeIn(connector_1b), FadeIn(connector_1), FadeIn(white_arrows), 
-        		 self.frame.animate.reorient(-34, 69, 0, (0.04, 0.58, 0.09), 2.10), run_time=2)
+        		 self.frame.animate.reorient(-34, 69, 0, (0.04, 0.58, 0.09), 2.10), run_time=3)
         self.add(attention_heads[0][0][1]) #Occlusion
         self.add(attention_heads[0][0][2]) #Occlusion
         self.wait()
+
+        #Can we get away with a little ambient rotation?
+        self.play(self.frame.animate.reorient(-20, 66, 0, (0.19, 0.44, -0.01), 1.96), run_time=8, rate_func=linear)
 
 
         # self.play(self.frame.animate.reorient(-15, 67, 0, (0.34, 0.45, -0.07), 2.10)) #Optional Extra motion

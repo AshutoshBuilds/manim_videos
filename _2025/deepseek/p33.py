@@ -144,7 +144,10 @@ class p33(InteractiveScene):
         ## -- So, I think a really good option would be showing the keys and values collapsing down into a single matrix
         ## -- and then add in the connector. 
         # self.wait()
-        self.frame.reorient(0, 83, 0, (0.37, -0.06, 0.01), 2.04)
+        self.frame.reorient(0, 82, 0, (0.45, -0.07, -0.02), 1.43)
+        self.wait()
+        # self.frame.reorient(0, 83, 0, (0.37, -0.06, 0.01), 2.04)
+        self.play(self.frame.animate.reorient(0, 83, 0, (0.37, -0.06, 0.01), 2.04), run_time=3)
         self.wait()
 
 
@@ -197,7 +200,8 @@ class p33(InteractiveScene):
         self.wait()          
 
 
-
+        self.play(self.frame.animate.reorient(-18, 58, 0, (0.29, 0.47, 0.04), 2.54), run_time=8, rate_func=linear)
+        self.wait()
 
         # self.add(connector_1b, keys_b) #, keys_b_labels)
         # self.add(connector_2b, values_b) #, values_b_labels)

@@ -166,7 +166,7 @@ def get_mla_head(layer_id=0):
 
     return Group(all_images, all_labels)
 
-class p34_42c(InteractiveScene):
+class p34_42d(InteractiveScene):
     def construct(self):
         '''This sequence and the next will be a bit tricky, but I'll get some good mileage out of them 
            and then be home free. With this first one, I do like the idea of startiwth full 3d Niave MLA,
@@ -363,6 +363,12 @@ class p34_42c(InteractiveScene):
         self.wait()
 
 
+        self.play(self.frame.animate.reorient(0, 89, 0, (-0.12, 0.78, 0.1), 2.48)) #This is really just for an easier cut later
+        self.wait()
+        self.play(self.frame.animate.reorient(0, 89, 0, (0.03, 0.78, 0.03), 2.72))
+        self.wait()
+
+
         #Additional zoom in/zoom outs
         self.play(self.frame.animate.reorient(0, 89, 0, (-0.65, 0.78, 0.24), 1.90))
         self.wait()
@@ -435,10 +441,18 @@ class p34_42c(InteractiveScene):
         self.wait()
 
         self.play(self.frame.animate.reorient(-38, 72, 0, (0.08, 0.71, 0.08), 2.62), run_time=3)
-        self.wait()
+        self.wait() 
+
+        # self.play(full_mla_3d_layers.animate.set_opacity(0.0), 
+        #          FadeIn(to_fade_out_2d),
+        #          mla_heads[0][0][1].animate.move_to([-0.5,  1.35,  0 ]), #KV Cache
+        #          mla_heads[0][1][3].animate.move_to([-0.5 ,  1.35,  -0.2 ]), #Key labels
+        #          self.frame.animate.reorient(0, 89, 0, (0.03, 0.78, 0.03), 2.72),
+        #           run_time=3)       
 
 
-        self.play(self.frame.animate.reorient(4, 81, 0, (0.08, 0.71, 0.08), 2.62), run_time=10, rate_func=linear) #Slow pan. 
+        # self.play(self.frame.animate.reorient(4, 81, 0, (0.08, 0.71, 0.08), 2.62), run_time=10, rate_func=linear) #Slow pan. 
+        self.play(self.frame.animate.reorient(0, 89, 0, (-0.12, 0.78, 0.1), 2.48), run_time=10, rate_func=linear) #Slow pan. 
         self.wait()
 
         # self.remove(attention_heads[0][0][2])

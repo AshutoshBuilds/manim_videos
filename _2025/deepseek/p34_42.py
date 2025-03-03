@@ -377,9 +377,19 @@ class p34_42(InteractiveScene):
                                   [mla_heads[i][0][0] for i in range(11, 0, -1)]) #Queries
 
         to_fade_out_2d=Group(attention_heads[0][0][0], attention_heads[0][0][1], mla_heads[0][1][1:3],
-                             mla_heads[0][1][4], mla_heads[0][1][11], attention_heads[0][1][6][:3], 
+                             mla_heads[0][1][4], #mla_heads[0][1][11], #attention_heads[0][1][6][:3], 
                              attention_heads[0][1][0][:37], attention_heads[0][1][0][41:43], attention_heads[0][1][0][46:54],
                              attention_heads[0][1][0][62:69]) #, attention_heads[0][1][0][77:])
+
+
+        #Ok this kinda sucks but I think i need to remove these first to avoid some weird jump behavior. 
+        self.remove(attention_heads[0][1][6][:3])
+        self.remove(mla_heads[0][1][11])
+        # # self.remove(to_fade_out_2d)
+        # # self.add(to_fade_out_2d)
+        # self.play(FadeOut(attention_heads[0][1][6][:3]))
+        # self.remove(mla_heads[0][1][1:3])
+        # self.add(full_mla_3d_layers)
 
 
         full_mla_3d_layers.set_opacity(0)

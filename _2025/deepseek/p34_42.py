@@ -166,7 +166,7 @@ def get_mla_head(layer_id=0):
 
     return Group(all_images, all_labels)
 
-class p34_42(InteractiveScene):
+class p34_42c(InteractiveScene):
     def construct(self):
         '''This sequence and the next will be a bit tricky, but I'll get some good mileage out of them 
            and then be home free. With this first one, I do like the idea of startiwth full 3d Niave MLA,
@@ -230,7 +230,7 @@ class p34_42(InteractiveScene):
                    [FadeOut(connector_1)]+
                    [attention_heads[0][0][2].animate.move_to(og_kv_cache_center)]+
                    [self.frame.animate.reorient(0, 90, 0, (-0.05, 0.79, -0.04), 2.70)], 
-                   run_time=10) #Do an option with cranked up runtime - this covers a couple paragraphs
+                   run_time=20) #Do an option with cranked up runtime - this covers a couple paragraphs
   
         #Tried a nice fade out here, couldn't quite get it - sratchign this plan      
         # to_fade_out_a=Group(*[attention_heads[i][0][3:] for i in range(1,12)]+
@@ -363,6 +363,17 @@ class p34_42(InteractiveScene):
         self.wait()
 
 
+        #Additional zoom in/zoom outs
+        self.play(self.frame.animate.reorient(0, 89, 0, (-0.65, 0.78, 0.24), 1.90))
+        self.wait()
+        self.play(self.frame.animate.reorient(0, 89, 0, (0.16, 0.78, 0.28), 2.12))
+        self.wait()
+        self.play(self.frame.animate.reorient(0, 89, 0, (0.03, 0.78, 0.03), 2.72))
+        self.wait()
+
+
+
+
         ## -- Probably want to do some kinda fade in and pan - let me get everything added first. 
         connector_1=SVGMobject('/Users/stephen/welch_labs/deepseek/graphics/to_manim/medium_white_connector.svg')
         connector_1.scale([0.75, 1.39, 1])
@@ -419,8 +430,15 @@ class p34_42(InteractiveScene):
 
         self.wait()
 
+        #Optional zoom in to the kv cache matrix
+        self.play(self.frame.animate.reorient(-30, 69, 0, (-0.47, 1.09, -0.0), 1.01), run_time=10)
+        self.wait()
 
-        self.play(self.frame.animate.reorient(4, 81, 0, (0.08, 0.71, 0.08), 2.62), run_time=10)
+        self.play(self.frame.animate.reorient(-38, 72, 0, (0.08, 0.71, 0.08), 2.62), run_time=3)
+        self.wait()
+
+
+        self.play(self.frame.animate.reorient(4, 81, 0, (0.08, 0.71, 0.08), 2.62), run_time=10, rate_func=linear) #Slow pan. 
         self.wait()
 
         # self.remove(attention_heads[0][0][2])

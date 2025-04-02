@@ -166,7 +166,7 @@ def get_mla_head(layer_id=0):
 
     return Group(all_images, all_labels)
 
-class poster_4(InteractiveScene):
+class thumbnail_1(InteractiveScene):
     def construct(self):
         '''This sequence and the next will be a bit tricky, but I'll get some good mileage out of them 
            and then be home free. With this first one, I do like the idea of startiwth full 3d Niave MLA,
@@ -190,19 +190,9 @@ class poster_4(InteractiveScene):
             a.move_to([0, spacing*i,0])
             attention_heads.add(a) #Group((a[0][3:], a[1][4:13])))
 
-        for i in range(11, 0, -1): #Render in reverse order for occlusions
-            self.add(attention_heads[i][0][3:].set_opacity(0.8)) #Images
-            self.add(attention_heads[i][1][2:4]) #Flow chart
-            self.add(attention_heads[i][1][11:13])
-            self.add(attention_heads[i][1][14])
-            self.add(attention_heads[i][1][4:6]) #Flow chart - thick white lines
 
 
-        # --- Add some then all of first head info -> unclear when I fade out other heads yet
-        self.add(attention_heads[0][0][3:].set_opacity(0.9)) #Images on right side
-        self.add(attention_heads[0][1][2:4])
-        self.add(attention_heads[0][1][6:17]) #Flow chart
-        self.add(attention_heads[0][1][4:6])
+
 
         ## Now need single latents and connector - need latents to come forward aw se collapse down to 2D
         # Let's sstart with trying latents fully "beneath", move to to the left if that doesn't work. 
@@ -222,6 +212,35 @@ class poster_4(InteractiveScene):
         # self.frame.reorient(-37, 67, 0, (-0.84, 1.04, -0.56), 2.47) #Option to start more zoomed in on kv cache
         self.add(attention_heads[0][1][4:6]) #These aren't sticking on top for some reaon, add again. 
         self.wait()
+
+        for i in range(11, 0, -1): #Render in reverse order for occlusions
+            self.add(attention_heads[i][0][3:].set_opacity(0.8)) #Images
+            self.add(attention_heads[i][1][2:4].set_opacity(0.8)) #Flow chart
+            self.add(attention_heads[i][1][11:13].set_opacity(0.8))
+            self.add(attention_heads[i][1][14].set_opacity(0.8))
+            self.add(attention_heads[i][1][4:6].set_opacity(0.8)) #Flow chart - thick white lines
+            self.add(attention_heads[i][1][-1].set_opacity(0.8))
+
+
+            # --- Add some then all of first head info -> unclear when I fade out other heads yet
+        self.add(attention_heads[0][0][3:].set_opacity(0.9)) #Images on right side
+        self.add(attention_heads[0][1][2:4].set_opacity(0.9))
+        self.add(attention_heads[0][1][6:17].set_opacity(0.9)) #Flow chart
+        self.add(attention_heads[0][1][4:6].set_opacity(0.9))
+        self.add(attention_heads[0][1][-1].set_opacity(0.9))
+
+        ##
+        self.wait()
+        # self.frame.reorient(0, 65, 0, (0.25, 0.86, 0.07), 3.29)
+        self.frame.reorient(0, 66, 0, (0.22, 0.86, 0.07), 3.24)
+
+
+
+
+
+
+
+
 
         # Now pan camera to front while bringing KV cache forward and fading out think white connector - maybe leaving behind 
         # more chill brown ones?
@@ -457,8 +476,8 @@ class poster_4(InteractiveScene):
         # self.play(self.frame.animate.reorient(0, 89, 0, (-0.12, 0.78, 0.1), 2.48), run_time=10, rate_func=linear) #Slow pan. 
         # self.wait()
 
-        # self.frame.reorient(-38, 59, 0, (0.12, 0.93, -0.18), 2.93)
-        self.frame.reorient(-38, 59, 0, (0.36, 0.99, 0.14), 2.48) 
+        # # self.frame.reorient(-38, 59, 0, (0.12, 0.93, -0.18), 2.93)
+        # self.frame.reorient(-38, 59, 0, (0.36, 0.99, 0.14), 2.48) 
 
 
 

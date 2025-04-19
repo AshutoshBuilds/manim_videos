@@ -123,7 +123,7 @@ class WelchXAxis(VGroup):
         self.axis_length_on_canvas=axis_length_on_canvas
 
         self.axis_to_canvas_scale=(self.x_max-self.x_min)/axis_length_on_canvas
-        self.x_ticks_scaled=np.array(x_ticks)/self.axis_to_canvas_scale
+        self.x_ticks_scaled=(np.array(x_ticks)-self.x_min)/self.axis_to_canvas_scale
 
         # Create the basic components
         self._create_axis_line()
@@ -140,8 +140,6 @@ class WelchXAxis(VGroup):
             stroke_width=self.stroke_width
         )
         
-        # Add arrow tip at the end using Arrow instead of add_tip
-        #SW - HEY MAYBE WE ACTUALLY JUST GO AHEAD AND IMPORT AN ILLUSTRATOR SVG FOR THE TIP?
         arrow_tip=SVGMobject(WELCH_ASSET_PATH+'/welch_arrow_tip_1.svg')
         arrow_tip.scale(self.arrow_tip_scale)
         arrow_tip.move_to([self.axis_length_on_canvas, 0, 0])
@@ -168,7 +166,7 @@ class WelchXAxis(VGroup):
         
         for x_val, x_val_label in zip(self.x_ticks_scaled, self.x_ticks):
             # In 3B1B's manim, use TexMobject instead of MathTex
-            label = Tex(str(x_val_label))
+            label = Tex(str(round(x_val_label, 4)))
             label.scale(self.x_label_font_size / 48)  # Approximate scaling
             label.set_color(self.axis_color)
             label.next_to(
@@ -193,7 +191,102 @@ class WelchXAxis(VGroup):
         return self.labels
 
 
-
+class WelchYAxis(VGroup):
+    def __init__(
+        self,
+        y_min=0,
+        y_max=6, 
+        y_ticks=[1, 2, 3, 4, 5],  # Default tick values
+        y_tick_width=0.15,        # Default tick width
+        y_label_font_size=24,     # Default font size
+        stroke_width=3,           # Default stroke width
+        color=CHILL_BROWN,        # Default color
+        arrow_tip_scale=0.1,
+        axis_length_on_canvas=5,
+        **kwargs
+    ):
+        VGroup.__init__(self, **kwargs)
+        
+        # Store parameters
+        self.y_ticks = y_ticks
+        self.y_tick_width = y_tick_width
+        self.y_label_font_size = y_label_font_size
+        self.stroke_width = stroke_width
+        self.axis_color = color
+        self.arrow_tip_scale = arrow_tip_scale
+        self.y_min = y_min
+        self.y_max = y_max
+        self.axis_length_on_canvas = axis_length_on_canvas
+        
+        self.axis_to_canvas_scale = (self.y_max - self.y_min) / axis_length_on_canvas
+        self.y_ticks_scaled = (np.array(y_ticks)-self.y_min)/ self.axis_to_canvas_scale
+        
+        # Create the basic components
+        self._create_axis_line()
+        self._create_ticks()
+        self._create_labels()
+        
+    def _create_axis_line(self):
+        # Create a line for the y-axis
+        axis_line = Line(
+            start=np.array([0, 0, 0]),
+            end=np.array([0, self.axis_length_on_canvas, 0]),
+            color=self.axis_color,
+            stroke_width=self.stroke_width
+        )
+        
+        # Add SVG arrow tip at the end
+        arrow_tip = SVGMobject(WELCH_ASSET_PATH+'/welch_arrow_tip_1.svg')
+        arrow_tip.scale(self.arrow_tip_scale)
+        arrow_tip.move_to([0, self.axis_length_on_canvas, 0])
+        # Rotate the arrow tip to point upward
+        arrow_tip.rotate(PI/2)  # Rotate 90 degrees to point up
+        
+        self.axis_line = VGroup(axis_line, arrow_tip)
+        self.add(self.axis_line)
+        
+    def _create_ticks(self):
+        self.ticks = VGroup()
+        
+        for y_val in self.y_ticks_scaled:
+            tick = Line(
+                start=np.array([0, y_val, 0]),
+                end=np.array([-self.y_tick_width, y_val, 0]),  # Ticks extend to the left
+                color=self.axis_color,
+                stroke_width=self.stroke_width
+            )
+            self.ticks.add(tick)
+            
+        self.add(self.ticks)
+        
+    def _create_labels(self):
+        self.labels = VGroup()
+        
+        for y_val, y_val_label in zip(self.y_ticks_scaled, self.y_ticks):
+            # Use Tex for labels
+            label = Tex(str(round(y_val_label,1)))
+            label.scale(self.y_label_font_size / 48)  # Approximate scaling
+            label.set_color(self.axis_color)
+            label.next_to(
+                np.array([-self.y_tick_width, y_val, 0]),
+                LEFT,
+                buff=0.1
+            )
+            self.labels.add(label)
+            
+        self.add(self.labels)
+    
+    # Helper method to get the axis line
+    def get_axis_line(self):
+        return self.axis_line
+    
+    # Helper method to get ticks
+    def get_ticks(self):
+        return self.ticks
+    
+    # Helper method to get labels
+    def get_labels(self):
+        return self.labels
 
 
 

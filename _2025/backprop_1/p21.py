@@ -12,15 +12,16 @@ YELLOW='#ffd35a'
 BLUE='#65c8d0'
 
 def get_x_axis(x_max):
-    x_ticks, x_axis_min, x_axis_max=generate_nice_ticks(0, x_max, min_ticks=3, max_ticks=16)
-    x_axis=WelchXAxis(        
+    x_ticks, x_axis_min, x_axis_max=generate_nice_ticks(0, 0.95*x_max, min_ticks=3, max_ticks=16)
+    x_axis=WelchXAxis(
+        x_min=0,
+        x_max=x_max,      
         x_ticks=x_ticks,  
         x_tick_height=0.15,        
         x_label_font_size=24,           
         stroke_width=3, 
         arrow_tip_scale=0.1,
-        x_min=0,
-        x_max=x_max
+        axis_length_on_canvas=5
     )
     return x_axis
 
@@ -35,17 +36,24 @@ class P21(InteractiveScene):
     '''
     def construct(self):
 
-        initial_length=3
-        l_tracker = ValueTracker(initial_length)
+        initial_time=3
+        t_tracker = ValueTracker(initial_time)
 
-        x_axis = always_redraw(lambda: get_x_axis(l_tracker.get_value()))
+        x_axis = always_redraw(lambda: get_x_axis(t_tracker.get_value()))
 
         self.add(x_axis)
         self.wait()
 
-        self.play(l_tracker.animate.set_value(20), run_time=2)
+        self.play(t_tracker.animate.set_value(5), run_time=2)
         self.wait()
 
+        # Ok this patter is pretty clunky, but I think it can work. 
+        # I was thinking I could zoom out as I grew the axis, but 
+        # That makes my ticks and numbers shrink!
+        # I need to modify my axis to have like an in place mode, or just act that way be default
+        # where it gets longer as far as teh tick marks are concerned, but stays the length 
+        # on the canvas. basically I need to change the start and stop values/scale on the
+        # a static line - that should be do-able. man this is more complicated than I thought. 
 
 
 

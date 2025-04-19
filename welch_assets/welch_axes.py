@@ -97,18 +97,20 @@ def generate_nice_ticks(min_val, max_val, min_ticks=3, max_ticks=16, ignore=[0])
 class WelchXAxis(VGroup):
     def __init__(
         self,
+        x_min=0,
+        x_max=6, 
         x_ticks=[1, 2, 3, 4, 5],  # Default tick values
-        x_tick_height=0.2,        # Default tick height
+        x_tick_height=0.15,        # Default tick height
         x_label_font_size=24,     # Default font size
-        stroke_width=2,           # Default stroke width
-        color=CHILL_BROWN,              # Default color (using predefined BROWN)
+        stroke_width=3,           # Default stroke width
+        color=CHILL_BROWN,        # Default color (using predefined BROWN)
         arrow_tip_scale=0.1, 
-        x_min=0, 
-        x_max=None,
+        axis_length_on_canvas=5,
         **kwargs
     ):
-        VGroup.__init__(self, **kwargs)
         
+        VGroup.__init__(self, **kwargs)
+
         # Store parameters
         self.x_ticks = x_ticks
         self.x_tick_height = x_tick_height
@@ -116,22 +118,24 @@ class WelchXAxis(VGroup):
         self.stroke_width = stroke_width
         self.axis_color = color
         self.arrow_tip_scale=arrow_tip_scale
-
         self.x_min = x_min
-        self.x_max = x_max if x_max is not None else max(self.x_ticks) + 0.5
-        
+        self.x_max = x_max
+        self.axis_length_on_canvas=axis_length_on_canvas
+
+        self.axis_to_canvas_scale=(self.x_max-self.x_min)/axis_length_on_canvas
+        self.x_ticks_scaled=np.array(x_ticks)/self.axis_to_canvas_scale
+
         # Create the basic components
         self._create_axis_line()
         self._create_ticks()
         self._create_labels()
         
     def _create_axis_line(self):
-
         
         # Create a line for the x-axis
         axis_line = Line(
-            start=np.array([self.x_min, 0, 0]),
-            end=np.array([self.x_max, 0, 0]),
+            start=np.array([0, 0, 0]),
+            end=np.array([self.axis_length_on_canvas, 0, 0]),
             color=self.axis_color,
             stroke_width=self.stroke_width
         )
@@ -140,7 +144,7 @@ class WelchXAxis(VGroup):
         #SW - HEY MAYBE WE ACTUALLY JUST GO AHEAD AND IMPORT AN ILLUSTRATOR SVG FOR THE TIP?
         arrow_tip=SVGMobject(WELCH_ASSET_PATH+'/welch_arrow_tip_1.svg')
         arrow_tip.scale(self.arrow_tip_scale)
-        arrow_tip.move_to([self.x_max, 0, 0])
+        arrow_tip.move_to([self.axis_length_on_canvas, 0, 0])
         
         self.axis_line = VGroup(axis_line, arrow_tip)
         self.add(self.axis_line)
@@ -148,7 +152,7 @@ class WelchXAxis(VGroup):
     def _create_ticks(self):
         self.ticks = VGroup()
         
-        for x_val in self.x_ticks:
+        for x_val in self.x_ticks_scaled:
             tick = Line(
                 start=np.array([x_val, 0, 0]),
                 end=np.array([x_val, -self.x_tick_height, 0]),  # Ticks extend downward
@@ -162,9 +166,9 @@ class WelchXAxis(VGroup):
     def _create_labels(self):
         self.labels = VGroup()
         
-        for x_val in self.x_ticks:
+        for x_val, x_val_label in zip(self.x_ticks_scaled, self.x_ticks):
             # In 3B1B's manim, use TexMobject instead of MathTex
-            label = Tex(str(x_val))
+            label = Tex(str(x_val_label))
             label.scale(self.x_label_font_size / 48)  # Approximate scaling
             label.set_color(self.axis_color)
             label.next_to(
@@ -188,175 +192,15 @@ class WelchXAxis(VGroup):
     def get_labels(self):
         return self.labels
 
-    # You can add this method to both WelchXAxis and WelchYAxis classes
-    def update_from_range(self, min_val, max_val, min_ticks=3, max_ticks=16):
-        """
-        Update the axis based on a value range.
-        
-        Args:
-            min_val (float): Minimum value for the data range
-            max_val (float): Maximum value for the data range
-            min_ticks (int): Minimum number of ticks desired
-            max_ticks (int): Maximum number of ticks desired
-            
-        Returns:
-            tuple: (axis_min, axis_max) - The extended axis range values
-        """
-        # Generate nice ticks and axis range
-        new_ticks, axis_min, axis_max = generate_nice_ticks(min_val, max_val, min_ticks, max_ticks)
-        
-        # For X-axis
-        self.x_ticks = new_ticks
-        self.x_min=min_val
-        self.x_max=max_val #Let's try actually use the value that gets passed in here, iterating on how to make this doe what I want
-        
-        # Recreate the components
-        self.remove(self.axis_line, self.ticks, self.labels)
-        self._create_axis_line()
-        self._create_ticks()
-        self._create_labels()
-        
-        return axis_min, axis_max
-
-    # You can add this method to both WelchXAxis and WelchYAxis classes
-    def set_max_val(self, max_val):
-
-        min_val=0
-        new_ticks, axis_min, axis_max = generate_nice_ticks(min_val, max_val)
-        
-        # For X-axis
-        self.x_ticks = new_ticks
-        self.x_min=min_val
-        self.x_max=max_val #Let's try actually use the value that gets passed in here, iterating on how to make this doe what I want
-        
-        # Recreate the components
-        self.remove(self.axis_line, self.ticks, self.labels)
-        self._create_axis_line()
-        self._create_ticks()
-        self._create_labels()
 
 
-class WelchYAxis(VGroup):
-    def __init__(
-        self,
-        y_ticks=[1, 2, 3, 4, 5],  # Default tick values
-        y_tick_width=0.2,         # Default tick width
-        y_label_font_size=24,     # Default font size
-        stroke_width=2,           # Default stroke width
-        color=CHILL_BROWN,        # Default color
-        arrow_tip_scale=0.1,      # SVG arrow tip scale
-        y_min=0,
-        y_max=None,
-        **kwargs
-    ):
-        VGroup.__init__(self, **kwargs)
-        
-        # Store parameters
-        self.y_ticks = y_ticks
-        self.y_tick_width = y_tick_width
-        self.y_label_font_size = y_label_font_size
-        self.stroke_width = stroke_width
-        self.axis_color = color
-        self.arrow_tip_scale = arrow_tip_scale
 
-        self.y_min = y_min
-        self.y_max = y_max if y_max is not None else max(self.y_ticks) + 0.5
-        
-        # Create the basic components
-        self._create_axis_line()
-        self._create_ticks()
-        self._create_labels()
-        
-    def _create_axis_line(self):
-        
-        # Create a line for the y-axis
-        axis_line = Line(
-            start=np.array([0, self.y_min, 0]),
-            end=np.array([0, self.y_max, 0]),
-            color=self.axis_color,
-            stroke_width=self.stroke_width
-        )
-        
-        # Add SVG arrow tip at the end
-        arrow_tip = SVGMobject(WELCH_ASSET_PATH+'/welch_arrow_tip_1.svg')
-        arrow_tip.scale(self.arrow_tip_scale)
-        arrow_tip.move_to([0, self.y_max, 0])
-        # Rotate the arrow tip to point upward
-        arrow_tip.rotate(PI/2)  # Rotate 90 degrees to point up
-        
-        self.axis_line = VGroup(axis_line, arrow_tip)
-        self.add(self.axis_line)
-        
-    def _create_ticks(self):
-        self.ticks = VGroup()
-        
-        for y_val in self.y_ticks:
-            tick = Line(
-                start=np.array([0, y_val, 0]),
-                end=np.array([-self.y_tick_width, y_val, 0]),  # Ticks extend to the left
-                color=self.axis_color,
-                stroke_width=self.stroke_width
-            )
-            self.ticks.add(tick)
-            
-        self.add(self.ticks)
-        
-    def _create_labels(self):
-        self.labels = VGroup()
-        
-        for y_val in self.y_ticks:
-            # Use Tex for labels
-            label = Tex(str(y_val))
-            label.scale(self.y_label_font_size / 48)  # Approximate scaling
-            label.set_color(self.axis_color)
-            label.next_to(
-                np.array([-self.y_tick_width, y_val, 0]),
-                LEFT,
-                buff=0.1
-            )
-            self.labels.add(label)
-            
-        self.add(self.labels)
-    
-    # Helper method to get the axis line
-    def get_axis_line(self):
-        return self.axis_line
-    
-    # Helper method to get ticks
-    def get_ticks(self):
-        return self.ticks
-    
-    # Helper method to get labels
-    def get_labels(self):
-        return self.labels
 
-    # You can add this method to both WelchXAxis and WelchYAxis classes
-    def update_from_range(self, min_val, max_val, min_ticks=3, max_ticks=16):
-        """
-        Update the axis based on a value range.
-        
-        Args:
-            min_val (float): Minimum value for the data range
-            max_val (float): Maximum value for the data range
-            min_ticks (int): Minimum number of ticks desired
-            max_ticks (int): Maximum number of ticks desired
-            
-        Returns:
-            tuple: (axis_min, axis_max) - The extended axis range values
-        """
-        # Generate nice ticks and axis range
-        new_ticks, axis_min, axis_max = generate_nice_ticks(min_val, max_val, min_ticks, max_ticks)
-        
-        # For X-axis
-        self.y_ticks = new_ticks
-        self.y_min=min_val
-        self.y_max=max_val
-        
-        # Recreate the components
-        self.remove(self.axis_line, self.ticks, self.labels)
-        self._create_axis_line()
-        self._create_ticks()
-        self._create_labels()
-        
-        return axis_min, axis_max
+
+
+
+
+
+
+
 

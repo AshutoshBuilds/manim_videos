@@ -11,7 +11,7 @@ CHILL_BROWN='#948979'
 YELLOW='#ffd35a'
 BLUE='#65c8d0'
 
-def get_x_axis(t, intial_bounds, final_bounds):
+def get_x_axis(t, intial_bounds, final_bounds, position=None):
     lower_bound, upper_bound = time_to_bounds(t, intial_bounds, final_bounds)
     x_ticks, x_axis_min, x_axis_max=generate_nice_ticks(lower_bound, 0.95*upper_bound, min_ticks=3, max_ticks=16, ignore=[])
     x_axis=WelchXAxis(
@@ -22,9 +22,91 @@ def get_x_axis(t, intial_bounds, final_bounds):
         x_label_font_size=24,           
         stroke_width=3, 
         arrow_tip_scale=0.1,
+        axis_length_on_canvas=7
+    )
+    if position is not None:
+        x_axis.move_to(position)
+    return x_axis
+
+def get_y_axis(t, intial_bounds, final_bounds, position=None):
+    lower_bound_x, upper_bound_x = time_to_bounds(t, intial_bounds, final_bounds)
+    #Kinda hacky, these are x_bounds - this should really be done somewhere else. 
+    indices_in_range=np.logical_and(xs1>lower_bound_x, xs1<upper_bound_x)
+    y_to_viz=all_probs_1[indices_in_range]
+    upper_bound = 1.1*np.max(y_to_viz) #(np.max(y_to_viz)-np.min(y_to_viz))+np.min(y_to_viz)
+    lower_bound = 0.9*np.min(y_to_viz)
+
+    y_ticks, x_axis_min, x_axis_max=generate_nice_ticks(lower_bound, upper_bound, min_ticks=3, max_ticks=16, ignore=[])
+    y_axis=WelchYAxis(
+        y_min=lower_bound,
+        y_max=upper_bound,      
+        y_ticks=y_ticks,  
+        y_tick_width=0.15,        
+        y_label_font_size=24,           
+        stroke_width=3, 
+        arrow_tip_scale=0.1,
         axis_length_on_canvas=5
     )
-    return x_axis
+    if position is not None:
+        y_axis.move_to(position)
+    return y_axis
+
+def get_scatter_points(t, initial_bounds, final_bounds, x_axis_position, y_axis_position):
+    """
+    Generate scatter points using the current time parameter directly rather than
+    depending on x_axis and y_axis objects that might have stale values.
+    """
+    # Get the current x range based on time
+    lower_bound_x, upper_bound_x = time_to_bounds(t, initial_bounds, final_bounds)
+    
+    # Filter data points within the current x range
+    indices_in_range = np.logical_and(xs1 > lower_bound_x, xs1 < upper_bound_x)
+    x_values = xs1[indices_in_range]
+    y_values = all_probs_1[indices_in_range]
+    
+    # Get y-axis bounds based on filtered data (same logic as in get_y_axis)
+    if len(y_values) > 0:
+        y_min = 0.9 * np.min(y_values)
+        y_max = 1.1 * np.max(y_values)
+    else:
+        y_min = 0
+        y_max = 1
+    
+    # Calculate axis scaling factors directly
+    x_axis_length = 7  # Same as in get_x_axis
+    y_axis_length = 5  # Same as in get_y_axis
+    
+    x_scale = (upper_bound_x - lower_bound_x) / x_axis_length
+    y_scale = (y_max - y_min) / y_axis_length
+    
+    # Extract origin positions from the provided positions
+    # Adjust for the fact that the position is the center of the axis
+    origin_x = x_axis_position[0] - x_axis_length / 2
+    origin_y = y_axis_position[1] - y_axis_length / 2
+    
+    # Create scatter plot points
+    dots = VGroup()
+    
+    for x_val, y_val in zip(x_values, y_values):
+        # Calculate normalized position within the data range (0 to 1)
+        x_norm = (x_val - lower_bound_x) / (upper_bound_x - lower_bound_x)
+        y_norm = (y_val - y_min) / (y_max - y_min)
+        
+        # Convert to canvas position
+        x_pos = origin_x + x_norm * x_axis_length
+        y_pos = origin_y + y_norm * y_axis_length
+        
+        # Create dot
+        dot = Dot(
+            point=[x_pos, y_pos, 0],
+            radius=0.05,
+            stroke_width=0,
+            fill_opacity=0.8
+        )
+        dot.set_color(YELLOW)
+        dots.add(dot)
+    
+    return dots
 
 def time_to_bounds(t, intial_bounds, final_bounds):
     lower_bound=t*(final_bounds[0]-intial_bounds[0])+intial_bounds[0]
@@ -33,22 +115,78 @@ def time_to_bounds(t, intial_bounds, final_bounds):
 
 class P21(InteractiveScene):
     def construct(self):
+        initial_x_range = [-0.027, 0.013]
+        final_x_range = [-1.1, 4.1]
 
-        initial_x_range=[-0.027, 0.013]
-        final_x_range=[-1.1, 4.1]
-
-        indices_in_range=np.logical_and(xs1>initial_x_range[0], xs1<initial_x_range[1])
-
-        initial_time=0.0
+        initial_time = 0.0
         t_tracker = ValueTracker(initial_time)
 
-        x_axis = always_redraw(lambda: get_x_axis(t_tracker.get_value(), initial_x_range, final_x_range))
-
-        self.add(x_axis)
+        x_axis_position = [0, -2, 0]
+        y_axis_position = [-3.84, 0.73, 0]
+        
+        # Create axes
+        x_axis = always_redraw(lambda: get_x_axis(
+            t_tracker.get_value(), 
+            initial_x_range, 
+            final_x_range, 
+            x_axis_position
+        ))
+        
+        y_axis = always_redraw(lambda: get_y_axis(
+            t_tracker.get_value(), 
+            initial_x_range, 
+            final_x_range, 
+            y_axis_position
+        ))
+        
+        # Create scatter plot with direct time parameter
+        scatter = always_redraw(lambda: get_scatter_points(
+            t_tracker.get_value(),
+            initial_x_range,
+            final_x_range,
+            x_axis_position,
+            y_axis_position
+        ))
+        
+        self.add(x_axis, y_axis, scatter)
+        self.wait()
+        
+        # Animate the zoom out
+        self.play(
+            t_tracker.animate.set_value(1.0), 
+            run_time=12
+        )
         self.wait()
 
-        self.play(t_tracker.animate.set_value(1.0), run_time=8)
-        self.wait()
+
+
+
+# class P21(InteractiveScene):
+#     def construct(self):
+
+#         initial_x_range=[-0.027, 0.013]
+#         final_x_range=[-1.1, 4.1]
+
+#         # indices_in_range=np.logical_and(xs1>initial_x_range[0], xs1<initial_x_range[1])
+
+#         initial_time=0.0
+#         t_tracker = ValueTracker(initial_time)
+
+#         x_axis_position = [0, -2, 0]  # Adjusted position
+#         y_axis_position = [-3.84, 0.73, 0]  # Adjusted position
+#         x_axis = always_redraw(lambda: get_x_axis(t_tracker.get_value(), initial_x_range, final_x_range, x_axis_position))
+#         y_axis = always_redraw(lambda: get_y_axis(t_tracker.get_value(), initial_x_range, final_x_range, y_axis_position))
+
+#         # Create scatter plot that updates with the axes
+#         scatter = always_redraw(lambda: get_scatter_points(t_tracker.get_value(), initial_x_range, final_x_range, x_axis, y_axis))
+        
+
+#         self.add(x_axis, y_axis, scatter)
+#         self.wait()
+
+
+#         self.play(t_tracker.animate.set_value(0.1), run_time=2)
+#         self.wait()
 
 
 

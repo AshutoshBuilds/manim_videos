@@ -264,7 +264,7 @@ class WelchYAxis(VGroup):
         
         for y_val, y_val_label in zip(self.y_ticks_scaled, self.y_ticks):
             # Use Tex for labels
-            label = Tex(str(round(y_val_label,1)))
+            label = Tex(str(round(y_val_label,4)))
             label.scale(self.y_label_font_size / 48)  # Approximate scaling
             label.set_color(self.axis_color)
             label.next_to(

@@ -28,13 +28,35 @@ def get_x_axis(t, intial_bounds, final_bounds, position=None):
         x_axis.move_to(position)
     return x_axis
 
+# def get_y_axis(t, intial_bounds, final_bounds, position=None):
+#     lower_bound, upper_bound = time_to_bounds(t, intial_bounds, final_bounds) 
+
+#     y_ticks, x_axis_min, x_axis_max=generate_nice_ticks(lower_bound, upper_bound, min_ticks=3, max_ticks=16, ignore=[])
+#     y_axis=WelchYAxis(
+#         y_min=lower_bound,
+#         y_max=upper_bound,      
+#         y_ticks=y_ticks,  
+#         y_tick_width=0.15,        
+#         y_label_font_size=24,           
+#         stroke_width=3, 
+#         arrow_tip_scale=0.1,
+#         axis_length_on_canvas=5
+#     )
+#     if position is not None:
+#         y_axis.move_to(position)
+#     return y_axis
+
+
 def get_y_axis(t, intial_bounds, final_bounds, position=None):
     lower_bound_x, upper_bound_x = time_to_bounds(t, intial_bounds, final_bounds)
     #Kinda hacky, these are x_bounds - this should really be done somewhere else. 
     indices_in_range=np.logical_and(xs1>lower_bound_x, xs1<upper_bound_x)
     y_to_viz=all_probs_1[indices_in_range]
-    upper_bound = 1.1*np.max(y_to_viz) #(np.max(y_to_viz)-np.min(y_to_viz))+np.min(y_to_viz)
-    lower_bound = 0.9*np.min(y_to_viz)
+    upper_bound = np.max(y_to_viz) #(np.max(y_to_viz)-np.min(y_to_viz))+np.min(y_to_viz)
+    lower_bound = np.min(y_to_viz)
+    # print(y_to_viz) #Ok these points are right but the scaling is wrong. 
+    # There's something wrong with Claude's plotting code - grrr. 
+    # Ok ok ok ok, 
 
     y_ticks, x_axis_min, x_axis_max=generate_nice_ticks(lower_bound, upper_bound, min_ticks=3, max_ticks=16, ignore=[])
     y_axis=WelchYAxis(
@@ -114,9 +136,18 @@ def time_to_bounds(t, intial_bounds, final_bounds):
     return lower_bound, upper_bound
 
 class P21(InteractiveScene):
+    '''
+    Code is messy and animation is a little stuttery - but I think I coudl ship this if I need to
+    Probably makes sense to keep moving, this is a small scene.
+
+    Hmm stuttering fix could be really simple - I should try a quick linear interpolation for y axis scaling. 
+    '''
     def construct(self):
         initial_x_range = [-0.027, 0.013]
         final_x_range = [-1.1, 4.1]
+
+        initial_y_range = [0.3887, 0.3940]
+        final_y_range = [0.15, 0.6]
 
         initial_time = 0.0
         t_tracker = ValueTracker(initial_time)
@@ -152,10 +183,7 @@ class P21(InteractiveScene):
         self.wait()
         
         # Animate the zoom out
-        self.play(
-            t_tracker.animate.set_value(1.0), 
-            run_time=12
-        )
+        self.play(t_tracker.animate.set_value(1.0), run_time=4)
         self.wait()
 
 

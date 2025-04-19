@@ -6,7 +6,8 @@ YELLOW='#ffd35a'
 BLUE='#65c8d0'
 WELCH_ASSET_PATH='/Users/stephen/manim_videos/welch_assets'
 
-def generate_nice_ticks(min_val, max_val, min_ticks=3, max_ticks=16):
+
+def generate_nice_ticks(min_val, max_val, min_ticks=3, max_ticks=16, ignore=[0]):
     """
     Generate a list of nice-looking tick values between min_val and max_val,
     and return extended range values for the full axis.
@@ -16,6 +17,7 @@ def generate_nice_ticks(min_val, max_val, min_ticks=3, max_ticks=16):
         max_val (float): Maximum value for the data range
         min_ticks (int): Minimum number of ticks desired
         max_ticks (int): Maximum number of ticks desired
+        ignore (list): List of values to exclude from the ticks
         
     Returns:
         tuple: (tick_values, axis_min, axis_max)
@@ -47,7 +49,14 @@ def generate_nice_ticks(min_val, max_val, min_ticks=3, max_ticks=16):
         # Calculate how many ticks we'd get with this step size
         first_tick = np.ceil(min_val / step) * step
         last_tick = np.floor(max_val / step) * step
-        num_ticks = int((last_tick - first_tick) / step) + 1
+        
+        # Count ticks, excluding ignored values
+        num_ticks = 0
+        current = first_tick
+        while current <= last_tick * (1 + 1e-10):
+            if not any(abs(current - ignored_val) < 1e-10 for ignored_val in ignore):
+                num_ticks += 1
+            current += step
         
         if min_ticks <= num_ticks <= max_ticks:
             chosen_step = step
@@ -68,17 +77,19 @@ def generate_nice_ticks(min_val, max_val, min_ticks=3, max_ticks=16):
     # Calculate one tick after last_tick for axis_max
     axis_max = last_tick + chosen_step
     
-    # Generate the tick values that fall within the data range
+    # Generate the tick values that fall within the data range, excluding ignored values
     ticks = []
     current = np.ceil(min_val / chosen_step) * chosen_step
     
     while current <= max_val * (1 + 1e-10):  # Add a small epsilon to handle floating point errors
-        ticks.append(float(current))  # Convert to float to avoid numpy types
+        # Only add the tick if it's not in the ignore list
+        if not any(abs(current - ignored_val) < 1e-10 for ignored_val in ignore):
+            ticks.append(float(current))  # Convert to float to avoid numpy types
         current += chosen_step
     
     # If we still have too few ticks, try the next smaller step size
     if len(ticks) < min_ticks and possible_step_sizes.index(chosen_step) < len(possible_step_sizes) - 1:
-        return generate_nice_ticks(min_val, max_val, min_ticks, max_ticks)
+        return generate_nice_ticks(min_val, max_val, min_ticks, max_ticks, ignore)
     
     return ticks, float(axis_min), float(axis_max)
 
@@ -196,8 +207,8 @@ class WelchXAxis(VGroup):
         
         # For X-axis
         self.x_ticks = new_ticks
-        self.x_min=axis_min
-        self.x_max=axis_max
+        self.x_min=min_val
+        self.x_max=max_val #Let's try actually use the value that gets passed in here, iterating on how to make this doe what I want
         
         # Recreate the components
         self.remove(self.axis_line, self.ticks, self.labels)
@@ -206,6 +217,24 @@ class WelchXAxis(VGroup):
         self._create_labels()
         
         return axis_min, axis_max
+
+    # You can add this method to both WelchXAxis and WelchYAxis classes
+    def set_max_val(self, max_val):
+
+        min_val=0
+        new_ticks, axis_min, axis_max = generate_nice_ticks(min_val, max_val)
+        
+        # For X-axis
+        self.x_ticks = new_ticks
+        self.x_min=min_val
+        self.x_max=max_val #Let's try actually use the value that gets passed in here, iterating on how to make this doe what I want
+        
+        # Recreate the components
+        self.remove(self.axis_line, self.ticks, self.labels)
+        self._create_axis_line()
+        self._create_ticks()
+        self._create_labels()
+
 
 class WelchYAxis(VGroup):
     def __init__(
@@ -320,8 +349,8 @@ class WelchYAxis(VGroup):
         
         # For X-axis
         self.y_ticks = new_ticks
-        self.y_min=axis_min
-        self.y_max=axis_max
+        self.y_min=min_val
+        self.y_max=max_val
         
         # Recreate the components
         self.remove(self.axis_line, self.ticks, self.labels)

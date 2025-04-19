@@ -436,6 +436,8 @@ class P48_50_3Dv3(InteractiveScene):
         self.wait()
         self.frame.reorient(68, 61, 0, (-0.11, -0.21, 1.62), 7.09)
         self.wait()
+        self.frame.reorient(90, 0, 0, (0.00, 0.00, 0.00), 8.6)
+        self.wait()
 
 
 

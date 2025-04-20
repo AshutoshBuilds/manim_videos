@@ -1,10 +1,10 @@
 from manimlib import *
 from functools import partial
 import sys
-sys.path.append('/Users/stephen/manim_videos/welch_assets')
+sys.path.append('/Users/stephen/manim/videos/welch_assets')
 from welch_axes import *
 
-sys.path.append('/Users/stephen/manim_videos/_2025/backprop_1')
+sys.path.append('/Users/stephen/manim/videos/_2025/backprop_1')
 from backprop_data import xs1, losses1, all_probs_1
 
 CHILL_BROWN='#948979'

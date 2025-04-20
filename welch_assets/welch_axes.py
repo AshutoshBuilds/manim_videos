@@ -4,7 +4,7 @@ from functools import partial
 CHILL_BROWN='#948979'
 YELLOW='#ffd35a'
 BLUE='#65c8d0'
-WELCH_ASSET_PATH='/Users/stephen/manim_videos/welch_assets'
+WELCH_ASSET_PATH='/Users/stephen/manim/videos/welch_assets'
 
 
 def generate_nice_ticks(min_val, max_val, min_ticks=3, max_ticks=16, ignore=[0]):

@@ -128,8 +128,12 @@ class P24v1(InteractiveScene):
         self.add(slice_t_bottom)
         self.wait()
 
-        self.play(self.frame.animate.reorient(81, 97, 0, (1.72, 1.73, 1.81), 6.51))
+        y_label.rotate(90*DEGREES, [0,0,1]) #Maybe some way to hide this jump? Can't figure out how to do it in one step
+        self.play(self.frame.animate.reorient(81, 97, 0, (1.72, 1.73, 1.81), 6.51),
+                  y_label.animate.rotate(90*DEGREES, [0,1,0]),
+                  run_time=4)
         self.wait()
+        
 
         v_points = np.linspace(-1, 4, num_points)
         points = [param_surface(1.61, v) for v in v_points] #Theta2 isn't exactly 0, but pretty close. 
@@ -139,6 +143,40 @@ class P24v1(InteractiveScene):
 
         self.play(ShowCreation(slice_2), run_time=2)
         self.wait()
+
+
+        #note sure about camera movement here yet. Maybe camear moves while I draw the second curve? while making curve more opaque?
+        u_points = np.linspace(-1, 4, num_points)
+        points = [param_surface(u, 1.76) for u in u_points] #Theta2 isn't exactly 0, but pretty close. 
+        slice_3 = VMobject()
+        slice_3.set_points_smoothly(points)
+        slice_3.set_stroke(width=4, color=YELLOW, opacity=0.8)
+        self.wait()
+
+        slice_bottom_2=Dot(param_surface(1.61, 1.76), radius=0.08, fill_color=BLUE)
+        slice_bottom_2.rotate(90*DEGREES, [1,0,0])
+        slice_bottom_2.rotate(90*DEGREES, [0,0,1])
+        self.add(slice_bottom_2)
+        self.wait()
+
+        #Ok i think it makes sense to quickly draw then then move the camera. 
+        self.play(ShowCreation(slice_3))
+
+        self.wait()
+        self.play(self.frame.animate.reorient(-2, 95, 0, (1.65, 1.69, 2.25), 6.84), 
+                  slice_1.animate.set_stroke(opacity=0.4), run_time=4)
+        self.wait()
+
+        slice_bottom_3=Dot(param_surface(1.11, 1.76), radius=0.08, fill_color=YELLOW)
+        slice_bottom_3.rotate(90*DEGREES, [1,0,0])
+        self.add(slice_bottom_3)
+        self.wait()
+
+        self.play(self.frame.animate.reorient(41, 60, 0, (1.65, 1.69, 2.25), 6.84),
+                 ts.animate.set_opacity(0.6),
+                 u_gridlines.animate.set_stroke(opacity=0.2),
+                 v_gridlines.animate.set_stroke(opacity=0.2), run_time=4)
+
 
 
         self.embed()

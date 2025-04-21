@@ -6,6 +6,9 @@ CHILL_BROWN='#948979'
 YELLOW='#ffd35a'
 BLUE='#65c8d0'
 
+surf=1.6*np.load('_2025/backprop_1/p_24_28_losses_4.npy') #Adding a scaling factor here to make graph steeper, will need ot adjust tick labels
+xy=np.load('_2025/backprop_1/p_24_28_losses_4xy.npy')
+
 def param_surface(u, v):
     u_idx = np.abs(xy[0] - u).argmin()
     v_idx = np.abs(xy[1] - v).argmin()
@@ -33,8 +36,7 @@ class P33(InteractiveScene):
         # I might need to go compute a bunch of gradients eh?
 
 
-        surf=1.6*np.load('_2025/backprop_1/p_24_28_losses_4.npy') #Adding a scaling factor here to make graph steeper, will need ot adjust tick labels
-        xy=np.load('_2025/backprop_1/p_24_28_losses_4xy.npy')
+
 
 
         x_axis_1=WelchXAxis(x_min=-1.2, x_max=4.5, x_ticks=[-1,0,1,2,3,4], x_tick_height=0.15,        
@@ -42,8 +44,30 @@ class P33(InteractiveScene):
         y_axis_1=WelchYAxis(y_min=0.3, y_max=1.7, y_ticks=[0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6], y_tick_width=0.15,        
                           y_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=3)
         axes_1=VGroup(x_axis_1, y_axis_1)
-        axes_1.move_to([-3.5, 1.5, 0])
+        # axes_1.move_to([-3.5, 1.5, 0])
         self.add(axes_1)
+
+
+        points_1 = [param_surface(u, 0) for u in np.linspace(-1, 4, 128)]
+        points_mapped=np.array(points_1)[:, (0,2,1)]
+
+        #Where do the axes map -1 and 4 to on the canvas?
+        def map_to_canvas(value, axis_min, axis_max, axis_end, axis_start=0):
+            value_scaled=(value-axis_min)/(axis_max-axis_min)
+            return (value_scaled+axis_start)*axis_end
+
+        # x_norm=(points_mapped[:,0]-points_mapped[:,0].min())/(points_mapped[:,0].max()-points_mapped[:,0].min()) #(x_axis_1.x_max/x_axis_1.axis_length_on_canvas)
+        points_mapped[:,0]=map_to_canvas(points_mapped[:,0], axis_min=x_axis_1.x_min, 
+                                         axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
+        curve_1 = VMobject()
+        curve_1.set_points_smoothly(points_mapped)
+        curve_1.set_stroke(width=3, color=YELLOW, opacity=0.8)
+
+        #0 -> -1.2
+        #4 -> 4.5
+
+        self.add(curve_1)
+
 
         x_axis_1.x_min 
         x_axis_1.x_max

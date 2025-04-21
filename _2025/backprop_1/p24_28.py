@@ -8,7 +8,7 @@ BLUE='#65c8d0'
 class P24v1(InteractiveScene):
     def construct(self):
 
-        #TODO - render higher rez version
+        #TODO - render higher rez version - veresion for is rendering out now (apr 21)
         surf=1.6*np.load('_2025/backprop_1/p_24_28_losses_3.npy') #Adding a scaling factor here to make graph steeper, will need ot adjust tick labels
         xy=np.load('_2025/backprop_1/p_24_28_losses_3xy.npy')
 
@@ -176,7 +176,74 @@ class P24v1(InteractiveScene):
                  ts.animate.set_opacity(0.6),
                  u_gridlines.animate.set_stroke(opacity=0.2),
                  v_gridlines.animate.set_stroke(opacity=0.2), run_time=4)
+        self.wait()
 
+        #Ok I'm tempted to roll right into 29 now, it could be a nice transition I think
+        # Can i get the grid lines to fall to the ground smoothly?
+
+        def get_fallen_points(line, progress):
+            # Get original points
+            original_points = line.get_points()
+            fallen_points = np.array(original_points)
+            
+            # Gradually reduce z-coordinate based on progress
+            fallen_points[:, 2] = original_points[:, 2] * (1 - progress)
+            
+            return fallen_points
+
+        # Create the falling animation for u_gridlines
+        falling_animations_u = []
+        for line in u_gridlines:
+            falling_animations_u.append(
+                UpdateFromAlphaFunc(
+                    line,
+                    lambda mob, alpha: mob.set_points(get_fallen_points(mob, alpha))
+                )
+            )
+
+        # Create the falling animation for v_gridlines
+        falling_animations_v = []
+        for line in v_gridlines:
+            falling_animations_v.append(
+                UpdateFromAlphaFunc(
+                    line,
+                    lambda mob, alpha: mob.set_points(get_fallen_points(mob, alpha))
+                )
+            )
+        self.wait()
+
+        # Play both animations together
+        self.play(
+            *falling_animations_u,
+            *falling_animations_v,
+            FadeOut(axes),
+            FadeOut(x_label),
+            FadeOut(y_label),
+            FadeOut(z_label),
+            ts.animate.set_opacity(0.0),
+            slice_1.animate.set_opacity(0.0),
+            slice_2.animate.set_opacity(0.0),
+            slice_3.animate.set_opacity(0.0),
+            slice_bottom_2.animate.set_opacity(0.0),
+            slice_t_bottom.animate.set_opacity(0.0),
+            slice_bottom_3.animate.set_opacity(0.0),
+            u_gridlines.animate.set_stroke(opacity=0.6),
+            v_gridlines.animate.set_stroke(opacity=0.6),
+            self.frame.animate.reorient(0, 0, 0, (1.62, 1.38, 2.23), 6.84),
+            run_time=5
+        )
+        self.wait()
+
+        intersection_dots = VGroup()
+        for u in u_values:
+            for v in u_values:  # Using same values since your grid is square
+                # point = param_surface(u, v)
+                dot = Dot([u, v, 0], radius=0.03, fill_color=WHITE, fill_opacity=0.8)
+                intersection_dots.add(dot)
+        self.play(ShowCreation(intersection_dots))
+        self.wait()
+        #Ok so i think from ehre we take over in illustrator/premier. 
+        #I'll do the 3d version in a separate p29c manim file. 
 
 
         self.embed()

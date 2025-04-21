@@ -230,7 +230,7 @@ class P24v1(InteractiveScene):
             u_gridlines.animate.set_stroke(opacity=0.6),
             v_gridlines.animate.set_stroke(opacity=0.6),
             self.frame.animate.reorient(0, 0, 0, (1.62, 1.38, 2.23), 6.84),
-            run_time=5
+            run_time=2
         )
         self.wait()
 

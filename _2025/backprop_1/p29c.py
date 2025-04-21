@@ -16,8 +16,100 @@ class Dot3D(Sphere):
         self.move_to(point)
 
 
-class P24v1(InteractiveScene):
+class p29c(InteractiveScene):
     def construct(self):
+
+        
+        x_range = [-1, 4]
+        y_range = [-1, 4]
+        z_range = [-1, 4]
+        
+        # Create axes
+        axes = ThreeDAxes(
+            x_range=x_range,
+            y_range=y_range,
+            z_range=z_range,
+            height=5,
+            width=5,
+            depth=5,
+            axis_config={
+                "include_ticks": True,
+                "color": CHILL_BROWN,
+                "stroke_width": 2,
+                "include_tip": True,
+                "tip_config": {"fill_opacity": 1, "width": 0.1, "length": 0.1}
+            }
+        )
+        
+        # Create the grid values
+        num_lines = 15  # Adjust as needed - 20 looks kinda nuts - I don't want to move to far off reality here though!
+        u_values = np.linspace(x_range[0], x_range[1], num_lines)
+        v_values = np.linspace(y_range[0], y_range[1], num_lines)
+        w_values = np.linspace(z_range[0], z_range[1], num_lines)
+        
+        # Create 3D grid lines
+        grid_lines = VGroup()
+        
+        # X-direction lines
+        for y in v_values:  # Skip every other line for cleaner look
+            for z in w_values:
+                start = np.array([x_range[0], y, z])
+                end = np.array([x_range[1], y, z])
+                line = Line3D(start, end, color=WHITE) #, width=1)
+                line.set_opacity(0.35)
+                line.set_stroke(width=1.5)
+                grid_lines.add(line)
+        
+        # Y-direction lines
+        for x in u_values:
+            for z in w_values:
+                start = np.array([x, y_range[0], z])
+                end = np.array([x, y_range[1], z])
+                line = Line3D(start, end, color=WHITE) #, width=1)
+                line.set_stroke(width=1.5)
+                line.set_opacity(0.35)
+                grid_lines.add(line)
+        
+        # Z-direction lines
+        for x in u_values:
+            for y in v_values:
+                start = np.array([x, y, z_range[0]])
+                end = np.array([x, y, z_range[1]])
+                line = Line3D(start, end, color=WHITE) #, width=1)
+                line.set_stroke(width=1.5)
+                line.set_opacity(0.35)
+                grid_lines.add(line)
+        
+        self.wait()
+    
+        self.frame.reorient(-67, 64, 0, (0.75, 1.02, 1.24), 10.52)
+        self.play(ShowCreation(grid_lines), run_time=2)
+
+        stride = 1  # Only use every second value
+        intersection_dots = Group()
+
+        for x in u_values[::stride]:
+            for y in v_values[::stride]:
+                for z in w_values[::stride]:
+                    dot = Dot3D(
+                        point=[x, y, z],
+                        radius=0.035,
+                        color=WHITE
+                    )
+                    dot.set_opacity(0.8)
+                    intersection_dots.add(dot)
+
+        # Add animation to show the dots
+        self.play(ShowCreation(intersection_dots), run_time=2)
+        self.wait()
+
+        self.play(self.frame.animate.reorient(-38, 63, 0, (0.75, 1.02, 1.24), 10.52), run_time=4)
+
+
+
 
         self.wait(20)
         self.embed()
+
+
+

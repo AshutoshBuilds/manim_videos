@@ -4,64 +4,21 @@ CHILL_BROWN='#948979'
 YELLOW='#ffd35a'
 BLUE='#65c8d0'
 
-# class NumpyDataSurface(Surface):
-#     def __init__(
-#         self,
-#         surf_data,
-#         xy_data,
-#         color=BLUE,
-#         opacity=0.8,
-#         resolution=(126, 126),  # Matching your data dimensions
-#         **kwargs
-#     ):
-#         self.surf_data = surf_data
-#         self.x_values = xy_data[0]  # First row contains x values
-#         self.y_values = xy_data[1]  # Second row contains y values
-        
-#         # Extract ranges from data
-#         x_min, x_max = np.min(self.x_values), np.max(self.x_values)
-#         y_min, y_max = np.min(self.y_values), np.max(self.y_values)
-        
-#         super().__init__(
-#             color=color,
-#             opacity=opacity,
-#             u_range=(x_min, x_max),
-#             v_range=(y_min, y_max),
-#             resolution=resolution,
-#             **kwargs
-#         )
-    
-#     def uv_func(self, u, v):
-#         # Find the closest indices in our data grid
-#         u_idx = np.abs(self.x_values - u).argmin()
-#         v_idx = np.abs(self.y_values - v).argmin()
-        
-#         # Get z value from the surface data
-#         # If surf_data is a grid where each point corresponds to a combination
-#         # of an x-value and a y-value, we need to find the right index
-#         try:
-#             z = self.surf_data[u_idx, v_idx]
-#         except IndexError:
-#             # Fallback if indexing doesn't work as expected
-#             z = 0
-            
-#         return np.array([u, v, z])
-
 
 class P24v1(InteractiveScene):
     def construct(self):
 
-        surf=np.load('_2025/backprop_1/p_24_28_losses_3.npy')
+        surf=1.6*np.load('_2025/backprop_1/p_24_28_losses_3.npy') #Adding a scaling factor here to make graph steeper, will need ot adjust tick labels
         xy=np.load('_2025/backprop_1/p_24_28_losses_3xy.npy')
 
         # Create the surface
         axes = ThreeDAxes(
             x_range=[-1, 4, 1],
             y_range=[-1, 4, 1],
-            z_range=[0, 2.5, 0.5],
+            z_range=[0.0, 3.5, 1.0],
             height=5,
             width=5,
-            depth=2.5,
+            depth=3.5,
             axis_config={
                 "include_ticks": True,
                 "color": CHILL_BROWN,
@@ -97,19 +54,36 @@ class P24v1(InteractiveScene):
             v_range=[-1, 4],
             resolution=(256, 256),
         )
-
-
-        # # Create our custom surface
-        # surface = NumpyDataSurface(
-        #     surf_data=surf,
-        #     xy_data=xy,
-        #     color=BLUE_C,
-        #     opacity=0.7
-        # )
         
         ts = TexturedSurface(surface, '_2025/backprop_1/p_24_28_losses_3.png')
         ts.set_shading(0.0, 0.1, 0)
         ts.set_opacity(0.7)
+
+        # Create gridlines using polylines instead of parametric curves
+        num_lines = 20  # Number of gridlines in each direction
+        num_points = 256  # Number of points per line
+        u_gridlines = VGroup()
+        v_gridlines = VGroup()
+        
+        # Create u-direction gridlines
+        u_values = np.linspace(-1, 4, num_lines)
+        v_points = np.linspace(-1, 4, num_points)
+        
+        for u in u_values:
+            points = [param_surface(u, v) for v in v_points]
+            line = VMobject()
+            line.set_points_as_corners(points)
+            line.set_stroke(width=1, color=WHITE, opacity=0.3)
+            u_gridlines.add(line)
+        
+        # Create v-direction gridlines
+        u_points = np.linspace(-1, 4, num_points)
+        for v in u_values:  # Using same number of lines for both directions
+            points = [param_surface(u, v) for u in u_points]
+            line = VMobject()
+            line.set_points_as_corners(points)
+            line.set_stroke(width=1, color=WHITE, opacity=0.3)
+            v_gridlines.add(line)
 
         #i think there's a better way to do this
         offset=surface.get_corner(BOTTOM+LEFT)-axes.get_corner(BOTTOM+LEFT)
@@ -118,7 +92,19 @@ class P24v1(InteractiveScene):
         
         
         # Add everything to the scene
-        self.add(axes, x_label, y_label, z_label, ts)
+        self.add(axes, x_label, y_label, z_label)
+d
+        # self.add(u_gridlines, v_gridlines)
+        self.frame.reorient(10, 57, 0, (2.09, 1.11, 1.36), 7.55)
+
+        self.play(ShowCreation(u_gridlines), ShowCreation(v_gridlines), run_time=4)
+
+
+        self.play(FadeIn(ts))
+
+        
+        self.embed()
+        self.wait(20)
         
 
 

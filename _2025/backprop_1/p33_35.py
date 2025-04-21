@@ -6,8 +6,12 @@ CHILL_BROWN='#948979'
 YELLOW='#ffd35a'
 BLUE='#65c8d0'
 
-surf=1.6*np.load('_2025/backprop_1/p_24_28_losses_4.npy') #Adding a scaling factor here to make graph steeper, will need ot adjust tick labels
+surf=np.load('_2025/backprop_1/p_24_28_losses_4.npy')
 xy=np.load('_2025/backprop_1/p_24_28_losses_4xy.npy')
+grads_1=np.load('_2025/backprop_1/p_33_35_grads_1_1.npy') 
+grads_2=np.load('_2025/backprop_1/p_33_35_grads_2_1.npy') 
+xy_grads=np.load('_2025/backprop_1/p_33_35_xy_1.npy') 
+
 
 def param_surface(u, v):
     u_idx = np.abs(xy[0] - u).argmin()
@@ -17,6 +21,24 @@ def param_surface(u, v):
     except IndexError:
         z = 0
     return np.array([u, v, z])
+
+def get_grads(u,v):
+    u_idx = np.abs(xy_grads[0] - u).argmin()
+    v_idx = np.abs(xy_grads[1] - v).argmin()
+    try:
+        z1 = grads_1[u_idx, v_idx]
+    except IndexError:
+        z1 = 0
+    try:
+        z2 = grads_2[u_idx, v_idx]
+    except IndexError:
+        z2 = 0
+    return np.array([u, v, z1, z2])
+
+
+def map_to_canvas(value, axis_min, axis_max, axis_end, axis_start=0):
+    value_scaled=(value-axis_min)/(axis_max-axis_min)
+    return (value_scaled+axis_start)*axis_end
 
 class P33(InteractiveScene):
     def construct(self):
@@ -36,42 +58,49 @@ class P33(InteractiveScene):
         # I might need to go compute a bunch of gradients eh?
 
 
-
-
-
         x_axis_1=WelchXAxis(x_min=-1.2, x_max=4.5, x_ticks=[-1,0,1,2,3,4], x_tick_height=0.15,        
                             x_label_font_size=24, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=4)
         y_axis_1=WelchYAxis(y_min=0.3, y_max=1.7, y_ticks=[0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6], y_tick_width=0.15,        
                           y_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=3)
         axes_1=VGroup(x_axis_1, y_axis_1)
-        # axes_1.move_to([-3.5, 1.5, 0])
-        self.add(axes_1)
-
 
         points_1 = [param_surface(u, 0) for u in np.linspace(-1, 4, 128)]
         points_mapped=np.array(points_1)[:, (0,2,1)]
-
-        #Where do the axes map -1 and 4 to on the canvas?
-        def map_to_canvas(value, axis_min, axis_max, axis_end, axis_start=0):
-            value_scaled=(value-axis_min)/(axis_max-axis_min)
-            return (value_scaled+axis_start)*axis_end
-
-        # x_norm=(points_mapped[:,0]-points_mapped[:,0].min())/(points_mapped[:,0].max()-points_mapped[:,0].min()) #(x_axis_1.x_max/x_axis_1.axis_length_on_canvas)
         points_mapped[:,0]=map_to_canvas(points_mapped[:,0], axis_min=x_axis_1.x_min, 
                                          axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
+        points_mapped[:,1]=map_to_canvas(points_mapped[:,1], axis_min=y_axis_1.y_min, 
+                                         axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)
         curve_1 = VMobject()
         curve_1.set_points_smoothly(points_mapped)
-        curve_1.set_stroke(width=3, color=YELLOW, opacity=0.8)
+        curve_1.set_stroke(width=4, color=YELLOW, opacity=0.8)
 
-        #0 -> -1.2
-        #4 -> 4.5
+        axes_1.move_to([-3.5, 1.5, 0])
+        curve_1.move_to([-3.5, 1.5, 0])
 
-        self.add(curve_1)
+        self.add(axes_1, curve_1)
 
+        # Ok, adding second curve should be pretty straightfoward, maybe I think about gradient a bit now?
+        # Intuitively I think I need to go actually compuate all the gradients at each point and cache them? 
+        # Let me go take a crack at that. 
+        # Man I guess you could show the whole gradient field with this approach - that's kinda interesting
+        # Not sure if that has a role in the video -> could be fun in the book!
 
-        x_axis_1.x_min 
-        x_axis_1.x_max
-        x_axis_1.axis_length_on_canvas
+        # I've created a crappy version of c2p I think! Should be able to roll in or absorb. 
+        # Keep roling for now though, I can make it pretty after I decide if I like the pattern.
+
+        #Hmm well this is complicated and not working lol - will pick back up in the morning. 
+        p1_values=param_surface(0, 0)
+        p1_values[0]=map_to_canvas(p1_values[0], axis_min=x_axis_1.x_min, 
+                                         axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
+        p1_values[1]=map_to_canvas(p1_values[2], axis_min=y_axis_1.y_min, 
+                                         axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)
+        p1_values[2]=0
+
+        p1=Dot(p1_values, radius=0.06, fill_color=YELLOW)
+        p1.move_to([-3.5, 1.5, 0])
+        self.add(p1)
+
+        g=get_grads(0,0)
 
 
 
@@ -86,7 +115,7 @@ class P33(InteractiveScene):
 
         # Create main surface
         surface = ParametricSurface(
-            param_surface,
+            1.5*param_surface, #Scaling here to make gradients a bit more interesting. 
             u_range=[-1, 4],
             v_range=[-1, 4],
             resolution=(256, 256),

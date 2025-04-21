@@ -9,8 +9,8 @@ class P24v1(InteractiveScene):
     def construct(self):
 
         #TODO - render higher rez version - veresion for is rendering out now (apr 21)
-        surf=1.6*np.load('_2025/backprop_1/p_24_28_losses_3.npy') #Adding a scaling factor here to make graph steeper, will need ot adjust tick labels
-        xy=np.load('_2025/backprop_1/p_24_28_losses_3xy.npy')
+        surf=1.6*np.load('_2025/backprop_1/p_24_28_losses_4.npy') #Adding a scaling factor here to make graph steeper, will need ot adjust tick labels
+        xy=np.load('_2025/backprop_1/p_24_28_losses_4xy.npy')
 
         # Create the surface
         axes = ThreeDAxes(
@@ -56,7 +56,7 @@ class P24v1(InteractiveScene):
             resolution=(256, 256),
         )
         
-        ts = TexturedSurface(surface, '_2025/backprop_1/p_24_28_losses_3.png')
+        ts = TexturedSurface(surface, '_2025/backprop_1/p_24_28_losses_4.png')
         ts.set_shading(0.0, 0.1, 0)
         ts.set_opacity(0.7)
 

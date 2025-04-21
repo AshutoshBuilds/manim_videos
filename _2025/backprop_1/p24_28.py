@@ -8,7 +8,6 @@ BLUE='#65c8d0'
 class P24v1(InteractiveScene):
     def construct(self):
 
-        #TODO - render higher rez version - veresion for is rendering out now (apr 21)
         surf=1.6*np.load('_2025/backprop_1/p_24_28_losses_4.npy') #Adding a scaling factor here to make graph steeper, will need ot adjust tick labels
         xy=np.load('_2025/backprop_1/p_24_28_losses_4xy.npy')
 

@@ -118,7 +118,7 @@ class P33v1(InteractiveScene):
         # self.add(p1)
 
         g=get_grads(0,0)
-        grad_viz_scale=abs(g[2]) #Maybe make arrow length proportional to gradient?
+        grad_viz_scale=1.25*abs(g[2]) #Maybe make arrow length proportional to gradient?
         p1_values_2=param_surface(0, 0)
         g_values=np.array([[p1_values_2[0], p1_values_2[2], 0],
                            [p1_values_2[0]+grad_viz_scale, p1_values_2[2]+grad_viz_scale*g[2]*0.6, 0]]) #Maybe I make arrow length proportional to slope or something?
@@ -175,7 +175,7 @@ class P33v1(InteractiveScene):
         p2=Dot(p2_values, radius=0.06, fill_color=BLUE)
 
         g=get_grads(0,0)
-        grad_viz_scale=abs(g[3]) #Maybe make arrow length proportional to gradient?
+        grad_viz_scale=1.25*abs(g[3]) #Maybe make arrow length proportional to gradient?
         p2_values_2=param_surface(0, 0)
         g_values_2=np.array([[p2_values_2[0], p2_values_2[2], 0],
                            [p2_values_2[0]+grad_viz_scale, p2_values_2[2]+grad_viz_scale*g[3]*1.0, 0]]) #Maybe I make arrow length proportional to slope or something?
@@ -261,12 +261,31 @@ class P33v1(InteractiveScene):
         self.wait()
 
         #Todo -> fade out tick numbers here?
+        # self.play(FadeOut(y_axis_2),
+        #           FadeOut(x_axis_1[-1]), #Tick labels
+        #           FadeOut(x_axis_2[-1]),
+        #           FadeOut(y_axis_1[-1]),
+        #           FadeOut(x_axis_1[-2]), #Ticks
+        #           FadeOut(x_axis_2[-2]),
+        #           FadeOut(y_axis_1[-2]),
+        #           run_time=1.0)
+
+        self.play(y_axis_2.animate.set_opacity(0.0),
+                  x_axis_1[-1].animate.set_opacity(0.0), #Tick labels
+                  x_axis_2[-1].animate.set_opacity(0.0),
+                  y_axis_1[-1].animate.set_opacity(0.0),
+                  x_axis_1[-2].animate.set_opacity(0.0), #Ticks
+                  x_axis_2[-2].animate.set_opacity(0.0),
+                  y_axis_1[-2].animate.set_opacity(0.0),
+                  run_time=1.0)
+
+
         self.play(panel_1.animate.shift([0, 0, -2.0]),
                   panel_2.animate.rotate(90*DEGREES, [0,0,1], about_point=r).shift([0, 0, 2.0]),
-                  # panel_2.animate.shift([0, 0, 2.0]),
-                  FadeOut(y_axis_2),
                   self.frame.animate.reorient(13, 85, 0, (-1.88, -0.77, 1.56), 5.01),
                   run_time=4)
+
+        
 
         self.wait()
 
@@ -291,22 +310,58 @@ class P33v1(InteractiveScene):
 
         ts = TexturedSurface(surface, '/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/animation/p_24_28_losses_4.png')
         ts.set_shading(0.0, 0.1, 0)
-        ts.set_opacity(0.5)
-
-        self.add(ts)
+        
 
         pivot_x,scale_x=get_pivot_and_scale(axis_min=x_axis_1.x_min, axis_max=x_axis_1.x_max, 
                                         axis_end=x_axis_1.axis_length_on_canvas)
         pivot_y,scale_y=get_pivot_and_scale(axis_min=y_axis_1.y_min, axis_max=y_axis_1.y_max, 
                                         axis_end=y_axis_1.axis_length_on_canvas)
         ts.scale([scale_x, scale_x, scale_y], about_point=[pivot_x, pivot_x, pivot_y])
+        surf_shift=[-3.8, 0.34, -0.3] #Gross iterative swagginess, I think i at least have the scale right
+        ts.shift(surf_shift)
+
+        ##Ok let's figure out if we want gridlines
+        num_lines = 21  # Number of gridlines in each direction
+        num_points = 256  # Number of points per line
+        u_gridlines = VGroup()
+        v_gridlines = VGroup()
+        u_values = np.linspace(-1, 4, num_lines)
+        v_points = np.linspace(-1, 4, num_points)
+        for u in u_values:
+            points = [param_surface(u, v) for v in v_points]
+            line = VMobject()
+            line.set_points_smoothly(points)
+            line.set_stroke(width=1, color=WHITE, opacity=0.0)
+            u_gridlines.add(line)
+        u_points = np.linspace(-1, 4, num_points)
+        for v in u_values:  # Using same number of lines for both directions
+            points = [param_surface(u, v) for u in u_points]
+            line = VMobject()
+            line.set_points_smoothly(points)
+            line.set_stroke(width=1, color=WHITE, opacity=0.0)
+            v_gridlines.add(line)
+
+        u_gridlines.scale([scale_x, scale_x, scale_y], about_point=[pivot_x, pivot_x, pivot_y])
+        u_gridlines.shift(surf_shift)
+        v_gridlines.scale([scale_x, scale_x, scale_y], about_point=[pivot_x, pivot_x, pivot_y])
+        v_gridlines.shift(surf_shift)
+        ts.set_opacity(0.0)
+
+        self.add(ts, u_gridlines, v_gridlines) #Add with zero opacity
+        self.remove(a1); self.add(a1) #Occlusions
+        self.remove(a2); self.add(a2)
+        self.remove(p1); self.add(p1)
+        self.remove(p2); self.add(p2)
+
+        self.play(ts.animate.set_opacity(0.5), 
+                  u_gridlines.animate.set_stroke(opacity=0.14), 
+                  v_gridlines.animate.set_stroke(opacity=0.14),
+                  self.frame.animate.reorient(125, 57, 0, (-2.45, 1.36, 2.08), 1.21), 
+                  run_time=4.0)
 
         self.wait()
 
-        ts.shift([-3.8, 0.3, -0.3])
-
-
-        self.wait()
+        ##Ooh could my 2 arrows "twist in and come together to make the gradient" -> that would be dope I think. 
 
 
 
@@ -323,11 +378,11 @@ class P33v1(InteractiveScene):
 
 
         #There's a bunch of ways I coudl solve the alignment problem, let me hack for a minute
-        ts.scale([0.7, 0.7, 1.0])
-        # offset=axes_1.get_corner(BOTTOM+LEFT)-ts.get_corner(BOTTOM+LEFT) #Hmm meh
-        ts.shift([-4.5, -0.5, 0])
+        # ts.scale([0.7, 0.7, 1.0])
+        # # offset=axes_1.get_corner(BOTTOM+LEFT)-ts.get_corner(BOTTOM+LEFT) #Hmm meh
+        # ts.shift([-4.5, -0.5, 0])
 
-        self.wait()
+        # self.wait()
 
         #axes_1
 
@@ -338,76 +393,76 @@ class P33v1(InteractiveScene):
         #                   y_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=3)
 
         # Create the surface
-        axes = ThreeDAxes(
-            x_range=[-1.2, 4.5, 1],
-            y_range=[-1.2, 4.5, 1],
-            z_range=[0.0, 2.0, 0.2],
-            height=4,
-            width=4,
-            depth=3,
-            axis_config={
-                "include_ticks": True,
-                "color": CHILL_BROWN,
-                "stroke_width": 2,
-                "include_tip": True,
-                "tip_config": {"fill_opacity": 1, "width": 0.1, "length": 0.1}
-            }
-        )
+        # axes = ThreeDAxes(
+        #     x_range=[-1.2, 4.5, 1],
+        #     y_range=[-1.2, 4.5, 1],
+        #     z_range=[0.0, 2.0, 0.2],
+        #     height=4,
+        #     width=4,
+        #     depth=3,
+        #     axis_config={
+        #         "include_ticks": True,
+        #         "color": CHILL_BROWN,
+        #         "stroke_width": 2,
+        #         "include_tip": True,
+        #         "tip_config": {"fill_opacity": 1, "width": 0.1, "length": 0.1}
+        #     }
+        # )
         
-        # Add labels
-        x_label = Tex(r'\theta_{1}', font_size=40).set_color(CHILL_BROWN)
-        y_label = Tex(r'\theta_{2}', font_size=40).set_color(CHILL_BROWN)
-        z_label = Tex('Loss', font_size=30).set_color(CHILL_BROWN)
-        x_label.next_to(axes.x_axis, RIGHT)
-        y_label.next_to(axes.y_axis, UP)
-        z_label.next_to(axes.z_axis, OUT)
-        z_label.rotate(90*DEGREES, [1,0,0])
+        # # Add labels
+        # x_label = Tex(r'\theta_{1}', font_size=40).set_color(CHILL_BROWN)
+        # y_label = Tex(r'\theta_{2}', font_size=40).set_color(CHILL_BROWN)
+        # z_label = Tex('Loss', font_size=30).set_color(CHILL_BROWN)
+        # x_label.next_to(axes.x_axis, RIGHT)
+        # y_label.next_to(axes.y_axis, UP)
+        # z_label.next_to(axes.z_axis, OUT)
+        # z_label.rotate(90*DEGREES, [1,0,0])
 
-        # Create gridlines using polylines instead of parametric curves
-        num_lines = 20  # Number of gridlines in each direction
-        num_points = 256  # Number of points per line
-        u_gridlines = VGroup()
-        v_gridlines = VGroup()
+        # # Create gridlines using polylines instead of parametric curves
+        # num_lines = 20  # Number of gridlines in each direction
+        # num_points = 256  # Number of points per line
+        # u_gridlines = VGroup()
+        # v_gridlines = VGroup()
         
-        # Create u-direction gridlines
-        u_values = np.linspace(-1, 4, num_lines)
-        v_points = np.linspace(-1, 4, num_points)
+        # # Create u-direction gridlines
+        # u_values = np.linspace(-1, 4, num_lines)
+        # v_points = np.linspace(-1, 4, num_points)
         
-        for u in u_values:
-            points = [param_surface(u, v) for v in v_points]
-            line = VMobject()
-            # line.set_points_as_corners(points)
-            line.set_points_smoothly(points)
-            line.set_stroke(width=1, color=WHITE, opacity=0.3)
-            u_gridlines.add(line)
+        # for u in u_values:
+        #     points = [param_surface(u, v) for v in v_points]
+        #     line = VMobject()
+        #     # line.set_points_as_corners(points)
+        #     line.set_points_smoothly(points)
+        #     line.set_stroke(width=1, color=WHITE, opacity=0.3)
+        #     u_gridlines.add(line)
         
-        # Create v-direction gridlines
-        u_points = np.linspace(-1, 4, num_points)
-        for v in u_values:  # Using same number of lines for both directions
-            points = [param_surface(u, v) for u in u_points]
-            line = VMobject()
-            # line.set_points_as_corners(points)
-            line.set_points_smoothly(points)
-            line.set_stroke(width=1, color=WHITE, opacity=0.3)
-            v_gridlines.add(line)
+        # # Create v-direction gridlines
+        # u_points = np.linspace(-1, 4, num_points)
+        # for v in u_values:  # Using same number of lines for both directions
+        #     points = [param_surface(u, v) for u in u_points]
+        #     line = VMobject()
+        #     # line.set_points_as_corners(points)
+        #     line.set_points_smoothly(points)
+        #     line.set_stroke(width=1, color=WHITE, opacity=0.3)
+        #     v_gridlines.add(line)
 
-        #i think there's a better way to do this
-        offset=surface.get_corner(BOTTOM+LEFT)-axes.get_corner(BOTTOM+LEFT)
-        axes.shift(offset); x_label.shift(offset); y_label.shift(offset); z_label.shift(offset);
-        self.wait()            
+        # #i think there's a better way to do this
+        # offset=surface.get_corner(BOTTOM+LEFT)-axes.get_corner(BOTTOM+LEFT)
+        # axes.shift(offset); x_label.shift(offset); y_label.shift(offset); z_label.shift(offset);
+        # self.wait()            
 
-        # Add everything to the scene
-        self.add(axes)
-        axes.shift([-4.0, 0, 0])
-        self.wait()
-
-
+        # # Add everything to the scene
+        # self.add(axes)
+        # axes.shift([-4.0, 0, 0])
+        # self.wait()
 
 
-        self.add(axes, x_label, y_label, z_label)
-        self.add(u_gridlines)
-        self.add(v_gridlines)
-        self.add(ts)
+
+
+        # self.add(axes, x_label, y_label, z_label)
+        # self.add(u_gridlines)
+        # self.add(v_gridlines)
+        # self.add(ts)
 
 
         

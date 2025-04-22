@@ -72,10 +72,10 @@ class P33v1(InteractiveScene):
         # I do think it probably makes sense to at least try to get all 3 graphs on one canvas, so I can like smoothlly move arrows arround and stuff
         # I might need to go compute a bunch of gradients eh?
 
-
+        # Original value = y_max=1.7 axis_length_on_canvas=3)
         x_axis_1=WelchXAxis(x_min=-1.2, x_max=4.5, x_ticks=[-1,0,1,2,3,4], x_tick_height=0.15,        
                             x_label_font_size=24, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=4)
-        y_axis_1=WelchYAxis(y_min=0.3, y_max=1.7, y_ticks=[0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6], y_tick_width=0.15,        
+        y_axis_1=WelchYAxis(y_min=0.3, y_max=2.2, y_ticks=[0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0], y_tick_width=0.15,        
                           y_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=3)
         axes_1=VGroup(x_axis_1, y_axis_1)
 
@@ -145,7 +145,7 @@ class P33v1(InteractiveScene):
 
         x_axis_2=WelchXAxis(x_min=-1.2, x_max=4.5, x_ticks=[-1,0,1,2,3,4], x_tick_height=0.15,        
                             x_label_font_size=24, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=4)
-        y_axis_2=WelchYAxis(y_min=0.3, y_max=1.7, y_ticks=[0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6], y_tick_width=0.15,        
+        y_axis_2=WelchYAxis(y_min=0.3, y_max=2.2, y_ticks=[0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0], y_tick_width=0.15,        
                           y_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=3)
         axes_2=VGroup(x_axis_2, y_axis_2)
 
@@ -303,7 +303,11 @@ class P33v1(InteractiveScene):
 
         self.wait()
 
-        ts.shift([-3.7, 0.3, -0.2])
+        ts.shift([-3.8, 0.3, -0.3])
+
+
+        self.wait()
+
 
 
         #Ok isn't the answer here, ot at least part of the answer just using the same math: 

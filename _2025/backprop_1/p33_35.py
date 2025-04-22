@@ -6,11 +6,11 @@ CHILL_BROWN='#948979'
 YELLOW='#ffd35a'
 BLUE='#65c8d0'
 
-surf=np.load('_2025/backprop_1/p_24_28_losses_4.npy')
-xy=np.load('_2025/backprop_1/p_24_28_losses_4xy.npy')
-grads_1=np.load('_2025/backprop_1/p_33_35_grads_1_1.npy') 
-grads_2=np.load('_2025/backprop_1/p_33_35_grads_2_1.npy') 
-xy_grads=np.load('_2025/backprop_1/p_33_35_xy_1.npy') 
+surf=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/animation/p_24_28_losses_4.npy')
+xy=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/animation/p_24_28_losses_4xy.npy')
+grads_1=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/animation/p_33_35_grads_1_1.npy') 
+grads_2=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/animation/p_33_35_grads_2_1.npy') 
+xy_grads=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/animation/p_33_35_xy_1.npy') 
 
 
 def param_surface(u, v):

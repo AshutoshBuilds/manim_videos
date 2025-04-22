@@ -8,9 +8,9 @@ BLUE='#65c8d0'
 
 surf=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/animation/p_24_28_losses_4.npy')
 xy=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/animation/p_24_28_losses_4xy.npy')
-grads_1=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/animation/p_33_35_grads_1_1.npy') 
-grads_2=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/animation/p_33_35_grads_2_1.npy') 
-xy_grads=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/animation/p_33_35_xy_1.npy') 
+grads_1=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/animation/p_33_35_grads_1_2.npy') 
+grads_2=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/animation/p_33_35_grads_2_2.npy') 
+xy_grads=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/animation/p_33_35_xy_2.npy') 
 
 
 def param_surface(u, v):
@@ -74,10 +74,13 @@ class P33(InteractiveScene):
         curve_1.set_points_smoothly(points_mapped)
         curve_1.set_stroke(width=4, color=YELLOW, opacity=0.8)
 
-        axes_1.move_to([-3.5, 1.5, 0])
-        curve_1.move_to([-3.5, 1.5, 0])
+        x_label_1 = Tex(r'\theta_{1}', font_size=30).set_color(CHILL_BROWN)
+        y_label_1 = Tex('Loss', font_size=25).set_color(CHILL_BROWN)
+        x_label_1.next_to(x_axis_1, RIGHT, buff=0.05)
+        y_label_1.next_to(y_axis_1, UP, buff=0.05)
 
-        self.add(axes_1, curve_1)
+        # self.add(axes_1, curve_1)
+        # self.add(x_label_1, y_label_1)
 
         # Ok, adding second curve should be pretty straightfoward, maybe I think about gradient a bit now?
         # Intuitively I think I need to go actually compuate all the gradients at each point and cache them? 
@@ -97,10 +100,37 @@ class P33(InteractiveScene):
         p1_values[2]=0
 
         p1=Dot(p1_values, radius=0.06, fill_color=YELLOW)
-        p1.move_to([-3.5, 1.5, 0])
-        self.add(p1)
+        # self.add(p1)
 
         g=get_grads(0,0)
+        grad_viz_scale=abs(g[2]) #Maybe make arrow length proportional to gradient?
+        p1_values_2=param_surface(0, 0)
+        g_values=np.array([[p1_values_2[0], p1_values_2[2], 0],
+                           [p1_values_2[0]+grad_viz_scale, p1_values_2[2]+grad_viz_scale*g[2]*0.6, 0]]) #Maybe I make arrow length proportional to slope or something?
+        g_values[:,0]=map_to_canvas(g_values[:,0], axis_min=x_axis_1.x_min, 
+                                         axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
+        g_values[:,1]=map_to_canvas(g_values[:,1], axis_min=y_axis_1.y_min, 
+                                         axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)
+
+        a1=Arrow(start=g_values[0], end=g_values[1], fill_color=YELLOW, thickness=3.0, tip_width_ratio=5, buff=0)
+        # self.add(a1)
+
+        panel_1_shift=[-5, 0.5, 0]
+        panel_1=VGroup(axes_1, curve_1, x_label_1, y_label_1, p1, a1)
+        panel_1.shift(panel_1_shift)
+
+        curve_1.set_stroke(opacity=0.25) #Yeah so I a fade out/fade in will bascially be the optning animation for this scene?
+        self.add(panel_1)
+
+        # Ok I might clean up/rewrite this scene, we'll see. 
+        # I think it makes sense to to ahead and add panels 2 and 3, and then I can start thinking about how the
+        # pieces fit together, and exactly what I want to show from there
+        # This workflow feels a bit hacky/uncomfortable, but I do think I have a pretty good feeling of what I want
+        # to show, so I'm just going to trust this new/different process. 
+
+
+
+
 
 
 

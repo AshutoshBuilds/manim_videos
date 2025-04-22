@@ -22,6 +22,16 @@ def param_surface(u, v):
         z = 0
     return np.array([u, v, z])
 
+def param_surface_scaled(u, v):
+    u_idx = np.abs(xy[0] - u).argmin()
+    v_idx = np.abs(xy[1] - v).argmin()
+    try:
+        z = 1.5*surf[u_idx, v_idx] #Scale for slightly more dramatic 3d viz. 
+    except IndexError:
+        z = 0
+    return np.array([u, v, z])
+
+
 def get_grads(u,v):
     u_idx = np.abs(xy_grads[0] - u).argmin()
     v_idx = np.abs(xy_grads[1] - v).argmin()
@@ -39,6 +49,11 @@ def get_grads(u,v):
 def map_to_canvas(value, axis_min, axis_max, axis_end, axis_start=0):
     value_scaled=(value-axis_min)/(axis_max-axis_min)
     return (value_scaled+axis_start)*axis_end
+
+def get_pivot_and_scale(axis_min, axis_max, axis_end):
+    '''Above collapses into scaling around a single pivot when axis_start=0'''
+    scale = axis_end / (axis_max - axis_min)
+    return axis_min, scale
 
 class P33v1(InteractiveScene):
     def construct(self):
@@ -216,6 +231,12 @@ class P33v1(InteractiveScene):
         ## So.. let me build out a workign sketch that core animation, and then we can take if from there.  
         ## 
 
+
+        # TODO -> so I think for the opening of this animation, we opacify the curves, and move the gradient 
+        # arrow around a little bit got give the viewer a sense for how it works...
+        # Also I think we do add a little math delta notation here. 
+        # And then at the end I see gradient descent happening, maybe all at once on all 3 panels...
+
         curve_1.set_stroke(opacity=0.5)
         curve_2.set_stroke(opacity=0.5)
 
@@ -239,49 +260,87 @@ class P33v1(InteractiveScene):
         r[0]=-4.15    
         self.wait()
 
+        #Todo -> fade out tick numbers here?
         self.play(panel_1.animate.shift([0, 0, -2.0]),
                   panel_2.animate.rotate(90*DEGREES, [0,0,1], about_point=r).shift([0, 0, 2.0]),
                   # panel_2.animate.shift([0, 0, 2.0]),
                   FadeOut(y_axis_2),
-                  self.frame.animate.reorient(14, 79, 0, (-1.83, -0.75, 1.59), 5.01),
+                  self.frame.animate.reorient(13, 85, 0, (-1.88, -0.77, 1.56), 5.01),
                   run_time=4)
 
         self.wait()
 
-
-        panel_2.move_to(panel_1)
-        panel_2.shift([0,0,-0.107]) #little nudge. 
-
-        r=panel_2.get_corner(LEFT+BOTTOM) 
-        r[0]=-4.15
-        panel_2.rotate(90*DEGREES, [0,0,1], about_point=r) #If I can get rotation point right this might kidna work?
-
-
-        # panel_2.rotate(-90*DEGREES, [0,0,1], about_point=r )
-
-
-        reorient(132, 58, 0, (-2.77, 3.01, 2.45), 4.87)
-
+        # So what's the deal from here, I think pan around while doing some level of axis tick fade out and
+        # adding in the surface! Then in comes the joint arrow direction - right? 
+        # Also I think wiggling/moving the gradient arrow around at the beginning/2d part would be good. 
+        # I wonder if i can bring together copies both arrows together at the same time
+        # to create the main magenta gradient vector?
+        # Ok big importnat thing to show next here is bring in the surface of course. 
+        # Let me do that next for the sketch, and then will come back and fill in details
+        # Maybe after a pass at writing. 
 
         ## ---
 
         # Create main surface
         surface = ParametricSurface(
-            1.5*param_surface, #Scaling here to make gradients a bit more interesting. 
+            param_surface,  
             u_range=[-1, 4],
             v_range=[-1, 4],
             resolution=(256, 256),
         )
 
+        ts = TexturedSurface(surface, '/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/animation/p_24_28_losses_4.png')
+        ts.set_shading(0.0, 0.1, 0)
+        ts.set_opacity(0.5)
+
+        self.add(ts)
+
+        pivot_x,scale_x=get_pivot_and_scale(axis_min=x_axis_1.x_min, axis_max=x_axis_1.x_max, 
+                                        axis_end=x_axis_1.axis_length_on_canvas)
+        pivot_y,scale_y=get_pivot_and_scale(axis_min=y_axis_1.y_min, axis_max=y_axis_1.y_max, 
+                                        axis_end=y_axis_1.axis_length_on_canvas)
+        ts.scale([scale_x, scale_x, scale_y], about_point=[pivot_x, pivot_x, pivot_y])
+
+        self.wait()
+
+        ts.shift([-3.7, 0.3, -0.2])
+
+
+        #Ok isn't the answer here, ot at least part of the answer just using the same math: 
+        #         points_1 = [param_surface(u, 0) for u in np.linspace(-1, 4, 128)]
+        # points_mapped=np.array(points_1)[:, (0,2,1)]
+        # points_mapped[:,0]=map_to_canvas(points_mapped[:,0], axis_min=x_axis_1.x_min, 
+        #                                  axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
+        # points_mapped[:,1]=map_to_canvas(points_mapped[:,1], axis_min=y_axis_1.y_min, 
+        #                                  axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)
+        # Not sure what ot make of the rotation just yet
+        # Or exaclty how to apply these transformations to the ParametricSurface class hmm, 
+
+
+
+        #There's a bunch of ways I coudl solve the alignment problem, let me hack for a minute
+        ts.scale([0.7, 0.7, 1.0])
+        # offset=axes_1.get_corner(BOTTOM+LEFT)-ts.get_corner(BOTTOM+LEFT) #Hmm meh
+        ts.shift([-4.5, -0.5, 0])
+
+        self.wait()
+
+        #axes_1
+
+
+        # x_axis_1=WelchXAxis(x_min=-1.2, x_max=4.5, x_ticks=[-1,0,1,2,3,4], x_tick_height=0.15,        
+        #                     x_label_font_size=24, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=4)
+        # y_axis_1=WelchYAxis(y_min=0.3, y_max=1.7, y_ticks=[0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6], y_tick_width=0.15,        
+        #                   y_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=3)
 
         # Create the surface
         axes = ThreeDAxes(
-            x_range=[-1, 4, 1],
-            y_range=[-1, 4, 1],
-            z_range=[0.0, 3.5, 1.0],
-            height=5,
-            width=5,
-            depth=3.5,
+            x_range=[-1.2, 4.5, 1],
+            y_range=[-1.2, 4.5, 1],
+            z_range=[0.0, 2.0, 0.2],
+            height=4,
+            width=4,
+            depth=3,
             axis_config={
                 "include_ticks": True,
                 "color": CHILL_BROWN,
@@ -299,10 +358,6 @@ class P33v1(InteractiveScene):
         y_label.next_to(axes.y_axis, UP)
         z_label.next_to(axes.z_axis, OUT)
         z_label.rotate(90*DEGREES, [1,0,0])
-        
-        ts = TexturedSurface(surface, '/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/animation/p_24_28_losses_4.png')
-        ts.set_shading(0.0, 0.1, 0)
-        ts.set_opacity(0.7)
 
         # Create gridlines using polylines instead of parametric curves
         num_lines = 20  # Number of gridlines in each direction
@@ -335,19 +390,21 @@ class P33v1(InteractiveScene):
         #i think there's a better way to do this
         offset=surface.get_corner(BOTTOM+LEFT)-axes.get_corner(BOTTOM+LEFT)
         axes.shift(offset); x_label.shift(offset); y_label.shift(offset); z_label.shift(offset);
-        # axes.move_to([1,1,1])
-        
+        self.wait()            
 
-
-        
         # Add everything to the scene
+        self.add(axes)
+        axes.shift([-4.0, 0, 0])
+        self.wait()
+
+
+
+
         self.add(axes, x_label, y_label, z_label)
         self.add(u_gridlines)
         self.add(v_gridlines)
         self.add(ts)
 
-
-        self.frame.reorient(32, 59, 0, (1.88, 1.0, 1.52), 7.78)
 
         
         self.embed()

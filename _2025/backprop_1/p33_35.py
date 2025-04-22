@@ -361,7 +361,24 @@ class P33v1(InteractiveScene):
 
         self.wait()
 
-        ##Ooh could my 2 arrows "twist in and come together to make the gradient" -> that would be dope I think. 
+        ## Ooh could my 2 arrows "twist in and come together to make the gradient" -> that would be dope I think. 
+
+        # Ok let's start with the ending magenta arrow, and then figure out how to animate 
+        # each of my existing arrows into this one. 
+
+
+        a3 =Arrow(start=[a1.get_corner(LEFT)[0], a1.get_corner(LEFT)[1], a1.get_corner(OUT)[2]],
+                  end=[a2.get_corner(RIGHT)[0], a2.get_corner(RIGHT)[1], a2.get_corner(RIGHT)[2]], 
+                  fill_color='#FF00FF', thickness=3.0, tip_width_ratio=5, buff=0)
+        # a3 =Arrow(start=a1.start, end=a2.end, fill_color='#FF00FF', thickness=3.0, tip_width_ratio=5, buff=0)
+        #going to need to do some interestign rotation stuff I think...
+        #Hmm doesn't look like I can borrow a1.start etc, these musth not update
+        # Ok what bout like getting corners etc from a1 and a2?
+
+
+        self.add(a3)
+
+
 
 
 
@@ -374,7 +391,6 @@ class P33v1(InteractiveScene):
         #                                  axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)
         # Not sure what ot make of the rotation just yet
         # Or exaclty how to apply these transformations to the ParametricSurface class hmm, 
-
 
 
         #There's a bunch of ways I coudl solve the alignment problem, let me hack for a minute

@@ -572,9 +572,7 @@ class P34_2d(InteractiveScene):
 
         self.wait()
 
-
         #Ok so where do my nexts points land in my original uv space??
-
         num_steps=7
         grad_adjustment_factors=[0.6,0.6,0.6,0.6,0.6,0.6,0.6] #Not sure why I need these. 
         descent_points_1=[] #Let's try computing all non-mapped points at first, then mapping them alls. 
@@ -586,10 +584,10 @@ class P34_2d(InteractiveScene):
         g=get_grads(0,0)
         grad_viz_scale=1.25*abs(g[2])
         # arrow_end_points_1.append([p1_values_2[0], p1_values_2[2], 0]) #First point
-        descent_points_1.append([p1_values_2[0], p1_values_2[2], 0]) #First point
+        descent_points_1.append([p1_values_3[0], p1_values_3[2], 0]) #First point
 
         for i in range(1, num_steps):
-            g=get_grads(descent_points_1[i-1][0], 0)
+            g=get_grads(descent_points_1[i-1][0], 0) #Hmm I think I'm actually running two indpendend grad descents - might not matter? We'll see. 
             # print(g)
             grad_viz_scale=1.25*abs(g[2])
             new_x=descent_points_1[i-1][0]+grad_viz_scale
@@ -627,11 +625,87 @@ class P34_2d(InteractiveScene):
         #                              #points basically it will be fine. 
 
 
+        ## --- Ok now second panel --- ##
+        grad_adjustment_factors=[1.0,1.0,1.0,1.0,1.0,1.0,1.0] #Not sure why I need these. 
+        descent_points_2=[] #Let's try computing all non-mapped points at first, then mapping them alls. 
+        arrow_end_points_2=[]
+        #Hmm this is kinda subtle, we always get 'snapped back to the curve, right?'
+        #Could add my points 2 at a time, the "where the arrow is pointing one, and then the snapped back one?"
+
+        p1_values_3=param_surface(0, 0)
+        g=get_grads(0,0)
+        grad_viz_scale=1.25*abs(g[3])
+        # arrow_end_points_2.append([p1_values_2[0], p1_values_2[2], 0]) #First point
+        descent_points_2.append([p1_values_3[1], p1_values_3[2], 0]) #First point
+
+        for i in range(1, num_steps):
+            g=get_grads(0, descent_points_2[i-1][0])
+            # print(g)
+            grad_viz_scale=1.25*abs(g[3])
+            new_x=descent_points_2[i-1][0]+grad_viz_scale
+            arrow_end_points_2.append([new_x, descent_points_2[i-1][1]+grad_viz_scale*g[3]*grad_adjustment_factors[i], 0]) #End of tangent arrow
+            descent_points_2.append([new_x, param_surface(0, new_x)[2],0]) #Next point on curve
+        descent_points_2=np.array(descent_points_2) #Ok gut check on this array seems fine. 
+        arrow_end_points_2=np.array(arrow_end_points_2)
+
+        descent_points_2_mapped=np.zeros_like(descent_points_2)
+        descent_points_2_mapped[:,0]=map_to_canvas(descent_points_2[:,0], axis_min=x_axis_1.x_min, 
+                                         axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
+        descent_points_2_mapped[:,1]=map_to_canvas(descent_points_2[:,1], axis_min=y_axis_1.y_min, 
+                                         axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)
+
+        arrow_end_points_2_mapped=np.zeros_like(arrow_end_points_2)
+        arrow_end_points_2_mapped[:,0]=map_to_canvas(arrow_end_points_2[:,0], axis_min=x_axis_1.x_min, 
+                                         axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
+        arrow_end_points_2_mapped[:,1]=map_to_canvas(arrow_end_points_2[:,1], axis_min=y_axis_1.y_min, 
+                                         axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)
+
+        # self.wait()
+        arrows_2=VGroup()
+        points_2=VGroup()
+        for i in range(num_steps-1):
+            arrows_2.add(Arrow(start=descent_points_2_mapped[i], end=arrow_end_points_2_mapped[i], fill_color=BLUE, 
+                                 thickness=3.0, 
+                                 tip_width_ratio=5, buff=0))
+            points_2.add(Dot(descent_points_2_mapped[i], radius=0.06, fill_color=BLUE))
+
+        arrows_2.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN)
+        arrows_2.shift(panel_2_shift)
+        points_2.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN)
+        points_2.shift(panel_2_shift)
+
+        self.add(arrows_2, points_2)
+
+        # Hmm man ok there is a problem here with this viz -> my curves should actually be changing at each iteration!!
+        # Maybe we don't show the 3 panel thing? 
+        # Might be something good to think about when rewriting this section. 
+        # My intuition is that this really really won't matter for the big 3d version -> doing these independtly 
+        # won't be a big deal. 
+        # I am giving this some thought though, becuase a big point of the video is that these dimensions are not the same!
+        # And that is a really important point for later. 
+        # Hmm hmm hmm. 
+        # So, on other thought here -> I don't think that actually doing 2d gradient (basically numerical) gradient descent
+        # Should be that bad. 
+        # yeah I would have to recomput the curve each time - that might not actually be that bad though. 
+        # 
+        # HEY MAYBE AFTER I ADD A POINT WITH GRADIENT DESECNT I SWAP OUT THE ARROW FOR A THINNER CONNECTING LINE?? THAT 
+        # MIGHT WORK A BIG BETTER VISUALLY. 
+        # 
+        # Ok this is a tougher scene than exepcted - but it is an important part of the video - 
+        # it really informs the whole thing and has some nice teaser components of what comes next
+        # With all that in mind, I do think it makes sense to take a crack at full 2d numerical gradient descent and 
+        # redrawing the curves. I dont' think it will actually be that bad. 
+
+
+
+        ## ----- 
+
 
 
 
 
         self.wait()
+        self.embed()
 
 
 
@@ -648,8 +722,6 @@ class P34_2d(InteractiveScene):
         # panel_2_shift=[-5, 0, -2.0]
         # panel_1.shift(panel_1_shift)
         # panel_2.shift(panel_2_shift)
-
-        self.wait()
 
         ## --
 

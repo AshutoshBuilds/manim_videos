@@ -115,7 +115,7 @@ class P33(InteractiveScene):
         a1=Arrow(start=g_values[0], end=g_values[1], fill_color=YELLOW, thickness=3.0, tip_width_ratio=5, buff=0)
         # self.add(a1)
 
-        panel_1_shift=[-5, 0.5, 0]
+        panel_1_shift=[-5, 0.4, 0]
         panel_1=VGroup(axes_1, curve_1, x_label_1, y_label_1, p1, a1)
         panel_1.shift(panel_1_shift)
 
@@ -128,8 +128,55 @@ class P33(InteractiveScene):
         # This workflow feels a bit hacky/uncomfortable, but I do think I have a pretty good feeling of what I want
         # to show, so I'm just going to trust this new/different process. 
 
+        x_axis_2=WelchXAxis(x_min=-1.2, x_max=4.5, x_ticks=[-1,0,1,2,3,4], x_tick_height=0.15,        
+                            x_label_font_size=24, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=4)
+        y_axis_2=WelchYAxis(y_min=0.3, y_max=1.7, y_ticks=[0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6], y_tick_width=0.15,        
+                          y_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=3)
+        axes_2=VGroup(x_axis_2, y_axis_2)
 
 
+        points_2 = [param_surface(0, v) for v in np.linspace(-1, 4, 128)]
+        points_mapped_2=np.array(points_2)[:, (1,2,0)]
+        points_mapped_2[:,0]=map_to_canvas(points_mapped_2[:,0], axis_min=x_axis_2.x_min, 
+                                         axis_max=x_axis_2.x_max, axis_end=x_axis_2.axis_length_on_canvas)
+        points_mapped_2[:,1]=map_to_canvas(points_mapped_2[:,1], axis_min=y_axis_2.y_min, 
+                                         axis_max=y_axis_2.y_max, axis_end=y_axis_2.axis_length_on_canvas)
+        curve_2 = VMobject()
+        curve_2.set_points_smoothly(points_mapped_2)
+        curve_2.set_stroke(width=4, color=BLUE, opacity=0.8)
+
+
+        x_label_2 = Tex(r'\theta_{2}', font_size=30).set_color(CHILL_BROWN)
+        y_label_2 = Tex('Loss', font_size=25).set_color(CHILL_BROWN)
+        x_label_2.next_to(x_axis_2, RIGHT, buff=0.05)
+        y_label_2.next_to(y_axis_2, UP, buff=0.05) #not sure I need this. 
+
+        p2_values=param_surface(0, 0)
+        p2_values[0]=map_to_canvas(p2_values[0], axis_min=x_axis_2.x_min, 
+                                         axis_max=x_axis_2.x_max, axis_end=x_axis_2.axis_length_on_canvas)
+        p2_values[1]=map_to_canvas(p2_values[2], axis_min=y_axis_2.y_min, 
+                                         axis_max=y_axis_2.y_max, axis_end=y_axis_2.axis_length_on_canvas)
+        p2_values[2]=0
+        p2=Dot(p2_values, radius=0.06, fill_color=BLUE)
+
+        g=get_grads(0,0)
+        grad_viz_scale=abs(g[3]) #Maybe make arrow length proportional to gradient?
+        p2_values_2=param_surface(0, 0)
+        g_values_2=np.array([[p2_values_2[0], p2_values_2[2], 0],
+                           [p2_values_2[0]+grad_viz_scale, p2_values_2[2]+grad_viz_scale*g[3]*1.0, 0]]) #Maybe I make arrow length proportional to slope or something?
+        g_values_2[:,0]=map_to_canvas(g_values_2[:,0], axis_min=x_axis_2.x_min, 
+                                         axis_max=x_axis_2.x_max, axis_end=x_axis_2.axis_length_on_canvas)
+        g_values_2[:,1]=map_to_canvas(g_values_2[:,1], axis_min=y_axis_2.y_min, 
+                                         axis_max=y_axis_2.y_max, axis_end=y_axis_2.axis_length_on_canvas)
+
+        a2=Arrow(start=g_values_2[0], end=g_values_2[1], fill_color=BLUE, thickness=3.0, tip_width_ratio=5, buff=0)
+
+        panel_2_shift=[-5, -3.2, 0]
+        panel_2=VGroup(axes_2, curve_2, x_label_2, p2, a2) #y_label_2
+        panel_2.shift(panel_2_shift)
+
+        curve_2.set_stroke(opacity=0.25) 
+        self.add(panel_2)
 
 
 

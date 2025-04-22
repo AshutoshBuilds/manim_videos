@@ -55,6 +55,11 @@ def get_pivot_and_scale(axis_min, axis_max, axis_end):
     scale = axis_end / (axis_max - axis_min)
     return axis_min, scale
 
+class Dot3D(Sphere):
+    def __init__(self, center=ORIGIN, radius=0.05, **kwargs):
+        super().__init__(radius=radius, **kwargs)
+        self.move_to(center)
+
 class P33v1(InteractiveScene):
     def construct(self):
 
@@ -362,7 +367,7 @@ class P33v1(InteractiveScene):
                   v_gridlines.animate.set_stroke(opacity=0.14),
                   # self.frame.animate.reorient(125, 57, 0, (-2.45, 1.36, 2.08), 1.21),
                   # self.frame.animate.reorient(106, 41, 0, (-2.43, 0.92, 2.55), 3.11), 
-                  self.frame.animate.reorient(116, 41, 0, (-2.53, 0.79, 2.7), 2.66),
+                  self.frame.animate.reorient(124, 40, 0, (-2.57, 0.86, 2.7), 1.81),
                   run_time=4.0)
 
         self.wait()
@@ -375,7 +380,7 @@ class P33v1(InteractiveScene):
         # each of my existing arrows into this one. 
 
 
-        a3 =Arrow(start=[a1.get_corner(LEFT)[0]+0.03, a1.get_corner(LEFT)[1], a1.get_corner(OUT)[2]],
+        a3 =Arrow(start=[a1.get_corner(LEFT)[0]+0.03, a1.get_corner(LEFT)[1]+0.01, a1.get_corner(OUT)[2]],
                   end=[a1.get_corner(RIGHT)[0], a2.get_corner(UP)[1], a2.get_corner(IN)[2]], 
                   fill_color='#FF00FF', thickness=3.0, tip_width_ratio=5, buff=0)
         # a3 =Arrow(start=a1.start, end=a2.end, fill_color='#FF00FF', thickness=3.0, tip_width_ratio=5, buff=0)
@@ -384,19 +389,358 @@ class P33v1(InteractiveScene):
         # Ok what bout like getting corners etc from a1 and a2?
         # a1.rotate(-DEGREES*135, axis=a1.get_end()-a1.get_start())
         # a2.rotate(-DEGREES*80, axis=a2.get_end()-a2.get_start())
+        self.wait()
+
+        self.play(TransformFromCopy(a1, a3), #Ah that's fucking dope - how many more cool tricks does Grant have up his sleeve that I know nothing about lol. 
+                  TransformFromCopy(a2, a3),
+                  run_time=3.0)
+        self.wait()
+
+        # self.play(FadeIn(a3))
+        # self.add(a3)
+        # self.remove(a3)
+
+        ## Ok it's time for the final boss of this mother fucking scene. 
+        ## Actually running grandient descent. 
+        ## IN my head it would be dope to show it on all 3 panels at once
+        ## Or I guess even have the option to show it maybe on a single pane the first time and 
+        ## multiple panes the second time
+        ## Either way, I'll render out the multipane version on 2 or 3 different separate panes
+        ## And I'll start with big kahuna 3d version here
+        ## I'm thinking I'm going to sort of fake it sort of not
+        ## The camera view doesn't matter too much here - I think the main thing is 
+        ## to get the descent animation working first, then come back and add in my camera moves
+        ## Or kidna add them as I go. 
+
+        # self.play(self.frame.animate.reorient(169, 43, 0, (-3.56, 1.21, 1.79), 3.95), run_time=3.0)
+        
 
 
-        self.add(a3)
+        # Hmm Do I want to show the yellow and blue arrows at each step? I kinda feel like yeah 
+        # If I'm feeling boojie maybe I even do the cool "animate them together" thing at each step
+        # Finally, I think spheres are probably better than dots if I can swing em. 
+        # 
 
-        self.remove(a3)
+        s1=Dot3D(center=a3.get_start(), radius=0.06, color='$FF00FF')
+        s2=Dot3D(center=a3.get_end(), radius=0.06, color='$FF00FF')
+        self.wait()
+
+        self.play(a1.animate.set_opacity(0.0),
+                  a2.animate.set_opacity(0.0),
+                  curve_1.animate.set_opacity(0.0),
+                  curve_2.animate.set_opacity(0.0),
+                  FadeIn(s1),
+                  FadeIn(s2),
+                  self.frame.animate.reorient(175, 47, 0, (-3.89, 1.49, 1.6), 3.75),
+                  run_time=2.0)
 
 
+        # s1=Dot3D(center=a3.get_start(), radius=0.06, color='$FF00FF')
+        # self.add(s1)
+
+        self.wait()
+
+        # ok ok ok so I could do this kinda 3d naitively, or I could do it in 2d and rotate shit like I did 
+        # the first time. Although the later is more clunky, I think it's actually better becuase when I 
+        # go to make the 2d version I can reuse code and make sure that I'm just doing the exact same thing. 
+        # Oof man thinking through this - it might get pretty gnarly. 
+        # Ok here's an idea -> I know i have fiarly deterministic mapping from 2d panels to my 3d view
+        # What about doing the full 2d version first, grouping all the assets with the panels, and then
+        # moving them just like I did the first time?
+        # Or maybe after I figure out the 2d version I just like come back and add the full gradient 
+        # descent above, so I have all the compnent arrows ready to go? 
+        # Ok let's try that. 
+
+
+
+
+
+
+        self.embed()
+        self.wait(20)
+
+
+
+class P34_2d(InteractiveScene):
+    def construct(self):
+        '''
+        Figure out 2d full gradient descent panels here, then combine with full method above to get
+        3d grad descent - let's go! Maybe make a new class when I do the combining. 
+        '''
+
+        x_axis_1=WelchXAxis(x_min=-1.2, x_max=4.5, x_ticks=[-1,0,1,2,3,4], x_tick_height=0.15,        
+                            x_label_font_size=24, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=4)
+        y_axis_1=WelchYAxis(y_min=0.3, y_max=2.2, y_ticks=[0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0], y_tick_width=0.15,        
+                          y_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=3)
+        axes_1=VGroup(x_axis_1, y_axis_1)
+
+        points_1 = [param_surface(u, 0) for u in np.linspace(-1, 4, 128)]
+        points_mapped=np.array(points_1)[:, (0,2,1)]
+        points_mapped[:,0]=map_to_canvas(points_mapped[:,0], axis_min=x_axis_1.x_min, 
+                                         axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
+        points_mapped[:,1]=map_to_canvas(points_mapped[:,1], axis_min=y_axis_1.y_min, 
+                                         axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)
+        curve_1 = VMobject()
+        curve_1.set_points_smoothly(points_mapped)
+        curve_1.set_stroke(width=4, color=YELLOW, opacity=0.8)
+
+        x_label_1 = Tex(r'\theta_{1}', font_size=30).set_color(CHILL_BROWN)
+        y_label_1 = Tex('Loss', font_size=25).set_color(CHILL_BROWN)
+        x_label_1.next_to(x_axis_1, RIGHT, buff=0.05)
+        y_label_1.next_to(y_axis_1, UP, buff=0.05)
+
+        p1_values=param_surface(0, 0)
+        p1_values[0]=map_to_canvas(p1_values[0], axis_min=x_axis_1.x_min, 
+                                         axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
+        p1_values[1]=map_to_canvas(p1_values[2], axis_min=y_axis_1.y_min, 
+                                         axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)
+        p1_values[2]=0
+        p1=Dot(p1_values, radius=0.06, fill_color=YELLOW)
+
+        g=get_grads(0,0)
+        grad_viz_scale=1.25*abs(g[2]) #Maybe make arrow length proportional to gradient?
+        p1_values_2=param_surface(0, 0)
+        g_values=np.array([[p1_values_2[0], p1_values_2[2], 0],
+                           [p1_values_2[0]+grad_viz_scale, p1_values_2[2]+grad_viz_scale*g[2]*0.6, 0]]) #Maybe I make arrow length proportional to slope or something?
+        g_values[:,0]=map_to_canvas(g_values[:,0], axis_min=x_axis_1.x_min, 
+                                         axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
+        g_values[:,1]=map_to_canvas(g_values[:,1], axis_min=y_axis_1.y_min, 
+                                         axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)
+
+        a1=Arrow(start=g_values[0], end=g_values[1], fill_color=YELLOW, thickness=3.0, tip_width_ratio=5, buff=0)
+        panel_1=VGroup(axes_1, curve_1, x_label_1, y_label_1, p1, a1)
+
+
+        x_axis_2=WelchXAxis(x_min=-1.2, x_max=4.5, x_ticks=[-1,0,1,2,3,4], x_tick_height=0.15,        
+                            x_label_font_size=24, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=4)
+        y_axis_2=WelchYAxis(y_min=0.3, y_max=2.2, y_ticks=[0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0], y_tick_width=0.15,        
+                          y_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=3)
+        axes_2=VGroup(x_axis_2, y_axis_2)
+
+
+        points_2 = [param_surface(0, v) for v in np.linspace(-1, 4, 128)]
+        points_mapped_2=np.array(points_2)[:, (1,2,0)]
+        points_mapped_2[:,0]=map_to_canvas(points_mapped_2[:,0], axis_min=x_axis_2.x_min, 
+                                         axis_max=x_axis_2.x_max, axis_end=x_axis_2.axis_length_on_canvas)
+        points_mapped_2[:,1]=map_to_canvas(points_mapped_2[:,1], axis_min=y_axis_2.y_min, 
+                                         axis_max=y_axis_2.y_max, axis_end=y_axis_2.axis_length_on_canvas)
+        curve_2 = VMobject()
+        curve_2.set_points_smoothly(points_mapped_2)
+        curve_2.set_stroke(width=4, color=BLUE, opacity=0.8)
+
+
+        x_label_2 = Tex(r'\theta_{2}', font_size=30).set_color(CHILL_BROWN)
+        y_label_2 = Tex('Loss', font_size=25).set_color(CHILL_BROWN)
+        x_label_2.next_to(x_axis_2, RIGHT, buff=0.05)
+        y_label_2.next_to(y_axis_2, UP, buff=0.05) #not sure I need this. 
+
+        p2_values=param_surface(0, 0)
+        p2_values[0]=map_to_canvas(p2_values[0], axis_min=x_axis_2.x_min, 
+                                         axis_max=x_axis_2.x_max, axis_end=x_axis_2.axis_length_on_canvas)
+        p2_values[1]=map_to_canvas(p2_values[2], axis_min=y_axis_2.y_min, 
+                                         axis_max=y_axis_2.y_max, axis_end=y_axis_2.axis_length_on_canvas)
+        p2_values[2]=0
+        p2=Dot(p2_values, radius=0.06, fill_color=BLUE)
+
+        g=get_grads(0,0)
+        grad_viz_scale=1.25*abs(g[3]) #Maybe make arrow length proportional to gradient?
+        p2_values_2=param_surface(0, 0)
+        g_values_2=np.array([[p2_values_2[0], p2_values_2[2], 0],
+                           [p2_values_2[0]+grad_viz_scale, p2_values_2[2]+grad_viz_scale*g[3]*1.0, 0]]) #Maybe I make arrow length proportional to slope or something?
+        g_values_2[:,0]=map_to_canvas(g_values_2[:,0], axis_min=x_axis_2.x_min, 
+                                         axis_max=x_axis_2.x_max, axis_end=x_axis_2.axis_length_on_canvas)
+        g_values_2[:,1]=map_to_canvas(g_values_2[:,1], axis_min=y_axis_2.y_min, 
+                                         axis_max=y_axis_2.y_max, axis_end=y_axis_2.axis_length_on_canvas)
+
+        a2=Arrow(start=g_values_2[0], end=g_values_2[1], fill_color=BLUE, thickness=3.0, tip_width_ratio=5, buff=0)
+
+        panel_2=VGroup(axes_2, curve_2, x_label_2, p2, a2) 
+
+        curve_1.set_stroke(opacity=0.5)
+        curve_2.set_stroke(opacity=0.5)
+
+        panel_2.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN) #Get into 3d space so I can do the bring together animation...
+        panel_1.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN)
+        self.add(panel_1, panel_2)
+
+        self.frame.reorient(0, 89, 0, (-0.46, 0.0, 1.36), 8.97)
+
+        panel_1_shift=[-5, 0, 2.0]
+        panel_2_shift=[-5, 0, -2.0]
+        panel_1.shift(panel_1_shift)
+        panel_2.shift(panel_2_shift)
+
+        self.wait()
+
+
+        #Ok so where do my nexts points land in my original uv space??
+
+        num_steps=7
+        grad_adjustment_factors=[0.6,0.6,0.6,0.6,0.6,0.6,0.6] #Not sure why I need these. 
+        descent_points_1=[] #Let's try computing all non-mapped points at first, then mapping them alls. 
+        arrow_end_points_1=[]
+        #Hmm this is kinda subtle, we always get 'snapped back to the curve, right?'
+        #Could add my points 2 at a time, the "where the arrow is pointing one, and then the snapped back one?"
+
+        p1_values_3=param_surface(0, 0)
+        g=get_grads(0,0)
+        grad_viz_scale=1.25*abs(g[2])
+        # arrow_end_points_1.append([p1_values_2[0], p1_values_2[2], 0]) #First point
+        descent_points_1.append([p1_values_2[0], p1_values_2[2], 0]) #First point
+
+        for i in range(1, num_steps):
+            g=get_grads(descent_points_1[i-1][0], 0)
+            # print(g)
+            grad_viz_scale=1.25*abs(g[2])
+            new_x=descent_points_1[i-1][0]+grad_viz_scale
+            arrow_end_points_1.append([new_x, descent_points_1[i-1][1]+grad_viz_scale*g[2]*grad_adjustment_factors[i], 0]) #End of tangent arrow
+            descent_points_1.append([new_x, param_surface(new_x,0)[2],0]) #Next point on curve
+        descent_points_1=np.array(descent_points_1) #Ok gut check on this array seems fine. 
+        arrow_end_points_1=np.array(arrow_end_points_1)
+
+        descent_points_1_mapped=np.zeros_like(descent_points_1)
+        descent_points_1_mapped[:,0]=map_to_canvas(descent_points_1[:,0], axis_min=x_axis_1.x_min, 
+                                         axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
+        descent_points_1_mapped[:,1]=map_to_canvas(descent_points_1[:,1], axis_min=y_axis_1.y_min, 
+                                         axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)
+
+        arrow_end_points_1_mapped=np.zeros_like(arrow_end_points_1)
+        arrow_end_points_1_mapped[:,0]=map_to_canvas(arrow_end_points_1[:,0], axis_min=x_axis_1.x_min, 
+                                         axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
+        arrow_end_points_1_mapped[:,1]=map_to_canvas(arrow_end_points_1[:,1], axis_min=y_axis_1.y_min, 
+                                         axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)
+
+        # self.wait()
+        arrows_1=VGroup()
+        points_1=VGroup()
+        for i in range(num_steps-1):
+            arrows_1.add(Arrow(start=descent_points_1_mapped[i], end=arrow_end_points_1_mapped[i], fill_color=YELLOW, 
+                                 thickness=3.0, 
+                                 tip_width_ratio=5, buff=0))
+            points_1.add(Dot(descent_points_1_mapped[i], radius=0.06, fill_color=YELLOW))
+
+        arrows_1.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN)
+        arrows_1.shift(panel_1_shift)
+        points_1.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN)
+        points_1.shift(panel_1_shift)
+        # self.add(arrows_1, points_1) #Ok this gets noisy visually, but I think if I add one arrow at a time, and keep all the 
+        #                              #points basically it will be fine. 
+
+
+
+
+
+
+        self.wait()
+
+
+
+
+        # panel_1=VGroup(axes_1, curve_1, x_label_1, y_label_1, p1, a1)
+
+        # panel_2.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN) #Get into 3d space so I can do the bring together animation...
+        # panel_1.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN)
+        # self.add(panel_1, panel_2)
+
+        # self.frame.reorient(0, 89, 0, (-0.46, 0.0, 1.36), 8.97)
+
+        # panel_1_shift=[-5, 0, 2.0]
+        # panel_2_shift=[-5, 0, -2.0]
+        # panel_1.shift(panel_1_shift)
+        # panel_2.shift(panel_2_shift)
+
+        self.wait()
+
+        ## --
+
+
+        # p1_values=param_surface(0, 0)
+        # p1_values[0]=map_to_canvas(p1_values[0], axis_min=x_axis_1.x_min, 
+        #                                  axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
+        # p1_values[1]=map_to_canvas(p1_values[2], axis_min=y_axis_1.y_min, 
+        #                                  axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)
+        # p1_values[2]=0
+
+        # p1=Dot(p1_values, radius=0.06, fill_color=YELLOW)
+        # # self.add(p1)
+
+        # g=get_grads(0,0)
+        # grad_viz_scale=1.25*abs(g[2]) #Maybe make arrow length proportional to gradient?
+        # p1_values_2=param_surface(0, 0)
+        # g_values=np.array([[p1_values_2[0], p1_values_2[2], 0],
+        #                    [p1_values_2[0]+grad_viz_scale, p1_values_2[2]+grad_viz_scale*g[2]*0.6, 0]]) #Maybe I make arrow length proportional to slope or something?
+        # g_values[:,0]=map_to_canvas(g_values[:,0], axis_min=x_axis_1.x_min, 
+        #                                  axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
+        # g_values[:,1]=map_to_canvas(g_values[:,1], axis_min=y_axis_1.y_min, 
+        #                                  axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)
+
+        # a1=Arrow(start=g_values[0], end=g_values[1], fill_color=YELLOW, thickness=3.0, tip_width_ratio=5, buff=0)
+        # # self.add(a1)
+
+        # # panel_1_shift=[-5, 0.4, 0]
+        # panel_1=VGroup(axes_1, curve_1, x_label_1, y_label_1, p1, a1)
+        # # panel_1.shift(panel_1_shift)
+
+        # # curve_1.set_stroke(opacity=0.25) #Yeah so I a fade out/fade in will bascially be the optning animation for this scene?
+        # # self.add(panel_1)
+
+        # # Ok I might clean up/rewrite this scene, we'll see. 
+        # # I think it makes sense to to ahead and add panels 2 and 3, and then I can start thinking about how the
+        # # pieces fit together, and exactly what I want to show from there
+        # # This workflow feels a bit hacky/uncomfortable, but I do think I have a pretty good feeling of what I want
+        # # to show, so I'm just going to trust this new/different process. 
+
+        # x_axis_2=WelchXAxis(x_min=-1.2, x_max=4.5, x_ticks=[-1,0,1,2,3,4], x_tick_height=0.15,        
+        #                     x_label_font_size=24, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=4)
+        # y_axis_2=WelchYAxis(y_min=0.3, y_max=2.2, y_ticks=[0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0], y_tick_width=0.15,        
+        #                   y_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=3)
+        # axes_2=VGroup(x_axis_2, y_axis_2)
+
+
+        # points_2 = [param_surface(0, v) for v in np.linspace(-1, 4, 128)]
+        # points_mapped_2=np.array(points_2)[:, (1,2,0)]
+        # points_mapped_2[:,0]=map_to_canvas(points_mapped_2[:,0], axis_min=x_axis_2.x_min, 
+        #                                  axis_max=x_axis_2.x_max, axis_end=x_axis_2.axis_length_on_canvas)
+        # points_mapped_2[:,1]=map_to_canvas(points_mapped_2[:,1], axis_min=y_axis_2.y_min, 
+        #                                  axis_max=y_axis_2.y_max, axis_end=y_axis_2.axis_length_on_canvas)
+        # curve_2 = VMobject()
+        # curve_2.set_points_smoothly(points_mapped_2)
+        # curve_2.set_stroke(width=4, color=BLUE, opacity=0.8)
+
+
+        # x_label_2 = Tex(r'\theta_{2}', font_size=30).set_color(CHILL_BROWN)
+        # y_label_2 = Tex('Loss', font_size=25).set_color(CHILL_BROWN)
+        # x_label_2.next_to(x_axis_2, RIGHT, buff=0.05)
+        # y_label_2.next_to(y_axis_2, UP, buff=0.05) #not sure I need this. 
+
+        # p2_values=param_surface(0, 0)
+        # p2_values[0]=map_to_canvas(p2_values[0], axis_min=x_axis_2.x_min, 
+        #                                  axis_max=x_axis_2.x_max, axis_end=x_axis_2.axis_length_on_canvas)
+        # p2_values[1]=map_to_canvas(p2_values[2], axis_min=y_axis_2.y_min, 
+        #                                  axis_max=y_axis_2.y_max, axis_end=y_axis_2.axis_length_on_canvas)
+        # p2_values[2]=0
+        # p2=Dot(p2_values, radius=0.06, fill_color=BLUE)
+
+        # g=get_grads(0,0)
+        # grad_viz_scale=1.25*abs(g[3]) #Maybe make arrow length proportional to gradient?
+        # p2_values_2=param_surface(0, 0)
+        # g_values_2=np.array([[p2_values_2[0], p2_values_2[2], 0],
+        #                    [p2_values_2[0]+grad_viz_scale, p2_values_2[2]+grad_viz_scale*g[3]*1.0, 0]]) #Maybe I make arrow length proportional to slope or something?
+        # g_values_2[:,0]=map_to_canvas(g_values_2[:,0], axis_min=x_axis_2.x_min, 
+        #                                  axis_max=x_axis_2.x_max, axis_end=x_axis_2.axis_length_on_canvas)
+        # g_values_2[:,1]=map_to_canvas(g_values_2[:,1], axis_min=y_axis_2.y_min, 
+        #                                  axis_max=y_axis_2.y_max, axis_end=y_axis_2.axis_length_on_canvas)
+
+        # a2=Arrow(start=g_values_2[0], end=g_values_2[1], fill_color=BLUE, thickness=3.0, tip_width_ratio=5, buff=0)
+
+        # panel_2.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN) #Get into 3d space so I can do the bring together animation...
+        # panel_1.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN)
+
+        ## ----
 
         # I'm thinking that after we show what the gradient is, we come back to 3 panels to show Gradient Descent 
         # happening!
         #
-
-
 
         ## ----
 
@@ -501,8 +845,7 @@ class P33v1(InteractiveScene):
 
 
         
-        self.embed()
-        self.wait(20)
+        
 
 
 

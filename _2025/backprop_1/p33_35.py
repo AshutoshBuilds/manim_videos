@@ -354,12 +354,20 @@ class P33v1(InteractiveScene):
         self.remove(p2); self.add(p2)
 
         self.play(ts.animate.set_opacity(0.5), 
+                  p1.animate.set_opacity(0.0),
+                  p2.animate.set_opacity(0.0),
+                  a1.animate.rotate(-DEGREES*135, axis=a1.get_end()-a1.get_start()),
+                  a2.animate.rotate(-DEGREES*80, axis=a2.get_end()-a2.get_start()),
                   u_gridlines.animate.set_stroke(opacity=0.14), 
                   v_gridlines.animate.set_stroke(opacity=0.14),
-                  self.frame.animate.reorient(125, 57, 0, (-2.45, 1.36, 2.08), 1.21), 
+                  # self.frame.animate.reorient(125, 57, 0, (-2.45, 1.36, 2.08), 1.21),
+                  # self.frame.animate.reorient(106, 41, 0, (-2.43, 0.92, 2.55), 3.11), 
+                  self.frame.animate.reorient(116, 41, 0, (-2.53, 0.79, 2.7), 2.66),
                   run_time=4.0)
 
         self.wait()
+
+        # a1.rotate(90*DEGREES, [1, 0, 0])
 
         ## Ooh could my 2 arrows "twist in and come together to make the gradient" -> that would be dope I think. 
 
@@ -367,19 +375,30 @@ class P33v1(InteractiveScene):
         # each of my existing arrows into this one. 
 
 
-        a3 =Arrow(start=[a1.get_corner(LEFT)[0], a1.get_corner(LEFT)[1], a1.get_corner(OUT)[2]],
-                  end=[a2.get_corner(RIGHT)[0], a2.get_corner(RIGHT)[1], a2.get_corner(RIGHT)[2]], 
+        a3 =Arrow(start=[a1.get_corner(LEFT)[0]+0.03, a1.get_corner(LEFT)[1], a1.get_corner(OUT)[2]],
+                  end=[a1.get_corner(RIGHT)[0], a2.get_corner(UP)[1], a2.get_corner(IN)[2]], 
                   fill_color='#FF00FF', thickness=3.0, tip_width_ratio=5, buff=0)
         # a3 =Arrow(start=a1.start, end=a2.end, fill_color='#FF00FF', thickness=3.0, tip_width_ratio=5, buff=0)
         #going to need to do some interestign rotation stuff I think...
         #Hmm doesn't look like I can borrow a1.start etc, these musth not update
         # Ok what bout like getting corners etc from a1 and a2?
+        # a1.rotate(-DEGREES*135, axis=a1.get_end()-a1.get_start())
+        # a2.rotate(-DEGREES*80, axis=a2.get_end()-a2.get_start())
 
 
         self.add(a3)
 
+        self.remove(a3)
 
 
+
+        # I'm thinking that after we show what the gradient is, we come back to 3 panels to show Gradient Descent 
+        # happening!
+        #
+
+
+
+        ## ----
 
 
         #Ok isn't the answer here, ot at least part of the answer just using the same math: 

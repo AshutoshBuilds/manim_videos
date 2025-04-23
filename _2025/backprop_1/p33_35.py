@@ -604,7 +604,7 @@ class P33_35(InteractiveScene):
         
         self.play(TransformFromCopy(arrows_1[4], a7), 
                   TransformFromCopy(arrows_2[4], a7),
-                  # self.frame.animate.reorient(-153, 55, 0, (-3.87, 1.74, 1.26), 1.16),
+                  self.frame.animate.reorient(179, 54, 0, (-3.43, 1.82, 1.18), 1.0),
                   run_time=3.0)
         self.wait()
 
@@ -612,7 +612,7 @@ class P33_35(InteractiveScene):
         self.play(arrows_1[4].animate.set_opacity(0.0),
                   arrows_2[4].animate.set_opacity(0.0),
                   FadeIn(s6),
-                  reorient(179, 54, 0, (-3.39, 1.87, 1.12), 0.72),
+                  # self.frame.animate.reorient(179, 54, 0, (-3.39, 1.87, 1.12), 0.72),
                   run_time=2.0)
         self.remove(s5); self.add(s5) #Occlusions
         self.wait()

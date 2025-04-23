@@ -378,6 +378,105 @@ class P33_35(InteractiveScene):
 
         self.wait()
 
+        # Create main surface
+        surface = ParametricSurface(
+            param_surface,  
+            u_range=[-1, 4],
+            v_range=[-1, 4],
+            resolution=(256, 256),
+        )
+
+        ts = TexturedSurface(surface, '/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/animation/p_24_28_losses_4.png')
+        ts.set_shading(0.0, 0.1, 0)
+        
+        pivot_x,scale_x=get_pivot_and_scale(axis_min=x_axis_1.x_min, axis_max=x_axis_1.x_max, 
+                                        axis_end=x_axis_1.axis_length_on_canvas)
+        pivot_y,scale_y=get_pivot_and_scale(axis_min=y_axis_1.y_min, axis_max=y_axis_1.y_max, 
+                                        axis_end=y_axis_1.axis_length_on_canvas)
+        ts.scale([scale_x, scale_x, scale_y], about_point=[pivot_x, pivot_x, pivot_y])
+        surf_shift=[-3.8, 0.34, -0.3] #Gross iterative swagginess, I think i at least have the scale right
+        ts.shift(surf_shift)
+
+        ##Ok let's figure out if we want gridlines
+        num_lines = 21  # Number of gridlines in each direction
+        num_points = 256  # Number of points per line
+        u_gridlines = VGroup()
+        v_gridlines = VGroup()
+        u_values = np.linspace(-1, 4, num_lines)
+        v_points = np.linspace(-1, 4, num_points)
+        for u in u_values:
+            points = [param_surface(u, v) for v in v_points]
+            line = VMobject()
+            line.set_points_smoothly(points)
+            line.set_stroke(width=1, color=WHITE, opacity=0.0)
+            u_gridlines.add(line)
+        u_points = np.linspace(-1, 4, num_points)
+        for v in u_values:  # Using same number of lines for both directions
+            points = [param_surface(u, v) for u in u_points]
+            line = VMobject()
+            line.set_points_smoothly(points)
+            line.set_stroke(width=1, color=WHITE, opacity=0.0)
+            v_gridlines.add(line)
+
+        u_gridlines.scale([scale_x, scale_x, scale_y], about_point=[pivot_x, pivot_x, pivot_y])
+        u_gridlines.shift(surf_shift)
+        v_gridlines.scale([scale_x, scale_x, scale_y], about_point=[pivot_x, pivot_x, pivot_y])
+        v_gridlines.shift(surf_shift)
+        ts.set_opacity(0.0)
+
+        self.add(ts, u_gridlines, v_gridlines) #Add with zero opacity
+        self.remove(arrows_1[0]); self.add(arrows_1[0]) #Occlusions
+        self.remove(arrows_2[0]); self.add(arrows_2[0])
+        self.remove(points_1[0]); self.add(points_1[0])
+        self.remove(points_2[0]); self.add(points_2[0])
+
+        self.play(ts.animate.set_opacity(0.5), 
+                  points_1[0].animate.set_opacity(0.0),
+                  points_2[0].animate.set_opacity(0.0),
+                  arrows_1[0].animate.rotate(-DEGREES*135, axis=arrows_1[0].get_end()-arrows_1[0].get_start()),
+                  arrows_2[0].animate.rotate(-DEGREES*80, axis=arrows_2[0].get_end()-arrows_2[0].get_start()),
+                  u_gridlines.animate.set_stroke(opacity=0.14), 
+                  v_gridlines.animate.set_stroke(opacity=0.14),
+                  # self.frame.animate.reorient(125, 57, 0, (-2.45, 1.36, 2.08), 1.21),
+                  # self.frame.animate.reorient(106, 41, 0, (-2.43, 0.92, 2.55), 3.11), 
+                  self.frame.animate.reorient(124, 40, 0, (-2.57, 0.86, 2.7), 1.81),
+                  run_time=4.0)
+
+        self.wait()
+
+        a3 =Arrow(start=[arrows_1[0].get_corner(LEFT)[0]+0.03, arrows_1[0].get_corner(LEFT)[1]+0.01, arrows_1[0].get_corner(OUT)[2]],
+                  end=[arrows_1[0].get_corner(RIGHT)[0], arrows_2[0].get_corner(UP)[1], arrows_2[0].get_corner(IN)[2]], 
+                  fill_color='#FF00FF', thickness=3.0, tip_width_ratio=5, buff=0)
+        self.wait()
+
+        self.play(TransformFromCopy(arrows_1[0], a3), #Ah that's fucking dope - how many more cool tricks does Grant have up his sleeve that I know nothing about lol. 
+                  TransformFromCopy(arrows_2[0], a3),
+                  run_time=3.0)
+        self.wait()
+
+
+        s1=Dot3D(center=a3.get_start(), radius=0.06, color='$FF00FF')
+        s2=Dot3D(center=a3.get_end(), radius=0.06, color='$FF00FF')
+        self.wait()
+
+        self.play(arrows_1[0].animate.set_opacity(0.0),
+                  arrows_2[0].animate.set_opacity(0.0),
+                  curves_1[0].animate.set_opacity(0.0),
+                  curves_2[0].animate.set_opacity(0.0),
+                  FadeIn(s1),
+                  FadeIn(s2),
+                  self.frame.animate.reorient(175, 47, 0, (-3.89, 1.49, 1.6), 3.75),
+                  run_time=2.0)
+
+        self.wait()
+
+        # Now add in next set of yellow and blue lines (maybe curves)? And have them merge together again to steer us 
+        # donwhill bro!
+        
+
+
+
+
 
         self.embed()
         self.wait(20)

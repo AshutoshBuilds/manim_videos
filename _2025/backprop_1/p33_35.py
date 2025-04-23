@@ -325,13 +325,13 @@ class P33_35(InteractiveScene):
                                    color=YELLOW, buff=0, stroke_width=1.5))   
                 arrows_1.add(Arrow(start=[descent_points_mapped_1[i-1][0], descent_points_mapped_1[i-1][1], 0], 
                                      end=arrow_end_points_1_mapped[i-1], fill_color=YELLOW, 
-                                     thickness=3.0, tip_width_ratio=5, buff=0))
+                                     thickness=3.0, tip_width_ratio=5, buff=0, max_width_to_length_ratio=0.2))
                 lines_2.add(Line(start=[descent_points_mapped_2[i-1][0], descent_points_mapped_2[i-1][1], 0], 
                                    end=[descent_points_mapped_2[i][0], descent_points_mapped_2[i][1], 0], 
                                    color=BLUE, buff=0, stroke_width=1.5))   
                 arrows_2.add(Arrow(start=[descent_points_mapped_2[i-1][0], descent_points_mapped_2[i-1][1], 0], 
                                      end=arrow_end_points_2_mapped[i-1], fill_color=BLUE, 
-                                     thickness=3.0, tip_width_ratio=5, buff=0))
+                                     thickness=3.0, tip_width_ratio=5, buff=0, max_width_to_length_ratio=0.2))
 
         ## Test viz as I go here            
         panel_1=VGroup(axes_1, x_label_1, y_label_1, curves_1, points_1, arrows_1, lines_1)
@@ -445,7 +445,7 @@ class P33_35(InteractiveScene):
         self.wait()
 
         a3 =Arrow(start=[arrows_1[0].get_corner(LEFT)[0]+0.03, arrows_1[0].get_corner(LEFT)[1]+0.01, arrows_1[0].get_corner(OUT)[2]],
-                  end=[arrows_1[0].get_corner(RIGHT)[0], arrows_2[0].get_corner(UP)[1], arrows_2[0].get_corner(IN)[2]], 
+                  end=[arrows_1[0].get_corner(RIGHT)[0], arrows_2[0].get_corner(UP)[1], arrows_2[0].get_corner(IN)[2]-0.1], 
                   fill_color='#FF00FF', thickness=3.0, tip_width_ratio=5, buff=0)
         self.wait()
 
@@ -467,7 +467,7 @@ class P33_35(InteractiveScene):
                   FadeIn(s2),
                   self.frame.animate.reorient(175, 47, 0, (-3.89, 1.49, 1.6), 3.75),
                   run_time=2.0)
-
+        self.remove(s1); self.add(s1) #Occlusions
         self.wait()
 
         # Now add in next set of yellow and blue lines (maybe curves)? And have them merge together again to steer us 
@@ -483,11 +483,11 @@ class P33_35(InteractiveScene):
         # --- Step 2
         arrows_1[1].move_to(s2.get_center(), aligned_edge=LEFT)
         arrows_1[1].rotate(-DEGREES*130, axis=arrows_1[1].get_end()-arrows_1[1].get_start())
-        arrows_1[1].shift([0,0,-0.05])
+        arrows_1[1].shift([0,0,-0.06])
         
         arrows_2[1].move_to(s2.get_center(), aligned_edge=LEFT)
         arrows_2[1].rotate(-DEGREES*75, axis=arrows_2[1].get_end()-arrows_2[1].get_start())
-        arrows_2[1].shift([0,0.12,-0.05])
+        arrows_2[1].shift([0,0.12,-0.06])
 
         self.add(arrows_1[1], arrows_2[1])
 
@@ -496,55 +496,128 @@ class P33_35(InteractiveScene):
         # curves_1[1].shift([0, (arrows_1[1].get_center()-curves_1[1].get_center())[1],0])
         #Ok I don't think adding the curves here is really helpful/interesting. 
         a4 =Arrow(start=[arrows_1[1].get_corner(LEFT)[0]+0.00, arrows_1[1].get_corner(LEFT)[1]+0.00, arrows_1[1].get_corner(OUT)[2]],
-                  end=[arrows_1[1].get_corner(RIGHT)[0], arrows_2[1].get_corner(UP)[1], arrows_2[1].get_corner(IN)[2]], 
-                  fill_color='#FF00FF', thickness=3.0, tip_width_ratio=5, buff=0)
+                  end=[arrows_1[1].get_corner(RIGHT)[0], arrows_2[1].get_corner(UP)[1], arrows_2[1].get_corner(IN)[2]-0.07], 
+                  fill_color='#FF00FF', thickness=3.0, tip_width_ratio=5, buff=0, max_width_to_length_ratio=0.2)
         # self.add(a4)
         self.play(TransformFromCopy(arrows_1[1], a4), 
                   TransformFromCopy(arrows_2[1], a4),
+                  # self.frame.animate.reorient(175, 47, 0, (-3.89, 1.49, 1.6), 3.75),
+                  self.frame.animate.reorient(179, 48, 0, (-3.66, 1.68, 1.37), 2.39),
                   run_time=3.0)
-        self.wait()
 
-        s3=Dot3D(center=a4.get_end(), radius=0.06, color='$FF00FF')
+        # self.frame.reorient(-141, 63, 0, (-3.87, 0.05, -0.09), 2.29) #Debug view
+        # self.wait()
+
+        s3=Dot3D(center=a4.get_end(), radius=0.05, color='$FF00FF')
         self.play(arrows_1[1].animate.set_opacity(0.0),
                   arrows_2[1].animate.set_opacity(0.0),
                   FadeIn(s3),
                   # self.frame.animate.reorient(175, 47, 0, (-3.89, 1.49, 1.6), 3.75),
                   run_time=2.0)
+        self.remove(s2); self.add(s2) #Occlusions
         self.wait()
 
         # --- Step 3
         arrows_1[2].move_to(s3.get_center(), aligned_edge=LEFT)
-        arrows_1[2].rotate(-DEGREES*130, axis=arrows_1[2].get_end()-arrows_1[2].get_start())
-        arrows_1[2].shift([0,0,-0.05])
+        arrows_1[2].rotate(-DEGREES*120, axis=arrows_1[2].get_end()-arrows_1[2].get_start())
+        # arrows_1[2].shift([0,0,-0.05])
         
         arrows_2[2].move_to(s3.get_center(), aligned_edge=LEFT)
-        arrows_2[2].rotate(-DEGREES*75, axis=arrows_2[2].get_end()-arrows_2[2].get_start())
-        arrows_2[2].shift([0,0.12,-0.05])
+        arrows_2[2].rotate(-DEGREES*70, axis=arrows_2[2].get_end()-arrows_2[2].get_start())
+        arrows_2[2].shift([0,0.09,0.03])
 
-        self.add(arrows_1[1], arrows_2[1])
+        self.add(arrows_1[2], arrows_2[2])
 
-        # self.add(curves_1[1])
-        # curves_1[1].set_stroke(opacity=0.15)
-        # curves_1[1].shift([0, (arrows_1[1].get_center()-curves_1[1].get_center())[1],0])
-        #Ok I don't think adding the curves here is really helpful/interesting. 
-        a4 =Arrow(start=[arrows_1[1].get_corner(LEFT)[0]+0.00, arrows_1[1].get_corner(LEFT)[1]+0.00, arrows_1[1].get_corner(OUT)[2]],
-                  end=[arrows_1[1].get_corner(RIGHT)[0], arrows_2[1].get_corner(UP)[1], arrows_2[1].get_corner(IN)[2]], 
-                  fill_color='#FF00FF', thickness=3.0, tip_width_ratio=5, buff=0)
-        # self.add(a4)
-        self.play(TransformFromCopy(arrows_1[1], a4), 
-                  TransformFromCopy(arrows_2[1], a4),
+        a5 =Arrow(start=[arrows_1[2].get_corner(LEFT)[0]+0.00, arrows_1[2].get_corner(LEFT)[1]+0.00, arrows_1[2].get_corner(OUT)[2]],
+                  end=[arrows_1[2].get_corner(RIGHT)[0], arrows_2[2].get_corner(UP)[1], arrows_2[2].get_corner(IN)[2]-0.05], 
+                  fill_color='#FF00FF', thickness=3.0, tip_width_ratio=3, buff=0, max_width_to_length_ratio=0.2)
+        # self.add(a5)
+        self.wait()
+        
+        self.play(TransformFromCopy(arrows_1[2], a5), 
+                  TransformFromCopy(arrows_2[2], a5),
+                  self.frame.animate.reorient(179, 54, 0, (-3.44, 1.77, 1.25), 1.62),
+                  run_time=3.0)
+        # self.wait()
+        # self.frame.reorient(-141, 63, 0, (-3.87, 0.05, -0.09), 2.29) #Debug view
+
+        s4=Dot3D(center=a5.get_end(), radius=0.035, color='$FF00FF')
+        self.play(arrows_1[2].animate.set_opacity(0.0),
+                  arrows_2[2].animate.set_opacity(0.0),
+                  FadeIn(s4),
+                  # self.frame.animate.reorient(175, 47, 0, (-3.89, 1.49, 1.6), 3.75),
+                  run_time=2.0)
+        self.remove(s3); self.add(s3) #Occlusions
+        self.wait()
+
+        # --- Step 4
+        arrows_1[3].move_to(s4.get_center(), aligned_edge=LEFT)
+        arrows_1[3].rotate(-DEGREES*120, axis=arrows_1[3].get_end()-arrows_1[3].get_start())
+        # arrows_1[3].shift([0,0,-0.05])
+        
+        arrows_2[3].move_to(s4.get_center(), aligned_edge=LEFT)
+        arrows_2[3].rotate(-DEGREES*70, axis=arrows_2[3].get_end()-arrows_2[3].get_start())
+        arrows_2[3].shift([0,0.04,0.01])
+
+        self.add(arrows_1[3], arrows_2[3])
+
+        a6 =Arrow(start=[arrows_1[3].get_corner(LEFT)[0]+0.00, arrows_1[3].get_corner(LEFT)[1]+0.00, arrows_1[3].get_corner(OUT)[2]],
+                  end=[arrows_1[3].get_corner(RIGHT)[0], arrows_2[3].get_corner(UP)[1], arrows_2[3].get_corner(IN)[2]], 
+                  fill_color='#FF00FF', thickness=3.0, tip_width_ratio=3, buff=0, max_width_to_length_ratio=0.2)
+        # self.add(a6)
+        self.wait()
+        
+        self.play(TransformFromCopy(arrows_1[3], a6), 
+                  TransformFromCopy(arrows_2[3], a6),
+                  self.frame.animate.reorient(179, 54, 0, (-3.43, 1.82, 1.18), 1.18),
                   run_time=3.0)
         self.wait()
 
-        s3=Dot3D(center=a4.get_end(), radius=0.06, color='$FF00FF')
-        self.play(arrows_1[1].animate.set_opacity(0.0),
-                  arrows_2[1].animate.set_opacity(0.0),
-                  FadeIn(s3),
+        # self.frame.reorient(-141, 63, 0, (-3.87, 0.05, -0.09), 2.29) #Debug view
+
+        s5=Dot3D(center=a6.get_end(), radius=0.02, color='$FF00FF')
+        self.play(arrows_1[3].animate.set_opacity(0.0),
+                  arrows_2[3].animate.set_opacity(0.0),
+                  FadeIn(s5),
                   # self.frame.animate.reorient(175, 47, 0, (-3.89, 1.49, 1.6), 3.75),
                   run_time=2.0)
+        self.remove(s4); self.add(s4) #Occlusions
         self.wait()
 
 
+        # --- Step 5 - probably our last step
+        arrows_1[4].move_to(s5.get_center(), aligned_edge=LEFT)
+        arrows_1[4].rotate(-DEGREES*90, axis=arrows_1[4].get_end()-arrows_1[4].get_start())
+        # arrows_1[4].shift([0,0,-0.05])
+        
+        arrows_2[4].move_to(s5.get_center(), aligned_edge=LEFT)
+        arrows_2[4].rotate(-DEGREES*90, axis=arrows_2[4].get_end()-arrows_2[4].get_start())
+        arrows_2[4].shift([0,0.02,0.005])
+
+        self.add(arrows_1[4], arrows_2[4])
+
+        a7 =Arrow(start=[arrows_1[4].get_corner(LEFT)[0]+0.00, arrows_1[4].get_corner(LEFT)[1]+0.00, arrows_1[4].get_corner(OUT)[2]],
+                  end=[arrows_1[4].get_corner(RIGHT)[0], arrows_2[4].get_corner(UP)[1], arrows_2[4].get_corner(IN)[2]], 
+                  fill_color='#FF00FF', thickness=3.0, tip_width_ratio=3, buff=0, max_width_to_length_ratio=0.2)
+        # self.add(a7)
+        self.wait()
+        
+        self.play(TransformFromCopy(arrows_1[4], a7), 
+                  TransformFromCopy(arrows_2[4], a7),
+                  # self.frame.animate.reorient(-153, 55, 0, (-3.87, 1.74, 1.26), 1.16),
+                  run_time=3.0)
+        self.wait()
+
+        s6=Dot3D(center=a7.get_end(), radius=0.01, color='$FF00FF')
+        self.play(arrows_1[4].animate.set_opacity(0.0),
+                  arrows_2[4].animate.set_opacity(0.0),
+                  FadeIn(s6),
+                  reorient(179, 54, 0, (-3.39, 1.87, 1.12), 0.72),
+                  run_time=2.0)
+        self.remove(s5); self.add(s5) #Occlusions
+        self.wait()
+
+        #Ok this scene could be tuned more for sure, but it's not terrible - it's time to go do the rewrite! 
 
         self.embed()
         self.wait(20)

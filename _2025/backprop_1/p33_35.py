@@ -169,22 +169,40 @@ class P34v2D(InteractiveScene):
             p=Dot(descent_points_mapped_1[i], radius=0.06, fill_color=YELLOW)
             points_1.add(p)
 
+            # #Curves 2
+            p1 = np.array([param_surface(descent_points[i][0], v) for v in np.linspace(-1, 4, 128)])
+            points_mapped=np.zeros_like(p1)
+            points_mapped[:,0]=map_to_canvas(p1[:,1], axis_min=x_axis_1.x_min, 
+                                             axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
+            points_mapped[:,1]=map_to_canvas(p1[:,2], axis_min=y_axis_1.y_min, 
+                                             axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)
+            c = VMobject()
+            c.set_points_smoothly(points_mapped)
+            c.set_stroke(width=4, color=BLUE, opacity=0.8)
+            curves_2.add(c)
+
+            #Points 2
+            p=Dot(descent_points_mapped_2[i], radius=0.06, fill_color=BLUE)
+            points_2.add(p)
+          
             if i>0:
-                #Lines 1
                 lines_1.add(Line(start=[descent_points_mapped_1[i-1][0], descent_points_mapped_1[i-1][1], 0], 
                                    end=[descent_points_mapped_1[i][0], descent_points_mapped_1[i][1], 0], 
                                    color=YELLOW, buff=0, stroke_width=1.5))   
-
                 arrows_1.add(Arrow(start=[descent_points_mapped_1[i-1][0], descent_points_mapped_1[i-1][1], 0], 
                                      end=arrow_end_points_1_mapped[i-1], fill_color=YELLOW, 
                                      thickness=3.0, tip_width_ratio=5, buff=0))
-
-
+                lines_2.add(Line(start=[descent_points_mapped_2[i-1][0], descent_points_mapped_2[i-1][1], 0], 
+                                   end=[descent_points_mapped_2[i][0], descent_points_mapped_2[i][1], 0], 
+                                   color=BLUE, buff=0, stroke_width=1.5))   
+                arrows_2.add(Arrow(start=[descent_points_mapped_2[i-1][0], descent_points_mapped_2[i-1][1], 0], 
+                                     end=arrow_end_points_2_mapped[i-1], fill_color=BLUE, 
+                                     thickness=3.0, tip_width_ratio=5, buff=0))
 
         ## Test viz as I go here            
         panel_1=VGroup(axes_1, x_label_1, y_label_2, curves_1, points_1, arrows_1, lines_1)
         panel_1.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN)
-        panel_2=VGroup(axes_2, x_label_2, y_label_2)
+        panel_2=VGroup(axes_2, x_label_2, y_label_2, curves_2, points_2, arrows_2, lines_2)
         panel_2.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN)     
 
         panel_1_shift=[-5, 0, 2.0]

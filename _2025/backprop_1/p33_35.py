@@ -62,7 +62,7 @@ class Dot3D(Sphere):
 
 #Do 2d numerical-ish gradient descent once and use results in a couple places. 
 num_steps=10
-learning_rate=1.25
+learning_rate=1.05 #1.25
 grad_adjustment_factors_1=[0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6] # Not sure why I need these - only applying to viz - 
 grad_adjustment_factors_2=[1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0] # maybe I should use for descent too?
 descent_points=[] 
@@ -356,7 +356,7 @@ class P33_35(InteractiveScene):
         self.add(panel_1_start)
         self.add(panel_2_start)
 
-
+        ## Start move to 3d
         r=panel_2.get_corner(LEFT+BOTTOM) 
         r[0]=-4.15    
         self.wait()
@@ -472,9 +472,77 @@ class P33_35(InteractiveScene):
 
         # Now add in next set of yellow and blue lines (maybe curves)? And have them merge together again to steer us 
         # donwhill bro!
+        # Ok so I need to move the rest of the panel stuff...
+        # panel_1=VGroup(axes_1, x_label_1, y_label_1, curves_1, points_1, arrows_1, lines_1)
+        # panel_1_start=VGroup(axes_1, x_label_1, y_label_1, curves_1[0], points_1[0], arrows_1[0])
+        panel_1_leftovers=VGroup(curves_1[1:], points_1[1:], arrows_1[1:])
+        panel_2_leftovers=VGroup(curves_2[1:], points_2[1:], arrows_2[1:])
+        panel_1_leftovers.shift([0, 0, -2.0])
+        panel_2_leftovers.rotate(90*DEGREES, [0,0,1], about_point=r).shift([0, 0, 2.0])
+
+        # --- Step 2
+        arrows_1[1].move_to(s2.get_center(), aligned_edge=LEFT)
+        arrows_1[1].rotate(-DEGREES*130, axis=arrows_1[1].get_end()-arrows_1[1].get_start())
+        arrows_1[1].shift([0,0,-0.05])
         
+        arrows_2[1].move_to(s2.get_center(), aligned_edge=LEFT)
+        arrows_2[1].rotate(-DEGREES*75, axis=arrows_2[1].get_end()-arrows_2[1].get_start())
+        arrows_2[1].shift([0,0.12,-0.05])
 
+        self.add(arrows_1[1], arrows_2[1])
 
+        # self.add(curves_1[1])
+        # curves_1[1].set_stroke(opacity=0.15)
+        # curves_1[1].shift([0, (arrows_1[1].get_center()-curves_1[1].get_center())[1],0])
+        #Ok I don't think adding the curves here is really helpful/interesting. 
+        a4 =Arrow(start=[arrows_1[1].get_corner(LEFT)[0]+0.00, arrows_1[1].get_corner(LEFT)[1]+0.00, arrows_1[1].get_corner(OUT)[2]],
+                  end=[arrows_1[1].get_corner(RIGHT)[0], arrows_2[1].get_corner(UP)[1], arrows_2[1].get_corner(IN)[2]], 
+                  fill_color='#FF00FF', thickness=3.0, tip_width_ratio=5, buff=0)
+        # self.add(a4)
+        self.play(TransformFromCopy(arrows_1[1], a4), 
+                  TransformFromCopy(arrows_2[1], a4),
+                  run_time=3.0)
+        self.wait()
+
+        s3=Dot3D(center=a4.get_end(), radius=0.06, color='$FF00FF')
+        self.play(arrows_1[1].animate.set_opacity(0.0),
+                  arrows_2[1].animate.set_opacity(0.0),
+                  FadeIn(s3),
+                  # self.frame.animate.reorient(175, 47, 0, (-3.89, 1.49, 1.6), 3.75),
+                  run_time=2.0)
+        self.wait()
+
+        # --- Step 3
+        arrows_1[2].move_to(s3.get_center(), aligned_edge=LEFT)
+        arrows_1[2].rotate(-DEGREES*130, axis=arrows_1[2].get_end()-arrows_1[2].get_start())
+        arrows_1[2].shift([0,0,-0.05])
+        
+        arrows_2[2].move_to(s3.get_center(), aligned_edge=LEFT)
+        arrows_2[2].rotate(-DEGREES*75, axis=arrows_2[2].get_end()-arrows_2[2].get_start())
+        arrows_2[2].shift([0,0.12,-0.05])
+
+        self.add(arrows_1[1], arrows_2[1])
+
+        # self.add(curves_1[1])
+        # curves_1[1].set_stroke(opacity=0.15)
+        # curves_1[1].shift([0, (arrows_1[1].get_center()-curves_1[1].get_center())[1],0])
+        #Ok I don't think adding the curves here is really helpful/interesting. 
+        a4 =Arrow(start=[arrows_1[1].get_corner(LEFT)[0]+0.00, arrows_1[1].get_corner(LEFT)[1]+0.00, arrows_1[1].get_corner(OUT)[2]],
+                  end=[arrows_1[1].get_corner(RIGHT)[0], arrows_2[1].get_corner(UP)[1], arrows_2[1].get_corner(IN)[2]], 
+                  fill_color='#FF00FF', thickness=3.0, tip_width_ratio=5, buff=0)
+        # self.add(a4)
+        self.play(TransformFromCopy(arrows_1[1], a4), 
+                  TransformFromCopy(arrows_2[1], a4),
+                  run_time=3.0)
+        self.wait()
+
+        s3=Dot3D(center=a4.get_end(), radius=0.06, color='$FF00FF')
+        self.play(arrows_1[1].animate.set_opacity(0.0),
+                  arrows_2[1].animate.set_opacity(0.0),
+                  FadeIn(s3),
+                  # self.frame.animate.reorient(175, 47, 0, (-3.89, 1.49, 1.6), 3.75),
+                  run_time=2.0)
+        self.wait()
 
 
 

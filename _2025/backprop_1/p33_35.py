@@ -69,8 +69,8 @@ descent_points=[]
 arrow_end_points_1=[]
 arrow_end_points_2=[]
 
-staring_values=param_surface(0, 0)
-descent_points.append(list(staring_values)) #First point
+starting_values=param_surface(0, 0)
+descent_points.append(list(starting_values)) #First point
 
 for i in range(1, num_steps):
     g=get_grads(descent_points[i-1][0], descent_points[i-1][1]) 
@@ -87,142 +87,6 @@ arrow_end_points_1=np.array(arrow_end_points_1)
 arrow_end_points_2=np.array(arrow_end_points_2)
 descent_points=np.array(descent_points)
 
-
-
-class P34v2D(InteractiveScene):
-    def construct(self):
-        '''
-        Let's begin by running 2d numerical-ish gradient descent and visiaulizing it in 2 1d panes
-        Curves should update as we move in the 2d space. 
-        Ideas where initially developed in p33_35_sketch.py - lots of notes there too. 
-        '''
-
-        #Now that grads are computed, start viz. 
-        x_axis_1=WelchXAxis(x_min=-1.2, x_max=4.5, x_ticks=[-1,0,1,2,3,4], x_tick_height=0.15,        
-                            x_label_font_size=24, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=4)
-        y_axis_1=WelchYAxis(y_min=0.3, y_max=2.2, y_ticks=[0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0], y_tick_width=0.15,        
-                          y_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=3)
-        axes_1=VGroup(x_axis_1, y_axis_1)
-
-        x_label_1 = Tex(r'\theta_{1}', font_size=30).set_color(CHILL_BROWN)
-        y_label_1 = Tex('Loss', font_size=25).set_color(CHILL_BROWN)
-        x_label_1.next_to(x_axis_1, RIGHT, buff=0.05)
-        y_label_1.next_to(y_axis_1, UP, buff=0.05)
-
-        x_axis_2=WelchXAxis(x_min=-1.2, x_max=4.5, x_ticks=[-1,0,1,2,3,4], x_tick_height=0.15,        
-                            x_label_font_size=24, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=4)
-        y_axis_2=WelchYAxis(y_min=0.3, y_max=2.2, y_ticks=[0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0], y_tick_width=0.15,        
-                          y_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=3)
-        axes_2=VGroup(x_axis_2, y_axis_2)
-
-        x_label_2 = Tex(r'\theta_{2}', font_size=30).set_color(CHILL_BROWN)
-        y_label_2 = Tex('Loss', font_size=25).set_color(CHILL_BROWN)
-        x_label_2.next_to(x_axis_2, RIGHT, buff=0.05)
-        y_label_2.next_to(y_axis_2, UP, buff=0.05) #not sure I need this. 
-
-
-        ## Get all Curves, Points, Arrows, and Lines, then Group into panels
-        curves_1=VGroup(); curves_2=VGroup()
-        points_1=VGroup(); points_2=VGroup()
-        arrows_1=VGroup(); arrows_2=VGroup()
-        lines_1=VGroup(); lines_2=VGroup()
-
-        #Map all points
-        descent_points_mapped_1=np.zeros_like(descent_points)
-        descent_points_mapped_1[:,0]=map_to_canvas(descent_points[:,0], axis_min=x_axis_1.x_min, 
-                                         axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
-        descent_points_mapped_1[:,1]=map_to_canvas(descent_points[:,2], axis_min=y_axis_1.y_min, 
-                                         axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)
-
-        descent_points_mapped_2=np.zeros_like(descent_points)
-        descent_points_mapped_2[:,0]=map_to_canvas(descent_points[:,1], axis_min=x_axis_1.x_min, 
-                                         axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
-        descent_points_mapped_2[:,1]=map_to_canvas(descent_points[:,2], axis_min=y_axis_1.y_min, 
-                                         axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)
-
-        arrow_end_points_1_mapped=np.zeros_like(arrow_end_points_1)
-        arrow_end_points_1_mapped[:,0]=map_to_canvas(arrow_end_points_1[:,0], axis_min=x_axis_1.x_min, 
-                                         axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
-        arrow_end_points_1_mapped[:,1]=map_to_canvas(arrow_end_points_1[:,1], axis_min=y_axis_1.y_min, 
-                                         axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)
-
-        arrow_end_points_2_mapped=np.zeros_like(arrow_end_points_2)
-        arrow_end_points_2_mapped[:,0]=map_to_canvas(arrow_end_points_2[:,0], axis_min=x_axis_1.x_min, 
-                                         axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
-        arrow_end_points_2_mapped[:,1]=map_to_canvas(arrow_end_points_2[:,1], axis_min=y_axis_1.y_min, 
-                                         axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)
-
-        for i in range(len(descent_points)):
-            #Curves 1
-            p1 = np.array([param_surface(u, descent_points[i][1]) for u in np.linspace(-1, 4, 128)])
-            points_mapped=np.zeros_like(p1)
-            points_mapped[:,0]=map_to_canvas(p1[:,0], axis_min=x_axis_1.x_min, 
-                                             axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
-            points_mapped[:,1]=map_to_canvas(p1[:,2], axis_min=y_axis_1.y_min, 
-                                             axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)
-            c = VMobject()
-            c.set_points_smoothly(points_mapped)
-            c.set_stroke(width=4, color=YELLOW, opacity=0.8)
-            curves_1.add(c)
-
-            #Points 1
-            p=Dot(descent_points_mapped_1[i], radius=0.06, fill_color=YELLOW)
-            points_1.add(p)
-
-            # #Curves 2
-            p1 = np.array([param_surface(descent_points[i][0], v) for v in np.linspace(-1, 4, 128)])
-            points_mapped=np.zeros_like(p1)
-            points_mapped[:,0]=map_to_canvas(p1[:,1], axis_min=x_axis_1.x_min, 
-                                             axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
-            points_mapped[:,1]=map_to_canvas(p1[:,2], axis_min=y_axis_1.y_min, 
-                                             axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)
-            c = VMobject()
-            c.set_points_smoothly(points_mapped)
-            c.set_stroke(width=4, color=BLUE, opacity=0.8)
-            curves_2.add(c)
-
-            #Points 2
-            p=Dot(descent_points_mapped_2[i], radius=0.06, fill_color=BLUE)
-            points_2.add(p)
-          
-            if i>0:
-                lines_1.add(Line(start=[descent_points_mapped_1[i-1][0], descent_points_mapped_1[i-1][1], 0], 
-                                   end=[descent_points_mapped_1[i][0], descent_points_mapped_1[i][1], 0], 
-                                   color=YELLOW, buff=0, stroke_width=1.5))   
-                arrows_1.add(Arrow(start=[descent_points_mapped_1[i-1][0], descent_points_mapped_1[i-1][1], 0], 
-                                     end=arrow_end_points_1_mapped[i-1], fill_color=YELLOW, 
-                                     thickness=3.0, tip_width_ratio=5, buff=0))
-                lines_2.add(Line(start=[descent_points_mapped_2[i-1][0], descent_points_mapped_2[i-1][1], 0], 
-                                   end=[descent_points_mapped_2[i][0], descent_points_mapped_2[i][1], 0], 
-                                   color=BLUE, buff=0, stroke_width=1.5))   
-                arrows_2.add(Arrow(start=[descent_points_mapped_2[i-1][0], descent_points_mapped_2[i-1][1], 0], 
-                                     end=arrow_end_points_2_mapped[i-1], fill_color=BLUE, 
-                                     thickness=3.0, tip_width_ratio=5, buff=0))
-
-        ## Test viz as I go here            
-        panel_1=VGroup(axes_1, x_label_1, y_label_2, curves_1, points_1, arrows_1, lines_1)
-        panel_1.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN)
-        panel_2=VGroup(axes_2, x_label_2, y_label_2, curves_2, points_2, arrows_2, lines_2)
-        panel_2.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN)     
-
-        panel_1_shift=[-5, 0, 2.0]
-        panel_2_shift=[-5, 0, -2.0]
-        panel_1.shift(panel_1_shift)
-        panel_2.shift(panel_2_shift)
-
-        self.add(panel_1, panel_2)
-
-        self.frame.reorient(0, 89, 0, (-0.46, 0.0, 1.36), 8.97)
-        self.wait()
-
-
-        #WONDER IF I CAN DO A COOL TRANSFOMR INTO ANIMATION DEAL AS THE CUVES CHANGE
-        #
-        # Ok, I think all 2d pieces are in place here, after i rewrite these paragraphs I'll come figure out the animatino. 
-
-
-        self.embed()
-        self.wait(20)
 
 
 class P33_35(InteractiveScene):
@@ -355,6 +219,80 @@ class P33_35(InteractiveScene):
 
         self.add(panel_1_start)
         self.add(panel_2_start)
+        self.wait()
+
+        ## --- Ok so here I want to add a little "move the arrows back and forth along the parabolas deal..."
+
+
+        def get_arrow_1(u):
+            start=param_surface(u, 0)
+            g=get_grads(u+0.2, 0) #I don't know what's up with my grads bu this helps
+            # step_x_1=learning_rate*abs(g[2])
+            step_x_1=0.6
+            new_x=start[0]+step_x_1
+            new_y=start[2]+step_x_1*g[2]*0.7  #Swaggy
+
+            #Ok now I need to map to axes and apply rotations
+            mapped_values=np.zeros((2,2))
+            mapped_values[:,0]=map_to_canvas(np.array([start[0], new_x]), axis_min=x_axis_1.x_min, 
+                                             axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
+            mapped_values[:,1]=map_to_canvas(np.array([start[2], new_y]), axis_min=y_axis_1.y_min, 
+                                             axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)  
+
+            a=Arrow(start=[mapped_values[0,0], mapped_values[0,1], 0], 
+                     end=[mapped_values[1,0], mapped_values[1,1], 0], fill_color=YELLOW, 
+                     thickness=3.0, tip_width_ratio=5, buff=0, max_width_to_length_ratio=0.2)
+            a.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN)
+            a.shift(panel_1_shift)    
+            return a
+
+        def get_arrow_2(v):
+            start=param_surface(0, v)
+            g=get_grads(0, v*0.75) #I don't know what's up with my grads bu this helps
+            # step_x_1=learning_rate*abs(g[2])
+            step_x_1=0.6
+            new_x=start[1]+step_x_1
+            if v>0:
+                new_y=start[2]+step_x_1*g[3] #*0.7  #Swaggy
+            else:
+                new_y=start[2]+step_x_1*g[3]-(0.2*abs(v)) #Oh my god this is so fucking hacky. 
+
+            #Ok now I need to map to axes and apply rotations
+            mapped_values=np.zeros((2,2))
+            mapped_values[:,0]=map_to_canvas(np.array([start[1], new_x]), axis_min=x_axis_1.x_min, 
+                                             axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
+            mapped_values[:,1]=map_to_canvas(np.array([start[2], new_y]), axis_min=y_axis_1.y_min, 
+                                             axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)  
+
+            a=Arrow(start=[mapped_values[0,0], mapped_values[0,1], 0], 
+                     end=[mapped_values[1,0], mapped_values[1,1], 0], fill_color=BLUE, 
+                     thickness=3.0, tip_width_ratio=5, buff=0, max_width_to_length_ratio=0.2)
+            a.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN)
+            a.shift(panel_2_shift)    
+            return a
+
+        # a=get_arrow_1(1)
+        # a=get_arrow_2(2)
+        # self.add(a)
+
+        initial_time = 0
+        t_tracker = ValueTracker(initial_time)
+
+        moving_arrow_1=always_redraw(lambda: get_arrow_1(t_tracker.get_value()))
+        moving_arrow_2=always_redraw(lambda: get_arrow_2(t_tracker.get_value()))
+
+        self.remove(arrows_1[0], arrows_2[0])
+        self.add(moving_arrow_1, moving_arrow_2)
+        self.play(t_tracker.animate.set_value(1.6), run_time=3)
+        self.play(t_tracker.animate.set_value(-0.5), run_time=3)
+        self.play(t_tracker.animate.set_value(0), run_time=3)
+        self.remove(moving_arrow_1, moving_arrow_2)
+        self.add(arrows_1[0], arrows_2[0])
+        self.wait()
+
+
+        ## --- End moving arrows back and forth. 
+
 
         ## Start move to 3d
         r=panel_2.get_corner(LEFT+BOTTOM) 
@@ -584,40 +522,43 @@ class P33_35(InteractiveScene):
         self.remove(s4); self.add(s4) #Occlusions
         self.wait()
 
-
         # --- Step 5 - probably our last step
-        arrows_1[4].move_to(s5.get_center(), aligned_edge=LEFT)
-        arrows_1[4].rotate(-DEGREES*90, axis=arrows_1[4].get_end()-arrows_1[4].get_start())
-        # arrows_1[4].shift([0,0,-0.05])
+        # --- Ok, I don't think step 5 actually adds much value. 
+        # arrows_1[4].move_to(s5.get_center(), aligned_edge=LEFT)
+        # arrows_1[4].rotate(-DEGREES*90, axis=arrows_1[4].get_end()-arrows_1[4].get_start())
+        # # arrows_1[4].shift([0,0,-0.05])
         
-        arrows_2[4].move_to(s5.get_center(), aligned_edge=LEFT)
-        arrows_2[4].rotate(-DEGREES*90, axis=arrows_2[4].get_end()-arrows_2[4].get_start())
-        arrows_2[4].shift([0,0.02,0.005])
+        # arrows_2[4].move_to(s5.get_center(), aligned_edge=LEFT)
+        # arrows_2[4].rotate(-DEGREES*90, axis=arrows_2[4].get_end()-arrows_2[4].get_start())
+        # arrows_2[4].shift([0,0.02,0.005])
 
-        self.add(arrows_1[4], arrows_2[4])
+        # self.add(arrows_1[4], arrows_2[4])
 
-        a7 =Arrow(start=[arrows_1[4].get_corner(LEFT)[0]+0.00, arrows_1[4].get_corner(LEFT)[1]+0.00, arrows_1[4].get_corner(OUT)[2]],
-                  end=[arrows_1[4].get_corner(RIGHT)[0], arrows_2[4].get_corner(UP)[1], arrows_2[4].get_corner(IN)[2]], 
-                  fill_color='#FF00FF', thickness=3.0, tip_width_ratio=3, buff=0, max_width_to_length_ratio=0.2)
-        # self.add(a7)
-        self.wait()
+        # a7 =Arrow(start=[arrows_1[4].get_corner(LEFT)[0]+0.00, arrows_1[4].get_corner(LEFT)[1]+0.00, arrows_1[4].get_corner(OUT)[2]],
+        #           end=[arrows_1[4].get_corner(RIGHT)[0], arrows_2[4].get_corner(UP)[1], arrows_2[4].get_corner(IN)[2]], 
+        #           fill_color='#FF00FF', thickness=3.0, tip_width_ratio=3, buff=0, max_width_to_length_ratio=0.2)
+        # # self.add(a7)
+        # self.wait()
         
-        self.play(TransformFromCopy(arrows_1[4], a7), 
-                  TransformFromCopy(arrows_2[4], a7),
-                  self.frame.animate.reorient(179, 54, 0, (-3.43, 1.82, 1.18), 1.0),
-                  run_time=3.0)
-        self.wait()
+        # self.play(TransformFromCopy(arrows_1[4], a7), 
+        #           TransformFromCopy(arrows_2[4], a7),
+        #           self.frame.animate.reorient(179, 54, 0, (-3.43, 1.82, 1.18), 1.0),
+        #           run_time=3.0)
+        # self.wait()
 
-        s6=Dot3D(center=a7.get_end(), radius=0.01, color='$FF00FF')
-        self.play(arrows_1[4].animate.set_opacity(0.0),
-                  arrows_2[4].animate.set_opacity(0.0),
-                  FadeIn(s6),
-                  # self.frame.animate.reorient(179, 54, 0, (-3.39, 1.87, 1.12), 0.72),
-                  run_time=2.0)
-        self.remove(s5); self.add(s5) #Occlusions
-        self.wait()
+        # s6=Dot3D(center=a7.get_end(), radius=0.01, color='$FF00FF')
+        # self.play(arrows_1[4].animate.set_opacity(0.0),
+        #           arrows_2[4].animate.set_opacity(0.0),
+        #           FadeIn(s6),
+        #           # self.frame.animate.reorient(179, 54, 0, (-3.39, 1.87, 1.12), 0.72),
+        #           run_time=2.0)
+        # self.remove(s5); self.add(s5) #Occlusions
+        # self.wait()
 
         #Ok this scene could be tuned more for sure, but it's not terrible - it's time to go do the rewrite! 
+
+
+        self.play(self.frame.animate.reorient(360-135, 69, 0, (-3.49, 1.61, 1.42), 2.91), run_time=6)
 
         self.embed()
         self.wait(20)
@@ -629,6 +570,143 @@ class P33_35(InteractiveScene):
 
 
 
+class P33_35_2D(InteractiveScene):
+    def construct(self):
+        '''
+        Let's begin by running 2d numerical-ish gradient descent and visiaulizing it in 2 1d panes
+        Curves should update as we move in the 2d space. 
+        Ideas where initially developed in p33_35_sketch.py - lots of notes there too. 
+        '''
+
+        #Now that grads are computed, start viz. 
+        x_axis_1=WelchXAxis(x_min=-1.2, x_max=4.5, x_ticks=[-1,0,1,2,3,4], x_tick_height=0.15,        
+                            x_label_font_size=24, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=4)
+        y_axis_1=WelchYAxis(y_min=0.3, y_max=2.2, y_ticks=[0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0], y_tick_width=0.15,        
+                          y_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=3)
+        axes_1=VGroup(x_axis_1, y_axis_1)
+
+        x_label_1 = Tex(r'\theta_{1}', font_size=30).set_color(CHILL_BROWN)
+        y_label_1 = Tex('Loss', font_size=25).set_color(CHILL_BROWN)
+        x_label_1.next_to(x_axis_1, RIGHT, buff=0.05)
+        y_label_1.next_to(y_axis_1, UP, buff=0.05)
+
+        x_axis_2=WelchXAxis(x_min=-1.2, x_max=4.5, x_ticks=[-1,0,1,2,3,4], x_tick_height=0.15,        
+                            x_label_font_size=24, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=4)
+        y_axis_2=WelchYAxis(y_min=0.3, y_max=2.2, y_ticks=[0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0], y_tick_width=0.15,        
+                          y_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=3)
+        axes_2=VGroup(x_axis_2, y_axis_2)
+
+        x_label_2 = Tex(r'\theta_{2}', font_size=30).set_color(CHILL_BROWN)
+        y_label_2 = Tex('Loss', font_size=25).set_color(CHILL_BROWN)
+        x_label_2.next_to(x_axis_2, RIGHT, buff=0.05)
+        y_label_2.next_to(y_axis_2, UP, buff=0.05) #not sure I need this. 
+
+
+        ## Get all Curves, Points, Arrows, and Lines, then Group into panels
+        curves_1=VGroup(); curves_2=VGroup()
+        points_1=VGroup(); points_2=VGroup()
+        arrows_1=VGroup(); arrows_2=VGroup()
+        lines_1=VGroup(); lines_2=VGroup()
+
+        #Map all points
+        descent_points_mapped_1=np.zeros_like(descent_points)
+        descent_points_mapped_1[:,0]=map_to_canvas(descent_points[:,0], axis_min=x_axis_1.x_min, 
+                                         axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
+        descent_points_mapped_1[:,1]=map_to_canvas(descent_points[:,2], axis_min=y_axis_1.y_min, 
+                                         axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)
+
+        descent_points_mapped_2=np.zeros_like(descent_points)
+        descent_points_mapped_2[:,0]=map_to_canvas(descent_points[:,1], axis_min=x_axis_1.x_min, 
+                                         axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
+        descent_points_mapped_2[:,1]=map_to_canvas(descent_points[:,2], axis_min=y_axis_1.y_min, 
+                                         axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)
+
+        arrow_end_points_1_mapped=np.zeros_like(arrow_end_points_1)
+        arrow_end_points_1_mapped[:,0]=map_to_canvas(arrow_end_points_1[:,0], axis_min=x_axis_1.x_min, 
+                                         axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
+        arrow_end_points_1_mapped[:,1]=map_to_canvas(arrow_end_points_1[:,1], axis_min=y_axis_1.y_min, 
+                                         axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)
+
+        arrow_end_points_2_mapped=np.zeros_like(arrow_end_points_2)
+        arrow_end_points_2_mapped[:,0]=map_to_canvas(arrow_end_points_2[:,0], axis_min=x_axis_1.x_min, 
+                                         axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
+        arrow_end_points_2_mapped[:,1]=map_to_canvas(arrow_end_points_2[:,1], axis_min=y_axis_1.y_min, 
+                                         axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)
+
+        for i in range(len(descent_points)):
+            #Curves 1
+            p1 = np.array([param_surface(u, descent_points[i][1]) for u in np.linspace(-1, 4, 128)])
+            points_mapped=np.zeros_like(p1)
+            points_mapped[:,0]=map_to_canvas(p1[:,0], axis_min=x_axis_1.x_min, 
+                                             axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
+            points_mapped[:,1]=map_to_canvas(p1[:,2], axis_min=y_axis_1.y_min, 
+                                             axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)
+            c = VMobject()
+            c.set_points_smoothly(points_mapped)
+            c.set_stroke(width=4, color=YELLOW, opacity=0.8)
+            curves_1.add(c)
+
+            #Points 1
+            p=Dot(descent_points_mapped_1[i], radius=0.06, fill_color=YELLOW)
+            points_1.add(p)
+
+            # #Curves 2
+            p1 = np.array([param_surface(descent_points[i][0], v) for v in np.linspace(-1, 4, 128)])
+            points_mapped=np.zeros_like(p1)
+            points_mapped[:,0]=map_to_canvas(p1[:,1], axis_min=x_axis_1.x_min, 
+                                             axis_max=x_axis_1.x_max, axis_end=x_axis_1.axis_length_on_canvas)
+            points_mapped[:,1]=map_to_canvas(p1[:,2], axis_min=y_axis_1.y_min, 
+                                             axis_max=y_axis_1.y_max, axis_end=y_axis_1.axis_length_on_canvas)
+            c = VMobject()
+            c.set_points_smoothly(points_mapped)
+            c.set_stroke(width=4, color=BLUE, opacity=0.8)
+            curves_2.add(c)
+
+            #Points 2
+            p=Dot(descent_points_mapped_2[i], radius=0.06, fill_color=BLUE)
+            points_2.add(p)
+          
+            if i>0:
+                lines_1.add(Line(start=[descent_points_mapped_1[i-1][0], descent_points_mapped_1[i-1][1], 0], 
+                                   end=[descent_points_mapped_1[i][0], descent_points_mapped_1[i][1], 0], 
+                                   color=YELLOW, buff=0, stroke_width=1.5))   
+                arrows_1.add(Arrow(start=[descent_points_mapped_1[i-1][0], descent_points_mapped_1[i-1][1], 0], 
+                                     end=arrow_end_points_1_mapped[i-1], fill_color=YELLOW, 
+                                     thickness=3.0, tip_width_ratio=5, buff=0))
+                lines_2.add(Line(start=[descent_points_mapped_2[i-1][0], descent_points_mapped_2[i-1][1], 0], 
+                                   end=[descent_points_mapped_2[i][0], descent_points_mapped_2[i][1], 0], 
+                                   color=BLUE, buff=0, stroke_width=1.5))   
+                arrows_2.add(Arrow(start=[descent_points_mapped_2[i-1][0], descent_points_mapped_2[i-1][1], 0], 
+                                     end=arrow_end_points_2_mapped[i-1], fill_color=BLUE, 
+                                     thickness=3.0, tip_width_ratio=5, buff=0))
+
+        ## Test viz as I go here            
+        panel_1=VGroup(axes_1, x_label_1, y_label_2, curves_1, points_1, arrows_1, lines_1)
+        panel_1.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN)
+        panel_2=VGroup(axes_2, x_label_2, y_label_2, curves_2, points_2, arrows_2, lines_2)
+        panel_2.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN)     
+
+        panel_1_shift=[-5, 0, 2.0]
+        panel_2_shift=[-5, 0, -2.0]
+        panel_1.shift(panel_1_shift)
+        panel_2.shift(panel_2_shift)
+
+        self.add(panel_1, panel_2)
+
+        self.frame.reorient(0, 89, 0, (-0.46, 0.0, 1.36), 8.97)
+        self.wait()
+
+
+        #WONDER IF I CAN DO A COOL TRANSFOMR INTO ANIMATION DEAL AS THE CUVES CHANGE
+        #
+        # Ok, I think all 2d pieces are in place here, after i rewrite these paragraphs I'll come figure out the animatino. 
+        # Ok so I'm kinda 50/50 on the "3 panel animation" - but I think it's worth a try, and shouldn't be to hard 
+        # to render out to of the panels here. 
+
+
+
+        self.embed()
+        self.wait(20)
 
 
 

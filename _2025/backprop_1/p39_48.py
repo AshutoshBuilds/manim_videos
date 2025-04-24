@@ -33,6 +33,9 @@ class P39_48(InteractiveScene):
         some level of what's in my head I do think it will be DOPE. 
         Ok one step at a time here. Starting with one and then 6 2d panels, then being the last two 
         together into 3d very much like I did in the last big scene. 
+
+        Ok making progress here - I'm pretty certain at this point that all these need to be 
+        in "3d upright view" for the transition to 3d to work -> let me go ahead and make that change early-ish. 
         '''
 
         x_axis_1=WelchXAxis(x_min=-2.5, x_max=2.5, x_ticks=[-2.0 ,-1.0, 0, 1.0, 2.0], x_tick_height=0.15,        
@@ -56,6 +59,8 @@ class P39_48(InteractiveScene):
 
         axes_1=VGroup(x_axis_1, y_axis_1, x_label_1, y_label_1, curve_1)
         axes_1.move_to([0, 0, 0])
+        axes_1.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN)
+        self.frame.reorient(0, 90, 0, (-0.21, -0.01, -0.02), 8.00)
         self.add(x_axis_1, y_axis_1, x_label_1, y_label_1)
         self.wait(0)
         self.play(ShowCreation(curve_1), run_time=5)
@@ -81,9 +86,10 @@ class P39_48(InteractiveScene):
         curve_2.set_stroke(width=4, color=YELLOW, opacity=1.0)
 
         axes_2=VGroup(x_axis_2, y_axis_2, x_label_2, y_label_2, curve_2)
+        axes_2.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN)
         axes_2.move_to([10, 0, 0])
 
-        self.play(self.frame.animate.reorient(0, 0, 0, (5.03, 0.05, 0.0), 12.15), 
+        self.play(self.frame.animate.reorient(0, 90, 0, (5.03, 0.05, 0.0), 12.15), 
                   FadeIn(VGroup(x_axis_2, y_axis_2, x_label_2, y_label_2)),
                   ShowCreation(curve_2),
                   run_time=3.0)
@@ -108,6 +114,7 @@ class P39_48(InteractiveScene):
         curve_3.set_stroke(width=4, color=BLUE, opacity=1.0)
 
         axes_3=VGroup(x_axis_3, y_axis_3, x_label_3, y_label_3, curve_3)
+        axes_3.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN)
         axes_3.move_to([10, 0, 0])
 
 
@@ -129,18 +136,20 @@ class P39_48(InteractiveScene):
         curve_4.set_stroke(width=4, color=BLUE, opacity=1.0)
 
         axes_4=VGroup(x_axis_4, y_axis_4, x_label_4, y_label_4, curve_4)
-        axes_4.move_to([10, -7, 0])
+        axes_4.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN)
+        axes_4.move_to([10, 0, -7])
 
         self.wait()
 
-        self.play(axes_2.animate.move_to([0, -7, 0]),
-                  FadeIn(VGroup(x_axis_3, y_axis_3, x_label_3, y_label_3)),
+        self.play(axes_2.animate.move_to([0, 0, -7]),
+                 self.frame.animate.reorient(0, 90, 0, (4.6, -3.5, -3.6), 12.54),
+                 run_time=2.0)
+
+        self.play(FadeIn(VGroup(x_axis_3, y_axis_3, x_label_3, y_label_3)),
                   FadeIn(VGroup(x_axis_4, y_axis_4, x_label_4, y_label_4)),
                   ShowCreation(curve_3),
                   ShowCreation(curve_4),
-                  self.frame.animate.reorient(0, 0, 0, (5.46, -3.5, 0.0), 14.96), 
-                  run_time=4
-                  )
+                  run_time=4)
 
 
 

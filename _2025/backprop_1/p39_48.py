@@ -31,10 +31,16 @@ def param_surface_1(u, v):
     u_idx = np.abs(alphas_1 - u).argmin()
     v_idx = np.abs(alphas_1 - v).argmin()
     try:
-        z = loss_2d_1[u_idx, v_idx]
+        # z = loss_2d_1[u_idx, v_idx]
+        z = loss_2d_1[v_idx, u_idx]
     except IndexError:
         z = 0
     return np.array([u, v, z])
+
+def get_pivot_and_scale(axis_min, axis_max, axis_end):
+    '''Above collapses into scaling around a single pivot when axis_start=0'''
+    scale = axis_end / (axis_max - axis_min)
+    return axis_min, scale
 
 
 class P39_48(InteractiveScene):
@@ -170,7 +176,7 @@ class P39_48(InteractiveScene):
 
         x_axis_5=WelchXAxis(x_min=-2.5, x_max=2.5, x_ticks=[-2.0 ,-1.0, 0, 1.0, 2.0], x_tick_height=0.15,        
                             x_label_font_size=32, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=8)
-        y_axis_5=WelchYAxis(y_min=0, y_max=25, y_ticks=[0, 5, 10, 15, 20], y_tick_width=0.15,        
+        y_axis_5=WelchYAxis(y_min=0, y_max=35, y_ticks=[0, 5, 10, 15, 20, 25, 30], y_tick_width=0.15,        
                           y_label_font_size=32, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=6)
 
         x_label_5 = Tex(r'\alpha', font_size=36).set_color(CHILL_BROWN)
@@ -192,7 +198,7 @@ class P39_48(InteractiveScene):
 
         x_axis_6=WelchXAxis(x_min=-2.5, x_max=2.5, x_ticks=[-2.0 ,-1.0, 0, 1.0, 2.0], x_tick_height=0.15,        
                             x_label_font_size=32, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=8)
-        y_axis_6=WelchYAxis(y_min=0, y_max=25, y_ticks=[0, 5, 10, 15, 20], y_tick_width=0.15,        
+        y_axis_6=WelchYAxis(y_min=0, y_max=35, y_ticks=[0, 5, 10, 15, 20, 25, 30], y_tick_width=0.15,        
                           y_label_font_size=32, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=6)
 
         x_label_6 = Tex(r'\alpha', font_size=36).set_color(CHILL_BROWN)
@@ -201,7 +207,7 @@ class P39_48(InteractiveScene):
         y_label_6.next_to(y_axis_6, UP, buff=0.08)
 
         mapped_x_6=x_axis_6.map_to_canvas(alphas_1) 
-        mapped_y_6=y_axis_6.map_to_canvas(slice_1)
+        mapped_y_6=y_axis_6.map_to_canvas(slice_2)
 
         curve_6=VMobject()         
         curve_6.set_points_smoothly(np.vstack((mapped_x_6, mapped_y_6, np.zeros_like(mapped_x_6))).T)
@@ -211,10 +217,118 @@ class P39_48(InteractiveScene):
         axes_6.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN)
         axes_6.move_to([20, 0, -7])
 
+        self.wait()
+        # self.add(axes_5, axes_6)
+        self.play(FadeIn(VGroup(x_axis_5, y_axis_5, x_label_5, y_label_5)),
+          FadeIn(VGroup(x_axis_6, y_axis_6, x_label_6, y_label_6)),
+          ShowCreation(curve_5),
+          ShowCreation(curve_6),
+          self.frame.animate.reorient(0, 89, 0, (9.97, -3.5, -3.39), 14.41),
+          run_time=6)
+        
+        self.wait()
 
-        self.add(axes_5, axes_6)
-        self.frame.reorient(0, 89, 0, (9.97, -3.5, -3.39), 14.41)
+        # Alright time for the big move. 
+        # I'm really going to need to move these axes to the around the origin I think to support nice camera motion?
+        # That might get clunky, we'll see here. Maybe I don't? Will have to experiment. 
+        # Ok seems ok to have it at 20? I'll go back and move everything over if I need to
+        # Create main surface
+        surface = ParametricSurface(
+            param_surface_1,  
+            u_range=[-2.5, 2.5],   #[-2.5, 2.5]
+            v_range=[-2.5, 2.5],  #[-2.5, 2.5],
+            resolution=(128, 128), #(512, 512), #TODO -> CRANK THIS BACK UP TO LIKE 512
 
+        )
+        ts = TexturedSurface(surface, '/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/loss_2d_1.png')
+        ts.set_shading(0.0, 0.1, 0)
+        # ts.rotate(90*DEGREES, axis=[0,0,1])
+
+        pivot_x,scale_x=get_pivot_and_scale(axis_min=x_axis_5.x_min, axis_max=x_axis_5.x_max, 
+                                        axis_end=x_axis_5.axis_length_on_canvas)
+        pivot_y,scale_y=get_pivot_and_scale(axis_min=y_axis_5.y_min, axis_max=y_axis_5.y_max, 
+                                        axis_end=y_axis_5.axis_length_on_canvas)
+        ts.scale([scale_x, scale_x, scale_y], about_point=[pivot_x, pivot_x, pivot_y])
+        # ts.scale([[1.7, 1.7, 0.24]], about_point=[pivot_x, pivot_x, pivot_y])
+        # surf_shift=[19, 0, 0] #Gross iterative swagginess, I think i at least have the scale right
+        # ts.shift([19, 0, 0])
+        ts.move_to([20, 0, 0])
+
+
+        num_lines = 64  # Number of gridlines in each direction
+        num_points = 512  # Number of points per line
+        u_gridlines = VGroup()
+        v_gridlines = VGroup()
+        u_values = np.linspace(-2.5, 2.5, num_lines)
+        v_points = np.linspace(-2.5, 2.5, num_points)
+        for u in u_values:
+            points = [param_surface_1(u, v) for v in v_points]
+            line = VMobject()
+            line.set_points_smoothly(points)
+            line.set_stroke(width=1, color=WHITE, opacity=0.3)
+            u_gridlines.add(line)
+
+        u_points = np.linspace(-2.5, 2.5, num_points)
+        for v in u_values:  # Using same number of lines for both directions
+            points = [param_surface_1(u, v) for u in u_points]
+            line = VMobject()
+            line.set_points_smoothly(points)
+            line.set_stroke(width=1, color=WHITE, opacity=0.3)
+            v_gridlines.add(line)
+
+        u_gridlines.scale([scale_x, scale_x, scale_y], about_point=[pivot_x, pivot_x, pivot_y])
+        u_gridlines.move_to([20, 0, 0])
+        v_gridlines.scale([scale_x, scale_x, scale_y], about_point=[pivot_x, pivot_x, pivot_y])
+        v_gridlines.move_to([20, 0, 0])    
+
+        self.add(u_gridlines)
+        self.add(v_gridlines)
+
+
+        axes_1.set_opacity(0)
+        axes_2.set_opacity(0)
+        axes_3.set_opacity(0)
+        axes_4.set_opacity(0)
+        y_axis_6.set_opacity(0)
+        y_label_6.set_opacity(0)
+
+        # axes_5.move_to([20, 0, 0]) 
+        axes_6.move_to([20, 0, 0])
+        axes_6.rotate(90*DEGREES, axis=[0,0,1]) #This seems to have kidna worked out. 
+
+        
+        self.frame.reorient(27, 37, 0, (18.74, 3.76, -6.28), 17.77)
+
+
+        self.add(ts)
+        self.add(curve_5) #, curve_6)
+        self.add(curve_6)
+        self.wait()
+
+        # ts.shift([2,2,0])
+        # ts.shift([0.125, 0.125, 0])
+        ts.shift([0,0,-0.45])
+        ts.shift([0.1, 0, 0])
+        ts.shift([0, 0.075, 0])
+
+        self.wait()
+
+
+        self.frame.reorient(27, 37, 0, (18.74, 3.76, -6.28), 17.77)
+
+        # self.frame.reorient(29, 41, 0, (18.76, 3.99, -3.97), 8.30)
+
+        # ts.shift([0.1,0,0])
+
+        
+
+        # ts.shift([0.1, 0.1, 0])
+
+        # ts.scale([1.05, 1.05, 1.0], about_point=[-2.5, -2.5, 0])
+
+
+        # OH shit maybe I draw the grid first then fill in the colors?!?! That would fit with the 
+        # script pretty well and look pretty dope I think .
 
 
 
@@ -244,7 +358,7 @@ class sketch_3d(InteractiveScene):
         ts.set_shading(0.0, 0.1, 0)
 
         ts.scale([1,1,0.1])
-        ts.move_to([0,0,0])
+        ts.move_to([20,0,0])
 
         # self.add(ts)
         self.add(ts)

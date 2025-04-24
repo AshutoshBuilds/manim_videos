@@ -106,6 +106,7 @@ class WelchXAxis(VGroup):
         color=CHILL_BROWN,        # Default color (using predefined BROWN)
         arrow_tip_scale=0.1, 
         axis_length_on_canvas=5,
+        include_tip=True,
         **kwargs
     ):
         
@@ -121,6 +122,7 @@ class WelchXAxis(VGroup):
         self.x_min = x_min
         self.x_max = x_max
         self.axis_length_on_canvas=axis_length_on_canvas
+        self.include_tip=include_tip
 
         self.axis_to_canvas_scale=(self.x_max-self.x_min)/axis_length_on_canvas
         self.x_ticks_scaled=(np.array(x_ticks)-self.x_min)/self.axis_to_canvas_scale
@@ -139,13 +141,13 @@ class WelchXAxis(VGroup):
             color=self.axis_color,
             stroke_width=self.stroke_width
         )
-        
-        arrow_tip=SVGMobject(WELCH_ASSET_PATH+'/welch_arrow_tip_1.svg')
-        arrow_tip.scale(self.arrow_tip_scale)
-        arrow_tip.move_to([self.axis_length_on_canvas, 0, 0])
-        
-        self.axis_line = VGroup(axis_line, arrow_tip)
-        self.add(self.axis_line)
+        if self.include_tip:
+            arrow_tip=SVGMobject(WELCH_ASSET_PATH+'/welch_arrow_tip_1.svg')
+            arrow_tip.scale(self.arrow_tip_scale)
+            arrow_tip.move_to([self.axis_length_on_canvas, 0, 0])
+            axis_line = VGroup(axis_line, arrow_tip)
+
+        self.add(axis_line)
         
     def _create_ticks(self):
         self.ticks = VGroup()
@@ -190,6 +192,10 @@ class WelchXAxis(VGroup):
     def get_labels(self):
         return self.labels
 
+    def map_to_canvas(self, value, axis_start=0):
+        value_scaled=(value-self.x_min)/(self.x_max-self.x_min)
+        return (value_scaled+axis_start)*self.axis_length_on_canvas
+
 
 class WelchYAxis(VGroup):
     def __init__(
@@ -203,6 +209,7 @@ class WelchYAxis(VGroup):
         color=CHILL_BROWN,        # Default color
         arrow_tip_scale=0.1,
         axis_length_on_canvas=5,
+        include_tip=True,
         **kwargs
     ):
         VGroup.__init__(self, **kwargs)
@@ -217,6 +224,7 @@ class WelchYAxis(VGroup):
         self.y_min = y_min
         self.y_max = y_max
         self.axis_length_on_canvas = axis_length_on_canvas
+        self.include_tip=include_tip
         
         self.axis_to_canvas_scale = (self.y_max - self.y_min) / axis_length_on_canvas
         self.y_ticks_scaled = (np.array(y_ticks)-self.y_min)/ self.axis_to_canvas_scale
@@ -236,14 +244,16 @@ class WelchYAxis(VGroup):
         )
         
         # Add SVG arrow tip at the end
-        arrow_tip = SVGMobject(WELCH_ASSET_PATH+'/welch_arrow_tip_1.svg')
-        arrow_tip.scale(self.arrow_tip_scale)
-        arrow_tip.move_to([0, self.axis_length_on_canvas, 0])
-        # Rotate the arrow tip to point upward
-        arrow_tip.rotate(PI/2)  # Rotate 90 degrees to point up
-        
-        self.axis_line = VGroup(axis_line, arrow_tip)
-        self.add(self.axis_line)
+        if self.include_tip:
+            arrow_tip = SVGMobject(WELCH_ASSET_PATH+'/welch_arrow_tip_1.svg')
+            arrow_tip.scale(self.arrow_tip_scale)
+            arrow_tip.move_to([0, self.axis_length_on_canvas, 0])
+            # Rotate the arrow tip to point upward
+            arrow_tip.rotate(PI/2)  # Rotate 90 degrees to point up
+            axis_line = VGroup(axis_line, arrow_tip)
+
+
+        self.add(axis_line)
         
     def _create_ticks(self):
         self.ticks = VGroup()
@@ -286,8 +296,11 @@ class WelchYAxis(VGroup):
     
     # Helper method to get labels
     def get_labels(self):
-        return self.labels
 
+        return self.labels
+    def map_to_canvas(self, value, axis_start=0):
+        value_scaled=(value-self.y_min)/(self.y_max-self.y_min)
+        return (value_scaled+axis_start)*self.axis_length_on_canvas
 
 
 

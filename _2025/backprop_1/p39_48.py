@@ -15,8 +15,8 @@ loss_curve_3=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_l
 loss_curve_4=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_24_7/all_execpt_embedding_pretrained_27.npy')
 
 alphas_1=np.linspace(-2.5, 2.5, 512)
-loss_2d_1=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_24_3/pretrained_11_111_first_8.npy')
-
+# loss_2d_1=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_24_3/pretrained_11_111_first_8.npy')
+loss_2d_1=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_24_11/pre_training_landscape.npy')
 
 class Dot3D(Sphere):
     def __init__(self, center=ORIGIN, radius=0.05, **kwargs):
@@ -28,12 +28,18 @@ class Dot3D(Sphere):
 # ax = plt.Axes(plt.gcf(), [0., 0., 1., 1.])
 # ax.set_axis_off()
 # plt.gcf().add_axes(ax)
-# # plt.imshow(np.rot90(loss_2d_1))
-# # plt.imshow(np.rot90(loss_2d_1.T)) #have to transpose if transposing u and v and param_surface_1
+# plt.imshow(np.rot90(loss_2d_1.T)) #have to transpose if transposing u and v and param_surface_1
+# plt.savefig('loss_2d_1.png', bbox_inches='tight', pad_inches=0, dpi=300)
+# plt.close()
+
+# plt.clf()
+# plt.figure(frameon=False)
+# ax = plt.Axes(plt.gcf(), [0., 0., 1., 1.])
+# ax.set_axis_off()
+# plt.gcf().add_axes(ax)
 # plt.imshow(np.rot90(loss_2d_1.T)[128:-128, 128:-128])
 # plt.savefig('loss_2d_1_inner.png', bbox_inches='tight', pad_inches=0, dpi=300)
 # plt.close()
-
 
 def param_surface_1(u, v):
     u_idx = np.abs(alphas_1 - u).argmin()
@@ -50,6 +56,13 @@ def get_pivot_and_scale(axis_min, axis_max, axis_end):
     scale = axis_end / (axis_max - axis_min)
     return axis_min, scale
 
+def get_numerical_gradient(surface_fn, u, v, epsilon=0.01):
+    height = surface_fn(u, v)[2]
+    height_du = surface_fn(u + epsilon, v)[2]
+    du = (height_du - height) / epsilon
+    height_dv = surface_fn(u, v + epsilon)[2]
+    dv = (height_dv - height) / epsilon
+    return (du, dv)
 
 class P39_48(InteractiveScene):
     def construct(self):
@@ -479,7 +492,7 @@ class sketch_getting_stuck(InteractiveScene):
             resolution=(512, 512),
         )
 
-        surface_inner = ParametricSurface(
+        surface_inner = ParametricSurface( #Ok I do think that shifting to an inner surface like this can be helpful as we zoom in. 
             param_surface_1,  
             u_range=[-1.25, 1.25],
             v_range=[-1.25, 1.25],
@@ -490,7 +503,6 @@ class sketch_getting_stuck(InteractiveScene):
         ts = TexturedSurface(surface, '/Users/stephen/manim/videos/loss_2d_1.png')
         ts.set_shading(0.0, 0.1, 0)
 
-    
         tsi = TexturedSurface(surface_inner, '/Users/stephen/manim/videos/loss_2d_1_inner.png')
         tsi.set_shading(0.0, 0.1, 0)
 
@@ -527,26 +539,49 @@ class sketch_getting_stuck(InteractiveScene):
 
         # self.add(tsi)
         # self.remove(tsi)
-        # self.add(ts)
-        self.add(tsi)
+        self.add(ts)
 
-        # self.add(ts)
-        self.add(u_gridlines, v_gridlines)  
-
-        # starting_coords=[1,1]
-        # starting_point=param_surface_1(*starting_coords)
-        # starting_point[2]=(starting_point[2]-vertical_shift)/10 #Ok this seems backwards but seems to line up?
+        starting_coords=[0.05,-0.9] #[0.1,-0.8] is pretty good, [0.05,-0.9] is a bit better
+        starting_point=param_surface_1(*starting_coords)
      
-        # s1=Dot3D(center=starting_point, radius=0.06, color='$FF00FF')
-        # self.add(s1)
+        s1=Dot3D(center=starting_point, radius=0.06, color='$FF00FF')
+        self.add(s1)
 
-        self.wait()
+        # Ok I think big question from here is can I some not-totally terrible numerical grad descent
+        # and then after then take it warping into the global minimum.  
+        # Might not be a terrible job for claude...
+        num_steps=128
+        learning_rate=0.01
+        trajectory=[[starting_point[0], starting_point[1], param_surface_1(starting_point[0], starting_point[1])[2]]]
+        for i in range(num_steps):
+            g=get_numerical_gradient(param_surface_1, trajectory[-1][0], trajectory[-1][1], epsilon=0.01)
+            delta=learning_rate*np.array(g)
+            new_x=trajectory[-1][0]-delta[0]
+            new_y=trajectory[-1][1]-delta[1]
+            trajectory.append([new_x, new_y, param_surface_1(new_x, new_y)[2]])
+        trajectory=np.array(trajectory)
 
-        self.frame.reorient(-145, 29, 0, (0.39, 0.18, -0.31), 3.44)
+        t = VMobject()
+        t.set_points_smoothly(trajectory)
+        t.set_stroke(width=6, color="#FF00FF", opacity=1.0)
+        self.add(t)
 
-        u_gridlines.set_opacity(0.0)
-        v_gridlines.set_opacity(0.0)
-        # ts.set_opacity(0.7)
+
+        # ts.set_opacity(0.2)
+        # self.add(tsi)
+
+        # # self.add(ts)
+        # self.add(u_gridlines, v_gridlines)  
+
+
+
+        # self.wait()
+
+        # self.frame.reorient(-145, 29, 0, (0.39, 0.18, -0.31), 3.44)
+
+        # u_gridlines.set_opacity(0.0)
+        # v_gridlines.set_opacity(0.0)
+        # # ts.set_opacity(0.7)
 
         self.embed()
         self.wait(20)

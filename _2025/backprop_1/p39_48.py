@@ -176,7 +176,7 @@ class P39_48(InteractiveScene):
 
         x_axis_5=WelchXAxis(x_min=-2.5, x_max=2.5, x_ticks=[-2.0 ,-1.0, 0, 1.0, 2.0], x_tick_height=0.15,        
                             x_label_font_size=32, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=8)
-        y_axis_5=WelchYAxis(y_min=0, y_max=35, y_ticks=[0, 5, 10, 15, 20, 25, 30], y_tick_width=0.15,        
+        y_axis_5=WelchYAxis(y_min=0, y_max=25, y_ticks=[0, 5, 10, 15, 20], y_tick_width=0.15,        
                           y_label_font_size=32, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=6)
 
         x_label_5 = Tex(r'\alpha', font_size=36).set_color(CHILL_BROWN)
@@ -198,7 +198,7 @@ class P39_48(InteractiveScene):
 
         x_axis_6=WelchXAxis(x_min=-2.5, x_max=2.5, x_ticks=[-2.0 ,-1.0, 0, 1.0, 2.0], x_tick_height=0.15,        
                             x_label_font_size=32, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=8)
-        y_axis_6=WelchYAxis(y_min=0, y_max=35, y_ticks=[0, 5, 10, 15, 20, 25, 30], y_tick_width=0.15,        
+        y_axis_6=WelchYAxis(y_min=0, y_max=25, y_ticks=[0, 5, 10, 15, 20], y_tick_width=0.15,        
                           y_label_font_size=32, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=6)
 
         x_label_6 = Tex(r'\alpha', font_size=36).set_color(CHILL_BROWN)
@@ -255,34 +255,34 @@ class P39_48(InteractiveScene):
         ts.move_to([20, 0, 0])
 
 
-        num_lines = 64  # Number of gridlines in each direction
-        num_points = 512  # Number of points per line
-        u_gridlines = VGroup()
-        v_gridlines = VGroup()
-        u_values = np.linspace(-2.5, 2.5, num_lines)
-        v_points = np.linspace(-2.5, 2.5, num_points)
-        for u in u_values:
-            points = [param_surface_1(u, v) for v in v_points]
-            line = VMobject()
-            line.set_points_smoothly(points)
-            line.set_stroke(width=1, color=WHITE, opacity=0.3)
-            u_gridlines.add(line)
+        # num_lines = 64  # Number of gridlines in each direction
+        # num_points = 512  # Number of points per line
+        # u_gridlines = VGroup()
+        # v_gridlines = VGroup()
+        # u_values = np.linspace(-2.5, 2.5, num_lines)
+        # v_points = np.linspace(-2.5, 2.5, num_points)
+        # for u in u_values:
+        #     points = [param_surface_1(u, v) for v in v_points]
+        #     line = VMobject()
+        #     line.set_points_smoothly(points)
+        #     line.set_stroke(width=1, color=WHITE, opacity=0.3)
+        #     u_gridlines.add(line)
 
-        u_points = np.linspace(-2.5, 2.5, num_points)
-        for v in u_values:  # Using same number of lines for both directions
-            points = [param_surface_1(u, v) for u in u_points]
-            line = VMobject()
-            line.set_points_smoothly(points)
-            line.set_stroke(width=1, color=WHITE, opacity=0.3)
-            v_gridlines.add(line)
+        # u_points = np.linspace(-2.5, 2.5, num_points)
+        # for v in u_values:  # Using same number of lines for both directions
+        #     points = [param_surface_1(u, v) for u in u_points]
+        #     line = VMobject()
+        #     line.set_points_smoothly(points)
+        #     line.set_stroke(width=1, color=WHITE, opacity=0.3)
+        #     v_gridlines.add(line)
 
-        u_gridlines.scale([scale_x, scale_x, scale_y], about_point=[pivot_x, pivot_x, pivot_y])
-        u_gridlines.move_to([20, 0, 0])
-        v_gridlines.scale([scale_x, scale_x, scale_y], about_point=[pivot_x, pivot_x, pivot_y])
-        v_gridlines.move_to([20, 0, 0])    
+        # u_gridlines.scale([scale_x, scale_x, scale_y], about_point=[pivot_x, pivot_x, pivot_y])
+        # u_gridlines.move_to([20, 0, 0])
+        # v_gridlines.scale([scale_x, scale_x, scale_y], about_point=[pivot_x, pivot_x, pivot_y])
+        # v_gridlines.move_to([20, 0, 0])    
 
-        self.add(u_gridlines)
-        self.add(v_gridlines)
+        # self.add(u_gridlines)
+        # self.add(v_gridlines)
 
 
         axes_1.set_opacity(0)
@@ -291,6 +291,10 @@ class P39_48(InteractiveScene):
         axes_4.set_opacity(0)
         y_axis_6.set_opacity(0)
         y_label_6.set_opacity(0)
+
+        axes_5.scale([1.0, 1.0, 0.5])
+        axes_6.scale([1.0, 1.0, 0.5])
+        ts.scale([1.0, 1.0, 0.5])
 
         # axes_5.move_to([20, 0, 0]) 
         axes_6.move_to([20, 0, 0])

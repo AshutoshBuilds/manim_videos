@@ -17,13 +17,21 @@ loss_curve_4=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_l
 alphas_1=np.linspace(-2.5, 2.5, 512)
 loss_2d_1=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_24_3/pretrained_11_111_first_8.npy')
 
+
+class Dot3D(Sphere):
+    def __init__(self, center=ORIGIN, radius=0.05, **kwargs):
+        super().__init__(radius=radius, **kwargs)
+        self.move_to(center)
+
 # import matplotlib.pyplot as plt
 # plt.figure(frameon=False)
 # ax = plt.Axes(plt.gcf(), [0., 0., 1., 1.])
 # ax.set_axis_off()
 # plt.gcf().add_axes(ax)
-# plt.imshow(np.rot90(loss_2d_1))
-# plt.savefig('loss_2d_1.png', bbox_inches='tight', pad_inches=0, dpi=300)
+# # plt.imshow(np.rot90(loss_2d_1))
+# # plt.imshow(np.rot90(loss_2d_1.T)) #have to transpose if transposing u and v and param_surface_1
+# plt.imshow(np.rot90(loss_2d_1.T)[128:-128, 128:-128])
+# plt.savefig('loss_2d_1_inner.png', bbox_inches='tight', pad_inches=0, dpi=300)
 # plt.close()
 
 
@@ -32,7 +40,7 @@ def param_surface_1(u, v):
     v_idx = np.abs(alphas_1 - v).argmin()
     try:
         # z = loss_2d_1[u_idx, v_idx]
-        z = loss_2d_1[v_idx, u_idx]
+        z = 0.07*loss_2d_1[v_idx, u_idx] #Add vertical scaling here?
     except IndexError:
         z = 0
     return np.array([u, v, z])
@@ -457,5 +465,90 @@ class sketch_3d(InteractiveScene):
 
 
 
+class sketch_getting_stuck(InteractiveScene):
+    def construct(self):
+        '''
+        Hack on 3d surface a bit before I get there, make sure it can do what I want. 
+        '''
+
+        # Create main surface
+        surface = ParametricSurface(
+            param_surface_1,  
+            u_range=[-2.5, 2.5],
+            v_range=[-2.5, 2.5],
+            resolution=(512, 512),
+        )
+
+        surface_inner = ParametricSurface(
+            param_surface_1,  
+            u_range=[-1.25, 1.25],
+            v_range=[-1.25, 1.25],
+            resolution=(128, 128),
+        )
+    
+        # ts = TexturedSurface(surface, '/Users/stephen/Stephsencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/loss_2d_1.png')
+        ts = TexturedSurface(surface, '/Users/stephen/manim/videos/loss_2d_1.png')
+        ts.set_shading(0.0, 0.1, 0)
+
+    
+        tsi = TexturedSurface(surface_inner, '/Users/stephen/manim/videos/loss_2d_1_inner.png')
+        tsi.set_shading(0.0, 0.1, 0)
+
+        num_lines = 64  # Number of gridlines in each direction
+        num_points = 512  # Number of points per line
+        u_gridlines = VGroup()
+        v_gridlines = VGroup()
+        u_values = np.linspace(-2.5, 2.5, num_lines)
+        v_points = np.linspace(-2.5, 2.5, num_points)
+        for u in u_values:
+            points = [param_surface_1(u, v) for v in v_points]
+            line = VMobject()
+            line.set_points_smoothly(points)
+            line.set_stroke(width=1, color=WHITE, opacity=0.15)
+            u_gridlines.add(line)
+
+        u_points = np.linspace(-2.5, 2.5, num_points)
+        for v in u_values:  # Using same number of lines for both directions
+            points = [param_surface_1(u, v) for u in u_points]
+            line = VMobject()
+            line.set_points_smoothly(points)
+            line.set_stroke(width=1, color=WHITE, opacity=0.15)
+            v_gridlines.add(line)
+ 
+        self.wait()
+
+        self.frame.reorient(32, 38, 0, (0.12, -0.18, -0.23), 7.45)
+        self.play(ShowCreation(u_gridlines), 
+                  ShowCreation(v_gridlines), 
+                  self.frame.animate.reorient(161, 33, 0, (0.11, -0.12, -0.23), 4.84),
+                  run_time=10)
+        self.wait()
+
+
+        # self.add(tsi)
+        # self.remove(tsi)
+        # self.add(ts)
+        self.add(tsi)
+
+        # self.add(ts)
+        self.add(u_gridlines, v_gridlines)  
+
+        # starting_coords=[1,1]
+        # starting_point=param_surface_1(*starting_coords)
+        # starting_point[2]=(starting_point[2]-vertical_shift)/10 #Ok this seems backwards but seems to line up?
+     
+        # s1=Dot3D(center=starting_point, radius=0.06, color='$FF00FF')
+        # self.add(s1)
+
+        self.wait()
+
+        self.frame.reorient(-145, 29, 0, (0.39, 0.18, -0.31), 3.44)
+
+        u_gridlines.set_opacity(0.0)
+        v_gridlines.set_opacity(0.0)
+        # ts.set_opacity(0.7)
+
+        self.embed()
+        self.wait(20)
 
 

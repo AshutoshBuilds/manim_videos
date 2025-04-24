@@ -165,6 +165,57 @@ class P39_48(InteractiveScene):
         self.wait()
 
         ## Ok now axes 5 & 6. 
+        slice_1=loss_2d_1[255, :]
+        slice_2=loss_2d_1[:, 255]
+
+        x_axis_5=WelchXAxis(x_min=-2.5, x_max=2.5, x_ticks=[-2.0 ,-1.0, 0, 1.0, 2.0], x_tick_height=0.15,        
+                            x_label_font_size=32, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=8)
+        y_axis_5=WelchYAxis(y_min=0, y_max=25, y_ticks=[0, 5, 10, 15, 20], y_tick_width=0.15,        
+                          y_label_font_size=32, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=6)
+
+        x_label_5 = Tex(r'\alpha', font_size=36).set_color(CHILL_BROWN)
+        y_label_5 = Tex('Loss', font_size=30).set_color(CHILL_BROWN)
+        x_label_5.next_to(x_axis_5, RIGHT, buff=0.05)
+        y_label_5.next_to(y_axis_5, UP, buff=0.08)
+
+        mapped_x_5=x_axis_5.map_to_canvas(alphas_1) 
+        mapped_y_5=y_axis_5.map_to_canvas(slice_1)
+
+        curve_5=VMobject()         
+        curve_5.set_points_smoothly(np.vstack((mapped_x_5, mapped_y_5, np.zeros_like(mapped_x_5))).T)
+        curve_5.set_stroke(width=4, color="#FF00FF", opacity=1.0)
+
+        axes_5=VGroup(x_axis_5, y_axis_5, x_label_5, y_label_5, curve_5)
+        axes_5.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN)
+        axes_5.move_to([20, 0, 0])
+
+
+        x_axis_6=WelchXAxis(x_min=-2.5, x_max=2.5, x_ticks=[-2.0 ,-1.0, 0, 1.0, 2.0], x_tick_height=0.15,        
+                            x_label_font_size=32, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=8)
+        y_axis_6=WelchYAxis(y_min=0, y_max=25, y_ticks=[0, 5, 10, 15, 20], y_tick_width=0.15,        
+                          y_label_font_size=32, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=6)
+
+        x_label_6 = Tex(r'\alpha', font_size=36).set_color(CHILL_BROWN)
+        y_label_6 = Tex('Loss', font_size=30).set_color(CHILL_BROWN)
+        x_label_6.next_to(x_axis_6, RIGHT, buff=0.05)
+        y_label_6.next_to(y_axis_6, UP, buff=0.08)
+
+        mapped_x_6=x_axis_6.map_to_canvas(alphas_1) 
+        mapped_y_6=y_axis_6.map_to_canvas(slice_1)
+
+        curve_6=VMobject()         
+        curve_6.set_points_smoothly(np.vstack((mapped_x_6, mapped_y_6, np.zeros_like(mapped_x_6))).T)
+        curve_6.set_stroke(width=4, color="#FF00FF", opacity=1.0)
+
+        axes_6=VGroup(x_axis_6, y_axis_6, x_label_6, y_label_6, curve_6)
+        axes_6.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN)
+        axes_6.move_to([20, 0, -7])
+
+
+        self.add(axes_5, axes_6)
+        self.frame.reorient(0, 89, 0, (9.97, -3.5, -3.39), 14.41)
+
+
 
 
 

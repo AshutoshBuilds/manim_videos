@@ -248,72 +248,105 @@ class P39_48(InteractiveScene):
                                         axis_end=x_axis_5.axis_length_on_canvas)
         pivot_y,scale_y=get_pivot_and_scale(axis_min=y_axis_5.y_min, axis_max=y_axis_5.y_max, 
                                         axis_end=y_axis_5.axis_length_on_canvas)
-        ts.scale([scale_x, scale_x, scale_y], about_point=[pivot_x, pivot_x, pivot_y])
+        # ts.scale([scale_x, scale_x, scale_y*0.6], about_point=[pivot_x, pivot_x, pivot_y]) #EXTRA VERTICAL SCALING FACTOR HERE
         # ts.scale([[1.7, 1.7, 0.24]], about_point=[pivot_x, pivot_x, pivot_y])
         # surf_shift=[19, 0, 0] #Gross iterative swagginess, I think i at least have the scale right
         # ts.shift([19, 0, 0])
-        ts.move_to([20, 0, 0])
+        # ts.move_to([20, 0, 0])
+        # ts.shift([0,0,-0.45])
+        # ts.shift([0.1, 0, 0])
+        # ts.shift([0, 0.075, 0])
+        # ts.shift([0.1, 0.075, -0.45])
 
+        num_lines = 32  # Number of gridlines in each direction
+        num_points = 512  # Number of points per line
+        u_gridlines = VGroup()
+        v_gridlines = VGroup()
+        u_values = np.linspace(-2.5, 2.5, num_lines)
+        v_points = np.linspace(-2.5, 2.5, num_points)
+        for u in u_values:
+            points = [param_surface_1(u, v) for v in v_points]
+            line = VMobject()
+            line.set_points_smoothly(points)
+            line.set_stroke(width=1, color=WHITE, opacity=0.3)
+            u_gridlines.add(line)
 
-        # num_lines = 64  # Number of gridlines in each direction
-        # num_points = 512  # Number of points per line
-        # u_gridlines = VGroup()
-        # v_gridlines = VGroup()
-        # u_values = np.linspace(-2.5, 2.5, num_lines)
-        # v_points = np.linspace(-2.5, 2.5, num_points)
-        # for u in u_values:
-        #     points = [param_surface_1(u, v) for v in v_points]
-        #     line = VMobject()
-        #     line.set_points_smoothly(points)
-        #     line.set_stroke(width=1, color=WHITE, opacity=0.3)
-        #     u_gridlines.add(line)
+        u_points = np.linspace(-2.5, 2.5, num_points)
+        for v in u_values:  # Using same number of lines for both directions
+            points = [param_surface_1(u, v) for u in u_points]
+            line = VMobject()
+            line.set_points_smoothly(points)
+            line.set_stroke(width=1, color=WHITE, opacity=0.3)
+            v_gridlines.add(line)
 
-        # u_points = np.linspace(-2.5, 2.5, num_points)
-        # for v in u_values:  # Using same number of lines for both directions
-        #     points = [param_surface_1(u, v) for u in u_points]
-        #     line = VMobject()
-        #     line.set_points_smoothly(points)
-        #     line.set_stroke(width=1, color=WHITE, opacity=0.3)
-        #     v_gridlines.add(line)
-
-        # u_gridlines.scale([scale_x, scale_x, scale_y], about_point=[pivot_x, pivot_x, pivot_y])
+        # u_gridlines.scale([scale_x, scale_x, scale_y*0.6], about_point=[pivot_x, pivot_x, pivot_y])
         # u_gridlines.move_to([20, 0, 0])
-        # v_gridlines.scale([scale_x, scale_x, scale_y], about_point=[pivot_x, pivot_x, pivot_y])
+        # v_gridlines.scale([scale_x, scale_x, scale_y*0.6], about_point=[pivot_x, pivot_x, pivot_y])
         # v_gridlines.move_to([20, 0, 0])    
+
+        surf_and_mesh=Group(ts, u_gridlines, v_gridlines)
+        surf_and_mesh.scale([scale_x, scale_x, scale_y*0.6], about_point=[pivot_x, pivot_x, pivot_y]) #EXTRA VERTICAL SCALING FACTOR HERE
+        surf_and_mesh.move_to([20, 0, 0])
+        surf_and_mesh.shift([0.1, 0.075, -0.45])
+
 
         # self.add(u_gridlines)
         # self.add(v_gridlines)
 
 
+        ## Ok what if I just squish the curves vertically when the camera moves
+        ## And take off the tick marks, take off the labels, and mabye even lose the vertical axes?
+
+        self.wait()
         axes_1.set_opacity(0)
         axes_2.set_opacity(0)
         axes_3.set_opacity(0)
         axes_4.set_opacity(0)
         y_axis_6.set_opacity(0)
         y_label_6.set_opacity(0)
+        y_axis_5.set_opacity(0) #might be nice to keep these, but difficult with scaling
+        y_label_5.set_opacity(0)
+        axes_6[0][-1][2].set_opacity(0) #Zero tick label on axis 6
 
-        axes_5.scale([1.0, 1.0, 0.5])
-        axes_6.scale([1.0, 1.0, 0.5])
-        ts.scale([1.0, 1.0, 0.5])
-
-        # axes_5.move_to([20, 0, 0]) 
+        curve_5.scale([1, 1, 0.6])
+        curve_6.scale([1, 1, 0.6])
         axes_6.move_to([20, 0, 0])
         axes_6.rotate(90*DEGREES, axis=[0,0,1]) #This seems to have kidna worked out. 
 
-        
+
+        self.wait(0)
+
         self.frame.reorient(27, 37, 0, (18.74, 3.76, -6.28), 17.77)
 
+        self.add(surf_and_mesh)
 
-        self.add(ts)
-        self.add(curve_5) #, curve_6)
-        self.add(curve_6)
-        self.wait()
 
-        # ts.shift([2,2,0])
-        # ts.shift([0.125, 0.125, 0])
-        ts.shift([0,0,-0.45])
-        ts.shift([0.1, 0, 0])
-        ts.shift([0, 0.075, 0])
+        # self.add(u_gridlines, v_gridlines)
+        # self.add(ts)
+        # self.add(curve_5, curve_6)
+
+
+        # axes_5.scale([1.0, 1.0, 0.5])
+        # axes_6.scale([1.0, 1.0, 0.5])
+        # ts.scale([1.0, 1.0, 0.5])
+
+        # axes_5.move_to([20, 0, 0]) 
+
+
+        
+       
+
+
+        # self.add(ts)
+        # self.add(curve_5) #, curve_6)
+        # self.add(curve_6)
+        # self.wait()
+
+        # # ts.shift([2,2,0])
+        # # ts.shift([0.125, 0.125, 0])
+        # ts.shift([0,0,-0.45])
+        # ts.shift([0.1, 0, 0])
+        # ts.shift([0, 0.075, 0])
 
         self.wait()
 
@@ -362,7 +395,7 @@ class sketch_3d(InteractiveScene):
         ts.set_shading(0.0, 0.1, 0)
 
         ts.scale([1,1,0.1])
-        ts.move_to([20,0,0])
+        ts.move_to([0,0,0])
 
         # self.add(ts)
         self.add(ts)

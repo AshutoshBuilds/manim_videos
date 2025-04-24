@@ -14,16 +14,27 @@ loss_curve_2=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_l
 loss_curve_3=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_24_7/all_execpt_embedding_pretrained_19.npy')
 loss_curve_4=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_24_7/all_execpt_embedding_pretrained_27.npy')
 
+alphas_1=np.linspace(-2.5, 2.5, 512)
+loss_2d_1=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_24_3/pretrained_11_111_first_8.npy')
+
+# import matplotlib.pyplot as plt
+# plt.figure(frameon=False)
+# ax = plt.Axes(plt.gcf(), [0., 0., 1., 1.])
+# ax.set_axis_off()
+# plt.gcf().add_axes(ax)
+# plt.imshow(np.rot90(loss_2d_1))
+# plt.savefig('loss_2d_1.png', bbox_inches='tight', pad_inches=0, dpi=300)
+# plt.close()
 
 
-# def param_surface(u, v):
-#     u_idx = np.abs(xy[0] - u).argmin()
-#     v_idx = np.abs(xy[1] - v).argmin()
-#     try:
-#         z = surf[u_idx, v_idx]
-#     except IndexError:
-#         z = 0
-#     return np.array([u, v, z])
+def param_surface_1(u, v):
+    u_idx = np.abs(alphas_1 - u).argmin()
+    v_idx = np.abs(alphas_1 - v).argmin()
+    try:
+        z = loss_2d_1[u_idx, v_idx]
+    except IndexError:
+        z = 0
+    return np.array([u, v, z])
 
 
 class P39_48(InteractiveScene):
@@ -151,19 +162,98 @@ class P39_48(InteractiveScene):
                   ShowCreation(curve_4),
                   run_time=4)
 
+        self.wait()
 
-
-        self.add(axes_3, axes_4) 
-        self.frame.reorient(0, 0, 0, (5.46, -3.5, 0.0), 14.96)
-        
-
-
-        self.frame.animate.reorient(0, 0, 0, (5.46, -3.5, 0.0), 14.96)
-
+        ## Ok now axes 5 & 6. 
 
 
 
 
         self.embed()
+        self.wait(20)
+
+
+
+class sketch_3d(InteractiveScene):
+    def construct(self):
+        '''
+        Hack on 3d surface a bit before I get there, make sure it can do what I want. 
+        '''
+
+        # Create main surface
+        surface = ParametricSurface(
+            param_surface_1,  
+            u_range=[-2.5, 2.5],
+            v_range=[-2.5, 2.5],
+            resolution=(512, 512),
+        )
+
+    
+        ts = TexturedSurface(surface, '/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/loss_2d_1.png')
+        ts.set_shading(0.0, 0.1, 0)
+
+        ts.scale([1,1,0.1])
+        ts.move_to([0,0,0])
+
+        # self.add(ts)
+        self.add(ts)
+        
+        #Dare we try gridlines lol?
+
+        num_lines = 64  # Number of gridlines in each direction
+        num_points = 512  # Number of points per line
+        u_gridlines = VGroup()
+        v_gridlines = VGroup()
+        u_values = np.linspace(-2.5, 2.5, num_lines)
+        v_points = np.linspace(-2.5, 2.5, num_points)
+        for u in u_values:
+            points = [param_surface_1(u, v) for v in v_points]
+            line = VMobject()
+            line.set_points_smoothly(points)
+            line.set_stroke(width=1, color=WHITE, opacity=0.3)
+            u_gridlines.add(line)
+
+        u_points = np.linspace(-2.5, 2.5, num_points)
+        for v in u_values:  # Using same number of lines for both directions
+            points = [param_surface_1(u, v) for u in u_points]
+            line = VMobject()
+            line.set_points_smoothly(points)
+            line.set_stroke(width=1, color=WHITE, opacity=0.3)
+            v_gridlines.add(line)
+
+        u_gridlines.scale([1,1,0.1]) #[scale_x, scale_x, scale_y], about_point=[pivot_x, pivot_x, pivot_y])
+        u_gridlines.move_to([0,0,0])
+        v_gridlines.scale([1,1,0.1]) #[scale_x, scale_x, scale_y], about_point=[pivot_x, pivot_x, pivot_y])
+        v_gridlines.move_to([0,0,0])     
+
         self.wait()
+
+        self.frame.reorient(32, 38, 0, (0.12, -0.18, -0.23), 7.45)
+        self.play(ShowCreation(u_gridlines), 
+                  ShowCreation(v_gridlines), 
+                  self.frame.animate.reorient(161, 33, 0, (0.11, -0.12, -0.23), 4.84),
+                  run_time=10)
+        self.wait()
+        self.add(ts)
+
+        # self.add(u_gridlines, v_gridlines)  
+
+        # self.remove(ts)
+
+        self.embed()
+        self.wait(20)
+
+
+
+        # self.frame.reorient(70, 29, 0, (-4.94, 1.73, 1.26), 15.55)
+        
+        # pivot_x,scale_x=get_pivot_and_scale(axis_min=x_axis_1.x_min, axis_max=x_axis_1.x_max, 
+        #                                 axis_end=x_axis_1.axis_length_on_canvas)
+        # pivot_y,scale_y=get_pivot_and_scale(axis_min=y_axis_1.y_min, axis_max=y_axis_1.y_max, 
+        #                                 axis_end=y_axis_1.axis_length_on_canvas)
+        # ts.scale([scale_x, scale_x, scale_y], about_point=[pivot_x, pivot_x, pivot_y])
+
+
+
+
 

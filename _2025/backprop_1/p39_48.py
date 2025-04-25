@@ -17,6 +17,7 @@ loss_curve_4=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_l
 alphas_1=np.linspace(-2.5, 2.5, 512)
 # loss_2d_1=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_24_3/pretrained_11_111_first_8.npy')
 loss_2d_1=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_24_11/pre_training_landscape.npy')
+loss_2d_1=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_24_12/000.npy')
 
 class Dot3D(Sphere):
     def __init__(self, center=ORIGIN, radius=0.05, **kwargs):
@@ -550,8 +551,8 @@ class sketch_getting_stuck(InteractiveScene):
         # Ok I think big question from here is can I some not-totally terrible numerical grad descent
         # and then after then take it warping into the global minimum.  
         # Might not be a terrible job for claude...
-        num_steps=128
-        learning_rate=0.01
+        num_steps=200 # I think it gest stuck around 30-40 at lr -0.01
+        learning_rate=2e-3
         trajectory=[[starting_point[0], starting_point[1], param_surface_1(starting_point[0], starting_point[1])[2]]]
         for i in range(num_steps):
             g=get_numerical_gradient(param_surface_1, trajectory[-1][0], trajectory[-1][1], epsilon=0.01)
@@ -559,19 +560,63 @@ class sketch_getting_stuck(InteractiveScene):
             new_x=trajectory[-1][0]-delta[0]
             new_y=trajectory[-1][1]-delta[1]
             trajectory.append([new_x, new_y, param_surface_1(new_x, new_y)[2]])
-        trajectory=np.array(trajectory)
+        # trajectory=np.array(trajectory)
 
-        t = VMobject()
-        t.set_points_smoothly(trajectory)
-        t.set_stroke(width=6, color="#FF00FF", opacity=1.0)
-        self.add(t)
+        #Ok let me go anead and hack for a minute here on the fake/magic tunneling scence
+        ending_coords=[0,0]
+        ending_point=param_surface_1(*ending_coords)
+
+        s2=Dot3D(center=ending_point, radius=0.06, color='$FF00FF')
+        self.add(s2)
+
+        num_steps2=90 #Plotting 1k points is kinda slow - slower than I thought 
+        learning_rate_2=5e-3
+        for i in range(num_steps2):
+            g=-np.array([ending_coords[0]-trajectory[-1][0], ending_coords[1]-trajectory[-1][1]])
+            delta=learning_rate_2*np.array(g)
+            new_x=trajectory[-1][0]-delta[0]
+            new_y=trajectory[-1][1]-delta[1]
+            trajectory.append([new_x, new_y, param_surface_1(new_x, new_y)[2]])
+
+        #Break into 3 parts, slower learning rate as we descent into the valley
+        #Let me try a different approach at the end here, my gradient proxy shrinks as we get close
+        num_steps3=512 #Plotting 1k points is kinda slow - slower than I thought 
+        trajectory_waypoint=trajectory[-1]
+        g=np.array([ending_coords[0]-trajectory[-1][0], ending_coords[1]-trajectory[-1][1]])
+        for i in range(num_steps3):
+            new_x=trajectory_waypoint[0]+(i/num_steps3)*g[0]
+            new_y=trajectory_waypoint[1]+(i/num_steps3)*g[1]
+            trajectory.append([new_x, new_y, param_surface_1(new_x, new_y)[2]])
+
+        # learning_rate_3=1e-3
+        # for i in range(num_steps3):
+        #     g=-np.array([ending_coords[0]-trajectory[-1][0], ending_coords[1]-trajectory[-1][1]])
+        #     delta=learning_rate_3*np.array(g)
+        #     new_x=trajectory[-1][0]-delta[0]
+        #     new_y=trajectory[-1][1]-delta[1]
+        #     trajectory.append([new_x, new_y, param_surface_1(new_x, new_y)[2]])
+
+        #Tracjectory is looking kinda jagged - could try smoothing the path or maybe just little spheres? And smaller learning rate if needed?
+        trajectory=np.array(trajectory)
+        # t = VMobject()
+        # # t.set_points_smoothly(trajectory)
+        # # t.set_points_as_corners(trajectory)
+        # t.set_points(trajectory)
+        # t.set_stroke(width=6, color="#FF00FF", opacity=1.0)
+        # self.add(t)
+
+        dot_path=Group()
+        for t in trajectory:
+            dot_path.add(Dot3D(center=t, radius=0.017, color='$FF00FF'))
+
+        self.add(dot_path)
 
 
         # ts.set_opacity(0.2)
         # self.add(tsi)
 
         # # self.add(ts)
-        # self.add(u_gridlines, v_gridlines)  
+        self.add(u_gridlines, v_gridlines)  
 
 
 

@@ -132,6 +132,49 @@ def find_local_minima(surface):
     
     return minima
 
+def manual_camera_interpolation(start_orientation, end_orientation, num_steps):
+    """
+    Linearly interpolate between two camera orientations.
+    
+    Parameters:
+    - start_orientation: List containing camera parameters with a tuple at index 3
+    - end_orientation: List containing camera parameters with a tuple at index 3
+    - num_steps: Number of interpolation steps (including start and end)
+    
+    Returns:
+    - List of interpolated orientations
+    """
+    result = []
+    
+    for step in range(num_steps):
+        # Calculate interpolation factor (0 to 1)
+        t = step / (num_steps - 1) if num_steps > 1 else 0
+        
+        # Create a new orientation for this step
+        interpolated = []
+        
+        for i in range(len(start_orientation)):
+            if i == 3:  # Handle the tuple at position 3
+                start_tuple = start_orientation[i]
+                end_tuple = end_orientation[i]
+                
+                # Interpolate each element of the tuple
+                interpolated_tuple = tuple(
+                    start_tuple[j] + t * (end_tuple[j] - start_tuple[j])
+                    for j in range(len(start_tuple))
+                )
+                
+                interpolated.append(interpolated_tuple)
+            else:  # Handle regular numeric values
+                start_val = start_orientation[i]
+                end_val = end_orientation[i]
+                interpolated_val = start_val + t * (end_val - start_val)
+                interpolated.append(interpolated_val)
+        
+        result.append(interpolated)
+    
+    return result
+
 class P39_48(InteractiveScene):
     def construct(self):
         '''
@@ -740,16 +783,16 @@ class sketch_wormole(InteractiveScene):
         for i in range(num_time_steps):
             loss_arrays.append(np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_24_12/'+str(i).zfill(3)+'.npy'))
 
-        import matplotlib.pyplot as plt
-        for i in range(num_time_steps):
-            plt.clf()
-            plt.figure(frameon=False)
-            ax = plt.Axes(plt.gcf(), [0., 0., 1., 1.])
-            ax.set_axis_off()
-            plt.gcf().add_axes(ax)
-            plt.imshow(np.rot90(loss_arrays[i].T)) #have to transpose if transposing u and v and param_surface_1
-            plt.savefig('loss_2d_1_'+str(i).zfill(3)+'.png', bbox_inches='tight', pad_inches=0, dpi=300)
-            plt.close()
+        # import matplotlib.pyplot as plt
+        # for i in range(num_time_steps):
+        #     plt.clf()
+        #     plt.figure(frameon=False)
+        #     ax = plt.Axes(plt.gcf(), [0., 0., 1., 1.])
+        #     ax.set_axis_off()
+        #     plt.gcf().add_axes(ax)
+        #     plt.imshow(np.rot90(loss_arrays[i].T)) #have to transpose if transposing u and v and param_surface_1
+        #     plt.savefig('loss_2d_1_'+str(i).zfill(3)+'.png', bbox_inches='tight', pad_inches=0, dpi=300)
+        #     plt.close()
 
         surfaces=Group()
         for i in range(num_time_steps):
@@ -771,13 +814,29 @@ class sketch_wormole(InteractiveScene):
         self.add(surfaces[0])
         self.frame.reorient(155, 35, 0, (-0.06, -0.74, 0.16), 2.66)
 
-        for i in range(1, num_time_steps):
-            self.remove(surfaces[i-1])
-            self.add(surfaces[i])
-            self.wait(0.1)
+        # for i in range(1, num_time_steps):
+        #     self.remove(surfaces[i-1])
+        #     self.add(surfaces[i])
+        #     self.wait(0.1)
             
+        num_total_steps=32
+        start_orientation=[142, 34, 0, (-0.09, -0.77, 0.15), 3.55]
+        end_orientation=[131, 31, 0, (-0.12, -0.88, 0.22), 2.90]
+        interp_orientations=manual_camera_interpolation(start_orientation, end_orientation, num_steps=num_total_steps)
 
+        self.frame.reorient(*start_orientation)
 
+        surface_update_counter=1
+        frames_per_surface_upddate=np.floor(num_total_steps/num_time_steps)
+        for i in range(1, num_total_steps):
+            # print(i, len(interp_orientations))
+            if i%frames_per_surface_upddate==0:
+                self.remove(surfaces[surface_update_counter-1])
+                self.add(surfaces[surface_update_counter])
+                surface_update_counter+=1
+            # print(i, len(interp_orientations))
+            self.frame.reorient(*interp_orientations[i])
+            self.wait(0.1)
 
         self.wait()
         self.embed()

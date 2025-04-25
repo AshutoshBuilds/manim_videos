@@ -553,6 +553,9 @@ class P39_48(InteractiveScene):
         self.wait()
 
         self.play(self.frame.animate.reorient(104, 11, 0, (-0.09, -0.35, -0.06), 2.60), run_time=4)
+
+        ## ---- Wormhole Time ---- ##
+
         ## Ok now we want to basically rewind what i just did - remove path, point back on top of hill
         ## And it's mothee fucking fuckety fucking wormhole time. 
 
@@ -570,8 +573,90 @@ class P39_48(InteractiveScene):
         self.add(s2)
         self.wait()
 
+        #Load up other surfaces to visualize
+        loss_arrays=[]
+        num_time_steps=5
+        for i in range(num_time_steps):
+            loss_arrays.append(np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_25_1/'+str(i).zfill(3)+'.npy'))
 
-        
+        # import matplotlib.pyplot as plt
+        # for i in range(num_time_steps):
+        #     plt.clf()
+        #     plt.figure(frameon=False)
+        #     ax = plt.Axes(plt.gcf(), [0., 0., 1., 1.])
+        #     ax.set_axis_off()
+        #     plt.gcf().add_axes(ax)
+        #     plt.imshow(np.rot90(loss_arrays[i].T)) #have to transpose if transposing u and v and param_surface_1
+        #     plt.savefig('loss_2d_1_'+str(i).zfill(3)+'.png', bbox_inches='tight', pad_inches=0, dpi=300)
+        #     plt.close()
+
+
+        surfaces=Group()
+        grids=Group()
+        for i in range(num_time_steps):
+            surf_func=partial(param_surface_2, surf_array=loss_arrays[i])
+
+            surface = ParametricSurface(
+                surf_func,  
+                u_range=[-2.5, 2.5],
+                v_range=[-2.5, 2.5],
+                resolution=(512, 512),
+            )
+
+            ts = TexturedSurface(surface, '/Users/stephen/manim/videos/'+'loss_2d_1_'+str(i).zfill(3)+'.png')
+            ts.set_shading(0.0, 0.1, 0)
+            surfaces.add(ts)
+
+            num_lines = 64  # Number of gridlines in each direction
+            num_points = 512  # Number of points per line
+            u_gridlines = VGroup()
+            v_gridlines = VGroup()
+            u_values = np.linspace(-2.5, 2.5, num_lines)
+            v_points = np.linspace(-2.5, 2.5, num_points)
+            for u in u_values:
+                points = [param_surface_1(u, v) for v in v_points]
+                line = VMobject()
+                line.set_points_smoothly(points)
+                line.set_stroke(width=1, color=WHITE, opacity=0.15)
+                u_gridlines.add(line)
+
+            u_points = np.linspace(-2.5, 2.5, num_points)
+            for v in u_values:  # Using same number of lines for both directions
+                points = [param_surface_1(u, v) for u in u_points]
+                line = VMobject()
+                line.set_points_smoothly(points)
+                line.set_stroke(width=1, color=WHITE, opacity=0.15)
+                v_gridlines.add(line)
+            grids.add(VGroup(u_gridlines, v_gridlines))
+
+        self.wait()
+
+
+        num_total_steps=16 #Crank this for final viz
+        start_orientation=[142, 34, 0, (-0.09, -0.77, 0.15), 3.55]
+        end_orientation=[131, 31, 0, (-0.12, -0.88, 0.22), 2.90]
+        interp_orientations=manual_camera_interpolation(start_orientation, end_orientation, num_steps=num_total_steps)
+
+        surface_update_counter=1
+        frames_per_surface_upddate=np.floor(num_total_steps/num_time_steps)
+        for i in range(1, num_total_steps):
+            # print(i, len(interp_orientations))
+            if i%frames_per_surface_upddate==0 and surface_update_counter<len(surfaces):
+                if surface_update_counter==1:
+                    self.remove(ts)
+                    self.remove(u_gridlines, v_gridlines) 
+                else:
+                    self.remove(surfaces[surface_update_counter-1])
+                    self.remove(grids[surface_update_counter-1])
+
+                self.add(surfaces[surface_update_counter])
+                self.add(grids[surface_update_counter])
+                surface_update_counter+=1
+            # print(i, len(interp_orientations))
+            self.frame.reorient(*interp_orientations[i])
+            self.wait(0.1)
+
+        self.wait()
 
 
 
@@ -579,10 +664,14 @@ class P39_48(InteractiveScene):
 
 
 
+
+
+
+        ## ----------------------------------------------------------------------- ##
         # self.frame.reorient(88, 41, 0, (-0.71, -0.37, 0.21), 2.60)
         # reorient(91, 28, 0, (-0.49, -0.34, 0.08), 2.60)
 
-        ## ----------------------------------------------------------------------- ##
+        
 
         # t = VMobject()
         # t.set_points_smoothly(trajectory)

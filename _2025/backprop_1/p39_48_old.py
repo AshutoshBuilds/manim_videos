@@ -673,7 +673,7 @@ class sketch_getting_stuck(InteractiveScene):
             trajectory.append([new_x, new_y, param_surface_1(new_x, new_y)[2]])
         # trajectory=np.array(trajectory)
 
-        #Ok let me go anead and hack for a minute here on the fake/magic tunneling scence
+        #Ok let me go ahead and hack for a minute here on the fake/magic tunneling scence
         ending_coords=[0,0]
         ending_point=param_surface_1(*ending_coords)
 

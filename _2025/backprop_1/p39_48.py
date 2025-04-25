@@ -398,11 +398,34 @@ class P39_48(InteractiveScene):
         ## ---- 4. "Drop point in and, add gradient arrow, show global min. " ---- #
 
 
+        self.play(self.frame.animate.reorient(122, 58, 0, (-1.15, -0.02, 0.11), 5.42), run_time=4.0)
+        self.wait()
+
+        starting_coords=[-0.7,0.95] 
+        starting_point=param_surface_1(*starting_coords)
+        s1=Dot3D(center=starting_point, radius=0.06, color='$FF00FF')
+        s1.shift([0,0,1]) #move up so we can "drop it in to skate bro"
+        
+        self.add(s1)
+
+        self.play(s1.animate.shift([0,0,-1]),
+                  # self.frame.animate.reorient(120, 39, 0, (-0.89, 0.27, -0.07), 4.05),
+                  run_time=2.0)
+
+        self.wait()
+
+        self.play(self.frame.animate.reorient(124, 37, 0, (-0.96, 0.01, 0.23), 3.41), run_time=4.0)
+        self.wait()
+
+        # Ok now I gotta add a little downhill arrow -> Hmm illustrator maybe?
+        # yeah let's assume I'm going to add a gradient arrow in illustrator
+        # From here then, I want to try to run some gradient descent from this location. 
+        # Then in a bit I switch to the other location? We'll see how that feels.
+
+        
 
 
-
-
-
+        
 
 
         ## ----------------------------------------------------------------------- ##

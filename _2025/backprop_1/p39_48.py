@@ -513,7 +513,7 @@ class P39_48(InteractiveScene):
 
         #Break into 3 parts, slower learning rate as we descent into the valley
         #Let me try a different approach at the end here, my gradient proxy shrinks as we get close
-        num_steps3=512 #Plotting 1k points is kinda slow - slower than I thought 
+        num_steps3=128 #512 
         trajectory_waypoint=trajectory[-1]
         g=np.array([ending_coords[0]-trajectory[-1][0], ending_coords[1]-trajectory[-1][1]])
         for i in range(num_steps3):
@@ -540,8 +540,47 @@ class P39_48(InteractiveScene):
         self.wait()
 
 
+        end_orientation_2=[91, 28, 0, (-0.49, -0.34, 0.08), 2.60]
+        interp_orientations=manual_camera_interpolation(end_orientation, end_orientation_2, num_steps=len(trajectory)-num_steps)
 
-        self.frame.reorient(88, 41, 0, (-0.71, -0.37, 0.21), 2.60)
+        self.wait()
+        for i in range(num_steps, len(trajectory)): #First leg -> getting stuck
+            s1.move_to(trajectory[i])
+            # t.set_points_smoothly(trajectory[:i])
+            dot_path.add(Dot3D(center=trajectory[i], radius=0.017, color='$FF00FF'))
+            self.frame.reorient(*interp_orientations[i-num_steps])
+            self.wait(0.1)
+        self.wait()
+
+        self.play(self.frame.animate.reorient(104, 11, 0, (-0.09, -0.35, -0.06), 2.60), run_time=4)
+        ## Ok now we want to basically rewind what i just did - remove path, point back on top of hill
+        ## And it's mothee fucking fuckety fucking wormhole time. 
+
+        self.wait()
+        self.play(s1.animate.set_opacity(0.0), 
+                  dot_path.animate.set_opacity(0.0),
+                  self.frame.animate.reorient(142, 34, 0, (-0.09, -0.77, 0.15), 3.55),
+                  run_time=4.0)
+
+        self.wait()
+
+        starting_coords=[0.05,-0.9]
+        starting_point=param_surface_1(*starting_coords)
+        s2=Dot3D(center=starting_point, radius=0.06, color='$FF00FF')
+        self.add(s2)
+        self.wait()
+
+
+        
+
+
+
+
+
+
+
+        # self.frame.reorient(88, 41, 0, (-0.71, -0.37, 0.21), 2.60)
+        # reorient(91, 28, 0, (-0.49, -0.34, 0.08), 2.60)
 
         ## ----------------------------------------------------------------------- ##
 

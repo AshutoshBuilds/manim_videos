@@ -443,7 +443,7 @@ class P39_48(InteractiveScene):
 
         curve_5.scale([1, 1, 0.6])
         curve_6.scale([1, 1, 0.6])
-        axes_6.move_to([20, 0, 0])
+        axes_6.move_to([0, 0, 0])
         axes_6.rotate(90*DEGREES, axis=[0,0,1]) #This seems to have kidna worked out. 
 
 

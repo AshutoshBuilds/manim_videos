@@ -163,12 +163,12 @@ class P39_48(InteractiveScene):
 
         ## ----- 2. 2D Curves ----- ##
         x_axis_1=WelchXAxis(x_min=-2.5, x_max=2.5, x_ticks=[-2.0 ,-1.0, 0, 1.0, 2.0], x_tick_height=0.15,        
-                            x_label_font_size=32, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=8)
+                            x_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=5)
         y_axis_1=WelchYAxis(y_min=8, y_max=16, y_ticks=[8, 9, 10, 11, 12, 13, 14, 15 ], y_tick_width=0.15,        
-                          y_label_font_size=32, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=6)
+                          y_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=3)
 
-        x_label_1 = Tex(r'\alpha', font_size=36).set_color(CHILL_BROWN)
-        y_label_1 = Tex('Loss', font_size=30).set_color(CHILL_BROWN)
+        x_label_1 = Tex(r'\alpha', font_size=28).set_color(CHILL_BROWN)
+        y_label_1 = Tex('Loss', font_size=22).set_color(CHILL_BROWN)
         x_label_1.next_to(x_axis_1, RIGHT, buff=0.05)
         y_label_1.next_to(y_axis_1, UP, buff=0.08)
 
@@ -180,9 +180,9 @@ class P39_48(InteractiveScene):
         curve_1.set_stroke(width=4, color=YELLOW, opacity=1.0)
 
         axes_1=VGroup(x_axis_1, y_axis_1, x_label_1, y_label_1, curve_1)
-        axes_1.move_to([-20, 0, 0]) #Start way over here, so the final 3d column of plots land close to origin
+        axes_1.move_to([-12.5, 0, 0]) #Start way over here, so the final 3d column of plots land close to origin
         axes_1.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN)
-        self.frame.reorient(0, 90, 0, (-20.22, -0.01, -0.02), 8.00)
+        self.frame.reorient(0, 89, 0, (-12.43, -0.01, 0.0), 4.99)
         self.add(x_axis_1, y_axis_1, x_label_1, y_label_1)
         self.wait(0)
         self.play(ShowCreation(curve_1), run_time=5)
@@ -190,12 +190,12 @@ class P39_48(InteractiveScene):
         self.wait() 
 
         x_axis_2=WelchXAxis(x_min=-2.5, x_max=2.5, x_ticks=[-2.0 ,-1.0, 0, 1.0, 2.0], x_tick_height=0.15,        
-                            x_label_font_size=32, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=8)
+                            x_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=5)
         y_axis_2=WelchYAxis(y_min=8, y_max=16, y_ticks=[8, 9, 10, 11, 12, 13, 14, 15 ], y_tick_width=0.15,        
-                          y_label_font_size=32, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=6)
+                          y_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=3)
 
-        x_label_2 = Tex(r'\alpha', font_size=36).set_color(CHILL_BROWN)
-        y_label_2 = Tex('Loss', font_size=30).set_color(CHILL_BROWN)
+        x_label_2 = Tex(r'\alpha', font_size=28).set_color(CHILL_BROWN)
+        y_label_2 = Tex('Loss', font_size=22).set_color(CHILL_BROWN)
         x_label_2.next_to(x_axis_2, RIGHT, buff=0.05)
         y_label_2.next_to(y_axis_2, UP, buff=0.08)
 
@@ -208,21 +208,21 @@ class P39_48(InteractiveScene):
 
         axes_2=VGroup(x_axis_2, y_axis_2, x_label_2, y_label_2, curve_2)
         axes_2.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN)
-        axes_2.move_to([-10, 0, 0])
+        axes_2.move_to([-6.26, 0, 0])
 
-        self.play(self.frame.animate.reorient(0, 90, 0, (-15, 0.05, 0.0), 12.15), 
+        self.play(self.frame.animate.reorient(0, 89, 0, (-9.28, 0.05, -0.11), 7.80), 
                   FadeIn(VGroup(x_axis_2, y_axis_2, x_label_2, y_label_2)),
                   ShowCreation(curve_2),
                   run_time=3.0)
         self.wait()
 
         x_axis_3=WelchXAxis(x_min=-2.5, x_max=2.5, x_ticks=[-2.0 ,-1.0, 0, 1.0, 2.0], x_tick_height=0.15,        
-                            x_label_font_size=32, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=8)
+                            x_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=5)
         y_axis_3=WelchYAxis(y_min=0, y_max=40, y_ticks=[0, 5, 10, 15, 20, 25, 30, 35], y_tick_width=0.15,        
-                          y_label_font_size=32, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=6)
+                          y_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=3)
 
-        x_label_3 = Tex(r'\alpha', font_size=36).set_color(CHILL_BROWN)
-        y_label_3 = Tex('Loss', font_size=30).set_color(CHILL_BROWN)
+        x_label_3 = Tex(r'\alpha', font_size=28).set_color(CHILL_BROWN)
+        y_label_3 = Tex('Loss', font_size=22).set_color(CHILL_BROWN)
         x_label_3.next_to(x_axis_3, RIGHT, buff=0.05)
         y_label_3.next_to(y_axis_3, UP, buff=0.08)
 
@@ -235,16 +235,16 @@ class P39_48(InteractiveScene):
 
         axes_3=VGroup(x_axis_3, y_axis_3, x_label_3, y_label_3, curve_3)
         axes_3.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN)
-        axes_3.move_to([-10, 0, 0])
+        axes_3.move_to([-6.25, 0, 0])
 
 
         x_axis_4=WelchXAxis(x_min=-2.5, x_max=2.5, x_ticks=[-2.0 ,-1.0, 0, 1.0, 2.0], x_tick_height=0.15,        
-                            x_label_font_size=32, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=8)
+                            x_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=5)
         y_axis_4=WelchYAxis(y_min=0, y_max=40, y_ticks=[0, 5, 10, 15, 20, 25, 30, 35], y_tick_width=0.15,        
-                          y_label_font_size=32, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=6)
+                          y_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=3)
 
-        x_label_4 = Tex(r'\alpha', font_size=36).set_color(CHILL_BROWN)
-        y_label_4 = Tex('Loss', font_size=30).set_color(CHILL_BROWN)
+        x_label_4 = Tex(r'\alpha', font_size=28).set_color(CHILL_BROWN)
+        y_label_4 = Tex('Loss', font_size=22).set_color(CHILL_BROWN)
         x_label_4.next_to(x_axis_4, RIGHT, buff=0.05)
         y_label_4.next_to(y_axis_4, UP, buff=0.08)
 
@@ -257,12 +257,12 @@ class P39_48(InteractiveScene):
 
         axes_4=VGroup(x_axis_4, y_axis_4, x_label_4, y_label_4, curve_4)
         axes_4.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN)
-        axes_4.move_to([-10, 0, -7])
+        axes_4.move_to([-6.25, 0, -3.75])
 
         self.wait()
 
-        self.play(axes_2.animate.move_to([-20, 0, -7]),
-                 self.frame.animate.reorient(0, 90, 0, (-14.83, -3.5, -3.55), 12.54),
+        self.play(axes_2.animate.move_to([-12.5, 0, -3.75]),
+                 self.frame.animate.reorient(0, 89, 0, (-9.24, -3.5, -2.04), 5.85),
                  run_time=2.0)
 
         self.play(FadeIn(VGroup(x_axis_3, y_axis_3, x_label_3, y_label_3)),
@@ -278,12 +278,12 @@ class P39_48(InteractiveScene):
         slice_2=loss_2d_1[:, 255]
 
         x_axis_5=WelchXAxis(x_min=-2.5, x_max=2.5, x_ticks=[-2.0 ,-1.0, 0, 1.0, 2.0], x_tick_height=0.15,        
-                            x_label_font_size=32, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=8)
+                            x_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=5)
         y_axis_5=WelchYAxis(y_min=0, y_max=25, y_ticks=[0, 5, 10, 15, 20], y_tick_width=0.15,        
-                          y_label_font_size=32, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=6)
+                          y_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=3)
 
-        x_label_5 = Tex(r'\alpha', font_size=36).set_color(CHILL_BROWN)
-        y_label_5 = Tex('Loss', font_size=30).set_color(CHILL_BROWN)
+        x_label_5 = Tex(r'\alpha', font_size=28).set_color(CHILL_BROWN)
+        y_label_5 = Tex('Loss', font_size=22).set_color(CHILL_BROWN)
         x_label_5.next_to(x_axis_5, RIGHT, buff=0.05)
         y_label_5.next_to(y_axis_5, UP, buff=0.08)
 
@@ -300,12 +300,12 @@ class P39_48(InteractiveScene):
 
 
         x_axis_6=WelchXAxis(x_min=-2.5, x_max=2.5, x_ticks=[-2.0 ,-1.0, 0, 1.0, 2.0], x_tick_height=0.15,        
-                            x_label_font_size=32, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=8)
+                            x_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=5)
         y_axis_6=WelchYAxis(y_min=0, y_max=25, y_ticks=[0, 5, 10, 15, 20], y_tick_width=0.15,        
-                          y_label_font_size=32, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=6)
+                          y_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=3)
 
-        x_label_6 = Tex(r'\alpha', font_size=36).set_color(CHILL_BROWN)
-        y_label_6 = Tex('Loss', font_size=30).set_color(CHILL_BROWN)
+        x_label_6 = Tex(r'\alpha', font_size=28).set_color(CHILL_BROWN)
+        y_label_6 = Tex('Loss', font_size=22).set_color(CHILL_BROWN)
         x_label_6.next_to(x_axis_6, RIGHT, buff=0.05)
         y_label_6.next_to(y_axis_6, UP, buff=0.08)
 
@@ -318,7 +318,7 @@ class P39_48(InteractiveScene):
 
         axes_6=VGroup(x_axis_6, y_axis_6, x_label_6, y_label_6, curve_6)
         axes_6.rotate(90*DEGREES, [1,0,0], about_point=ORIGIN)
-        axes_6.move_to([0, 0, -7])
+        axes_6.move_to([0, 0, -3.75])
 
         self.wait()
         # self.add(axes_5, axes_6)
@@ -326,7 +326,7 @@ class P39_48(InteractiveScene):
           FadeIn(VGroup(x_axis_6, y_axis_6, x_label_6, y_label_6)),
           ShowCreation(curve_5),
           ShowCreation(curve_6),
-          self.frame.animate.reorient(0, 90, 0, (-10, -3.5, -3.39), 14.41),
+          self.frame.animate.reorient(0, 89, 0, (-6.26, -3.5, -2.13), 8.15),
           run_time=6)
         
         self.wait()
@@ -338,43 +338,111 @@ class P39_48(InteractiveScene):
         pivot_y,scale_y=get_pivot_and_scale(axis_min=y_axis_5.y_min, axis_max=y_axis_5.y_max, 
                                         axis_end=y_axis_5.axis_length_on_canvas)
 
-
+        self.wait()
         #Anmation 1
-        axes_1.set_opacity(0)
-        axes_2.set_opacity(0)
-        axes_3.set_opacity(0)
-        axes_4.set_opacity(0)
-        y_axis_6.set_opacity(0)
-        y_label_6.set_opacity(0)
-        y_axis_5.set_opacity(0) #might be nice to keep these, but difficult with scaling
-        y_label_5.set_opacity(0)
-        axes_6[0][-1][2].set_opacity(0) #Zero tick label on axis 6
-        self.frame.reorient(0, 90, 0, (-0.02, -3.68, -4.36), 10.75)
+        self.play(axes_1.animate.set_opacity(0),
+                axes_2.animate.set_opacity(0),
+                axes_3.animate.set_opacity(0),
+                axes_4.animate.set_opacity(0),
+                y_axis_6.animate.set_opacity(0),
+                y_label_6.animate.set_opacity(0),
+                y_axis_5.animate.set_opacity(0), #might be nice to keep these, but difficult with scaling
+                y_label_5.animate.set_opacity(0),
+                x_label_5.animate.set_opacity(0),
+                x_label_6.animate.set_opacity(0),
+                axes_6[0][-1][2].animate.set_opacity(0), #Zero tick label on axis 6
+                curve_5.animate.scale([1/scale_x, 1/scale_x, 0.07/scale_y]),
+                curve_6.animate.scale([1/scale_x, 1/scale_x, 0.07/scale_y]),
+                axes_6[0].animate.shift([0,0,0.4]),
+                axes_5[0].animate.shift([0,0,0.4]),
+                self.frame.animate.reorient(0, 90, 0, (0.0, -3.5, -2.24), 5.28),
+                run_time=3.0)
 
+        self.wait()
+
+        #animation 2
+        self.play(curve_5.animate.move_to([0,0,0.72]),
+                 curve_6.animate.move_to([0,0,0.65]).rotate(90*DEGREES, axis=[0,0,1]),
+                 axes_6[0].animate.move_to([0,0,-0.2]).rotate(90*DEGREES, axis=[0,0,1]),
+                 axes_5[0].animate.move_to([0,0,-0.2]),
+                 # self.frame.animate.reorient(9, 74, 0, (0.6, -3.05, 0.58), 4.05),
+                 self.frame.animate.reorient(36, 64, 0, (-0.07, 0.22, 0.23), 6.77),
+                 run_time=5.0)
+
+        self.wait()
+        self.play(ShowCreation(u_gridlines), 
+                  ShowCreation(v_gridlines),
+                  self.frame.animate.reorient(42, 58, 0, (-0.03, 0.06, 0.02), 6.19),
+                  run_time=4.0)
+
+        ts.set_opacity(0.0)
+        self.add(ts)
+        self.add(u_gridlines, v_gridlines) #Occlusions
+        self.add(curve_5, curve_6) #Occlusions
+        self.play(ts.animate.set_opacity(1.0),
+                  self.frame.animate.reorient(51, 47, 0, (0.16, 0.06, -0.14), 6.10),
+                  run_time=3.0)
 
         self.wait(0)
 
-        #Aminmation 3
-        self.play(curve_5.animate.move_to([0,0,0.72]).scale([1/scale_x, 1/scale_x, 0.07/scale_y]),
-                 curve_6.animate.move_to([0,0,0.65]).scale([1/scale_x, 1/scale_x, 0.07/scale_y]).rotate(90*DEGREES, axis=[0,0,1]),
-                 self.frame.animate.reorient(35, 64, 0, (1.46, -2.03, 1.62), 4.55),
-                 run_time=5.0)
+
+        self.play(axes_6[0].animate.set_opacity(0.0),
+                  axes_5[0].animate.set_opacity(0.0),
+                  curve_5.animate.set_opacity(0.0),
+                  curve_6.animate.set_opacity(0.0),
+                  self.frame.animate.reorient(143, 26, 0, (0.08, 0.19, -0.04), 7.38),
+                  run_time=6.0)
+        self.wait()
+
+
+        ## ---- 4. "Drop point in and, add gradient arrow, show global min. " ---- #
 
 
 
-        self.add(ts)
-        self.add(u_gridlines, v_gridlines)
 
-        curve_5.scale([1/scale_x, 1/scale_x, 0.07/scale_y])
-        curve_6.scale([1/scale_x, 1/scale_x, 0.07/scale_y])
 
-        axes_6.rotate(90*DEGREES, axis=[0,0,1]) #This seems to have kidna worked out. 
-        curve_5.move_to([0,0,0.72])
-        curve_6.move_to([0,0,0.65])
 
-        self.frame.reorient(43, 51, 0, (0.07, 0.08, 0.01), 6.29)
 
-        self.add(curve_5, curve_6) #Occlusions
+
+
+        ## ----------------------------------------------------------------------- ##
+
+        
+        # ts.set_opacity(1.0)
+        # self.play(FadeIn(ts))
+
+        #Aminmation 3 - running into weird perspecgive issues -> maybe it's two steps -> squish, and then move?
+        # self.play(curve_5.animate.move_to([0,0,0.72]).scale([1/scale_x, 1/scale_x, 0.07/scale_y]),
+        #          curve_6.animate.move_to([0,0,0.65]).scale([1/scale_x, 1/scale_x, 0.07/scale_y]).rotate(90*DEGREES, axis=[0,0,1]),
+        #          axes_6[0].animate.move_to([0,0,-0.2]).rotate(90*DEGREES, axis=[0,0,1]),
+        #          axes_5[0].animate.move_to([0,0,-0.2]),
+        #          self.frame.animate.reorient(9, 74, 0, (0.6, -3.05, 0.58), 4.05),
+        #          run_time=5.0)
+
+        # axes_5[0].move_to([0,0,-0.2])
+        # axes_6[0].move_to([0,0,-0.8])
+        # axes_6[0].rotate(90*DEGREES, axis=[0,0,1])
+
+
+        # self.add(ts)
+        # self.add(u_gridlines, v_gridlines)
+
+        # self.add(curve_5, curve_6) #Occlusions
+
+        # curve_5.scale([1/scale_x, 1/scale_x, 0.07/scale_y])
+        # curve_6.scale([1/scale_x, 1/scale_x, 0.07/scale_y])
+
+        # axes_6.rotate(90*DEGREES, axis=[0,0,1]) #This seems to have kidna worked out. 
+        # curve_5.move_to([0,0,0.72])
+        # curve_6.move_to([0,0,0.65])
+
+
+        # self.frame.reorient(35, 64, 0, (1.46, -2.03, 1.62), 4.55)
+
+
+        # self.frame.reorient(43, 51, 0, (0.07, 0.08, 0.01), 6.29)
+
+        
 
         #Scale and move axes in a similiar way, but move them up more. 
 
@@ -385,12 +453,12 @@ class P39_48(InteractiveScene):
         # axes_6.move_to([0, 0, 0])
         
 
-        self.frame.reorient(40, 65, 0, (2.14, -2.09, -0.04), 7.91)
+        # self.frame.reorient(40, 65, 0, (2.14, -2.09, -0.04), 7.91)
 
-        self.wait()
+        # self.wait()
 
-        self.add(ts)
-        self.add(u_gridlines, v_gridlines)
+        # self.add(ts)
+        # self.add(u_gridlines, v_gridlines)
 
 
 

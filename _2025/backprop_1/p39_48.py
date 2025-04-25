@@ -1,6 +1,7 @@
 from manimlib import *
 sys.path.append('/Users/stephen/manim/videos/welch_assets')
 from welch_axes import *
+from functools import partial
 
 CHILL_BROWN='#948979'
 YELLOW='#ffd35a'
@@ -16,7 +17,7 @@ loss_curve_4=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_l
 
 alphas_1=np.linspace(-2.5, 2.5, 512)
 # loss_2d_1=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_24_3/pretrained_11_111_first_8.npy')
-loss_2d_1=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_24_11/pre_training_landscape.npy')
+# loss_2d_1=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_24_11/pre_training_landscape.npy')
 loss_2d_1=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_24_12/000.npy')
 
 class Dot3D(Sphere):
@@ -52,6 +53,16 @@ def param_surface_1(u, v):
         z = 0
     return np.array([u, v, z])
 
+def param_surface_2(u, v, surf_array):
+    u_idx = np.abs(alphas_1 - u).argmin()
+    v_idx = np.abs(alphas_1 - v).argmin()
+    try:
+        # z = loss_2d_1[u_idx, v_idx]
+        z = 0.07*surf_array[v_idx, u_idx] #Add vertical scaling here?
+    except IndexError:
+        z = 0
+    return np.array([u, v, z])
+
 def get_pivot_and_scale(axis_min, axis_max, axis_end):
     '''Above collapses into scaling around a single pivot when axis_start=0'''
     scale = axis_end / (axis_max - axis_min)
@@ -64,6 +75,62 @@ def get_numerical_gradient(surface_fn, u, v, epsilon=0.01):
     height_dv = surface_fn(u, v + epsilon)[2]
     dv = (height_dv - height) / epsilon
     return (du, dv)
+
+import numpy as np
+
+def find_local_minima(surface):
+    """
+    Finds all local minima in a 2D numpy array.
+    
+    A local minimum is defined as a point where all neighboring points
+    have a greater or equal value.
+    
+    Args:
+        surface (numpy.ndarray): 2D array representing surface heights
+        
+    Returns:
+        list: List of tuples (row, col) representing the coordinates of local minima
+    """
+    # Get the shape of the array
+    rows, cols = surface.shape
+    
+    # List to store coordinates of local minima
+    minima = []
+    
+    # Check each point in the array
+    for i in range(rows):
+        for j in range(cols):
+            # Get the current value
+            current_val = surface[i, j]
+            
+            # Define the neighborhood (8-connected)
+            # Generate all possible neighbor coordinates
+            neighbors = []
+            for di in [-1, 0, 1]:
+                for dj in [-1, 0, 1]:
+                    # Skip the center point
+                    if di == 0 and dj == 0:
+                        continue
+                    
+                    # Calculate neighbor coordinates
+                    ni, nj = i + di, j + dj
+                    
+                    # Check if neighbor is within bounds
+                    if 0 <= ni < rows and 0 <= nj < cols:
+                        neighbors.append((ni, nj))
+            
+            # Check if current point is a local minimum
+            is_minimum = True
+            for ni, nj in neighbors:
+                if surface[ni, nj] < current_val:
+                    is_minimum = False
+                    break
+            
+            # If it's a local minimum, add to list
+            if is_minimum:
+                minima.append((i, j))
+    
+    return minima
 
 class P39_48(InteractiveScene):
     def construct(self):
@@ -588,6 +655,8 @@ class sketch_getting_stuck(InteractiveScene):
             new_y=trajectory_waypoint[1]+(i/num_steps3)*g[1]
             trajectory.append([new_x, new_y, param_surface_1(new_x, new_y)[2]])
 
+        #GRR I still have some gaps in my dots -> might have to live with this, we'll see -> need to keep moving. 
+
         # learning_rate_3=1e-3
         # for i in range(num_steps3):
         #     g=-np.array([ending_coords[0]-trajectory[-1][0], ending_coords[1]-trajectory[-1][1]])
@@ -630,5 +699,92 @@ class sketch_getting_stuck(InteractiveScene):
 
         self.embed()
         self.wait(20)
+
+class sketch_local_minima(InteractiveScene):
+    '''
+    Hmm ok I'm actually leanding towards just arrows in illustrator for this -> there's just way too many actual minima!!!
+    '''
+    def construct(self):
+
+        surface = ParametricSurface(
+            param_surface_1,  
+            u_range=[-2.5, 2.5],
+            v_range=[-2.5, 2.5],
+            resolution=(512, 512),
+        )
+
+        ts = TexturedSurface(surface, '/Users/stephen/manim/videos/loss_2d_1.png')
+        ts.set_shading(0.0, 0.1, 0)
+
+        self.add(ts)
+
+        minima=find_local_minima(loss_2d_1)
+        minima=np.array(minima)
+        minima=(minima/512.0)*5.0-2.5
+
+        minima_dots=Group()
+        minima_to_show=8
+        for i in np.random.choice(range(len(minima)), minima_to_show):
+            minima_dots.add(Dot3D(center=[minima[i][1], minima[i][0], param_surface_1(minima[i][1], minima[i][0])[2]], radius=0.04, color='$FF00FF'))
+        self.add(minima_dots)
+
+        
+
+class sketch_wormole(InteractiveScene):
+    def construct(self):
+        '''
+        Ok I need to sanity check the wormhole animatations, and then I think we're FINALLY ready for systhesis. 
+        '''
+        loss_arrays=[]
+        num_time_steps=6
+        for i in range(num_time_steps):
+            loss_arrays.append(np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_24_12/'+str(i).zfill(3)+'.npy'))
+
+        import matplotlib.pyplot as plt
+        for i in range(num_time_steps):
+            plt.clf()
+            plt.figure(frameon=False)
+            ax = plt.Axes(plt.gcf(), [0., 0., 1., 1.])
+            ax.set_axis_off()
+            plt.gcf().add_axes(ax)
+            plt.imshow(np.rot90(loss_arrays[i].T)) #have to transpose if transposing u and v and param_surface_1
+            plt.savefig('loss_2d_1_'+str(i).zfill(3)+'.png', bbox_inches='tight', pad_inches=0, dpi=300)
+            plt.close()
+
+        surfaces=Group()
+        for i in range(num_time_steps):
+            surf_func=partial(param_surface_2, surf_array=loss_arrays[i])
+
+            surface = ParametricSurface(
+                surf_func,  
+                u_range=[-2.5, 2.5],
+                v_range=[-2.5, 2.5],
+                resolution=(512, 512),
+            )
+
+            ts = TexturedSurface(surface, '/Users/stephen/manim/videos/'+'loss_2d_1_'+str(i).zfill(3)+'.png')
+            ts.set_shading(0.0, 0.1, 0)
+            surfaces.add(ts)
+
+        #Would be nice to moch up the little camera move I want to do here....
+        #Let me start with just swapping in the surfaces though
+        self.add(surfaces[0])
+        self.frame.reorient(155, 35, 0, (-0.06, -0.74, 0.16), 2.66)
+
+        for i in range(1, num_time_steps):
+            self.remove(surfaces[i-1])
+            self.add(surfaces[i])
+            self.wait(0.1)
+            
+
+
+
+        self.wait()
+        self.embed()
+
+
+
+
+
 
 

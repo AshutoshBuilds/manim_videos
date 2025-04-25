@@ -830,7 +830,7 @@ class sketch_wormole(InteractiveScene):
         frames_per_surface_upddate=np.floor(num_total_steps/num_time_steps)
         for i in range(1, num_total_steps):
             # print(i, len(interp_orientations))
-            if i%frames_per_surface_upddate==0:
+            if i%frames_per_surface_upddate==0 and surface_update_counter<len(surfaces):
                 self.remove(surfaces[surface_update_counter-1])
                 self.add(surfaces[surface_update_counter])
                 surface_update_counter+=1

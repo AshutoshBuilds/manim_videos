@@ -468,6 +468,7 @@ class P39_48(InteractiveScene):
         self.play(t.animate.set_opacity(0.0),
                   s1.animate.set_opacity(0.0))
         self.wait()
+        self.remove(s1)
 
         ## Now label some local minima from this overhead view in illustrator bro!
 
@@ -596,10 +597,11 @@ class P39_48(InteractiveScene):
 
 
         surfaces=Group()
+        surf_functions=[] #Need this later to move dot around.
         grids=Group()
         for i in range(num_time_steps):
             surf_func=partial(param_surface_2, surf_array=loss_arrays[i])
-
+            surf_functions.append(surf_func)
             surface = ParametricSurface(
                 surf_func,  
                 u_range=[-2.5, 2.5],
@@ -660,7 +662,11 @@ class P39_48(InteractiveScene):
 
                 self.add(surfaces[surface_update_counter])
                 self.add(grids[surface_update_counter])
+
+                new_point_coords=surf_functions[surface_update_counter](*starting_coords)
+                s2.move_to(new_point_coords) #This should make point move down smoothly. 
                 surface_update_counter+=1
+
             # print(i, len(interp_orientations))
             self.frame.reorient(*interp_orientations[i])
             self.wait(0.1)
@@ -671,6 +677,7 @@ class P39_48(InteractiveScene):
         # Ok I think from here it might make sense to do a "cut" (finally lol) for P48. 
         # I'll play opening the wormhole again as the probabilities update
         # I think maybe no camera move this time!
+        # Really closer here -> need to include "dot falling" with my animation - and get rid of otehr black dot. 
 
 
 

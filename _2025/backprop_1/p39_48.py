@@ -401,7 +401,7 @@ class P39_48(InteractiveScene):
         self.play(self.frame.animate.reorient(122, 58, 0, (-1.15, -0.02, 0.11), 5.42), run_time=4.0)
         self.wait()
 
-        starting_coords=[-0.7,0.95] 
+        starting_coords=[-0.7,0.95]  #[-0.7,1.0]  #
         starting_point=param_surface_1(*starting_coords)
         s1=Dot3D(center=starting_point, radius=0.06, color='$FF00FF')
         s1.shift([0,0,1]) #move up so we can "drop it in to skate bro"
@@ -421,14 +421,144 @@ class P39_48(InteractiveScene):
         # yeah let's assume I'm going to add a gradient arrow in illustrator
         # From here then, I want to try to run some gradient descent from this location. 
         # Then in a bit I switch to the other location? We'll see how that feels.
+        # Ok yeah so think we drive this one point to a single local minima, then zoom out to show a bunch more
+        # Then start from another point to show tunneling I think
 
-        
+
+        num_steps=128 # I think it gest stuck around 30-40 at lr -0.01 - play with this for smoother/longer animation
+        learning_rate=3e-3
+        momentum = 0.95 #lil momentum to get to a decent minima lol
+        trajectory=[[starting_point[0], starting_point[1], param_surface_1(starting_point[0], starting_point[1])[2]]]
+        velocity = np.zeros(2)
+        for i in range(num_steps):
+            g=get_numerical_gradient(param_surface_1, trajectory[-1][0], trajectory[-1][1], epsilon=0.01)
+            # delta=learning_rate*np.array(g)
+            # new_x=trajectory[-1][0]-delta[0]
+            # new_y=trajectory[-1][1]-delta[1]
+            # Update velocity with momentum
+            velocity = momentum * velocity - learning_rate * np.array(g)
+            
+            # Update position using velocity
+            new_x = trajectory[-1][0] + velocity[0]
+            new_y = trajectory[-1][1] + velocity[1]
+
+            trajectory.append([new_x, new_y, param_surface_1(new_x, new_y)[2]])
+
+        # num_total_steps=256
+        start_orientation=[124, 37, 0, (-0.96, 0.01, 0.23), 3.41]
+        end_orientation=[141, 38, 0, (-0.72, 0.13, 0.06), 2.85]
+        interp_orientations=manual_camera_interpolation(start_orientation, end_orientation, num_steps=num_steps)
+
+        self.wait()
+
+        t = VMobject()
+        t.set_stroke(width=6, color="#FF00FF", opacity=1.0)
+        self.add(t)
+        for i in range(num_steps):
+            s1.move_to(trajectory[i])
+            t.set_points_smoothly(trajectory[:i])
+            self.frame.reorient(*interp_orientations[i])
+            self.wait(0.1)
+        self.wait()
 
 
-        
+        self.play(self.frame.animate.reorient(90, 0, 0, (0.04, -0.02, 0.0), 6.80), run_time=6.0)
+        self.wait()
 
+        self.play(t.animate.set_opacity(0.0),
+                  s1.animate.set_opacity(0.0))
+        self.wait()
+
+        ## Now label some local minima from this overhead view in illustrator bro!
+
+        starting_coords=[0.05,-0.9] #[0.1,-0.8] is pretty good, [0.05,-0.9] is a bit better
+        starting_point=param_surface_1(*starting_coords)
+     
+        s1=Dot3D(center=starting_point, radius=0.06, color='$FF00FF')
+        # self.add(s1)
+
+        self.wait()
+        self.play(self.frame.animate.reorient(110, 38, 0, (-0.74, -0.43, 0.24), 3.00),
+                  run_time=4.0)
+        self.add(s1)
+        self.wait()
+
+        num_steps=128 # I think it gest stuck around 30-40 at lr -0.01
+        learning_rate=1e-3
+        momentum=0.8
+        trajectory=[[starting_point[0], starting_point[1], param_surface_1(starting_point[0], starting_point[1])[2]]]
+        velocity = np.zeros(2)
+        for i in range(num_steps):
+            g=get_numerical_gradient(param_surface_1, trajectory[-1][0], trajectory[-1][1], epsilon=0.01)
+            velocity = momentum * velocity - learning_rate * np.array(g)
+            new_x = trajectory[-1][0] + velocity[0]
+            new_y = trajectory[-1][1] + velocity[1]
+            trajectory.append([new_x, new_y, param_surface_1(new_x, new_y)[2]])
+
+        #Ok let me go ahead and hack for a minute here on the fake/magic tunneling scence
+        ending_coords=[0,0]
+        ending_point=param_surface_1(*ending_coords)
+
+        # s2=Dot3D(center=ending_point, radius=0.06, color='$FF00FF')
+        # self.add(s2)
+
+        num_steps2=90 #Plotting 1k points is kinda slow - slower than I thought 
+        learning_rate_2=5e-3
+        for i in range(num_steps2):
+            g=-np.array([ending_coords[0]-trajectory[-1][0], ending_coords[1]-trajectory[-1][1]])
+            delta=learning_rate_2*np.array(g)
+            new_x=trajectory[-1][0]-delta[0]
+            new_y=trajectory[-1][1]-delta[1]
+            trajectory.append([new_x, new_y, param_surface_1(new_x, new_y)[2]])
+
+        #Break into 3 parts, slower learning rate as we descent into the valley
+        #Let me try a different approach at the end here, my gradient proxy shrinks as we get close
+        num_steps3=512 #Plotting 1k points is kinda slow - slower than I thought 
+        trajectory_waypoint=trajectory[-1]
+        g=np.array([ending_coords[0]-trajectory[-1][0], ending_coords[1]-trajectory[-1][1]])
+        for i in range(num_steps3):
+            new_x=trajectory_waypoint[0]+(i/num_steps3)*g[0]
+            new_y=trajectory_waypoint[1]+(i/num_steps3)*g[1]
+            trajectory.append([new_x, new_y, param_surface_1(new_x, new_y)[2]])
+
+        trajectory=np.array(trajectory)
+
+        start_orientation=[110, 38, 0, (-0.74, -0.43, 0.24), 3.00]
+        end_orientation=[88, 31, 0, (-0.52, -0.34, 0.09), 2.60]
+        interp_orientations=manual_camera_interpolation(start_orientation, end_orientation, num_steps=num_steps)
+
+        self.wait()
+
+        dot_path=Group()
+        self.add(dot_path)
+        for i in range(num_steps): #First leg -> getting stuck
+            s1.move_to(trajectory[i])
+            # t.set_points_smoothly(trajectory[:i])
+            dot_path.add(Dot3D(center=trajectory[i], radius=0.017, color='$FF00FF'))
+            self.frame.reorient(*interp_orientations[i])
+            self.wait(0.1)
+        self.wait()
+
+
+
+        self.frame.reorient(88, 41, 0, (-0.71, -0.37, 0.21), 2.60)
 
         ## ----------------------------------------------------------------------- ##
+
+        # t = VMobject()
+        # t.set_points_smoothly(trajectory)
+        # t.set_stroke(width=6, color="#FF00FF", opacity=1.0)
+        # self.add(t)
+
+
+        # dot_path=Group()
+        # for t in trajectory:
+        #     dot_path.add(Dot3D(center=t, radius=0.017, color='$FF00FF'))
+        # self.add(dot_path)
+
+
+
+        
 
         
         # ts.set_opacity(1.0)

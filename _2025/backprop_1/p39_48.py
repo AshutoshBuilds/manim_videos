@@ -471,6 +471,8 @@ class P39_48(InteractiveScene):
 
         ## Now label some local minima from this overhead view in illustrator bro!
 
+        ## ----- Second Descent, very slow ----- ##
+
         starting_coords=[0.05,-0.9] #[0.1,-0.8] is pretty good, [0.05,-0.9] is a bit better
         starting_point=param_surface_1(*starting_coords)
      
@@ -554,7 +556,8 @@ class P39_48(InteractiveScene):
 
         self.play(self.frame.animate.reorient(104, 11, 0, (-0.09, -0.35, -0.06), 2.60), run_time=4)
 
-        ## ---- Wormhole Time ---- ##
+
+        ## ------------ Wormhole Time ---------------- ##
 
         ## Ok now we want to basically rewind what i just did - remove path, point back on top of hill
         ## And it's mothee fucking fuckety fucking wormhole time. 
@@ -564,7 +567,8 @@ class P39_48(InteractiveScene):
                   dot_path.animate.set_opacity(0.0),
                   self.frame.animate.reorient(142, 34, 0, (-0.09, -0.77, 0.15), 3.55),
                   run_time=4.0)
-
+        self.remove(s1)
+        self.remove(dot_path)
         self.wait()
 
         starting_coords=[0.05,-0.9]
@@ -603,9 +607,9 @@ class P39_48(InteractiveScene):
                 resolution=(512, 512),
             )
 
-            ts = TexturedSurface(surface, '/Users/stephen/manim/videos/'+'loss_2d_1_'+str(i).zfill(3)+'.png')
-            ts.set_shading(0.0, 0.1, 0)
-            surfaces.add(ts)
+            ts2 = TexturedSurface(surface, '/Users/stephen/manim/videos/'+'loss_2d_1_'+str(i).zfill(3)+'.png')
+            ts2.set_shading(0.0, 0.1, 0)
+            surfaces.add(ts2)
 
             num_lines = 64  # Number of gridlines in each direction
             num_points = 512  # Number of points per line
@@ -630,6 +634,11 @@ class P39_48(InteractiveScene):
             grids.add(VGroup(u_gridlines, v_gridlines))
 
         self.wait()
+
+
+        # self.remove(ts)
+        # self.remove(u_gridlines, v_gridlines) 
+        # ts.animate.set_opacity(0.0)
 
 
         num_total_steps=16 #Crank this for final viz
@@ -659,7 +668,9 @@ class P39_48(InteractiveScene):
         self.wait()
 
 
-
+        # Ok I think from here it might make sense to do a "cut" (finally lol) for P48. 
+        # I'll play opening the wormhole again as the probabilities update
+        # I think maybe no camera move this time!
 
 
 

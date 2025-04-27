@@ -763,7 +763,7 @@ class P48_moving_view_1(InteractiveScene):
     
         #Load up other surfaces to visualize
         loss_arrays=[]
-        num_time_steps=4
+        num_time_steps=10
         for i in range(num_time_steps):
             loss_arrays.append(np.load(wormhole_dir+str(i).zfill(3)+'.npy'))
 
@@ -775,7 +775,7 @@ class P48_moving_view_1(InteractiveScene):
         #     ax.set_axis_off()
         #     plt.gcf().add_axes(ax)
         #     plt.imshow(np.rot90(loss_arrays[i].T)) #have to transpose if transposing u and v and param_surface_1
-        #     plt.savefig('loss_2d_1_'+str(i).zfill(3)+'.png', bbox_inches='tight', pad_inches=0, dpi=300)
+        #     plt.savefig(wormhole_dir+'loss_2d_1_'+str(i).zfill(3)+'.png', bbox_inches='tight', pad_inches=0, dpi=300)
         #     plt.close()
 
 
@@ -826,7 +826,7 @@ class P48_moving_view_1(InteractiveScene):
         self.add(s2)
 
 
-        num_total_steps=16 #Crank this for final viz
+        num_total_steps=20 #Crank this for final viz
         start_orientation=[142, 34, 0, (-0.09, -0.77, 0.15), 3.55]
         end_orientation=[131, 31, 0, (-0.12, -0.88, 0.22), 2.90]
         interp_orientations=manual_camera_interpolation(start_orientation, end_orientation, num_steps=num_total_steps)

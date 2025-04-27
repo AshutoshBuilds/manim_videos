@@ -7,14 +7,14 @@ CHILL_BROWN='#948979'
 YELLOW='#ffd35a'
 BLUE='#65c8d0'
 
-
 loss_curve_1=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_24_5/all_execpt_embedding_random_64.npy')
 loss_curve_2=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_24_5/all_execpt_embedding_random_51.npy')
 loss_curve_3=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_24_7/all_execpt_embedding_pretrained_19.npy')
 loss_curve_4=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_24_7/all_execpt_embedding_pretrained_27.npy')
 
+wormhole_dir='/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_26_5/'
 alphas_1=np.linspace(-2.5, 2.5, 512)
-loss_2d_1=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_25_1/000.npy')
+loss_2d_1=np.load(wormhole_dir+'000.npy')
 
 class Dot3D(Sphere):
     def __init__(self, center=ORIGIN, radius=0.05, **kwargs):
@@ -22,14 +22,14 @@ class Dot3D(Sphere):
         self.move_to(center)
 
 
-# Only need to run this when the underlying npy file changes
+##Only need to run this when the underlying npy file changes
 # import matplotlib.pyplot as plt
 # plt.figure(frameon=False)
 # ax = plt.Axes(plt.gcf(), [0., 0., 1., 1.])
 # ax.set_axis_off()
 # plt.gcf().add_axes(ax)
 # plt.imshow(np.rot90(loss_2d_1.T)) #have to transpose if transposing u and v and param_surface_1
-# plt.savefig('loss_2d_1.png', bbox_inches='tight', pad_inches=0, dpi=300)
+# plt.savefig(wormhole_dir+'loss_2d_1.png', bbox_inches='tight', pad_inches=0, dpi=300)
 # plt.close()
 
 # plt.clf()
@@ -134,7 +134,7 @@ class P39_47(InteractiveScene):
             resolution=(512, 512),
         )
 
-        ts = TexturedSurface(surface, '/Users/stephen/manim/videos/loss_2d_1.png')
+        ts = TexturedSurface(surface, wormhole_dir+'loss_2d_1.png')
         ts.set_shading(0.0, 0.1, 0)
 
         num_lines = 64  # Number of gridlines in each direction
@@ -580,9 +580,9 @@ class P39_47(InteractiveScene):
 
         #Load up other surfaces to visualize
         loss_arrays=[]
-        num_time_steps=5
+        num_time_steps=4
         for i in range(num_time_steps):
-            loss_arrays.append(np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_25_1/'+str(i).zfill(3)+'.npy'))
+            loss_arrays.append(np.load(wormhole_dir+str(i).zfill(3)+'.npy'))
 
         # import matplotlib.pyplot as plt
         # for i in range(num_time_steps):
@@ -592,7 +592,7 @@ class P39_47(InteractiveScene):
         #     ax.set_axis_off()
         #     plt.gcf().add_axes(ax)
         #     plt.imshow(np.rot90(loss_arrays[i].T)) #have to transpose if transposing u and v and param_surface_1
-        #     plt.savefig('loss_2d_1_'+str(i).zfill(3)+'.png', bbox_inches='tight', pad_inches=0, dpi=300)
+        #     plt.savefig(wormhole_dir+'loss_2d_1_'+str(i).zfill(3)+'.png', bbox_inches='tight', pad_inches=0, dpi=300)
         #     plt.close()
 
 
@@ -609,7 +609,7 @@ class P39_47(InteractiveScene):
                 resolution=(512, 512),
             )
 
-            ts2 = TexturedSurface(surface, '/Users/stephen/manim/videos/'+'loss_2d_1_'+str(i).zfill(3)+'.png')
+            ts2 = TexturedSurface(surface, wormhole_dir+'loss_2d_1_'+str(i).zfill(3)+'.png')
             ts2.set_shading(0.0, 0.1, 0)
             surfaces.add(ts2)
 
@@ -763,9 +763,9 @@ class P48_moving_view_1(InteractiveScene):
     
         #Load up other surfaces to visualize
         loss_arrays=[]
-        num_time_steps=5
+        num_time_steps=4
         for i in range(num_time_steps):
-            loss_arrays.append(np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_25_1/'+str(i).zfill(3)+'.npy'))
+            loss_arrays.append(np.load(wormhole_dir+str(i).zfill(3)+'.npy'))
 
         # import matplotlib.pyplot as plt
         # for i in range(num_time_steps):
@@ -792,7 +792,7 @@ class P48_moving_view_1(InteractiveScene):
                 resolution=(512, 512),
             )
 
-            ts2 = TexturedSurface(surface, '/Users/stephen/manim/videos/'+'loss_2d_1_'+str(i).zfill(3)+'.png')
+            ts2 = TexturedSurface(surface, wormhole_dir+'loss_2d_1_'+str(i).zfill(3)+'.png')
             ts2.set_shading(0.0, 0.1, 0)
             surfaces.add(ts2)
 

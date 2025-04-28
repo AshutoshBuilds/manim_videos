@@ -1,5 +1,5 @@
 from manimlib import *
-sys.path.append('/Users/stephen/manim/videos/welch_assets')
+sys.path.append('/Users/stephen/manim/videos/welch_assets') #hacks
 from welch_axes import *
 from functools import partial
 from tqdm import tqdm

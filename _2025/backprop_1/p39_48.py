@@ -764,7 +764,7 @@ class P48_moving_view_1(InteractiveScene):
     
         #Load up other surfaces to visualize
         loss_arrays=[]
-        num_time_steps=4
+        num_time_steps=38
         print('Loading Surface Arrays')
         for i in tqdm(range(num_time_steps)):
             loss_arrays.append(np.load(wormhole_dir+str(i).zfill(3)+'.npy'))
@@ -862,7 +862,7 @@ class P48_experimental(InteractiveScene):
     Hack on single frames. 
     '''
     def construct(self):
-        starting_coords=[0.05,-0.9]d
+        starting_coords=[0.05,-0.9]
         starting_point=param_surface_1(*starting_coords)
         s2=Dot3D(center=starting_point, radius=0.06, color='$FF00FF')
     

@@ -163,14 +163,25 @@ class P50a(InteractiveScene):
             trajectory.append([new_x, new_y, param_surface(new_x, new_y)[2]])
 
         #I don't think we need/want a camera move here. 
-        t = VMobject()
-        t.set_stroke(width=6, color="#FF00FF", opacity=1.0)
-        self.add(t)
-        for i in range(num_steps):
-            s1.move_to(trajectory[i])
-            t.set_points_smoothly(trajectory[:i])
-            self.frame.reorient(*interp_orientations[i])
-            self.wait(0.1)
+        #I think add slices every N steps - maybe with little bit different opacities?
+        # t = VMobject()
+        # t.set_stroke(width=10, color="#FF00FF", opacity=1.0)
+        # self.add(t)
+        # for i in range(num_steps):
+        #     s1.move_to(trajectory[i])
+        #     t.set_points_smoothly(trajectory[:i])
+            # self.wait(0.1)
+
+        # self.remove(ts)
+
+
+        ## Hmm why is this fucker changing color?
+        dot_path=Group()
+        self.add(dot_path)
+        for i in range(num_steps): #First leg -> getting stuck
+            s1.move_to(trajectory[i]) #Get above surface to not fuck up opacity
+            dot_path.add(Dot3D(center=trajectory[i]), radius=0.03, color='$FF00FF'))
+            # self.wait(0.1)
         self.wait()
 
 

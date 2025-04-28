@@ -187,34 +187,34 @@ class P48cV1(InteractiveScene):
         new_point_coords=surf_functions[surface_update_counter](*starting_coords)
         s2.move_to(new_point_coords) 
 
+        #Todo -> come back and work out views & time step stuff - depends a bit on where the main p48 ends too. 
 
 
+        # num_total_steps=38 #Crank this for final viz
+        # start_orientation=[142, 34, 0, (-0.09, -0.77, 0.15), 3.55]
+        # # end_orientation=[131, 31, 0, (-0.12, -0.88, 0.22), 2.90]
+        # end_orientation=[122, 11, 0, (-0.01, -0.28, 0.55), 2.05] #Move overhead
+        # interp_orientations=manual_camera_interpolation(start_orientation, end_orientation, num_steps=num_total_steps)
 
-        num_total_steps=38 #Crank this for final viz
-        start_orientation=[142, 34, 0, (-0.09, -0.77, 0.15), 3.55]
-        # end_orientation=[131, 31, 0, (-0.12, -0.88, 0.22), 2.90]
-        end_orientation=[122, 11, 0, (-0.01, -0.28, 0.55), 2.05] #Move overhead
-        interp_orientations=manual_camera_interpolation(start_orientation, end_orientation, num_steps=num_total_steps)
+        # surface_update_counter=1
+        # frames_per_surface_upddate=np.floor(num_total_steps/num_time_steps)
+        # self.wait()
+        # for i in range(1, num_total_steps):
+        #     # print(i, len(interp_orientations))
+        #     if i%frames_per_surface_upddate==0 and surface_update_counter<len(surfaces):
 
-        surface_update_counter=1
-        frames_per_surface_upddate=np.floor(num_total_steps/num_time_steps)
-        self.wait()
-        for i in range(1, num_total_steps):
-            # print(i, len(interp_orientations))
-            if i%frames_per_surface_upddate==0 and surface_update_counter<len(surfaces):
+        #         self.remove(surfaces[surface_update_counter-1])
+        #         self.remove(grids[surface_update_counter-1])
+        #         self.add(surfaces[surface_update_counter])
+        #         self.add(grids[surface_update_counter])
 
-                self.remove(surfaces[surface_update_counter-1])
-                self.remove(grids[surface_update_counter-1])
-                self.add(surfaces[surface_update_counter])
-                self.add(grids[surface_update_counter])
+        #         new_point_coords=surf_functions[surface_update_counter](*starting_coords)
+        #         s2.move_to(new_point_coords) #This should make point move down smoothly. 
+        #         surface_update_counter+=1
 
-                new_point_coords=surf_functions[surface_update_counter](*starting_coords)
-                s2.move_to(new_point_coords) #This should make point move down smoothly. 
-                surface_update_counter+=1
-
-            # print(i, len(interp_orientations))
-            self.frame.reorient(*interp_orientations[i])
-            self.wait(0.1)
+        #     # print(i, len(interp_orientations))
+        #     self.frame.reorient(*interp_orientations[i])
+        #     self.wait(0.1)
 
         self.wait()
 

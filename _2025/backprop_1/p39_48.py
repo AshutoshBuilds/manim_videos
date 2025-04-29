@@ -42,6 +42,9 @@ plt.close()
 # plt.savefig('loss_2d_1_inner.png', bbox_inches='tight', pad_inches=0, dpi=300)
 # plt.close()
 
+# Comman for rendering all scenes
+# manimgl /Users/stephen/manim/videos/_2025/backprop_1/p39_48.py P39_47 P48_moving_view_1 P48_moving_view_2 P48_moving_view_3 P48_fixed_view -w
+
 
 def param_surface_1(u, v):
     u_idx = np.abs(alphas_1 - u).argmin()
@@ -949,6 +952,9 @@ class P48_experimental(InteractiveScene):
 
 
 class P48_moving_view_2(InteractiveScene):
+    '''
+    Zoom "straight on"
+    '''
     def construct(self):
         starting_coords=[0.05,-0.9]
         starting_point=param_surface_1(*starting_coords)
@@ -1048,9 +1054,247 @@ class P48_moving_view_2(InteractiveScene):
 
         self.wait()
 
+        # self.wait()
+        # self.play(self.frame.animate.reorient(-103, 12, 0, (0.01, -0.46, 0.57), 1.95), run_time=10.0) #Pan Around
+        # self.wait()
+        # self.play(self.frame.animate.reorient(-89, 0, 0, (0.05, -0.09, 0.59), 5.82), run_time=8.0) #Zoom out
+        # self.wait()
+        # self.play(self.frame.animate.reorient(-85, 99, 0, (0.05, -0.09, 0.59), 5.82), run_time=8.0) #Pan below
+        # self.wait()
+        # self.play(self.frame.animate.reorient(84, 102, 0, (0.05, -0.09, 0.59), 5.82), run_time=10.0) #Pan around below
+        # self.wait()
+        # self.play(self.frame.animate.reorient(89, 0, 0, (-0.03, -0.14, 0.51), 6.38), run_time=8.0) #Back to overheaad
+        # self.wait()
+
+        self.wait(20)
+        self.embed()
+
+class P48_moving_view_3(InteractiveScene):
+    '''
+    Pan/zoom
+    '''
+    def construct(self):
+        starting_coords=[0.05,-0.9]
+        starting_point=param_surface_1(*starting_coords)
+        s2=Dot3D(center=starting_point, radius=0.06, color='$FF00FF')
+    
+        #Load up other surfaces to visualize
+        loss_arrays=[]
+        num_time_steps=66
+        print('Loading Surface Arrays')
+        for i in tqdm(range(num_time_steps)):
+            loss_arrays.append(np.load(wormhole_dir+str(i).zfill(3)+'.npy'))
+
+        # import matplotlib.pyplot as plt
+        # for i in range(num_time_steps):
+        #     plt.clf()
+        #     plt.figure(frameon=False)
+        #     ax = plt.Axes(plt.gcf(), [0., 0., 1., 1.])
+        #     ax.set_axis_off()
+        #     plt.gcf().add_axes(ax)
+        #     plt.imshow(np.rot90(loss_arrays[i].T)) #have to transpose if transposing u and v and param_surface_1
+        #     plt.savefig(wormhole_dir+'loss_2d_1_'+str(i).zfill(3)+'.png', bbox_inches='tight', pad_inches=0, dpi=300)
+        #     plt.close()
+
+
+        surfaces=Group()
+        surf_functions=[] #Need this later to move dot around.
+        grids=Group()
+        print("Loading Surfaces and Gridlines...")
+        for i in tqdm(range(num_time_steps)):
+            surf_func=partial(param_surface_2, surf_array=loss_arrays[i])
+            surf_functions.append(surf_func)
+            surface = ParametricSurface(
+                surf_func,  
+                u_range=[-2.5, 2.5],
+                v_range=[-2.5, 2.5],
+                resolution=(512, 512),
+            )
+
+            ts2 = TexturedSurface(surface, wormhole_dir+'loss_2d_1_'+str(i).zfill(3)+'.png')
+            ts2.set_shading(0.0, 0.1, 0)
+            surfaces.add(ts2)
+
+            num_lines = 64  # Number of gridlines in each direction
+            num_points = 512  # Number of points per line
+            u_gridlines = VGroup()
+            v_gridlines = VGroup()
+            u_values = np.linspace(-2.5, 2.5, num_lines)
+            v_points = np.linspace(-2.5, 2.5, num_points)
+            for u in u_values:
+                points = [surf_func(u, v) for v in v_points]
+                line = VMobject()
+                line.set_points_smoothly(points)
+                line.set_stroke(width=1, color=WHITE, opacity=0.15)
+                u_gridlines.add(line)
+
+            u_points = np.linspace(-2.5, 2.5, num_points)
+            for v in u_values:  # Using same number of lines for both directions
+                points = [surf_func(u, v) for u in u_points]
+                line = VMobject()
+                line.set_points_smoothly(points)
+                line.set_stroke(width=1, color=WHITE, opacity=0.15)
+                v_gridlines.add(line)
+            grids.add(VGroup(u_gridlines, v_gridlines))
+
+        self.wait()
+
+        self.add(surfaces[0])
+        self.add(grids[0])
+        self.add(s2)
+
+        num_total_steps=num_time_steps*2 #Crank this for final viz
+        start_orientation=[137, 41, 0, (-0.05, -0.51, 0.75), 3.24]
+        end_orientation=[-139, 17, 0, (-0.08, -0.51, 0.75), 2.26]
+        interp_orientations=manual_camera_interpolation(start_orientation, end_orientation, num_steps=num_total_steps)
+
+        surface_update_counter=1
+        frames_per_surface_upddate=np.floor(num_total_steps/num_time_steps)
+        print('frames_per_surface_upddate', frames_per_surface_upddate)
+        self.wait()
+        for i in range(1, num_total_steps):
+            # print(i, len(interp_orientations))
+            if i%frames_per_surface_upddate==0 and surface_update_counter<len(surfaces):
+
+                self.remove(surfaces[surface_update_counter-1])
+                self.remove(grids[surface_update_counter-1])
+                self.add(surfaces[surface_update_counter])
+                self.add(grids[surface_update_counter])
+                # print('surface_update_counter', surface_update_counter)
+
+                new_point_coords=surf_functions[surface_update_counter](*starting_coords)
+                s2.move_to(new_point_coords) #This should make point move down smoothly. 
+                surface_update_counter+=1
+
+            # print(i, len(interp_orientations))
+            self.frame.reorient(*interp_orientations[i])
+            self.wait(0.1)
+
+        self.wait()
+
+        # self.wait()
+        # self.play(self.frame.animate.reorient(-103, 12, 0, (0.01, -0.46, 0.57), 1.95), run_time=10.0) #Pan Around
+        # self.wait()
+        # self.play(self.frame.animate.reorient(-89, 0, 0, (0.05, -0.09, 0.59), 5.82), run_time=8.0) #Zoom out
+        # self.wait()
+        # self.play(self.frame.animate.reorient(-85, 99, 0, (0.05, -0.09, 0.59), 5.82), run_time=8.0) #Pan below
+        # self.wait()
+        # self.play(self.frame.animate.reorient(84, 102, 0, (0.05, -0.09, 0.59), 5.82), run_time=10.0) #Pan around below
+        # self.wait()
+        # self.play(self.frame.animate.reorient(89, 0, 0, (-0.03, -0.14, 0.51), 6.38), run_time=8.0) #Back to overheaad
+        # self.wait()
+
+        self.wait(20)
+        self.embed()
+
 
 class P48_fixed_view(InteractiveScene):
     def construct(self):
-        pass
+        starting_coords=[0.05,-0.9]
+        starting_point=param_surface_1(*starting_coords)
+        s2=Dot3D(center=starting_point, radius=0.06, color='$FF00FF')
+    
+        #Load up other surfaces to visualize
+        loss_arrays=[]
+        num_time_steps=66
+        print('Loading Surface Arrays')
+        for i in tqdm(range(num_time_steps)):
+            loss_arrays.append(np.load(wormhole_dir+str(i).zfill(3)+'.npy'))
+
+        # import matplotlib.pyplot as plt
+        # for i in range(num_time_steps):
+        #     plt.clf()
+        #     plt.figure(frameon=False)
+        #     ax = plt.Axes(plt.gcf(), [0., 0., 1., 1.])
+        #     ax.set_axis_off()
+        #     plt.gcf().add_axes(ax)
+        #     plt.imshow(np.rot90(loss_arrays[i].T)) #have to transpose if transposing u and v and param_surface_1
+        #     plt.savefig(wormhole_dir+'loss_2d_1_'+str(i).zfill(3)+'.png', bbox_inches='tight', pad_inches=0, dpi=300)
+        #     plt.close()
+
+
+        surfaces=Group()
+        surf_functions=[] #Need this later to move dot around.
+        grids=Group()
+        print("Loading Surfaces and Gridlines...")
+        for i in tqdm(range(num_time_steps)):
+            surf_func=partial(param_surface_2, surf_array=loss_arrays[i])
+            surf_functions.append(surf_func)
+            surface = ParametricSurface(
+                surf_func,  
+                u_range=[-2.5, 2.5],
+                v_range=[-2.5, 2.5],
+                resolution=(512, 512),
+            )
+
+            ts2 = TexturedSurface(surface, wormhole_dir+'loss_2d_1_'+str(i).zfill(3)+'.png')
+            ts2.set_shading(0.0, 0.1, 0)
+            surfaces.add(ts2)
+
+            num_lines = 64  # Number of gridlines in each direction
+            num_points = 512  # Number of points per line
+            u_gridlines = VGroup()
+            v_gridlines = VGroup()
+            u_values = np.linspace(-2.5, 2.5, num_lines)
+            v_points = np.linspace(-2.5, 2.5, num_points)
+            for u in u_values:
+                points = [surf_func(u, v) for v in v_points]
+                line = VMobject()
+                line.set_points_smoothly(points)
+                line.set_stroke(width=1, color=WHITE, opacity=0.15)
+                u_gridlines.add(line)
+
+            u_points = np.linspace(-2.5, 2.5, num_points)
+            for v in u_values:  # Using same number of lines for both directions
+                points = [surf_func(u, v) for u in u_points]
+                line = VMobject()
+                line.set_points_smoothly(points)
+                line.set_stroke(width=1, color=WHITE, opacity=0.15)
+                v_gridlines.add(line)
+            grids.add(VGroup(u_gridlines, v_gridlines))
+
+        self.wait()
+
+        self.add(surfaces[0])
+        self.add(grids[0])
+        self.add(s2)
+
+        #Fixed orentation
+
+        surface_update_counter=1
+        frames_per_surface_upddate=np.floor(num_total_steps/num_time_steps)
+        self.wait()
+        for i in range(1, num_total_steps):
+            # print(i, len(interp_orientations))
+            if i%frames_per_surface_upddate==0 and surface_update_counter<len(surfaces):
+
+                self.remove(surfaces[surface_update_counter-1])
+                self.remove(grids[surface_update_counter-1])
+                self.add(surfaces[surface_update_counter])
+                self.add(grids[surface_update_counter])
+                # print('surface_update_counter', surface_update_counter)
+
+                new_point_coords=surf_functions[surface_update_counter](*starting_coords)
+                s2.move_to(new_point_coords) #This should make point move down smoothly. 
+                surface_update_counter+=1
+            self.wait(0.1)
+
+        self.wait()
+
+        # self.wait()
+        # self.play(self.frame.animate.reorient(-103, 12, 0, (0.01, -0.46, 0.57), 1.95), run_time=10.0) #Pan Around
+        # self.wait()
+        # self.play(self.frame.animate.reorient(-89, 0, 0, (0.05, -0.09, 0.59), 5.82), run_time=8.0) #Zoom out
+        # self.wait()
+        # self.play(self.frame.animate.reorient(-85, 99, 0, (0.05, -0.09, 0.59), 5.82), run_time=8.0) #Pan below
+        # self.wait()
+        # self.play(self.frame.animate.reorient(84, 102, 0, (0.05, -0.09, 0.59), 5.82), run_time=10.0) #Pan around below
+        # self.wait()
+        # self.play(self.frame.animate.reorient(89, 0, 0, (-0.03, -0.14, 0.51), 6.38), run_time=8.0) #Back to overheaad
+        # self.wait()
+
+        self.wait(20)
+        self.embed()
+
 
 

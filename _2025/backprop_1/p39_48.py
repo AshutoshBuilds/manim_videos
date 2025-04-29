@@ -677,6 +677,22 @@ class P39_47(InteractiveScene):
 
         self.wait()
 
+
+        # Ok, based on the script - > I think what I really want to do here is a little camera move and then play the
+        # animation again
+        # This should be totally do-able in a separate viz. 
+
+        # self.play(self.frame.animate.reorient(159, 35, 0, (-0.03, -0.62, 0.65), 1.95), run_time=8.0)
+
+        #ok ok ok ok ok let's actually go really with on the "WHat is going on here" question,
+        #And then pan to the left in premiere, bring in the text, and replay the animation from this wide shot. 
+        #Then we stay wide for a bit as we look at wikitext I think. 
+        self.play(self.frame.animate.reorient(-179, 22, 0, (-0.06, 0.09, 0.43), 5.81), run_time=10.0)
+
+        self.wait() #Pick up in fixed animation from here
+
+
+
         self.play(self.frame.animate.reorient(360-103, 12, 0, (0.01, -0.46, 0.57), 1.95), run_time=20.0) #Pan Around
         self.wait()
         self.play(self.frame.animate.reorient(360-89, 0, 0, (0.05, -0.09, 0.59), 5.82), run_time=8.0) #Zoom out
@@ -871,12 +887,6 @@ class P48_moving_view_1(InteractiveScene):
             self.frame.reorient(*interp_orientations[i])
             self.wait(0.1)
 
-        # Ok, based on the script - > I think what I really want to do here is a little camera move and then play the
-        # animation again
-        # This should be totally do-able in a separate viz. 
-
-        self.play(self.frame.animate.reorient(159, 35, 0, (-0.03, -0.62, 0.65), 1.95), run_time=8.0)
-        self.wait(0) #Pick up in fixed animation from here
 
 
         self.wait()
@@ -916,7 +926,7 @@ class P48_experimental(InteractiveScene):
         grids=Group()
         print("Loading Surfaces and Gridlines...")
         
-        i=0
+        i=65
 
         surf_func=partial(param_surface_2, surf_array=loss_arrays[i])
         surf_functions.append(surf_func)
@@ -965,8 +975,9 @@ class P48_experimental(InteractiveScene):
         # end_orientation=[131, 31, 0, (-0.12, -0.88, 0.22), 2.90]
         # self.frame.reorient(122, 13, 0, (0.03, -0.5, 0.57), 1.95) #Move overhead
         # self.frame.reorient(121, 20, 0, (0.01, -0.46, 0.57), 1.95)
+        # self.frame.reorient(121, 20, 0, (0.01, -0.46, 0.57), 1.95)
+        # self.frame.reorient(159, 35, 0, (-0.03, -0.62, 0.65), 1.95)
         self.frame.reorient(121, 20, 0, (0.01, -0.46, 0.57), 1.95)
-        self.frame.reorient(159, 35, 0, (-0.03, -0.62, 0.65), 1.95)
         self.embed()
 
 
@@ -1283,7 +1294,8 @@ class P48_fixed_view(InteractiveScene):
 
         #Fixed orentation
         # self.frame.reorient(132, 28, 0, (-0.12, -0.56, 0.33), 4.50) #Kinda wide, but nice I think, could do a closer one too
-        self.frame.reorient(159, 35, 0, (-0.03, -0.62, 0.65), 1.95) #Match with long render
+        # self.frame.reorient(159, 35, 0, (-0.03, -0.62, 0.65), 1.95) #Match with long render
+        self.frame.reorient(-179, 22, 0, (-0.06, 0.09, 0.43), 5.81) #Fixed wide veiew I can use at the beginning of 48
 
         surface_update_counter=1
         frames_per_surface_upddate=np.floor(num_total_steps/num_time_steps)

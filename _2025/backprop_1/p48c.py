@@ -102,7 +102,7 @@ class P48cV1(InteractiveScene):
         loss_arrays_pre=[]
         loss_arrays_post=[]
         loss_arrays_interleaved=[]
-        num_time_steps=2
+        num_time_steps=6
         print('Loading Surface Arrays')
         for i in tqdm(range(num_time_steps)):
             loss_arrays_pre.append(np.load(wormhole_dir+'pre_step_'+str(i).zfill(3)+'.npy'))

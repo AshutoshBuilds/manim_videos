@@ -624,7 +624,7 @@ class P39_47(InteractiveScene):
             u_values = np.linspace(-2.5, 2.5, num_lines)
             v_points = np.linspace(-2.5, 2.5, num_points)
             for u in u_values:
-                points = [param_surface_1(u, v) for v in v_points]
+                points = [surf_func(u, v) for v in v_points]
                 line = VMobject()
                 line.set_points_smoothly(points)
                 line.set_stroke(width=1, color=WHITE, opacity=0.15)
@@ -632,7 +632,7 @@ class P39_47(InteractiveScene):
 
             u_points = np.linspace(-2.5, 2.5, num_points)
             for v in u_values:  # Using same number of lines for both directions
-                points = [param_surface_1(u, v) for u in u_points]
+                points = [surf_func(u, v) for u in u_points]
                 line = VMobject()
                 line.set_points_smoothly(points)
                 line.set_stroke(width=1, color=WHITE, opacity=0.15)
@@ -677,6 +677,16 @@ class P39_47(InteractiveScene):
 
         self.wait()
 
+        self.play(self.frame.animate.reorient(360-103, 12, 0, (0.01, -0.46, 0.57), 1.95), run_time=20.0) #Pan Around
+        self.wait()
+        self.play(self.frame.animate.reorient(360-89, 0, 0, (0.05, -0.09, 0.59), 5.82), run_time=8.0) #Zoom out
+        self.wait()
+        self.play(self.frame.animate.reorient(360-85, 99, 0, (0.05, -0.09, 0.59), 5.82), run_time=8.0) #Pan below
+        self.wait()
+        self.play(self.frame.animate.reorient(84, 102, 0, (0.05, -0.09, 0.59), 5.82), run_time=10.0) #Pan around below
+        self.wait()
+        self.play(self.frame.animate.reorient(89, 0, 0, (-0.03, -0.14, 0.51), 6.38), run_time=8.0) #Back to overheaad
+        self.wait()
 
         # Ok I think from here it might make sense to do a "cut" (finally lol) for P48. 
         # I'll play opening the wormhole again as the probabilities update
@@ -862,11 +872,11 @@ class P48_moving_view_1(InteractiveScene):
             self.wait(0.1)
 
         self.wait()
-        self.play(self.frame.animate.reorient(-103, 12, 0, (0.01, -0.46, 0.57), 1.95), run_time=10.0) #Pan Around
+        self.play(self.frame.animate.reorient(360-103, 12, 0, (0.01, -0.46, 0.57), 1.95), run_time=20.0) #Pan Around
         self.wait()
-        self.play(self.frame.animate.reorient(-89, 0, 0, (0.05, -0.09, 0.59), 5.82), run_time=8.0) #Zoom out
+        self.play(self.frame.animate.reorient(360-89, 0, 0, (0.05, -0.09, 0.59), 5.82), run_time=8.0) #Zoom out
         self.wait()
-        self.play(self.frame.animate.reorient(-85, 99, 0, (0.05, -0.09, 0.59), 5.82), run_time=8.0) #Pan below
+        self.play(self.frame.animate.reorient(360-85, 99, 0, (0.05, -0.09, 0.59), 5.82), run_time=8.0) #Pan below
         self.wait()
         self.play(self.frame.animate.reorient(84, 102, 0, (0.05, -0.09, 0.59), 5.82), run_time=10.0) #Pan around below
         self.wait()
@@ -1025,7 +1035,7 @@ class P48_moving_view_2(InteractiveScene):
         self.add(grids[0])
         self.add(s2)
 
-        num_total_steps=num_time_steps*2 #Crank this for final viz
+        num_total_steps=num_time_steps*8 #Crank this for final viz
         start_orientation=[-178, 45, 0, (-0.0, -0.12, 0.19), 5.61]
         end_orientation=[-179, 16, 0, (0.05, -0.45, 0.48), 2.83]
         interp_orientations=manual_camera_interpolation(start_orientation, end_orientation, num_steps=num_total_steps)
@@ -1042,11 +1052,14 @@ class P48_moving_view_2(InteractiveScene):
                 self.remove(grids[surface_update_counter-1])
                 self.add(surfaces[surface_update_counter])
                 self.add(grids[surface_update_counter])
+                self.remove(s2)
                 # print('surface_update_counter', surface_update_counter)
 
                 new_point_coords=surf_functions[surface_update_counter](*starting_coords)
                 s2.move_to(new_point_coords) #This should make point move down smoothly. 
                 surface_update_counter+=1
+
+                self.add(s2) #Occlusions
 
             # print(i, len(interp_orientations))
             self.frame.reorient(*interp_orientations[i])
@@ -1143,9 +1156,9 @@ class P48_moving_view_3(InteractiveScene):
         self.add(grids[0])
         self.add(s2)
 
-        num_total_steps=num_time_steps*2 #Crank this for final viz
+        num_total_steps=num_time_steps*8 #Crank this for final viz
         start_orientation=[137, 41, 0, (-0.05, -0.51, 0.75), 3.24]
-        end_orientation=[-139, 17, 0, (-0.08, -0.51, 0.75), 2.26]
+        end_orientation=[360-139, 17, 0, (-0.08, -0.51, 0.75), 2.26]
         interp_orientations=manual_camera_interpolation(start_orientation, end_orientation, num_steps=num_total_steps)
 
         surface_update_counter=1
@@ -1260,6 +1273,7 @@ class P48_fixed_view(InteractiveScene):
         self.add(s2)
 
         #Fixed orentation
+        self.frame.reorient(132, 28, 0, (-0.12, -0.56, 0.33), 4.50) #Kinda wide, but nice I think, could do a closer one too
 
         surface_update_counter=1
         frames_per_surface_upddate=np.floor(num_total_steps/num_time_steps)

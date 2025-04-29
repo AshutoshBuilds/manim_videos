@@ -42,7 +42,7 @@ class p29c(InteractiveScene):
         )
         
         # Create the grid values
-        num_lines = 15  # Adjust as needed - 20 looks kinda nuts - I don't want to move to far off reality here though!
+        num_lines = 10  # Adjust as needed - 20 looks kinda nuts - I don't want to move to far off reality here though!
         u_values = np.linspace(x_range[0], x_range[1], num_lines)
         v_values = np.linspace(y_range[0], y_range[1], num_lines)
         w_values = np.linspace(z_range[0], z_range[1], num_lines)
@@ -88,9 +88,9 @@ class p29c(InteractiveScene):
         stride = 1  # Only use every second value
         intersection_dots = Group()
 
-        for x in u_values[::stride]:
-            for y in v_values[::stride]:
-                for z in w_values[::stride]:
+        for x in u_values: #[::stride]:
+            for y in v_values: #[::stride]:
+                for z in w_values: #[::stride]:
                     dot = Dot3D(
                         point=[x, y, z],
                         radius=0.035,

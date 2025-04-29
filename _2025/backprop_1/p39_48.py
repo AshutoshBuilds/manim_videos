@@ -687,7 +687,7 @@ class P39_47(InteractiveScene):
         #ok ok ok ok ok let's actually go really with on the "WHat is going on here" question,
         #And then pan to the left in premiere, bring in the text, and replay the animation from this wide shot. 
         #Then we stay wide for a bit as we look at wikitext I think. 
-        self.play(self.frame.animate.reorient(-179, 22, 0, (-0.06, 0.09, 0.43), 5.81), run_time=10.0)
+        self.play(self.frame.animate.reorient(-180, 23, 0, (-0.06, 0.09, 0.43), 5.81), run_time=10.0)
 
         self.wait() #Pick up in fixed animation from here
 
@@ -977,7 +977,8 @@ class P48_experimental(InteractiveScene):
         # self.frame.reorient(121, 20, 0, (0.01, -0.46, 0.57), 1.95)
         # self.frame.reorient(121, 20, 0, (0.01, -0.46, 0.57), 1.95)
         # self.frame.reorient(159, 35, 0, (-0.03, -0.62, 0.65), 1.95)
-        self.frame.reorient(121, 20, 0, (0.01, -0.46, 0.57), 1.95)
+        # self.frame.reorient(121, 20, 0, (0.01, -0.46, 0.57), 1.95)
+        self.frame.reorient(-180, 23, 0, (-0.06, 0.09, 0.43), 5.81)
         self.embed()
 
 
@@ -1295,24 +1296,23 @@ class P48_fixed_view(InteractiveScene):
         #Fixed orentation
         # self.frame.reorient(132, 28, 0, (-0.12, -0.56, 0.33), 4.50) #Kinda wide, but nice I think, could do a closer one too
         # self.frame.reorient(159, 35, 0, (-0.03, -0.62, 0.65), 1.95) #Match with long render
-        self.frame.reorient(-179, 22, 0, (-0.06, 0.09, 0.43), 5.81) #Fixed wide veiew I can use at the beginning of 48
+        self.frame.reorient(-180, 23, 0, (-0.06, 0.09, 0.43), 5.81) #Fixed wide veiew I can use at the beginning of 48
 
         surface_update_counter=1
-        frames_per_surface_upddate=np.floor(num_total_steps/num_time_steps)
+        # frames_per_surface_upddate=np.floor(num_total_steps/num_time_steps)
         self.wait()
-        for i in range(1, num_total_steps):
+        for i in range(1, len(surfaces)):
             # print(i, len(interp_orientations))
-            if i%frames_per_surface_upddate==0 and surface_update_counter<len(surfaces):
 
-                self.remove(surfaces[surface_update_counter-1])
-                self.remove(grids[surface_update_counter-1])
-                self.add(surfaces[surface_update_counter])
-                self.add(grids[surface_update_counter])
-                # print('surface_update_counter', surface_update_counter)
+            self.remove(surfaces[surface_update_counter-1])
+            self.remove(grids[surface_update_counter-1])
+            self.add(surfaces[surface_update_counter])
+            self.add(grids[surface_update_counter])
+            # print('surface_update_counter', surface_update_counter)
 
-                new_point_coords=surf_functions[surface_update_counter](*starting_coords)
-                s2.move_to(new_point_coords) #This should make point move down smoothly. 
-                surface_update_counter+=1
+            new_point_coords=surf_functions[surface_update_counter](*starting_coords)
+            s2.move_to(new_point_coords) #This should make point move down smoothly. 
+            surface_update_counter+=1
             self.wait(0.1)
 
         self.wait()

@@ -21,7 +21,7 @@ def param_surface_1(u, v):
     v_idx = np.abs(alphas_1 - v).argmin()
     try:
         # z = loss_2d_1[u_idx, v_idx]
-        z = 0.07*loss_2d_1[v_idx, u_idx] #Add vertical scaling here?
+        z = 0.35*loss_2d_1[v_idx, u_idx]-0.3*np.mean(loss_2d_1) #Add vertical scaling here?
     except IndexError:
         z = 0
     return np.array([u, v, z])
@@ -31,7 +31,7 @@ def param_surface_2(u, v, surf_array):
     v_idx = np.abs(alphas_1 - v).argmin()
     try:
         # z = loss_2d_1[u_idx, v_idx]
-        z = 0.07*surf_array[v_idx, u_idx] #Add vertical scaling here?
+        z = 0.35*surf_array[v_idx, u_idx]-0.3*np.mean(surf_array) #Add vertical scaling here?
     except IndexError:
         z = 0
     return np.array([u, v, z])
@@ -96,14 +96,17 @@ class P48cV1(InteractiveScene):
     def construct(self):
         '''
         Wikitext training example - man I hope this works. 
+
+        Ok so I think I want to start our here from the same angle etc as the 
+        Paris example -> might even be nice to Show Creation or something here. 
         '''
     
         #Load up other surfaces to visualize
         loss_arrays_pre=[]
         loss_arrays_post=[]
         loss_arrays_interleaved=[]
-        num_time_steps=6
-        print('Loading Surface Arrays')
+        num_time_steps=1
+        print('Loading Surface Arrays...')
         for i in tqdm(range(num_time_steps)):
             loss_arrays_pre.append(np.load(wormhole_dir+'pre_step_'+str(i).zfill(3)+'.npy'))
             loss_arrays_post.append(np.load(wormhole_dir+'post_step_'+str(i).zfill(3)+'.npy'))
@@ -120,7 +123,7 @@ class P48cV1(InteractiveScene):
         #     ax = plt.Axes(plt.gcf(), [0., 0., 1., 1.])
         #     ax.set_axis_off()
         #     plt.gcf().add_axes(ax)
-        #     plt.imshow(np.rot90(loss_arrays_interleaved[i].T), vmax=1.1*data_max) #Artificial color ceiling to make it not all yellow
+        #     plt.imshow(np.rot90(loss_arrays_interleaved[i].T), vmax=1.2*data_max) #Artificial color ceiling to make it not all yellow
         #     plt.savefig(wormhole_dir+'loss_arrays_interleaved_'+str(i).zfill(3)+'.png', bbox_inches='tight', pad_inches=0, dpi=300)
         #     plt.close()
 
@@ -172,13 +175,30 @@ class P48cV1(InteractiveScene):
         starting_point=surf_functions[0](*starting_coords)
         s2=Dot3D(center=starting_point, radius=0.06, color='$FF00FF')
 
-        self.add(surfaces[0])
-        self.add(grids[0])
-        self.add(s2)
-
-        self.frame.reorient(142, 34, 0, (-0.09, -0.77, 0.15), 3.55)
-
+        self.frame.reorient(180, 23, 0, (-0.06, 0.09, 0.43), 5.81) #Fixed FoV that we end Paris sequence at. 
         
+        self.wait()
+        # self.add(surfaces[0], grids[0], s2)
+
+
+        self.play(ShowCreation(surfaces[0]),
+                  ShowCreation(grids[0]), run_time=6.0)
+        self.add(s2)
+        self.wait()
+
+        self.play(self.frame.animate.reorient(137, 47, 0, (0.26, 0.31, -0.15), 5.61), run_time=4)
+        self.wait()
+        
+
+        surface_update_counter=1
+        self.remove(surfaces[surface_update_counter-1])
+        self.remove(grids[surface_update_counter-1])
+        self.add(surfaces[surface_update_counter])
+        self.add(grids[surface_update_counter])
+        new_point_coords=surf_functions[surface_update_counter](*starting_coords)
+        s2.move_to(new_point_coords) 
+        self.wait()
+
         surface_update_counter=2
         self.remove(surfaces[surface_update_counter-1])
         self.remove(grids[surface_update_counter-1])
@@ -186,6 +206,16 @@ class P48cV1(InteractiveScene):
         self.add(grids[surface_update_counter])
         new_point_coords=surf_functions[surface_update_counter](*starting_coords)
         s2.move_to(new_point_coords) 
+        self.wait()
+
+        surface_update_counter=3
+        self.remove(surfaces[surface_update_counter-1])
+        self.remove(grids[surface_update_counter-1])
+        self.add(surfaces[surface_update_counter])
+        self.add(grids[surface_update_counter])
+        new_point_coords=surf_functions[surface_update_counter](*starting_coords)
+        s2.move_to(new_point_coords) 
+        self.wait()
 
         #Todo -> come back and work out views & time step stuff - depends a bit on where the main p48 ends too. 
 

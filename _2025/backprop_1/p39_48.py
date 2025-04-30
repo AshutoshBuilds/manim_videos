@@ -687,7 +687,7 @@ class P39_47(InteractiveScene):
         #ok ok ok ok ok let's actually go really with on the "WHat is going on here" question,
         #And then pan to the left in premiere, bring in the text, and replay the animation from this wide shot. 
         #Then we stay wide for a bit as we look at wikitext I think. 
-        self.play(self.frame.animate.reorient(-180, 23, 0, (-0.06, 0.09, 0.43), 5.81), run_time=10.0)
+        self.play(self.frame.animate.reorient(180, 23, 0, (-0.06, 0.09, 0.43), 5.81), run_time=10.0)
 
         self.wait() #Pick up in fixed animation from here
 
@@ -1296,7 +1296,7 @@ class P48_fixed_view(InteractiveScene):
         #Fixed orentation
         # self.frame.reorient(132, 28, 0, (-0.12, -0.56, 0.33), 4.50) #Kinda wide, but nice I think, could do a closer one too
         # self.frame.reorient(159, 35, 0, (-0.03, -0.62, 0.65), 1.95) #Match with long render
-        self.frame.reorient(-180, 23, 0, (-0.06, 0.09, 0.43), 5.81) #Fixed wide veiew I can use at the beginning of 48
+        self.frame.reorient(180, 23, 0, (-0.06, 0.09, 0.43), 5.81) #Fixed wide veiew I can use at the beginning of 48
 
         surface_update_counter=1
         # frames_per_surface_upddate=np.floor(num_total_steps/num_time_steps)

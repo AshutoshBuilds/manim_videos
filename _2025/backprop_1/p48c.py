@@ -21,7 +21,7 @@ def param_surface_1(u, v):
     v_idx = np.abs(alphas_1 - v).argmin()
     try:
         # z = loss_2d_1[u_idx, v_idx]
-        z = 0.35*loss_2d_1[v_idx, u_idx]-0.3*np.mean(loss_2d_1) #Add vertical scaling here?
+        z = 0.14*loss_2d_1[v_idx, u_idx]-0.07*np.mean(loss_2d_1) #Add vertical scaling here?
     except IndexError:
         z = 0
     return np.array([u, v, z])
@@ -31,7 +31,7 @@ def param_surface_2(u, v, surf_array):
     v_idx = np.abs(alphas_1 - v).argmin()
     try:
         # z = loss_2d_1[u_idx, v_idx]
-        z = 0.35*surf_array[v_idx, u_idx]-0.3*np.mean(surf_array) #Add vertical scaling here?
+        z = 0.14*surf_array[v_idx, u_idx]-0.07*np.mean(surf_array) #Add vertical scaling here?
     except IndexError:
         z = 0
     return np.array([u, v, z])
@@ -105,7 +105,7 @@ class P48cV1(InteractiveScene):
         loss_arrays_pre=[]
         loss_arrays_post=[]
         loss_arrays_interleaved=[]
-        num_time_steps=1
+        num_time_steps=6
         print('Loading Surface Arrays...')
         for i in tqdm(range(num_time_steps)):
             loss_arrays_pre.append(np.load(wormhole_dir+'pre_step_'+str(i).zfill(3)+'.npy'))
@@ -186,36 +186,54 @@ class P48cV1(InteractiveScene):
         self.add(s2)
         self.wait()
 
-        self.play(self.frame.animate.reorient(137, 47, 0, (0.26, 0.31, -0.15), 5.61), run_time=4)
+        # self.play(self.frame.animate.reorient(137, 47, 0, (0.26, 0.31, -0.15), 5.61), run_time=4)
+        self.play(self.frame.animate.reorient(135, 47, 0, (0.15, 0.28, -0.04), 5.61), run_time=4)
+        self.wait()
+
+        self.play(self.frame.animate.reorient(143, 52, 0, (0.0, -0.33, 0.52), 3.09), run_time=4)
         self.wait()
         
+        for i in range(1, len(surfaces)):
+            self.remove(surfaces[i-1])
+            self.remove(grids[i-1])
+            self.add(surfaces[i])
+            self.add(grids[i])
+            new_point_coords=surf_functions[i](*starting_coords)
+            s2.move_to(new_point_coords) 
+            self.wait()
 
-        surface_update_counter=1
-        self.remove(surfaces[surface_update_counter-1])
-        self.remove(grids[surface_update_counter-1])
-        self.add(surfaces[surface_update_counter])
-        self.add(grids[surface_update_counter])
-        new_point_coords=surf_functions[surface_update_counter](*starting_coords)
-        s2.move_to(new_point_coords) 
+        self.play(self.frame.animate.reorient(135, 47, 0, (0.15, 0.28, -0.04), 5.61), run_time=4)
         self.wait()
 
-        surface_update_counter=2
-        self.remove(surfaces[surface_update_counter-1])
-        self.remove(grids[surface_update_counter-1])
-        self.add(surfaces[surface_update_counter])
-        self.add(grids[surface_update_counter])
-        new_point_coords=surf_functions[surface_update_counter](*starting_coords)
+        #Replay from this perspective for some nice side by side. 
+        self.remove(surfaces[i])
+        self.remove(grids[i])
+        self.add(surfaces[0])
+        self.add(grids[0])
+        new_point_coords=surf_functions[0](*starting_coords)
         s2.move_to(new_point_coords) 
-        self.wait()
 
-        surface_update_counter=3
-        self.remove(surfaces[surface_update_counter-1])
-        self.remove(grids[surface_update_counter-1])
-        self.add(surfaces[surface_update_counter])
-        self.add(grids[surface_update_counter])
-        new_point_coords=surf_functions[surface_update_counter](*starting_coords)
-        s2.move_to(new_point_coords) 
-        self.wait()
+        for i in range(1, len(surfaces)):
+            self.remove(surfaces[i-1])
+            self.remove(grids[i-1])
+            self.add(surfaces[i])
+            self.add(grids[i])
+            new_point_coords=surf_functions[i](*starting_coords)
+            s2.move_to(new_point_coords) 
+            self.wait()
+
+
+
+        # surface_update_counter=2
+        # self.remove(surfaces[surface_update_counter-1])
+        # self.remove(grids[surface_update_counter-1])
+        # self.add(surfaces[surface_update_counter])
+        # self.add(grids[surface_update_counter])
+        # new_point_coords=surf_functions[surface_update_counter](*starting_coords)
+        # s2.move_to(new_point_coords) 
+        # self.wait()
+
+
 
         #Todo -> come back and work out views & time step stuff - depends a bit on where the main p48 ends too. 
 
@@ -246,6 +264,5 @@ class P48cV1(InteractiveScene):
         #     self.frame.reorient(*interp_orientations[i])
         #     self.wait(0.1)
 
-        self.wait()
-
+        self.wait(20)
         self.embed()

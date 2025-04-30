@@ -377,6 +377,16 @@ class P21(InteractiveScene):
             y_axis_position,
             y_zoom_tracker.get_value()
         ))
+
+        losses_scatter_2 =get_losses_scatter_points(
+            1.0,
+            initial_x_range,
+            final_x_range,
+            x_axis_position,
+            y_axis_position,
+            1.0
+        )
+
         
         self.add(x_axis, y_axis, scatter)
         self.wait()
@@ -391,8 +401,10 @@ class P21(InteractiveScene):
         self.play(y_zoom_tracker.animate.set_value(1.0), run_time=3)
         self.wait()
 
-        self.add(losses_scatter)
-        self.wait()
+        self.play(ShowCreation(losses_scatter_2), run_time=5)
+        # self.add(losses_scatter)
+        self.wait(20)
+        self.embed()
 
 
 

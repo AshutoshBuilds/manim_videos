@@ -16,7 +16,7 @@ class Dot3D(Sphere):
         self.move_to(point)
 
 
-class p29cV2(InteractiveScene):
+class p29cV3(InteractiveScene):
     def construct(self):
 
         

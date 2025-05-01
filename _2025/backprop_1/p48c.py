@@ -8,7 +8,7 @@ CHILL_BROWN='#948979'
 YELLOW='#ffd35a'
 BLUE='#65c8d0'
 
-wormhole_dir='/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_27_5/'
+wormhole_dir='/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/apr_29_2/'
 alphas_1=np.linspace(-2.5, 2.5, 512)
 
 class Dot3D(Sphere):
@@ -21,7 +21,8 @@ def param_surface_1(u, v):
     v_idx = np.abs(alphas_1 - v).argmin()
     try:
         # z = loss_2d_1[u_idx, v_idx]
-        z = 0.14*loss_2d_1[v_idx, u_idx]-0.07*np.mean(loss_2d_1) #Add vertical scaling here?
+        # z = 0.14*loss_2d_1[v_idx, u_idx]-0.07*np.mean(loss_2d_1) #Add vertical scaling here? #V2
+        z = 0.25*loss_2d_1[v_idx, u_idx]-0.18*np.mean(loss_2d_1) #Add vertical scaling here? #V3
     except IndexError:
         z = 0
     return np.array([u, v, z])
@@ -92,7 +93,7 @@ def manual_camera_interpolation(start_orientation, end_orientation, num_steps):
     
     return result
 
-class P48cV1(InteractiveScene):
+class P48cV3(InteractiveScene):
     def construct(self):
         '''
         Wikitext training example - man I hope this works. 
@@ -105,7 +106,7 @@ class P48cV1(InteractiveScene):
         loss_arrays_pre=[]
         loss_arrays_post=[]
         loss_arrays_interleaved=[]
-        num_time_steps=6
+        num_time_steps=4
         print('Loading Surface Arrays...')
         for i in tqdm(range(num_time_steps)):
             loss_arrays_pre.append(np.load(wormhole_dir+'pre_step_'+str(i).zfill(3)+'.npy'))
@@ -114,18 +115,18 @@ class P48cV1(InteractiveScene):
             loss_arrays_interleaved.append(loss_arrays_post[-1])
 
 
-        # self.wait()
-        # import matplotlib.pyplot as plt
-        # data_max=np.array(loss_arrays_interleaved).max() 
-        # for i in range(len(loss_arrays_interleaved)):
-        #     plt.clf()
-        #     plt.figure(frameon=False)
-        #     ax = plt.Axes(plt.gcf(), [0., 0., 1., 1.])
-        #     ax.set_axis_off()
-        #     plt.gcf().add_axes(ax)
-        #     plt.imshow(np.rot90(loss_arrays_interleaved[i].T), vmax=1.2*data_max) #Artificial color ceiling to make it not all yellow
-        #     plt.savefig(wormhole_dir+'loss_arrays_interleaved_'+str(i).zfill(3)+'.png', bbox_inches='tight', pad_inches=0, dpi=300)
-        #     plt.close()
+        self.wait()
+        import matplotlib.pyplot as plt
+        data_max=np.array(loss_arrays_interleaved).max() 
+        for i in range(len(loss_arrays_interleaved)):
+            plt.clf()
+            plt.figure(frameon=False)
+            ax = plt.Axes(plt.gcf(), [0., 0., 1., 1.])
+            ax.set_axis_off()
+            plt.gcf().add_axes(ax)
+            plt.imshow(np.rot90(loss_arrays_interleaved[i].T), vmax=1.2*data_max) #Artificial color ceiling to make it not all yellow
+            plt.savefig(wormhole_dir+'loss_arrays_interleaved_'+str(i).zfill(3)+'.png', bbox_inches='tight', pad_inches=0, dpi=300)
+            plt.close()
 
 
         surfaces=Group()
@@ -202,7 +203,8 @@ class P48cV1(InteractiveScene):
             s2.move_to(new_point_coords) 
             self.wait()
 
-        self.play(self.frame.animate.reorient(135, 47, 0, (0.15, 0.28, -0.04), 5.61), run_time=4)
+        # self.play(self.frame.animate.reorient(135, 47, 0, (0.15, 0.28, -0.04), 5.61), run_time=4)
+        self.play(self.frame.animate.reorient(180, 23, 0, (-0.06, 0.09, 0.43), 5.81), run_time=4) #v3
         self.wait()
 
         #Replay from this perspective for some nice side by side. 

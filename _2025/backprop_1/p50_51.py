@@ -170,7 +170,8 @@ class P50a(InteractiveScene):
 
         self.play(ShowCreation(ts),
                 ShowCreation(u_gridlines),
-                 ShowCreation(v_gridlines))
+                 ShowCreation(v_gridlines), 
+                 run_time=6.0)
         self.wait()
 
         self.play(self.frame.animate.reorient(31, 44, 0, (-0.03, 0.45, 0.53), 7.36), run_time=4.0)
@@ -221,7 +222,7 @@ class P50a(InteractiveScene):
         for i in range(way_point_1): #Go partially and then add countour
             s1.move_to(trajectory[i])
             t.set_points_smoothly(trajectory[:i])
-            # self.wait(0.1)
+            self.wait(0.1)
         self.wait()
 
         slice_2_index=trajectory[way_point_1][1]
@@ -238,7 +239,7 @@ class P50a(InteractiveScene):
         for i in range(way_point_1, way_point_2): #Go partially and then add countour
             s1.move_to(trajectory[i])
             t.set_points_smoothly(trajectory[:i])
-            # self.wait(0.1)
+            self.wait(0.1)
         self.wait()
 
         slice_3_index=trajectory[way_point_2][1]
@@ -262,7 +263,7 @@ class P50a(InteractiveScene):
             s1.move_to(trajectory[i])
             t.set_points_smoothly(trajectory[:i])
             self.frame.reorient(*interp_orientations[i-way_point_2])
-            # self.wait(0.1)
+            self.wait(0.1)
         self.wait()
 
 

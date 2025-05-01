@@ -24,14 +24,14 @@ class Dot3D(Sphere):
 
 
 ##Only need to run this when the underlying npy file changes
-import matplotlib.pyplot as plt
-plt.figure(frameon=False)
-ax = plt.Axes(plt.gcf(), [0., 0., 1., 1.])
-ax.set_axis_off()
-plt.gcf().add_axes(ax)
-plt.imshow(np.rot90(loss_2d_1.T)) #have to transpose if transposing u and v and param_surface_1
-plt.savefig(wormhole_dir+'loss_2d_1.png', bbox_inches='tight', pad_inches=0, dpi=300)
-plt.close()
+# import matplotlib.pyplot as plt
+# plt.figure(frameon=False)
+# ax = plt.Axes(plt.gcf(), [0., 0., 1., 1.])
+# ax.set_axis_off()
+# plt.gcf().add_axes(ax)
+# plt.imshow(np.rot90(loss_2d_1.T)) #have to transpose if transposing u and v and param_surface_1
+# plt.savefig(wormhole_dir+'loss_2d_1.png', bbox_inches='tight', pad_inches=0, dpi=300)
+# plt.close()
 
 # plt.clf()
 # plt.figure(frameon=False)

@@ -16,7 +16,7 @@ class Dot3D(Sphere):
         self.move_to(point)
 
 
-class p29c(InteractiveScene):
+class p29cV2(InteractiveScene):
     def construct(self):
 
         
@@ -42,7 +42,7 @@ class p29c(InteractiveScene):
         )
         
         # Create the grid values
-        num_lines = 10  # Adjust as needed - 20 looks kinda nuts - I don't want to move to far off reality here though!
+        num_lines = 15  # Adjust as needed - 20 looks kinda nuts - I don't want to move to far off reality here though!
         u_values = np.linspace(x_range[0], x_range[1], num_lines)
         v_values = np.linspace(y_range[0], y_range[1], num_lines)
         w_values = np.linspace(z_range[0], z_range[1], num_lines)
@@ -56,7 +56,7 @@ class p29c(InteractiveScene):
                 start = np.array([x_range[0], y, z])
                 end = np.array([x_range[1], y, z])
                 line = Line3D(start, end, color=WHITE) #, width=1)
-                line.set_opacity(0.35)
+                line.set_opacity(0.25)
                 line.set_stroke(width=1.5)
                 grid_lines.add(line)
         
@@ -67,7 +67,7 @@ class p29c(InteractiveScene):
                 end = np.array([x, y_range[1], z])
                 line = Line3D(start, end, color=WHITE) #, width=1)
                 line.set_stroke(width=1.5)
-                line.set_opacity(0.35)
+                line.set_opacity(0.25)
                 grid_lines.add(line)
         
         # Z-direction lines
@@ -77,7 +77,7 @@ class p29c(InteractiveScene):
                 end = np.array([x, y, z_range[1]])
                 line = Line3D(start, end, color=WHITE) #, width=1)
                 line.set_stroke(width=1.5)
-                line.set_opacity(0.35)
+                line.set_opacity(0.25)
                 grid_lines.add(line)
         
         self.wait()
@@ -88,16 +88,35 @@ class p29c(InteractiveScene):
         stride = 1  # Only use every second value
         intersection_dots = Group()
 
-        for x in u_values: #[::stride]:
-            for y in v_values: #[::stride]:
-                for z in w_values: #[::stride]:
-                    dot = Dot3D(
-                        point=[x, y, z],
-                        radius=0.035,
-                        color=WHITE
-                    )
-                    dot.set_opacity(0.8)
-                    intersection_dots.add(dot)
+        # for x in np.concatenate((u_values[:3], u_values[-3:])): #u_values: #[::stride]:
+        #     for y in np.concatenate((v_values[:3], v_values[-3:])): #v_values: #[::stride]:
+        #         for z in np.concatenate((w_values[:3], w_values[-3:])): #w_values: #[::stride]:
+        #             dot = Dot3D(
+        #                 point=[x, y, z],
+        #                 radius=0.035,
+        #                 color=WHITE
+        #             )
+        #             dot.set_opacity(0.8)
+        #             intersection_dots.add(dot)
+
+        # outer_indices = [0, 1, num_lines-2, num_lines-1]
+        outer_indices = [0, num_lines-1]
+        
+        intersection_dots = Group()
+        for x_idx, x in enumerate(u_values):
+            for y_idx, y in enumerate(v_values):
+                for z_idx, z in enumerate(w_values):
+                    # Only add dots if the point is in any of the 3 outer layers on any dimension
+                    if (x_idx in outer_indices or 
+                        y_idx in outer_indices or 
+                        z_idx in outer_indices):
+                        dot = Dot3D(
+                            point=[x, y, z],
+                            radius=0.035,
+                            color=WHITE
+                        )
+                        dot.set_opacity(0.8)
+                        intersection_dots.add(dot)
 
         # Add animation to show the dots
         self.play(ShowCreation(intersection_dots), run_time=2)

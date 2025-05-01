@@ -157,7 +157,7 @@ def get_scatter_points(t, initial_bounds, final_bounds, x_axis_position, y_axis_
         # Create dot
         dot = Dot(
             point=[x_pos, y_pos, 0],
-            radius=0.05,
+            radius=0.06,
             stroke_width=0,
             fill_opacity=0.8
         )
@@ -222,7 +222,7 @@ def get_scatter_points_with_interpolated_y(t, initial_bounds, final_bounds, x_ax
         # Create dot
         dot = Dot(
             point=[x_pos, y_pos, 0],
-            radius=0.05,
+            radius=0.06,
             stroke_width=0,
             fill_opacity=0.8
         )
@@ -292,7 +292,7 @@ def get_losses_scatter_points(t, initial_bounds, final_bounds, x_axis_position, 
         # Create dot
         dot = Dot(
             point=[x_pos, y_pos, 0],
-            radius=0.05,
+            radius=0.06,
             stroke_width=0,
             fill_opacity=0.8
         )
@@ -301,7 +301,7 @@ def get_losses_scatter_points(t, initial_bounds, final_bounds, x_axis_position, 
     
     return dots
 
-class P21(InteractiveScene):
+class P21_bigger_dots(InteractiveScene):
     '''
     Code is messy and animation is a little stuttery - but I think I coudl ship this if I need to
     Probably makes sense to keep moving, this is a small scene.

@@ -1,18 +1,175 @@
 from manimlib import *
+sys.path.append('/Users/stephen/manim/videos/welch_assets') #hacks
+from welch_axes import *
+import matplotlib.pyplot as plt
+from tqdm import tqdm
+save_dir='/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/'
+
 
 CHILL_BROWN='#948979'
 YELLOW='#ffd35a'
 BLUE='#65c8d0'
 
 
+# Parameters
+num_points = 20
+true_slope = 0.85
+true_intercept = 1
+noise_level = 2.2
+learning_rate = 0.01
+num_iterations = 1000
 
-class P59v1(InteractiveScene):
+# Generate synthetic data
+np.random.seed(2)  # For reproducibility
+x_values = np.random.uniform(0, 8, num_points)
+y_values = true_slope * x_values + true_intercept + (np.random.random(num_points) - 0.5) * noise_level
+
+# Initialize model parameters
+slope = 0.0
+intercept = 2.0
+
+predictions = slope * x_values + intercept
+errors = predictions - y_values
+loss = np.mean(errors ** 2)
+
+slopes=[slope]
+intercepts=[intercept]
+losses=[loss]
+
+for iteration in range(num_iterations):
+    # Calculate gradients
+    slope_gradient = 2 * np.mean(errors * x_values)
+    intercept_gradient = 2 * np.mean(errors)
+    
+    # Update parameters
+    new_slope = slope - learning_rate * slope_gradient
+    new_intercept = intercept - learning_rate * intercept_gradient
+    
+    # Calculate new loss
+    new_predictions = new_slope * x_values + new_intercept
+    new_errors = new_predictions - y_values
+    new_loss = np.mean(new_errors ** 2)
+    
+    # Update variables for next iteration
+    slope = new_slope
+    intercept = new_intercept
+    errors = new_errors
+    loss = new_loss
+
+    slopes.append(slope)
+    intercepts.append(intercept)
+    losses.append(loss)
+
+# Create a grid of x and y values - slopes and y-intercepts
+landscape_slopes = np.linspace(-2.5, 2.5, 256) #Slopers
+landscape_intercepts = np.linspace(-6.0, 6.0, 256) #Y-interecepts
+
+z=[]
+for s in tqdm(landscape_slopes):
+    z.append([])
+    for yi in landscape_intercepts:
+        yhat = s * x_values + yi
+        e = yhat - y_values
+        l = np.mean(e ** 2)
+        z[-1].append(l)
+Z=np.array(z)
+
+plt.figure(frameon=False)
+ax = plt.Axes(plt.gcf(), [0., 0., 1., 1.])
+ax.set_axis_off()
+plt.gcf().add_axes(ax)
+plt.imshow(np.rot90(Z)) #have to transpose if transposing u and v and param_surface_1
+plt.savefig(save_dir+'p53_2d.png', bbox_inches='tight', pad_inches=0, dpi=300)
+plt.close()
+
+
+class P53_2D(InteractiveScene):
     def construct(self):
 
-    	# Create the surface
+        x_axis_1=WelchXAxis(x_min=0, x_max=8.5, x_ticks=[2, 4, 6, 8], x_tick_height=0.15,        
+                            x_label_font_size=22, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=4)
+        y_axis_1=WelchYAxis(y_min=0, y_max=8.5, y_ticks=[2, 4, 6, 8], y_tick_width=0.15,        
+                          y_label_font_size=22, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=4)
+
+        x_label_1 = Tex('x', font_size=28).set_color(CHILL_BROWN)
+        y_label_1 = Tex('y', font_size=28).set_color(CHILL_BROWN)
+        x_label_1.next_to(x_axis_1, RIGHT, buff=0.05)
+        y_label_1.next_to(y_axis_1, UP, buff=0.08)
+
+
+        axes_1=VGroup(x_axis_1, y_axis_1, x_label_1, y_label_1)
+        self.add(axes_1)
+        self.wait()
+
+        mapped_x_1=x_axis_1.map_to_canvas(x_values) 
+        mapped_y_1=y_axis_1.map_to_canvas(y_values)
+
+        dots = VGroup()
+        for i in range(num_points):
+            dot = Dot([mapped_x_1[i], mapped_y_1[i],0], radius=0.06)
+            dot.set_color(YELLOW)
+            dot.set_opacity(0.95)
+            dots.add(dot)
+
+        self.add(dots)
+
+        self.frame.reorient(0, 0, 0, (-1.29, 1.85, 0.0), 8.00)
+
+        line_points=np.array([[0, intercepts[0], 0],
+                  [8, slopes[0]*8+intercepts[0], 0]])
+        line_points_mapped=np.zeros_like(line_points)
+        line_points_mapped[:,0]=x_axis_1.map_to_canvas(line_points[:,0]) 
+        line_points_mapped[:,1]=y_axis_1.map_to_canvas(line_points[:,1])
+
+        line = VGroup()
+        line.set_points_smoothly(line_points_mapped)
+        line.set_stroke(width=4, color=YELLOW, opacity=1.0)
+        self.add(line)
+
+        # axes.get_graph(lambda x: slope * x + intercept, color=RED)
+        line_label = Tex(f"y = {slope:.2f}x + {intercept:.2f}", font_size=24)
+        line_label.next_to(axes_1, UP).shift(0.3*DOWN) #.shift(RIGHT * 1)
+        line_label.set_color(YELLOW)
+        self.add(line_label)
+
+
+        #Ok so yeah I think we're good to go ahead and animate the 2d panel right?
+        #Then will do 3d panel in a separate class
+
+        for i in range(num_iterations):
+            self.remove(line, line_label)
+            line_points=np.array([[0, intercepts[0], 0],
+                      [8, slopes[0]*8+intercepts[0], 0]])
+            line_points_mapped=np.zeros_like(line_points)
+            line_points_mapped[:,0]=x_axis_1.map_to_canvas(line_points[:,0]) 
+            line_points_mapped[:,1]=y_axis_1.map_to_canvas(line_points[:,1])
+
+            line = VGroup()
+            line.set_points_smoothly(line_points_mapped)
+            line.set_stroke(width=4, color=YELLOW, opacity=1.0)
+            self.add(line)
+
+            # axes.get_graph(lambda x: slope * x + intercept, color=RED)
+            line_label = Tex(f"y = {slope:.2f}x + {intercept:.2f}", font_size=24)
+            line_label.next_to(axes_1, UP).shift(0.3*DOWN) #.shift(RIGHT * 1)
+            line_label.set_color(YELLOW)
+            self.add(line_label)
+            self.wait(1/30.)
+
+
+        self.wait()
+        self.embed()
+
+
+class P53_3D(InteractiveScene):
+    def construct(self):
+
+        surf=3.5*Z/Z.max()
+
+        # Create the surface
         axes = ThreeDAxes(
-            x_range=[-1, 4, 1],
-            y_range=[-1, 4, 1],
+            x_range=[-2.5, 2.5, 1],
+            y_range=[-5, 5, 2],
             z_range=[0.0, 3.5, 1.0],
             height=5,
             width=5,
@@ -26,10 +183,99 @@ class P59v1(InteractiveScene):
             }
         )
 
-        self.add(axes)
-        self.embed()
+        
+        # Add labels
+        x_label = Tex(r'slope', font_size=40).set_color(CHILL_BROWN)
+        y_label = Tex(r'y-intercept', font_size=40).set_color(CHILL_BROWN)
+        z_label = Tex('Loss', font_size=30).set_color(CHILL_BROWN)
+        x_label.next_to(axes.x_axis, RIGHT)
+        y_label.next_to(axes.y_axis, UP)
+        z_label.next_to(axes.z_axis, OUT)
+        z_label.rotate(90*DEGREES, [1,0,0])
+
+        def param_surface(u, v):
+            u_idx = np.abs(landscape_slopes - u).argmin()
+            v_idx = np.abs(landscape_intercepts - v).argmin()
+            try:
+                z = surf[u_idx, v_idx]
+            except IndexError:
+                z = 0
+            return np.array([u, v, z])
+
+        # Create main surface
+        surface = ParametricSurface(
+            param_surface,
+            u_range=[-2.5, 2.5],
+            v_range=[-6, 6],
+            resolution=(256, 256),
+        )
+        
+        ts = TexturedSurface(surface, save_dir+'p53_2d.png')
+        ts.set_shading(0.0, 0.1, 0)
+        ts.set_opacity(0.7)
+
+        # Create gridlines using polylines instead of parametric curves
+        num_lines = 20  # Number of gridlines in each direction
+        num_points = 256  # Number of points per line
+        u_gridlines = VGroup()
+        v_gridlines = VGroup()
+        
+        # Create u-direction gridlines
+        u_values = np.linspace(-2.5, 2.5, num_lines)
+        v_points = np.linspace(-6, 6, num_points)
+        
+        for u in u_values:
+            points = [param_surface(u, v) for v in v_points]
+            line = VMobject()
+            # line.set_points_as_corners(points)
+            line.set_points_smoothly(points)
+            line.set_stroke(width=1, color=WHITE, opacity=0.3)
+            u_gridlines.add(line)
+        
+        # Create v-direction gridlines
+        u_points = np.linspace(-2.5, 2.5, num_lines)
+        for v in np.linspace(-6, 6, num_lines):  # Using same number of lines for both directions
+            points = [param_surface(u, v) for u in u_points]
+            line = VMobject()
+            # line.set_points_as_corners(points)
+            line.set_points_smoothly(points)
+            line.set_stroke(width=1, color=WHITE, opacity=0.3)
+            v_gridlines.add(line)
+
+        #i think there's a better way to do this
+        offset=surface.get_corner(BOTTOM+LEFT)-axes.get_corner(BOTTOM+LEFT)
+        axes.shift(offset); x_label.shift(offset); y_label.shift(offset); z_label.shift(offset);
+
+        # self.add(axes[:2], x_label, y_label)
+        self.add(axes[:2], x_label, y_label) # , z_label)
+        self.add(ts, u_gridlines, v_gridlines)
 
         self.wait()
+        self.embed()
+
+
+
+# # Create the surface
+# axes = ThreeDAxes(
+#     x_range=[-1, 4, 1],
+#     y_range=[-1, 4, 1],
+#     z_range=[0.0, 3.5, 1.0],
+#     height=5,
+#     width=5,
+#     depth=3.5,
+#     axis_config={
+#         "include_ticks": True,
+#         "color": CHILL_BROWN,
+#         "stroke_width": 2,
+#         "include_tip": True,
+#         "tip_config": {"fill_opacity": 1, "width": 0.1, "length": 0.1}
+#     }
+# )
+
+# self.add(axes)
+# self.embed()
+
+# self.wait()
 
 
 

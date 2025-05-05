@@ -978,7 +978,8 @@ class P48_experimental(InteractiveScene):
         # self.frame.reorient(121, 20, 0, (0.01, -0.46, 0.57), 1.95)
         # self.frame.reorient(159, 35, 0, (-0.03, -0.62, 0.65), 1.95)
         # self.frame.reorient(121, 20, 0, (0.01, -0.46, 0.57), 1.95)
-        self.frame.reorient(-180, 23, 0, (-0.06, 0.09, 0.43), 5.81)
+        # self.frame.reorient(-180, 23, 0, (-0.06, 0.09, 0.43), 5.81)
+        self.frame.reorient(180, 23, 0, (-0.06, 0.09, 0.43), 5.81)
         self.embed()
 
 

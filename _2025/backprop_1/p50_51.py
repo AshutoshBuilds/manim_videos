@@ -224,6 +224,7 @@ class P50a(InteractiveScene):
             t.set_points_smoothly(trajectory[:i])
             self.wait(0.1)
         self.wait()
+        self.wait()
 
         slice_2_index=trajectory[way_point_1][1]
         u_points = np.linspace(-2.5, 2.5, num_points)

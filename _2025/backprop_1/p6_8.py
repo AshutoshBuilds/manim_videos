@@ -6,7 +6,7 @@ BLUE='#65c8d0'
 
 asset_dir='/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/graphics/'
 
-class P6_8(InteractiveScene):
+class P6_8_v2(InteractiveScene):
     def construct(self):
 
 
@@ -24,8 +24,8 @@ class P6_8(InteractiveScene):
 
         self.frame.reorient(0, 0, 0, (-1.73, 0.07, 0.0), 2.35)
 
-        r1=RoundedRectangle(corner_radius=0.09, height=9.0/4.9, width=16.0/4.9)
-        r1.set_stroke(color=CHILL_BROWN, width=6.0)
+        r1=RoundedRectangle(corner_radius=0.09, height=9.0/4.89, width=16.0/4.89)
+        r1.set_stroke(color=CHILL_BROWN, width=4.0)
         r1.move_to([-1.735, -0.015, 0])     
         
         self.play(ShowCreation(r1), run_time=2)
@@ -40,7 +40,7 @@ class P6_8(InteractiveScene):
 
         self.play(FadeIn(v[1]),
                   img_2.animate.set_opacity(1.0),
-                 self.frame.animate.reorient(0, 0, 0, (-0.01, -0.02, 0.0), 4.00),
+                 self.frame.animate.reorient(0, 0, 0, (0.0, 0.05, 0.0), 4.12),
                  run_time=4.0)
         self.wait()
 

@@ -61,8 +61,8 @@ for iteration in range(num_iterations):
     losses.append(loss)
 
 # Create a grid of x and y values - slopes and y-intercepts
-landscape_slopes = np.linspace(-2.5, 2.5, 256) #Slopers
-landscape_intercepts = np.linspace(-6.0, 6.0, 256) #Y-interecepts
+landscape_slopes = np.linspace(-1.5, 2.5, 256) #Slopers
+landscape_intercepts = np.linspace(-4.0, 6.0, 256) #Y-interecepts
 
 z=[]
 for s in tqdm(landscape_slopes):
@@ -168,8 +168,8 @@ class P53_3D(InteractiveScene):
 
         # Create the surface
         axes = ThreeDAxes(
-            x_range=[-2.5, 2.5, 1],
-            y_range=[-5, 5, 2],
+            x_range=[-1.5, 2.0, 1],
+            y_range=[-4, 5, 2],
             z_range=[0.0, 3.5, 1.0],
             height=5,
             width=5,
@@ -205,8 +205,8 @@ class P53_3D(InteractiveScene):
         # Create main surface
         surface = ParametricSurface(
             param_surface,
-            u_range=[-2.5, 2.5],
-            v_range=[-6, 6],
+            u_range=[-1.5, 2.5],
+            v_range=[-4, 6],
             resolution=(256, 256),
         )
         
@@ -221,8 +221,8 @@ class P53_3D(InteractiveScene):
         v_gridlines = VGroup()
         
         # Create u-direction gridlines
-        u_values = np.linspace(-2.5, 2.5, num_lines)
-        v_points = np.linspace(-6, 6, num_points)
+        u_values = np.linspace(-1.5, 2.5, num_lines)
+        v_points = np.linspace(-4, 6, num_points)
         
         for u in u_values:
             points = [param_surface(u, v) for v in v_points]
@@ -233,8 +233,8 @@ class P53_3D(InteractiveScene):
             u_gridlines.add(line)
         
         # Create v-direction gridlines
-        u_points = np.linspace(-2.5, 2.5, num_lines)
-        for v in np.linspace(-6, 6, num_lines):  # Using same number of lines for both directions
+        u_points = np.linspace(-1.5, 2.5, num_lines)
+        for v in np.linspace(-4, 6, num_lines):  # Using same number of lines for both directions
             points = [param_surface(u, v) for u in u_points]
             line = VMobject()
             # line.set_points_as_corners(points)
@@ -243,15 +243,45 @@ class P53_3D(InteractiveScene):
             v_gridlines.add(line)
 
         #i think there's a better way to do this
-        offset=surface.get_corner(BOTTOM+LEFT)-axes.get_corner(BOTTOM+LEFT)
+        groupy_group=Group(ts, u_gridlines, v_gridlines)
+        groupy_group.scale([1, 5.0/12, 1])
+        
+
+        offset=ts.get_corner(BOTTOM+LEFT)-axes.get_corner(BOTTOM+LEFT)
         axes.shift(offset); x_label.shift(offset); y_label.shift(offset); z_label.shift(offset);
 
         # self.add(axes[:2], x_label, y_label)
+        groupy_group.shift([0, 0, 0.25])
         self.add(axes[:2], x_label, y_label) # , z_label)
         self.add(ts, u_gridlines, v_gridlines)
 
+        self.frame.reorient(0, 27, 0, (0.85, 1.29, 0.26), 9.73) #Maybe a little camera move down while learning?
+        self.wait()
+
+        t = VMobject()
+        t.set_stroke(width=5, color="#FF00FF", opacity=0.9)
+        
+
+        trajectory=np.vstack((np.array(slopes), np.array(intercepts), 3.5*np.array(losses)/Z.max())).T
+
+        t.set_points_smoothly(trajectory)
+        t.scale([1, 5.0/12, 1])
+
+        self.add(t)
+
+        ## Grrr getting stuck here -> need to revisit scaling when I come back. 
+
+        # for i in range(way_point_1): #Go partially and then add countour
+        #     s1.move_to(trajectory[i])
+        #     t.set_points_smoothly(trajectory[:i])
+        #     self.wait(0.1)
+        # self.wait()
+
+
+
         self.wait()
         self.embed()
+
 
 
 

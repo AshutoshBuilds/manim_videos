@@ -60,11 +60,11 @@ def manual_camera_interpolation(start_orientation, end_orientation, num_steps):
 
 # Parameters
 num_points = 20
-true_slope = 0.85
+true_slope = 0.61
 true_intercept = 1
 noise_level = 2.2
 learning_rate = 0.01
-num_iterations = 100 #1000
+num_iterations = 1000 #1000
 
 # Generate synthetic data
 np.random.seed(2)  # For reproducibility
@@ -72,8 +72,8 @@ x_values = np.random.uniform(0, 8, num_points)
 y_values = true_slope * x_values + true_intercept + (np.random.random(num_points) - 0.5) * noise_level
 
 # Initialize model parameters
-slope = -1.0
-intercept = 0.0
+slope = 0.5
+intercept = 2.0
 
 predictions = slope * x_values + intercept
 errors = predictions - y_values
@@ -108,8 +108,13 @@ for iteration in range(num_iterations):
     losses.append(loss)
 
 # Create a grid of x and y values - slopes and y-intercepts
-landscape_slopes = np.linspace(-1.5, 2.5, 256) #Slopers
-landscape_intercepts = np.linspace(-4.0, 6.0, 256) #Y-interecepts
+slope_min=0.0
+slope_max=1.0
+y_int_min=0.0
+y_int_max=2.0
+
+landscape_slopes = np.linspace(slope_min, slope_max, 256) #Slopers
+landscape_intercepts = np.linspace(y_int_min, y_int_max, 256) #Y-interecepts
 
 z=[]
 for s in tqdm(landscape_slopes):
@@ -136,8 +141,8 @@ class P53_3D(InteractiveScene):
 
         # Create the axes
         axes = ThreeDAxes(
-            x_range=[-1.5, 2.5, 1],
-            y_range=[-4, 6, 2],
+            x_range=[slope_min, slope_max, 1],
+            y_range=[y_int_min, y_int_max, 2],
             z_range=[0.0, 3.5, 1.0],
             height=5,
             width=5,
@@ -174,8 +179,8 @@ class P53_3D(InteractiveScene):
         # Create main surface
         surface = ParametricSurface(
             param_surface,
-            u_range=[-1.5, 2.5],
-            v_range=[-4, 6],
+            u_range=[slope_min, slope_max],
+            v_range=[y_int_min, y_int_max],
             resolution=(256, 256),
         )
         
@@ -190,8 +195,8 @@ class P53_3D(InteractiveScene):
         v_gridlines = VGroup()
         
         # Create u-direction gridlines using axes.c2p
-        u_values = np.linspace(-1.5, 2.5, num_lines)
-        v_points = np.linspace(-4, 6, num_points)
+        u_values = np.linspace(slope_min, slope_max, num_lines)
+        v_points = np.linspace(y_int_min, y_int_max, num_points)
         
         for u in u_values:
             points = [axes.c2p(u, v, param_surface(u, v)[2]) for v in v_points]
@@ -201,8 +206,8 @@ class P53_3D(InteractiveScene):
             u_gridlines.add(line)
         
         # Create v-direction gridlines using axes.c2p
-        v_values = np.linspace(-4, 6, num_lines)
-        u_points = np.linspace(-1.5, 2.5, num_points)
+        v_values = np.linspace(y_int_min, y_int_max, num_lines)
+        u_points = np.linspace(slope_min, slope_max, num_points)
         for v in v_values:
             points = [axes.c2p(u, v, param_surface(u, v)[2]) for u in u_points]
             line = VMobject()
@@ -250,7 +255,7 @@ class P53_3D(InteractiveScene):
             t = VMobject()
             t.set_stroke(width=5, color="#FF00FF", opacity=0.9)
             trajectory_points = []
-            for s, i, l in zip(slopes, intercepts, losses):
+            for s, i, l in zip(slopes[:iter_count], intercepts[:iter_count], losses[:iter_count]):
                 # Map the point to the scene coordinates
                 point = axes.c2p(s, i, 3.5 * l / Z.max())
                 trajectory_points.append(point)
@@ -259,7 +264,8 @@ class P53_3D(InteractiveScene):
 
             s1.move_to(axes.c2p(slopes[iter_count], intercepts[iter_count],  3.5 * losses[iter_count] / Z.max()))
             self.frame.reorient(*interp_orientations[iter_count])
-            self.wait(0.1)
+            # self.wait(0.1)
+            self.wait(1/30.)
 
         self.wait()
         self.embed()
@@ -320,8 +326,8 @@ class P53_2D(InteractiveScene):
 
         for i in range(num_iterations):
             self.remove(line, line_label)
-            line_points=np.array([[0, intercepts[0], 0],
-                      [8, slopes[0]*8+intercepts[0], 0]])
+            line_points=np.array([[0, intercepts[i], 0],
+                      [8, slopes[i]*8+intercepts[i], 0]])
             line_points_mapped=np.zeros_like(line_points)
             line_points_mapped[:,0]=x_axis_1.map_to_canvas(line_points[:,0]) 
             line_points_mapped[:,1]=y_axis_1.map_to_canvas(line_points[:,1])

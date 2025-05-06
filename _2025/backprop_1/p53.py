@@ -10,6 +10,53 @@ CHILL_BROWN='#948979'
 YELLOW='#ffd35a'
 BLUE='#65c8d0'
 
+class Dot3D(Sphere):
+    def __init__(self, center=ORIGIN, radius=0.05, **kwargs):
+        super().__init__(radius=radius, **kwargs)
+        self.move_to(center)
+
+def manual_camera_interpolation(start_orientation, end_orientation, num_steps):
+    """
+    Linearly interpolate between two camera orientations.
+    
+    Parameters:
+    - start_orientation: List containing camera parameters with a tuple at index 3
+    - end_orientation: List containing camera parameters with a tuple at index 3
+    - num_steps: Number of interpolation steps (including start and end)
+    
+    Returns:
+    - List of interpolated orientations
+    """
+    result = []
+    
+    for step in range(num_steps):
+        # Calculate interpolation factor (0 to 1)
+        t = step / (num_steps - 1) if num_steps > 1 else 0
+        
+        # Create a new orientation for this step
+        interpolated = []
+        
+        for i in range(len(start_orientation)):
+            if i == 3:  # Handle the tuple at position 3
+                start_tuple = start_orientation[i]
+                end_tuple = end_orientation[i]
+                
+                # Interpolate each element of the tuple
+                interpolated_tuple = tuple(
+                    start_tuple[j] + t * (end_tuple[j] - start_tuple[j])
+                    for j in range(len(start_tuple))
+                )
+                
+                interpolated.append(interpolated_tuple)
+            else:  # Handle regular numeric values
+                start_val = start_orientation[i]
+                end_val = end_orientation[i]
+                interpolated_val = start_val + t * (end_val - start_val)
+                interpolated.append(interpolated_val)
+        
+        result.append(interpolated)
+    
+    return result
 
 # Parameters
 num_points = 20
@@ -17,7 +64,7 @@ true_slope = 0.85
 true_intercept = 1
 noise_level = 2.2
 learning_rate = 0.01
-num_iterations = 1000
+num_iterations = 100 #1000
 
 # Generate synthetic data
 np.random.seed(2)  # For reproducibility
@@ -25,8 +72,8 @@ x_values = np.random.uniform(0, 8, num_points)
 y_values = true_slope * x_values + true_intercept + (np.random.random(num_points) - 0.5) * noise_level
 
 # Initialize model parameters
-slope = 0.0
-intercept = 2.0
+slope = -1.0
+intercept = 0.0
 
 predictions = slope * x_values + intercept
 errors = predictions - y_values
@@ -81,6 +128,141 @@ plt.gcf().add_axes(ax)
 plt.imshow(np.rot90(Z)) #have to transpose if transposing u and v and param_surface_1
 plt.savefig(save_dir+'p53_2d.png', bbox_inches='tight', pad_inches=0, dpi=300)
 plt.close()
+
+
+class P53_3D(InteractiveScene):
+    def construct(self):
+        surf = 3.5 * Z / Z.max()
+
+        # Create the axes
+        axes = ThreeDAxes(
+            x_range=[-1.5, 2.5, 1],
+            y_range=[-4, 6, 2],
+            z_range=[0.0, 3.5, 1.0],
+            height=5,
+            width=5,
+            depth=3.5,
+            axis_config={
+                "include_ticks": True,
+                "color": CHILL_BROWN,
+                "stroke_width": 2,
+                "include_tip": True,
+                "tip_config": {"fill_opacity": 1, "width": 0.1, "length": 0.1}
+            }
+        )
+        
+        # Add labels
+        x_label = Tex(r'slope', font_size=40).set_color(CHILL_BROWN)
+        y_label = Tex(r'y-intercept', font_size=40).set_color(CHILL_BROWN)
+        z_label = Tex('Loss', font_size=30).set_color(CHILL_BROWN)
+        x_label.next_to(axes.x_axis, RIGHT)
+        y_label.next_to(axes.y_axis, UP)
+        z_label.next_to(axes.z_axis, OUT)
+        z_label.rotate(90*DEGREES, [1,0,0])
+
+        # Define param_surface using axes.c2p to map coordinates correctly
+        def param_surface(u, v):
+            u_idx = np.abs(landscape_slopes - u).argmin()
+            v_idx = np.abs(landscape_intercepts - v).argmin()
+            try:
+                z_val = surf[u_idx, v_idx]
+            except IndexError:
+                z_val = 0
+            # Use axes.c2p to map from math coordinates to scene coordinates
+            return axes.c2p(u, v, z_val)
+
+        # Create main surface
+        surface = ParametricSurface(
+            param_surface,
+            u_range=[-1.5, 2.5],
+            v_range=[-4, 6],
+            resolution=(256, 256),
+        )
+        
+        ts = TexturedSurface(surface, save_dir+'p53_2d.png')
+        ts.set_shading(0.0, 0.1, 0)
+        ts.set_opacity(0.7)
+
+        # Create gridlines using polylines and axes.c2p
+        num_lines = 20  # Number of gridlines in each direction
+        num_points = 256  # Number of points per line
+        u_gridlines = VGroup()
+        v_gridlines = VGroup()
+        
+        # Create u-direction gridlines using axes.c2p
+        u_values = np.linspace(-1.5, 2.5, num_lines)
+        v_points = np.linspace(-4, 6, num_points)
+        
+        for u in u_values:
+            points = [axes.c2p(u, v, param_surface(u, v)[2]) for v in v_points]
+            line = VMobject()
+            line.set_points_smoothly(points)
+            line.set_stroke(width=1, color=WHITE, opacity=0.3)
+            u_gridlines.add(line)
+        
+        # Create v-direction gridlines using axes.c2p
+        v_values = np.linspace(-4, 6, num_lines)
+        u_points = np.linspace(-1.5, 2.5, num_points)
+        for v in v_values:
+            points = [axes.c2p(u, v, param_surface(u, v)[2]) for u in u_points]
+            line = VMobject()
+            line.set_points_smoothly(points)
+            line.set_stroke(width=1, color=WHITE, opacity=0.3)
+            v_gridlines.add(line)
+
+        # Group surface and gridlines
+        surface_group = Group(ts, u_gridlines, v_gridlines)
+        
+        # Add the elements to the scene
+        self.add(axes[:2], x_label, y_label) #, z_label)
+        self.add(surface_group)
+
+        # Set camera angle
+        self.frame.reorient(0, 27, 0, (0.85, 1.29, 0.26), 9.73)
+        self.wait()
+
+
+        # reorient(0, 8, 0, (0.06, -0.01, 0.09), 9.62)
+
+        # Create and add trajectory
+        t = VMobject()
+        t.set_stroke(width=5, color="#FF00FF", opacity=0.9)
+        s1=Dot3D(center=axes.c2p(slopes[0], intercepts[0],  3.5 * losses[0] / Z.max()), radius=0.09, color='$FF00FF')
+        self.add(t)
+        self.add(s1)
+
+        # # Convert trajectory coordinates using axes.c2p
+        # trajectory_points = []
+        # for s, i, l in zip(slopes, intercepts, losses):
+        #     # Map the point to the scene coordinates
+        #     point = axes.c2p(s, i, 3.5 * l / Z.max())
+        #     trajectory_points.append(point)
+
+        # t.set_points_smoothly(trajectory_points)
+        
+        start_orientation=[0, 8, 0, (0.06, -0.01, 0.09), 9.62]
+        end_orientation=[0, 33, 0, (0.06, -0.01, 0.09), 9.62]
+        interp_orientations=manual_camera_interpolation(start_orientation, end_orientation, num_steps=num_iterations)
+
+        for iter_count in range(num_iterations):
+            self.remove(t)
+
+            t = VMobject()
+            t.set_stroke(width=5, color="#FF00FF", opacity=0.9)
+            trajectory_points = []
+            for s, i, l in zip(slopes, intercepts, losses):
+                # Map the point to the scene coordinates
+                point = axes.c2p(s, i, 3.5 * l / Z.max())
+                trajectory_points.append(point)
+            t.set_points_smoothly(trajectory_points)
+            self.add(t)
+
+            s1.move_to(axes.c2p(slopes[iter_count], intercepts[iter_count],  3.5 * losses[iter_count] / Z.max()))
+            self.frame.reorient(*interp_orientations[iter_count])
+            self.wait(0.1)
+
+        self.wait()
+        self.embed()
 
 
 class P53_2D(InteractiveScene):
@@ -160,127 +342,133 @@ class P53_2D(InteractiveScene):
         self.wait()
         self.embed()
 
+# class P53_3D(InteractiveScene):
+#     def construct(self):
 
-class P53_3D(InteractiveScene):
-    def construct(self):
+#         surf=3.5*Z/Z.max()
 
-        surf=3.5*Z/Z.max()
-
-        # Create the surface
-        axes = ThreeDAxes(
-            x_range=[-1.5, 2.0, 1],
-            y_range=[-4, 5, 2],
-            z_range=[0.0, 3.5, 1.0],
-            height=5,
-            width=5,
-            depth=3.5,
-            axis_config={
-                "include_ticks": True,
-                "color": CHILL_BROWN,
-                "stroke_width": 2,
-                "include_tip": True,
-                "tip_config": {"fill_opacity": 1, "width": 0.1, "length": 0.1}
-            }
-        )
+#         # Create the surface
+#         axes = ThreeDAxes(
+#             x_range=[-1.5, 2.0, 1],
+#             y_range=[-4, 5, 2],
+#             z_range=[0.0, 3.5, 1.0],
+#             height=5,
+#             width=5,
+#             depth=3.5,
+#             axis_config={
+#                 "include_ticks": True,
+#                 "color": CHILL_BROWN,
+#                 "stroke_width": 2,
+#                 "include_tip": True,
+#                 "tip_config": {"fill_opacity": 1, "width": 0.1, "length": 0.1}
+#             }
+#         )
 
         
-        # Add labels
-        x_label = Tex(r'slope', font_size=40).set_color(CHILL_BROWN)
-        y_label = Tex(r'y-intercept', font_size=40).set_color(CHILL_BROWN)
-        z_label = Tex('Loss', font_size=30).set_color(CHILL_BROWN)
-        x_label.next_to(axes.x_axis, RIGHT)
-        y_label.next_to(axes.y_axis, UP)
-        z_label.next_to(axes.z_axis, OUT)
-        z_label.rotate(90*DEGREES, [1,0,0])
+#         # Add labels
+#         x_label = Tex(r'slope', font_size=40).set_color(CHILL_BROWN)
+#         y_label = Tex(r'y-intercept', font_size=40).set_color(CHILL_BROWN)
+#         z_label = Tex('Loss', font_size=30).set_color(CHILL_BROWN)
+#         x_label.next_to(axes.x_axis, RIGHT)
+#         y_label.next_to(axes.y_axis, UP)
+#         z_label.next_to(axes.z_axis, OUT)
+#         z_label.rotate(90*DEGREES, [1,0,0])
 
-        def param_surface(u, v):
-            u_idx = np.abs(landscape_slopes - u).argmin()
-            v_idx = np.abs(landscape_intercepts - v).argmin()
-            try:
-                z = surf[u_idx, v_idx]
-            except IndexError:
-                z = 0
-            return np.array([u, v, z])
+#         def param_surface(u, v):
+#             u_idx = np.abs(landscape_slopes - u).argmin()
+#             v_idx = np.abs(landscape_intercepts - v).argmin()
+#             try:
+#                 z = surf[u_idx, v_idx]
+#             except IndexError:
+#                 z = 0
+#             return np.array([u, v, z])
 
-        # Create main surface
-        surface = ParametricSurface(
-            param_surface,
-            u_range=[-1.5, 2.5],
-            v_range=[-4, 6],
-            resolution=(256, 256),
-        )
+#         # Create main surface
+#         surface = ParametricSurface(
+#             param_surface,
+#             u_range=[-1.5, 2.5],
+#             v_range=[-4, 6],
+#             resolution=(256, 256),
+#         )
         
-        ts = TexturedSurface(surface, save_dir+'p53_2d.png')
-        ts.set_shading(0.0, 0.1, 0)
-        ts.set_opacity(0.7)
+#         ts = TexturedSurface(surface, save_dir+'p53_2d.png')
+#         ts.set_shading(0.0, 0.1, 0)
+#         ts.set_opacity(0.7)
 
-        # Create gridlines using polylines instead of parametric curves
-        num_lines = 20  # Number of gridlines in each direction
-        num_points = 256  # Number of points per line
-        u_gridlines = VGroup()
-        v_gridlines = VGroup()
+#         # Create gridlines using polylines instead of parametric curves
+#         num_lines = 20  # Number of gridlines in each direction
+#         num_points = 256  # Number of points per line
+#         u_gridlines = VGroup()
+#         v_gridlines = VGroup()
         
-        # Create u-direction gridlines
-        u_values = np.linspace(-1.5, 2.5, num_lines)
-        v_points = np.linspace(-4, 6, num_points)
+#         # Create u-direction gridlines
+#         u_values = np.linspace(-1.5, 2.5, num_lines)
+#         v_points = np.linspace(-4, 6, num_points)
         
-        for u in u_values:
-            points = [param_surface(u, v) for v in v_points]
-            line = VMobject()
-            # line.set_points_as_corners(points)
-            line.set_points_smoothly(points)
-            line.set_stroke(width=1, color=WHITE, opacity=0.3)
-            u_gridlines.add(line)
+#         for u in u_values:
+#             points = [param_surface(u, v) for v in v_points]
+#             line = VMobject()
+#             # line.set_points_as_corners(points)
+#             line.set_points_smoothly(points)
+#             line.set_stroke(width=1, color=WHITE, opacity=0.3)
+#             u_gridlines.add(line)
         
-        # Create v-direction gridlines
-        u_points = np.linspace(-1.5, 2.5, num_lines)
-        for v in np.linspace(-4, 6, num_lines):  # Using same number of lines for both directions
-            points = [param_surface(u, v) for u in u_points]
-            line = VMobject()
-            # line.set_points_as_corners(points)
-            line.set_points_smoothly(points)
-            line.set_stroke(width=1, color=WHITE, opacity=0.3)
-            v_gridlines.add(line)
+#         # Create v-direction gridlines
+#         u_points = np.linspace(-1.5, 2.5, num_lines)
+#         for v in np.linspace(-4, 6, num_lines):  # Using same number of lines for both directions
+#             points = [param_surface(u, v) for u in u_points]
+#             line = VMobject()
+#             # line.set_points_as_corners(points)
+#             line.set_points_smoothly(points)
+#             line.set_stroke(width=1, color=WHITE, opacity=0.3)
+#             v_gridlines.add(line)
 
-        #i think there's a better way to do this
-        groupy_group=Group(ts, u_gridlines, v_gridlines)
-        groupy_group.scale([1, 5.0/12, 1])
-        
-
-        offset=ts.get_corner(BOTTOM+LEFT)-axes.get_corner(BOTTOM+LEFT)
-        axes.shift(offset); x_label.shift(offset); y_label.shift(offset); z_label.shift(offset);
-
-        # self.add(axes[:2], x_label, y_label)
-        groupy_group.shift([0, 0, 0.25])
-        self.add(axes[:2], x_label, y_label) # , z_label)
-        self.add(ts, u_gridlines, v_gridlines)
-
-        self.frame.reorient(0, 27, 0, (0.85, 1.29, 0.26), 9.73) #Maybe a little camera move down while learning?
-        self.wait()
-
-        t = VMobject()
-        t.set_stroke(width=5, color="#FF00FF", opacity=0.9)
+#         #i think there's a better way to do this
+#         groupy_group=Group(ts, u_gridlines, v_gridlines)
+#         groupy_group.scale([1, 5.0/12, 1])
         
 
-        trajectory=np.vstack((np.array(slopes), np.array(intercepts), 3.5*np.array(losses)/Z.max())).T
+#         offset=ts.get_corner(BOTTOM+LEFT)-axes.get_corner(BOTTOM+LEFT)
+#         axes.shift(offset); x_label.shift(offset); y_label.shift(offset); z_label.shift(offset);
 
-        t.set_points_smoothly(trajectory)
-        t.scale([1, 5.0/12, 1])
+#         # self.add(axes[:2], x_label, y_label)
+#         groupy_group.shift([0, 0, 0.25])
+#         self.add(axes[:2], x_label, y_label) # , z_label)
+#         self.add(ts, u_gridlines, v_gridlines)
 
-        self.add(t)
+#         self.frame.reorient(0, 27, 0, (0.85, 1.29, 0.26), 9.73) #Maybe a little camera move down while learning?
+#         self.wait()
 
-        ## Grrr getting stuck here -> need to revisit scaling when I come back. 
+#         t = VMobject()
+#         t.set_stroke(width=5, color="#FF00FF", opacity=0.9)
+        
 
-        # for i in range(way_point_1): #Go partially and then add countour
-        #     s1.move_to(trajectory[i])
-        #     t.set_points_smoothly(trajectory[:i])
-        #     self.wait(0.1)
-        # self.wait()
+#         trajectory=np.vstack((np.array(slopes), np.array(intercepts), 3.5*np.array(losses)/Z.max())).T
+
+#         t.set_points_smoothly(trajectory)
+#         t.scale([1, 5.0/12, 1])
+
+#         self.add(t)
+
+#         ## Grrr getting stuck here -> need to revisit scaling when I come back. 
+
+#         # for i in range(way_point_1): #Go partially and then add countour
+#         #     s1.move_to(trajectory[i])
+#         #     t.set_points_smoothly(trajectory[:i])
+#         #     self.wait(0.1)
+#         # self.wait()
 
 
 
-        self.wait()
-        self.embed()
+#         self.wait()
+#         self.embed()
+
+
+
+
+
+
+
 
 
 

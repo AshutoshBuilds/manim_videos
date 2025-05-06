@@ -338,7 +338,7 @@ class P53_2D(InteractiveScene):
             self.add(line)
 
             # axes.get_graph(lambda x: slope * x + intercept, color=RED)
-            line_label = Tex(f"y = {slope:.2f}x + {intercept:.2f}", font_size=24)
+            line_label = Tex(f"y = {slopes[i]:.2f}x + {intercepts[i]:.2f}", font_size=24)
             line_label.next_to(axes_1, UP).shift(0.3*DOWN) #.shift(RIGHT * 1)
             line_label.set_color(YELLOW)
             self.add(line_label)

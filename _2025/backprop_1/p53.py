@@ -135,7 +135,7 @@ plt.savefig(save_dir+'p53_2d.png', bbox_inches='tight', pad_inches=0, dpi=300)
 plt.close()
 
 
-class P53_3D(InteractiveScene):
+class P53_3D_v3(InteractiveScene):
     def construct(self):
         surf = 3.5 * Z / Z.max()
 
@@ -246,7 +246,7 @@ class P53_3D(InteractiveScene):
         # t.set_points_smoothly(trajectory_points)
         
         start_orientation=[0, 8, 0, (0.06, -0.01, 0.09), 9.62]
-        end_orientation=[0, 33, 0, (0.06, -0.01, 0.09), 9.62]
+        end_orientation=[0, 18, 0, (0.06, -0.01, 0.09), 9.62]
         interp_orientations=manual_camera_interpolation(start_orientation, end_orientation, num_steps=num_iterations)
 
         for iter_count in range(num_iterations):
@@ -268,6 +268,10 @@ class P53_3D(InteractiveScene):
             self.wait(1/30.)
 
         self.wait()
+
+        self.play(FadeOut(axes[:2]), FadeOut(x_label), FadeOut(y_label), run_time=3)
+
+        self.wait(20)
         self.embed()
 
 

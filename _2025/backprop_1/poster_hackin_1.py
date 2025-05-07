@@ -72,7 +72,7 @@ def get_pivot_and_scale(axis_min, axis_max, axis_end):
     return axis_min, scale
 
 
-class PosterHackinOne(InteractiveScene):
+class PosterHackinTwo(InteractiveScene):
     def construct(self):
         starting_coords=[0.05,-0.9]
         starting_point=param_surface_1(*starting_coords)
@@ -141,14 +141,30 @@ class PosterHackinOne(InteractiveScene):
 
         self.add(surfaces[0])
         self.add(grids[0])
-        self.add(s2)
+
+
+        self.frame.reorient(90, 0, 0, (0.01, 0.03, -0.0), 6.45) #overhead
+        self.wait()
+
+        self.frame.reorient(90, 20, 0, (-0.09, 0.02, 0.04), 6.45) #Slightly down
+        self.wait()
+        # self.add(s2)
+        self.frame.reorient(89, 32, 0, (-0.1, -0.0, 0.05), 5.89) #Moar down
+        self.wait()
+
+        self.frame.reorient(135, 25, 0, (0.02, 0.1, -0.11), 7.56) #isometric, fiarly high
+        self.wait()
+
+        self.frame.reorient(137, 41, 0, (0.14, -0.04, -0.09), 6.81) #isometric, more down
+        self.wait()
+
 
         #Fixed orentation
         # self.frame.reorient(132, 28, 0, (-0.12, -0.56, 0.33), 4.50) #Kinda wide, but nice I think, could do a closer one too
         # self.frame.reorient(159, 35, 0, (-0.03, -0.62, 0.65), 1.95) #Match with long render
         # self.frame.reorient(180, 23, 0, (-0.06, 0.09, 0.43), 5.81) #Fixed wide veiew I can use at the beginning of 48
         # self.frame.reorient(135, 47, 0, (0.15, 0.28, -0.04), 5.61) #V2 View for side-by-side in p49
-        self.frame.reorient(141, 33, 0, (0.03, 0.21, 0.1), 7.22)
+        # self.frame.reorient(141, 33, 0, (0.03, 0.21, 0.1), 7.22)
 
         self.wait()
         self.embed()

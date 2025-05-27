@@ -254,7 +254,14 @@ class p44_v2(InteractiveScene):
 
 
         for i in range(len(xs)):
-            numbers=get_numbers(i, xs, weights, logits, yhats)
+            if i>0:
+                self.remove(nums)
+                self.remove(grad_regions)
+                self.remove(heatmaps)
+                self.remove(training_point)  
+                # self.wait(0.1)       
+
+            nums=get_numbers(i, xs, weights, logits, yhats)
             grad_regions=get_grad_regions(i, ys, yhats, grads)
             
             #Ok how do I do a cool surface again? Should i actually just try images first real quick?
@@ -295,15 +302,9 @@ class p44_v2(InteractiveScene):
             training_point=Dot([canvas_x, canvas_y, 0], radius=0.012)
             if ys[i]==0.0: training_point.set_color('#00FFFF')
             elif ys[i]==1.0: training_point.set_color(YELLOW)
-            elif ys[i]==2.0: training_point.set_color(GREEN)
-            
-            if i>0:
-                self.remove(numbers)
-                self.remove(grad_regions)
-                self.remove(heatmaps)
-                self.remove(training_point)               
+            elif ys[i]==2.0: training_point.set_color(GREEN)      
 
-            self.add(numbers)
+            self.add(nums)
             self.add(grad_regions)
             self.add(heatmaps)
             self.add(training_point)

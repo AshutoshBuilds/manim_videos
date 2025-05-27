@@ -69,8 +69,7 @@ def format_number_fixed_decimal(num, decimal_places=2, total_chars=6):
 def get_numbers(i, xs, weights, logits, yhats):
     x = xs[i, -1]
     numbers = VGroup()
-    
-    # Temperature display
+
     tx = Tex(str(x) + r'^\circ')
     tx.scale(0.13)
     tx.move_to([-1.49, 0.02, 0])
@@ -349,34 +348,132 @@ class p45_sketch(InteractiveScene):
                 }
         )
 
-
-
         axes_1.move_to([-0.95, 0.44, 0])
         axes_2.move_to([-0.95, 0.0, 0])
         axes_3.move_to([-0.95, -0.44, 0])
+        self.add(axes_1, axes_2, axes_3)
+
+        for i in range(len(xs)):
+            if i>0:
+                self.remove(line_1, arrow_tip_1)
+                self.remove(line_2, arrow_tip_2)
+                self.remove(line_3, arrow_tip_3)
+                self.remove(nums)
+                self.remove(heatmaps)
+
+  
+            nums = VGroup()
+            x = xs[i, -1]
+            tx = Tex(str(x) + r'^\circ')
+            tx.scale(0.13)
+            tx.move_to([-1.49, 0.02, 0])
+            nums.add(tx)
+            
+            # Weights - using consistent formatting
+            w = weights[i, :]
+            tm1 = Tex(format_number(w[0], total_chars=6)).set_color('#00FFFF')
+            tm1.scale(0.12)
+            tm1.move_to([-1.185, 0.54, 0])
+            nums.add(tm1)
+            
+            tm2 = Tex(format_number(w[1], total_chars=6)).set_color(YELLOW)
+            tm2.scale(0.12)
+            tm2.move_to([-1.185, 0.1, 0])
+            nums.add(tm2)
+            
+            tm3 = Tex(format_number(w[2], total_chars=6)).set_color(GREEN)
+            tm3.scale(0.12)
+            tm3.move_to([-1.185, -0.33, 0])
+            nums.add(tm3)
+            
+            # Biases
+            tb1 = Tex(format_number(w[3], total_chars=6)).set_color('#00FFFF')
+            tb1.scale(0.12)
+            tb1.move_to([-1.185, 0.37, 0])
+            nums.add(tb1)
+            
+            tb2 = Tex(format_number(w[4], total_chars=6)).set_color(YELLOW)
+            tb2.scale(0.12)
+            tb2.move_to([-1.185, -0.07, 0])
+            nums.add(tb2)
+            
+            tb3 = Tex(format_number(w[5], total_chars=6)).set_color(GREEN)
+            tb3.scale(0.12)
+            tb3.move_to([-1.185, -0.51, 0])
+            nums.add(tb3)
+            
+            # Logits
+            tl1 = Tex(format_number(logits[i, 0], total_chars=6)).set_color('#00FFFF')
+            tl1.scale(0.16)
+            tl1.move_to([-0.52, 0.37, 0])
+            nums.add(tl1)
+            
+            tl2 = Tex(format_number(logits[i, 1], total_chars=6)).set_color(YELLOW)
+            tl2.scale(0.16)
+            tl2.move_to([-0.52, 0.015, 0])
+            nums.add(tl2)
+            
+            tl3 = Tex(format_number(logits[i, 2], total_chars=6)).set_color(GREEN)
+            tl3.scale(0.16)  
+            tl3.move_to([-0.52, -0.335, 0])
+            nums.add(tl3)
+            
+            # Predictions
+            yhat1 = Tex(format_number(yhats[i, 0], total_chars=6)).set_color('#00FFFF')
+            yhat1.scale(0.16)
+            yhat1.move_to([0.22, 0.37, 0])
+            nums.add(yhat1)
+            
+            yhat2 = Tex(format_number(yhats[i, 1], total_chars=6)).set_color(YELLOW)
+            yhat2.scale(0.16)
+            yhat2.move_to([0.22, 0.015, 0])
+            nums.add(yhat2)
+            
+            yhat3 = Tex(format_number(yhats[i, 2], total_chars=6)).set_color(GREEN)
+            yhat3.scale(0.16)
+            yhat3.move_to([0.22, -0.335, 0])
+            nums.add(yhat3)
 
 
-        i=0
+        
+            def line_function_1(x): return weights[i,0] * x + weights[i,3]
+            line_1 = axes_1.get_graph(line_function_1, color='#00FFFF', x_range=[-12, 12])
+            arrow_tip_1 = get_arrow_tip(line_1, color='#00FFFF', scale=0.1)
 
-    
-        def line_function_1(x): return weights[i,0] * x + weights[i,3]
-        line_1 = axes_1.get_graph(line_function_1, color='#00FFFF', x_range=[-12, 12])
-        arrow_tip_1 = get_arrow_tip(line_1, color='#00FFFF', scale=0.1)
+            def line_function_2(x): return weights[i,1] * x + weights[i,4]
+            line_2 = axes_2.get_graph(line_function_2, color=YELLOW, x_range=[-12, 12])
+            arrow_tip_2 = get_arrow_tip(line_2, color=YELLOW, scale=0.1)
 
-        def line_function_2(x): return weights[i,1] * x + weights[i,4]
-        line_2 = axes_2.get_graph(line_function_2, color=YELLOW, x_range=[-12, 12])
-        arrow_tip_2 = get_arrow_tip(line_2, color=YELLOW, scale=0.1)
+            def line_function_3(x): return weights[i,2] * x + weights[i,5]
+            line_3 = axes_3.get_graph(line_function_3, color=GREEN, x_range=[-12, 12])
+            arrow_tip_3 = get_arrow_tip(line_3, color=GREEN, scale=0.1)
 
-        def line_function_3(x): return weights[i,2] * x + weights[i,5]
-        line_3 = axes_3.get_graph(line_function_3, color=GREEN, x_range=[-12, 12])
-        arrow_tip_3 = get_arrow_tip(line_3, color=GREEN, scale=0.1)
+            heatmaps=Group()
+            heatmap_yhat3=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_3.png')
+            heatmap_yhat3.scale([0.29, 0.28, 0.28])
+            heatmap_yhat3.move_to([0.96,0,0])
+            heatmap_yhat3.set_opacity(0.5)
+            heatmaps.add(heatmap_yhat3)
+
+            heatmap_yhat1=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_1.png')
+            heatmap_yhat1.scale([0.29, 0.28, 0.28])
+            heatmap_yhat1.move_to([0.96,0,0])
+            heatmap_yhat1.set_opacity(0.5)
+            heatmaps.add(heatmap_yhat1)
+
+            heatmap_yhat2=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_2.png')
+            heatmap_yhat2.scale([0.29, 0.28, 0.28])
+            heatmap_yhat2.move_to([0.96,0,0])
+            heatmap_yhat2.set_opacity(0.5)
+            heatmaps.add(heatmap_yhat2)
 
 
-
-
-        self.add(axes_1, line_1, arrow_tip_1)
-        self.add(axes_2, line_2, arrow_tip_2)
-        self.add(axes_3, line_3, arrow_tip_3)
+            self.add(axes_1, line_1, arrow_tip_1)
+            self.add(axes_2, line_2, arrow_tip_2)
+            self.add(axes_3, line_3, arrow_tip_3)
+            self.add(nums)
+            self.add(heatmaps)
+            self.wait(0.1)
 
 
 

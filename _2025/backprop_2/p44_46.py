@@ -307,8 +307,36 @@ class p45_sketch(InteractiveScene):
         # Ok maybe not actually? Let me try a standard manim axis...
 
         axes_1 = Axes(
-            x_range=[-18, 18, 1],
-            y_range=[-18, 18, 1],
+            x_range=[-15, 15, 1],
+            y_range=[-15, 15, 1],
+            width=0.32,
+            height=0.32,
+            axis_config={
+                "color": CHILL_BROWN,
+                "include_ticks": False,
+                "include_numbers": False,
+                "include_tip": True,
+                "stroke_width":3,
+                "tip_config": {"width":0.02, "length":0.02}
+                }
+        )
+        axes_2=Axes(
+            x_range=[-15, 15, 1],
+            y_range=[-15, 15, 1],
+            width=0.32,
+            height=0.32,
+            axis_config={
+                "color": CHILL_BROWN,
+                "include_ticks": False,
+                "include_numbers": False,
+                "include_tip": True,
+                "stroke_width":3,
+                "tip_config": {"width":0.02, "length":0.02}
+                }
+        )
+        axes_3=Axes(
+            x_range=[-15, 15, 1],
+            y_range=[-15, 15, 1],
             width=0.32,
             height=0.32,
             axis_config={
@@ -322,15 +350,33 @@ class p45_sketch(InteractiveScene):
         )
 
 
-        i=0
 
         axes_1.move_to([-0.95, 0.44, 0])
+        axes_2.move_to([-0.95, 0.0, 0])
+        axes_3.move_to([-0.95, -0.44, 0])
 
+
+        i=0
+
+    
         def line_function_1(x): return weights[i,0] * x + weights[i,3]
-        line = axes_1.get_graph(line_function_1, color='#00FFFF', x_range=[-15, 15])
-        arrow_tip=arrow_tip = get_arrow_tip(line, color='#00FFFF', scale=0.1)
+        line_1 = axes_1.get_graph(line_function_1, color='#00FFFF', x_range=[-12, 12])
+        arrow_tip_1 = get_arrow_tip(line_1, color='#00FFFF', scale=0.1)
 
-        self.add(axes_1, line, arrow_tip)
+        def line_function_2(x): return weights[i,1] * x + weights[i,4]
+        line_2 = axes_2.get_graph(line_function_2, color=YELLOW, x_range=[-12, 12])
+        arrow_tip_2 = get_arrow_tip(line_2, color=YELLOW, scale=0.1)
+
+        def line_function_3(x): return weights[i,2] * x + weights[i,5]
+        line_3 = axes_3.get_graph(line_function_3, color=GREEN, x_range=[-12, 12])
+        arrow_tip_3 = get_arrow_tip(line_3, color=GREEN, scale=0.1)
+
+
+
+
+        self.add(axes_1, line_1, arrow_tip_1)
+        self.add(axes_2, line_2, arrow_tip_2)
+        self.add(axes_3, line_3, arrow_tip_3)
 
 
 

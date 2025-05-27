@@ -3,6 +3,7 @@ sys.path.append('/Users/stephen/manim/videos/welch_assets')
 from welch_axes import *
 from functools import partial
 import numpy as np
+import torch
 
 CHILL_BROWN='#948979'
 YELLOW='#ffd35a'
@@ -135,7 +136,28 @@ class p44_v1(InteractiveScene):
         yhat3.move_to([0.22, -0.335, 0])
         self.add(yhat3)
 
+        #Ok let's shade some lines!
+        max_region_width=0.15
+        min_region_width=0.01
+        region_scaling=0.15
 
+        y_one_hot=torch.nn.functional.one_hot(torch.tensor(int(ys[i])),3).numpy()
+        dldh=yhats[i]-y_one_hot
+
+        rh1_width=np.clip(region_scaling*np.abs(dldh[0]), min_region_width, max_region_width)
+        rh1=Rectangle(0.425, rh1_width, stroke_width=0).set_color('#00FFFF').set_opacity(0.2)
+        rh1.move_to([-0.52, 0.37, 0])
+        self.add(rh1)
+
+        rh2_width=np.clip(region_scaling*np.abs(dldh[1]), min_region_width, max_region_width)
+        rh2=Rectangle(0.425, rh2_width, stroke_width=0).set_color(YELLOW).set_opacity(0.2)
+        rh2.move_to([-0.52, 0.015, 0])
+        self.add(rh2)
+
+        rh3_width=np.clip(region_scaling*np.abs(dldh[2]), min_region_width, max_region_width)
+        rh3=Rectangle(0.425, rh3_width, stroke_width=0).set_color(GREEN).set_opacity(0.2)
+        rh3.move_to([-0.52, -0.335, 0])
+        self.add(rh3)
 
 
         self.wait()

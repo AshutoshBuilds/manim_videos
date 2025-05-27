@@ -238,6 +238,105 @@ def get_grad_regions(i, ys, yhats, grads):
 
     return grad_regions
 
+def get_arrow_tip(line, color=None, scale=0.1, tip_position=1.0):
+    """
+    Add an arrow tip to the end of a line/curve.
+    
+    Args:
+        line: The line/curve object to add arrow to
+        color: Color of the arrow tip (defaults to line's color)
+        scale: Size of the arrow tip (default 0.1)
+        tip_position: Position along the line (0.0 to 1.0, default 1.0 for end)
+    
+    Returns:
+        The ArrowTip object
+    """
+    # Get the tip point and direction
+    tip_point = line.point_from_proportion(tip_position)
+    direction_point = line.point_from_proportion(tip_position - 0.05)
+    direction = tip_point - direction_point
+    
+    # Create and position arrow tip
+    arrow_tip = ArrowTip().scale(scale)
+    if color is None:
+        color = line.get_color()
+    arrow_tip.set_color(color)
+    arrow_tip.move_to(tip_point)
+    arrow_tip.rotate(angle_of_vector(direction))
+    
+    return arrow_tip
+
+
+class p45_sketch(InteractiveScene):
+    def construct(self):
+        '''
+        Ok so here i want to get the basic elements of the little linear models working
+        Then I can working on smoothly transition from ball and stick to linaer -> shouldn't be terrible
+        Before I do that I can work on some writing and decide if want to add any real time curves
+        Finally, the most difficult/important thing is what I build on this next - 
+        Brining 3 lines together, longitudes on bottom
+        Then exapnd to planes -> that should be interesting
+        Finally put over map, and morph smoothly to sofmax version - that should be interesting. 
+        '''
+        data=np.load(data_path+'/cities_1d_3.npy')
+        xs=data[:,:2]
+        ys=data[:,2]
+        weights=data[:,3:9]
+        grads=data[:,9:15]
+        logits=data[:,15:18]
+        yhats=data[:, 18:]
+
+
+        net_background=SVGMobject(svg_path+'/p44_background_2.svg') 
+        self.add(net_background)
+
+        self.frame.reorient(0, 0, 0, (-0.03, -0.02, 0.0), 1.88)
+        europe_map=ImageMobject(svg_path +'/map_cropped_one.png')
+        europe_map.scale(0.28)
+        europe_map.move_to([0.96,0,0])
+        self.add(europe_map)
+
+
+        #Alrighty, so I think this is where it makes sense to grab welch_axes??
+        # x_axis_1=WelchXAxis(x_min=-7, x_max=18, x_ticks=[], x_tick_height=0.15,        
+        #                     x_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=5)
+        # y_axis_1=WelchYAxis(y_min=-18, y_max=10, y_ticks=[], y_tick_width=0.15,        
+        #                   y_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=3)
+        # self.add(x_axis_1, y_axis_1)
+
+        # Ok maybe not actually? Let me try a standard manim axis...
+
+        axes_1 = Axes(
+            x_range=[-18, 18, 1],
+            y_range=[-18, 18, 1],
+            width=0.32,
+            height=0.32,
+            axis_config={
+                "color": CHILL_BROWN,
+                "include_ticks": False,
+                "include_numbers": False,
+                "include_tip": True,
+                "stroke_width":3,
+                "tip_config": {"width":0.02, "length":0.02}
+                }
+        )
+
+
+        i=0
+
+        axes_1.move_to([-0.95, 0.44, 0])
+
+        def line_function_1(x): return weights[i,0] * x + weights[i,3]
+        line = axes_1.get_graph(line_function_1, color='#00FFFF', x_range=[-15, 15])
+        arrow_tip=arrow_tip = get_arrow_tip(line, color='#00FFFF', scale=0.1)
+
+        self.add(axes_1, line, arrow_tip)
+
+
+
+
+        self.wait()
+        self.embed()
 
 
 class p44_v2(InteractiveScene):

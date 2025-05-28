@@ -309,8 +309,8 @@ class p46_sketch(InteractiveScene):
                 "include_ticks": False,
                 "include_numbers": False,
                 "include_tip": True,
-                "stroke_width":3,
-                "tip_config": {"width":0.02, "length":0.02}
+                "stroke_width":2,
+                "tip_config": {"width":0.015, "length":0.015}
                 }
         )
         axes_2=Axes(
@@ -323,8 +323,8 @@ class p46_sketch(InteractiveScene):
                 "include_ticks": False,
                 "include_numbers": False,
                 "include_tip": True,
-                "stroke_width":3,
-                "tip_config": {"width":0.02, "length":0.02}
+                "stroke_width":2,
+                "tip_config": {"width":0.015, "length":0.015}
                 }
         )
         axes_3=Axes(
@@ -337,8 +337,8 @@ class p46_sketch(InteractiveScene):
                 "include_ticks": False,
                 "include_numbers": False,
                 "include_tip": True,
-                "stroke_width":3,
-                "tip_config": {"width":0.02, "length":0.02}
+                "stroke_width":2,
+                "tip_config": {"width":0.015, "length":0.015}
                 }
         )
 
@@ -348,7 +348,7 @@ class p46_sketch(InteractiveScene):
         self.add(axes_1, axes_2, axes_3)
 
         # for i in range(len(xs)):
-        i=0
+        i=200 #0
             
         # if i>0:
         #     self.remove(line_1, arrow_tip_1)
@@ -433,16 +433,16 @@ class p46_sketch(InteractiveScene):
 
     
         def line_function_1(x): return weights[i,0] * x + weights[i,3]
-        line_1 = axes_1.get_graph(line_function_1, color='#00FFFF', x_range=[-14, 14])
-        arrow_tip_1 = get_arrow_tip(line_1, color='#00FFFF', scale=0.1)
+        line_1 = axes_1.get_graph(line_function_1, stroke_width=3, color='#00FFFF', x_range=[-14, 14])
+        arrow_tip_1 = get_arrow_tip(line_1, color='#00FFFF', scale=0.08)
 
         def line_function_2(x): return weights[i,1] * x + weights[i,4]
-        line_2 = axes_2.get_graph(line_function_2, color=YELLOW, x_range=[-14, 14])
-        arrow_tip_2 = get_arrow_tip(line_2, color=YELLOW, scale=0.1)
+        line_2 = axes_2.get_graph(line_function_2, stroke_width=3, color=YELLOW, x_range=[-14, 14])
+        arrow_tip_2 = get_arrow_tip(line_2, color=YELLOW, scale=0.08)
 
         def line_function_3(x): return weights[i,2] * x + weights[i,5]
-        line_3 = axes_3.get_graph(line_function_3, color=GREEN, x_range=[-14, 14])
-        arrow_tip_3 = get_arrow_tip(line_3, color=GREEN, scale=0.1)
+        line_3 = axes_3.get_graph(line_function_3, stroke_width=3, color=GREEN, x_range=[-14, 14])
+        arrow_tip_3 = get_arrow_tip(line_3, color=GREEN, scale=0.08)
 
         heatmaps=Group()
         heatmap_yhat3=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_3.png')
@@ -506,17 +506,64 @@ class p46_sketch(InteractiveScene):
         self.add(arrow_tip_2)
         self.wait()
 
-        self.play(line_1.animate.set_opacity(0.5),
-                  line_2.animate.set_opacity(0.5),
-                  line_3.animate.set_opacity(0.5),
-                  arrow_tip_1.animate.scale(0.7).set_opacity(0.5),
-                  arrow_tip_2.animate.scale(0.7).set_opacity(0.5),
-                  arrow_tip_3.animate.scale(0.7).set_opacity(0.5),
-                  run_time=0.5
-              )
+        # Originally i was thinking it would clarify things if i turned down the opacity on the lines, I think it actually makes thing more confusion though.
+        # Not sure wheniff I'll be able to scale arrow heads now -> one option would be to just start with them at a lower opacity!
+        # self.play(line_1.animate.set_opacity(0.5),
+        #           line_2.animate.set_opacity(0.5),
+        #           line_3.animate.set_opacity(0.5),
+        #           arrow_tip_1.animate.scale(0.7).set_opacity(0.5),
+        #           arrow_tip_2.animate.scale(0.7).set_opacity(0.5),
+        #           arrow_tip_3.animate.scale(0.7).set_opacity(0.5),
+        #           run_time=1.0
+        #       )
+        # self.wait()
+
+
+        #Ok so now we ad in overlays showing mapping
+        overlays_1=SVGMobject(svg_path+'/p46_overlays_1.svg') 
+        overlays_2=SVGMobject(svg_path+'/p46_overlays_2.svg') 
+
+        overlays_1.scale(0.57)
+        overlays_1.move_to([-0.64, 0.003, 0])
+        self.add(overlays_1[1:])
+        #Ah would be cool to bring back up th opacity on h1 and y hat 1 when i mention them in the script!
+        nums[0].set_opacity(1.0) #oes it still make sense to turn this down in the first place?
+        nums[7].set_opacity(1.0) #Will need to fiddle with timing a bit, turning up opacity on 2.34
         self.wait()
 
-        #Ah would be cool to bring back up th opacity on h1 and y hat 1 when i mention them in the script!
+
+        #Then run training in this view, with city labels on axis. 
+
+        self.play(line_1.animate.set_opacity(1.0),
+                  line_2.animate.set_opacity(1.0),
+                  line_3.animate.set_opacity(1.0),
+                  arrow_tip_1.animate.set_opacity(1.0),
+                  arrow_tip_2.animate.set_opacity(1.0),
+                  arrow_tip_3.animate.set_opacity(1.0),
+                  run_time=1.0
+              )
+        self.remove(arrow_tip_2) #Occlusions
+        self.add(arrow_tip_2)
+        self.wait()
+
+        # So i think for the training run I want to zoom in even further, and maybe everything fades to black? 
+        # Put these together into a single a move, and consider running trianing while camera moves
+        # That will either be overwhelming or cool, definitely worht a try!
+        self.frame.reorient(0, 0, 0, (-1.02, 0.02, 0.0), 0.62)
+        self.play(*[net_background[o].animate.set_opacity(0.0) for o in background_elements_to_keep])
+        self.play(nums[0].animate.set_opacity(0.0))
+        self.play(nums[7:].animate.set_opacity(0.0))
+        self.play(overlays_1[1:].animate.set_opacity(0.0)) #It might be nice to bring along the +/-10s with the camera move, we'll see. 
+
+        #Now add new overlays as we land the camera move and fade outs. 
+        overlays_2.scale(0.30)
+        overlays_2.move_to([-1.02, 0.025, 0])
+        self.add(overlays_2[1:])
+
+        self.wait()
+
+
+        
 
 
 

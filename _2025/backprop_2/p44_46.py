@@ -1159,6 +1159,7 @@ class p46_sketch(InteractiveScene):
         # self.play(ReplacementTransform(line_1, softmax_curve_1), run_time=3)
 
         self.wait()
+        self.embed()
 
 
 

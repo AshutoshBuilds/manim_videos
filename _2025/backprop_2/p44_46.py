@@ -562,10 +562,51 @@ class p46_sketch(InteractiveScene):
 
         self.wait()
 
+        # Ok this looks pretty good, major components of the sketch are coming together. 
+        # Now, the most complex transition, maybe in the whole video -> but it's going to be dope,
+        # is going from this 2d view to a 3d planes over the map view, and then morphing these guys into softmax curvy planes. 
+        # It's a quick line in the script (might exapnd, we'll see) - but I think it's pretty important pedagogically 
+        # I want to make it really visceral that we're just fitting planes, because this as about to break when we go to Barlay Hertog
+        # Now, how the FUCK an I going to turn my lines into planes, my a-axis into the map, and now that I'm looking at it, I really think the cool move here
+        # is to have the little points and ideally the labels for each city move to their locations on the map!
+        # Do I might have to play that whole game again that I did last time were where all the 2d stuff has actually been rotated up
+        # Unclear to me at point I need to switch to this viewpoint -> might be all the way through -> well see. 
+        # Let me start though by rotating what I have. 
 
-        
+        stuff_to_rotate=VGroup(axes_2, line_1, line_2, line_3, arrow_tip_1, arrow_tip_2, arrow_tip_3)
+        stuff_to_rotate.rotate(90*DEGREES, [1, 0, 0])
+        .rotate(90*DEGREES, [1, 0, 0])
+        self.frame.reorient(0, 90, 0, (-1.0, 0.02, -0.0), 0.62)
+        self.wait()
+
+        # Ok so the move I'm kinda seeing in my had is camera pans to the left, and the planes and map "grow/exapnd out of the back of the lines"
+        # The map could also just be a reveal, right? and then points move over?
+        # The reveal is simple, let me try that first. 
+
+        self.remove(heatmaps)
+        # self.remove(europe_map) #I could move over the one i already have, but that seems like more complexity than I need. Well shit it makes ordering weird if I reimport actually? 
+        # europe_map_2=ImageMobject(svg_path +'/map_cropped_one.png')
+        # europe_map_2.scale(0.1)
+        # europe_map_2.move_to([-1, 0, 0])
+        # self.remove(stuff_to_rotate, overlays_2)
+        # self.add(europe_map_2)
+        # self.add(stuff_to_rotate, overlays_2)
+
+        europe_map.scale(0.4)
+        europe_map.move_to([-1, 0.23, 0]) #Not going to fine tune too much here until I have the final map. 
+
+        self.frame.reorient(-30, 59, 0, (-1.02, 0.04, -0.0), 0.62) #So this can be a cool pan to the side/reveal. 
+
+        ## Hmm make planes or dots/maybe labels next? 
+        ## Let's take a rough crack at dots/labels. 
+        ## Most obvous thing to do here is to just move my 2d labels, this might look fine 
+        ## I'm tempted to change the grouping/layering first though in illustrator instead of sifting through all the elements manually. 
+        ## Yeah let me do that next
+        # self.remove(overlays_2[:30])
 
 
+
+        self.wait()
 
 
 

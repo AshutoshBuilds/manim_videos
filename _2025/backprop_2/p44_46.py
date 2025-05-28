@@ -383,6 +383,27 @@ def create_plane_from_line_endpoints(line, color, depth=3.0, y_extension=2.0):
 
 
 
+def create_softmax_surfaces(weights, colors=['#00FFFF', YELLOW, GREEN]):
+    """
+    Create three softmax surfaces for the three classes
+    """
+    surfaces = []
+    for i, color in enumerate(colors):
+        surface = SoftmaxCurveSurface(
+            weights, 
+            class_index=i,
+            color=color,
+            x_range=(-14, 14),
+            z_range=(-3, 3),
+            shading=(0.2, 0.2, 0.6)
+        )
+        surface.set_opacity(0.4)
+        surfaces.append(surface)
+    
+    return surfaces
+
+
+
 class p46_sketch(InteractiveScene):
     def construct(self):
         '''
@@ -782,13 +803,68 @@ class p46_sketch(InteractiveScene):
         self.play(Transform(plane_3_zero, plane_3_full), run_time=2)
         self.wait()
 
+        # Ok, now maybe the scariest part -> how the hell do I turn these lines and planes into softmax outputs?
+        # Ok going straight to the surface with Claude didn't quite pan out - let me try to get the line working first, then will try surface.
+
+        # x_values = np.linspace(-14, 14, 100)
+        # logit_1 = weights[i][0] * x_values + weights[i][3]
+        # probs_1=torch.nn.Softmax(0)(torch.tensor(logit_1))
+
+
+        def softmax_function(x):
+            # Compute softmax for this specific x value
+            logit_1 = weights[i][0] * x + weights[i][3]
+            logit_2 = weights[i][1] * x + weights[i][4] 
+            logit_3 = weights[i][2] * x + weights[i][5]
+
+            logits = np.array([logit_1, logit_2, logit_3])
+            exp_logits = np.exp(logits - np.max(logits))
+            probabilities = exp_logits / np.sum(exp_logits)
+            return softmax_viz_scale*probabilities[neuron_index]
+
+        neuron_index=0
+        softmax_viz_scale=5.0
+        softmax_curve_1 = axes_2.get_graph(
+            softmax_function,
+            x_range=(-14, 14),
+            color='#00FFFF',
+            stroke_width=3
+        )
+
+        # self.add(softmax_curve_1) 
+
+        self.wait()
+        # self.play(Transform(line_1, softmax_curve_1), run_time=3)
+        # self.play(ReplacementTransform(line_1, softmax_curve_1), run_time=3) #No dice
+        # Explicitly set properties to match line
+        softmax_curve_1.set_fill(opacity=0)
+        softmax_curve_1.set_stroke(color='#00FFFF', width=3)
+        
+        # Make sure original line also has no fill
+        line_1.set_fill(opacity=0)
+        line_1.set_stroke(color='#00FFFF', width=3)
+        
+        # Use ReplacementTransform
+        self.play(ReplacementTransform(line_1, softmax_curve_1), run_time=3)
 
 
 
 
 
+        # def create_matching_softmax_curve():
+        #     softmax_curve_1 = axes_2.get_graph(
+        #         softmax_function,
+        #         x_range=(-14, 14),
+        #         color='#00FFFF',
+        #         stroke_width=3
+        #     )
+        #     # Explicitly set no fill
+        #     softmax_curve_1.set_fill(opacity=0)
+        #     softmax_curve_1.set_stroke(color='#00FFFF', width=3)
+        #     return softmax_curve_1
 
-
+        # softmax_curve_1 = create_matching_softmax_curve()
+        # self.play(ReplacementTransform(line_1, softmax_curve_1), run_time=3)
 
 
         # self.play(top_plot_group.animate.scale(1.5).move_to([-1.0, 0.025, 0]),

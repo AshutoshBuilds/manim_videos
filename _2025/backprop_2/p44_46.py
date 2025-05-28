@@ -575,7 +575,7 @@ class p46_sketch(InteractiveScene):
 
         stuff_to_rotate=VGroup(axes_2, line_1, line_2, line_3, arrow_tip_1, arrow_tip_2, arrow_tip_3)
         stuff_to_rotate.rotate(90*DEGREES, [1, 0, 0])
-        .rotate(90*DEGREES, [1, 0, 0])
+        overlays_2.rotate(90*DEGREES, [1, 0, 0])
         self.frame.reorient(0, 90, 0, (-1.0, 0.02, -0.0), 0.62)
         self.wait()
 
@@ -604,9 +604,29 @@ class p46_sketch(InteractiveScene):
         ## Yeah let me do that next
         # self.remove(overlays_2[:30])
 
+        # self.remove(overlays_2[1:18]) #Madrid label
+        # self.remove(overlays_2[18:33] #Paris label
+        # self.remove(overlays_2[33:50]) #Berlin label
+        madrid_label=overlays_2[1:18]
+        madrid_center=madrid_label.get_center()
+        madrid_label.move_to([-1.07489443,  0.1     , -0.06620278])
 
+        paris_label=overlays_2[18:33]
+        paris_label.move_to([-0.98353332,  0.3     , -0.06596944])
+
+        berlin_label=overlays_2[33:50]
+        berlin_label.move_to([-0.83665553,  0.4     , -0.06464722])
+
+        # Ok i can animated those moves later depending on how stuff shakes out. 
+        # Now, how do I extend my lintes to be planes?
 
         self.wait()
+
+
+
+
+
+
 
 
 

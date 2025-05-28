@@ -1092,14 +1092,14 @@ class p46_sketch(InteractiveScene):
             probabilities = exp_logits / np.sum(exp_logits)
             return softmax_viz_scale*probabilities[neuron_index]
 
-        neuron_index=0
+        
         softmax_viz_scale=5.0
-        softmax_curve_1 = axes_2.get_graph(
-            softmax_function,
-            x_range=(-14, 14),
-            color='#00FFFF',
-            stroke_width=3
-        )
+        neuron_index=0
+        softmax_curve_1 = axes_2.get_graph(softmax_function, x_range=(-14, 14), color='#00FFFF', stroke_width=3)
+        neuron_index=1
+        softmax_curve_2 = axes_2.get_graph(softmax_function, x_range=(-14, 14), color=YELLOW, stroke_width=3)
+        neuron_index=2
+        softmax_curve_3 = axes_2.get_graph(softmax_function, x_range=(-14, 14), color=GREEN, stroke_width=3)      
 
         # self.add(softmax_curve_1) 
 
@@ -1109,33 +1109,50 @@ class p46_sketch(InteractiveScene):
         # Explicitly set properties to match line
         softmax_curve_1.set_fill(opacity=0)
         softmax_curve_1.set_stroke(color='#00FFFF', width=3)
+        softmax_curve_2.set_fill(opacity=0)
+        softmax_curve_2.set_stroke(color=YELLOW, width=3)
+        softmax_curve_3.set_fill(opacity=0)
+        softmax_curve_3.set_stroke(color=GREEN, width=3)
         
         # Make sure original line also has no fill
         line_1.set_fill(opacity=0)
         line_1.set_stroke(color='#00FFFF', width=3)
+        line_2.set_fill(opacity=0)
+        line_2.set_stroke(color=YELLOW, width=3)
+        line_3.set_fill(opacity=0)
+        line_3.set_stroke(color=GREEN, width=3)
         
-        softmax_surface_1 = create_surface_from_curve_simple(
-            curve=softmax_curve_1,
-            y_extension=0.5,  # Match your plane y_extension
-            color='#00FFFF'
-        )
+        softmax_surface_1 = create_surface_from_curve_simple(curve=softmax_curve_1, y_extension=0.5)   # Match your plane y_extension color='#00FFFF'
+        softmax_surface_2 = create_surface_from_curve_simple(curve=softmax_curve_2, y_extension=0.5)
+        softmax_surface_3 = create_surface_from_curve_simple(curve=softmax_curve_3, y_extension=0.5)
 
-        matching_plane, matching_surface = create_matching_plane_and_surface(
-            line_1, softmax_curve_1, y_extension=0.5, color='#00FFFF'
-        )
+
+        matching_plane_1, matching_surface_1 = create_matching_plane_and_surface(line_1, softmax_curve_1, y_extension=0.5, color='#00FFFF')
+        matching_plane_2, matching_surface_2 = create_matching_plane_and_surface(line_2, softmax_curve_2, y_extension=0.5, color=YELLOW)
+        matching_plane_3, matching_surface_3 = create_matching_plane_and_surface(line_3, softmax_curve_3, y_extension=0.5, color=GREEN)
 
         self.wait()
 
 
-        self.remove(plane_1_zero)
-        self.add(matching_plane)
+        self.remove(plane_1_zero, plane_2_zero, plane_3_zero)
+        self.add(matching_plane_1, matching_plane_2, matching_plane_3)
+        self.remove(arrow_tip_1, arrow_tip_2, arrow_tip_3)
 
 
-        
-        self.play(Transform(matching_plane, matching_surface), 
+        self.wait()
+        self.play(Transform(matching_plane_1, matching_surface_1), 
                   ReplacementTransform(line_1, softmax_curve_1),  
-                  FadeOut(arrow_tip_1),
-                  run_time=3)
+                  Transform(matching_plane_2, matching_surface_2), 
+                  ReplacementTransform(line_2, softmax_curve_2), 
+                  Transform(matching_plane_3, matching_surface_3), 
+                  ReplacementTransform(line_3, softmax_curve_3), 
+                  run_time=3)   
+
+        self.wait()
+
+        # self.play(Transform(matching_plane_1, matching_surface_1), 
+        #           ReplacementTransform(line_1, softmax_curve_1),  
+        #           run_time=3)
 
 
         # Use ReplacementTransform

@@ -382,25 +382,295 @@ def create_plane_from_line_endpoints(line, color, depth=3.0, y_extension=2.0):
     )
 
 
-
-def create_softmax_surfaces(weights, colors=['#00FFFF', YELLOW, GREEN]):
+def sample_points_from_curve(curve, num_points=128):
     """
-    Create three softmax surfaces for the three classes
-    """
-    surfaces = []
-    for i, color in enumerate(colors):
-        surface = SoftmaxCurveSurface(
-            weights, 
-            class_index=i,
-            color=color,
-            x_range=(-14, 14),
-            z_range=(-3, 3),
-            shading=(0.2, 0.2, 0.6)
-        )
-        surface.set_opacity(0.4)
-        surfaces.append(surface)
+    Sample points from an existing manim curve object
     
-    return surfaces
+    Args:
+        curve: The manim curve object (like your softmax_curve_1)
+        num_points: Number of points to sample along the curve
+    
+    Returns:
+        Array of 3D points sampled from the curve
+    """
+    points = []
+    for i in range(num_points):
+        # Get parameter from 0 to 1 along the curve
+        t = i / (num_points - 1)
+        # Get the 3D point at this parameter
+        point = curve.point_from_proportion(t)
+        points.append(point)
+    
+    return np.array(points)
+
+def create_surface_from_curve_simple(curve, y_extension=0.5, color='#00FFFF'):
+    """
+    Simpler approach - sample curve points and create surface directly
+    """
+    # Get curve points
+    curve_points = sample_points_from_curve(curve, num_points=32)
+    
+    # Create extended points (top edge of surface)
+    extended_points = curve_points + np.array([0, y_extension, 0])
+    
+    class SimpleCurveSurface(Surface):
+        def __init__(self, bottom_points, top_points, **kwargs):
+            self.bottom_points = bottom_points
+            self.top_points = top_points
+            self.num_points = len(bottom_points)
+            
+            super().__init__(
+                u_range=(0, 1),  # Along curve
+                v_range=(0, 1),  # From bottom to top
+                resolution=(self.num_points, 8),
+                **kwargs
+            )
+        
+        def uv_func(self, u, v):
+            # Find position along curve using u
+            point_index = u * (self.num_points - 1)
+            index_low = int(np.floor(point_index))
+            index_high = min(index_low + 1, self.num_points - 1)
+            t = point_index - index_low
+            
+            # Interpolate bottom edge point
+            if index_low == index_high:
+                bottom_point = self.bottom_points[index_low]
+                top_point = self.top_points[index_low]
+            else:
+                bottom_point = (1-t) * self.bottom_points[index_low] + t * self.bottom_points[index_high]
+                top_point = (1-t) * self.top_points[index_low] + t * self.top_points[index_high]
+            
+            # Interpolate between bottom and top using v
+            final_point = (1-v) * bottom_point + v * top_point
+            
+            return final_point
+    
+    surface = SimpleCurveSurface(
+        bottom_points=curve_points,
+        top_points=extended_points,
+        color=color,
+        shading=(0.2, 0.2, 0.6)
+    )
+    surface.set_opacity(0.3)
+    return surface
+
+def create_matching_plane_and_surface(line, curve, y_extension=0.5, color='#00FFFF'):
+    """
+    Create plane and surface with matching resolutions for smooth transformation
+    """
+    # Sample points from curve for consistent structure
+    curve_points = sample_points_from_curve(curve, num_points=32)
+    
+    # Create plane with same resolution as surface
+    class MatchingPlane(Surface):
+        def __init__(self, line_start, line_end, y_extension, **kwargs):
+            self.line_start = line_start
+            self.line_end = line_end
+            self.y_extension = y_extension
+            
+            super().__init__(
+                u_range=(0, 1),
+                v_range=(0, 1),
+                resolution=(32, 8),  # Match surface resolution
+                **kwargs
+            )
+        
+        def uv_func(self, u, v):
+            # u: along the line
+            line_point = (1-u) * self.line_start + u * self.line_end
+            # v: extend upward
+            extended_point = line_point + np.array([0, v * self.y_extension, 0])
+            return extended_point
+    
+    # Create surface with same resolution
+    class MatchingSurface(Surface):
+        def __init__(self, curve_points, y_extension, **kwargs):
+            self.curve_points = curve_points
+            self.y_extension = y_extension
+            self.num_points = len(curve_points)
+            
+            super().__init__(
+                u_range=(0, 1),
+                v_range=(0, 1),
+                resolution=(32, 8),  # Same as plane
+                **kwargs
+            )
+        
+        def uv_func(self, u, v):
+            # Interpolate along curve points
+            point_index = u * (self.num_points - 1)
+            index_low = int(np.floor(point_index))
+            index_high = min(index_low + 1, self.num_points - 1)
+            t = point_index - index_low
+            
+            if index_low == index_high:
+                curve_point = self.curve_points[index_low]
+            else:
+                curve_point = (1-t) * self.curve_points[index_low] + t * self.curve_points[index_high]
+            
+            # Extend upward
+            extended_point = curve_point + np.array([0, v * self.y_extension, 0])
+            return extended_point
+    
+    # Create both objects
+    plane = MatchingPlane(
+        line.get_start(), line.get_end(), y_extension,
+        color=color, shading=(0.2, 0.2, 0.6)
+    )
+    
+    surface = MatchingSurface(
+        curve_points, y_extension,
+        color=color, shading=(0.2, 0.2, 0.6)
+    )
+    
+    plane.set_opacity(0.3)
+    surface.set_opacity(0.3)
+    
+    return plane, surface
+
+# def debug_line_and_curve_points(line, curve):
+#     """Debug function to see the actual endpoints"""
+#     line_start = line.get_start()
+#     line_end = line.get_end()
+    
+#     curve_start = curve.get_start()
+#     curve_end = curve.get_end()
+    
+#     print("Line endpoints:")
+#     print(f"  Start: {line_start}")
+#     print(f"  End: {line_end}")
+    
+#     print("Curve endpoints:")
+#     print(f"  Start: {curve_start}")
+#     print(f"  End: {curve_end}")
+    
+#     return line_start, line_end, curve_start, curve_end
+
+# def create_matching_plane_and_surface_fixed(line, curve, y_extension=0.5, color='#00FFFF'):
+#     """
+#     Create plane and surface with matching resolutions, ensuring plane uses LINE endpoints
+#     """
+#     # Debug - let's see what we're working with
+#     line_start, line_end, curve_start, curve_end = debug_line_and_curve_points(line, curve)
+    
+#     # Sample points from curve for surface structure
+#     curve_points = sample_points_from_curve(curve, num_points=32)
+    
+#     # Create plane using ONLY the line endpoints (completely ignore curve for plane)
+#     class LinearPlane(Surface):
+#         def __init__(self, start_point, end_point, y_extension, **kwargs):
+#             self.start_point = start_point.copy()  # Make sure we copy
+#             self.end_point = end_point.copy()
+#             self.y_extension = y_extension
+            
+#             super().__init__(
+#                 u_range=(0, 1),
+#                 v_range=(0, 1),
+#                 resolution=(32, 8),
+#                 **kwargs
+#             )
+        
+#         def uv_func(self, u, v):
+#             # u=0 should give start_point, u=1 should give end_point
+#             line_point = self.start_point + u * (self.end_point - self.start_point)
+#             # v=0 should be on the line, v=1 should be extended upward
+#             extended_point = line_point + v * np.array([0, self.y_extension, 0])
+#             return extended_point
+    
+#     # Create surface using curve points
+#     class CurvedSurface(Surface):
+#         def __init__(self, curve_points, y_extension, **kwargs):
+#             self.curve_points = curve_points
+#             self.y_extension = y_extension
+#             self.num_points = len(curve_points)
+            
+#             super().__init__(
+#                 u_range=(0, 1),
+#                 v_range=(0, 1),
+#                 resolution=(32, 8),
+#                 **kwargs
+#             )
+        
+#         def uv_func(self, u, v):
+#             # Interpolate along curve points
+#             point_index = u * (self.num_points - 1)
+#             index_low = int(np.floor(point_index))
+#             index_high = min(index_low + 1, self.num_points - 1)
+#             t = point_index - index_low
+            
+#             if index_low == index_high:
+#                 curve_point = self.curve_points[index_low]
+#             else:
+#                 curve_point = (1-t) * self.curve_points[index_low] + t * self.curve_points[index_high]
+            
+#             # Extend upward
+#             extended_point = curve_point + v * np.array([0, self.y_extension, 0])
+#             return extended_point
+    
+#     # Create both objects
+#     plane = LinearPlane(
+#         line_start, line_end, y_extension,
+#         color=color, shading=(0.2, 0.2, 0.6)
+#     )
+    
+#     surface = CurvedSurface(
+#         curve_points, y_extension,
+#         color=color, shading=(0.2, 0.2, 0.6)
+#     )
+    
+#     plane.set_opacity(0.3)
+#     surface.set_opacity(0.3)
+    
+#     print("Created plane and surface - plane should match original line!")
+    
+#     return plane, surface
+    
+#     # Create surface with same resolution
+#     class MatchingSurface(Surface):
+#         def __init__(self, curve_points, y_extension, **kwargs):
+#             self.curve_points = curve_points
+#             self.y_extension = y_extension
+#             self.num_points = len(curve_points)
+            
+#             super().__init__(
+#                 u_range=(0, 1),
+#                 v_range=(0, 1),
+#                 resolution=(32, 8),  # Same as plane
+#                 **kwargs
+#             )
+        
+#         def uv_func(self, u, v):
+#             # Interpolate along curve points
+#             point_index = u * (self.num_points - 1)
+#             index_low = int(np.floor(point_index))
+#             index_high = min(index_low + 1, self.num_points - 1)
+#             t = point_index - index_low
+            
+#             if index_low == index_high:
+#                 curve_point = self.curve_points[index_low]
+#             else:
+#                 curve_point = (1-t) * self.curve_points[index_low] + t * self.curve_points[index_high]
+            
+#             # Extend upward
+#             extended_point = curve_point + np.array([0, v * self.y_extension, 0])
+#             return extended_point
+    
+#     # Create both objects
+#     plane = MatchingPlane(
+#         line.get_start(), line.get_end(), y_extension,
+#         color=color, shading=(0.2, 0.2, 0.6)
+#     )
+    
+#     surface = MatchingSurface(
+#         curve_points, y_extension,
+#         color=color, shading=(0.2, 0.2, 0.6)
+#     )
+    
+#     plane.set_opacity(0.3)
+#     surface.set_opacity(0.3)
+    
+#     return plane, surface
 
 
 
@@ -844,11 +1114,63 @@ class p46_sketch(InteractiveScene):
         line_1.set_fill(opacity=0)
         line_1.set_stroke(color='#00FFFF', width=3)
         
+        softmax_surface_1 = create_surface_from_curve_simple(
+            curve=softmax_curve_1,
+            y_extension=0.5,  # Match your plane y_extension
+            color='#00FFFF'
+        )
+
+        matching_plane, matching_surface = create_matching_plane_and_surface(
+            line_1, softmax_curve_1, y_extension=0.5, color='#00FFFF'
+        )
+
+        self.wait()
+
+
+        self.remove(plane_1_zero)
+        self.add(matching_plane)
+
+
+        
+        self.play(Transform(matching_plane, matching_surface), 
+                  ReplacementTransform(line_1, softmax_curve_1),  
+                  FadeOut(arrow_tip_1),
+                  run_time=3)
+
+
         # Use ReplacementTransform
-        self.play(ReplacementTransform(line_1, softmax_curve_1), run_time=3)
+        # self.play(ReplacementTransform(line_1, softmax_curve_1), run_time=3)
+
+        self.wait()
 
 
 
+
+        # self.wait()
+        # self.add(softmax_surface_1)
+        # self.play(ReplacementTransform(plane_1_full, softmax_surface_1), run_time=3) #Eh? Negativo. 
+
+
+        # matching_plane, matching_surface = create_matching_plane_and_surface(
+        #     line_1, softmax_curve_1, y_extension=0.5, color='#00FFFF'
+        # )
+
+        # matching_plane, matching_surface = create_matching_plane_and_surface_fixed(
+        #     line_1, softmax_curve_1, y_extension=0.5, color='#00FFFF'
+        # )
+
+
+        # self.wait()
+
+        # self.remove(plane_1_full)
+        
+        # self.remove(plane_1_zero)
+        
+        # self.add(matching_plane)
+
+        # self.play(Transform(matching_plane, matching_surface), run_time=3)
+
+        # self.wait()
 
 
         # def create_matching_softmax_curve():

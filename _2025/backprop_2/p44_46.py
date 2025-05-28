@@ -737,21 +737,50 @@ class p46_sketch(InteractiveScene):
         # Ok i can animated those moves later depending on how stuff shakes out. 
         # Now, how do I extend my lintes to be planes?
         # Create planes from your existing lines
-        plane_1 = create_plane_from_line_endpoints(line_1, '#00FFFF', depth=2.0, y_extension=0.5)
-        plane_2 = create_plane_from_line_endpoints(line_2, YELLOW, depth=2.0, y_extension=0.5)
-        plane_3 = create_plane_from_line_endpoints(line_3, GREEN, depth=2.0, y_extension=0.5)
-        plane_1.set_opacity(0.3)
-        plane_2.set_opacity(0.3)
-        plane_3.set_opacity(0.3)
+        # plane_1 = create_plane_from_line_endpoints(line_1, '#00FFFF', depth=2.0, y_extension=0.5)
+        # plane_2 = create_plane_from_line_endpoints(line_2, YELLOW, depth=2.0, y_extension=0.5)
+        # plane_3 = create_plane_from_line_endpoints(line_3, GREEN, depth=2.0, y_extension=0.5)
+        # plane_1.set_opacity(0.3)
+        # plane_2.set_opacity(0.3)
+        # plane_3.set_opacity(0.3)
 
-        self.add(plane_1, plane_2, plane_3)
+        # self.add(plane_1, plane_2, plane_3)
+
+        #Ok dope, basic planes are working -> my gut here is that we'll want to actually lose the city labels - I'll test when I come through on the next pass. 
+        #Now I do think animating these planes growing "out of the lines" is pretty helpful/important - let me take a crack at that now. 
+        # Can i just like scale the plane around the arrow axis and then have to animate/scale out?
+        self.frame.reorient(11, 60, 0, (-0.98, 0.06, 0.02), 0.62)
 
 
+        plane_1_zero = create_plane_from_line_endpoints(line_1, '#00FFFF', y_extension=0.01)
+        plane_1_full = create_plane_from_line_endpoints(line_1, '#00FFFF', y_extension=0.5)
+        plane_1_zero.set_opacity(0.3)
+        plane_1_full.set_opacity(0.3)
 
         self.wait()
+        self.play(Transform(plane_1_zero, plane_1_full), run_time=2)
+        self.wait()
+
+        #Nice that works! I can noodle a bit, but I think i like the idea of them coming in sequentially. Might work better with some script tweaks - no big deal. 
 
 
+        plane_2_zero = create_plane_from_line_endpoints(line_2, YELLOW, y_extension=0.01)
+        plane_2_full = create_plane_from_line_endpoints(line_2, YELLOW, y_extension=0.5)
+        plane_2_zero.set_opacity(0.3)
+        plane_2_full.set_opacity(0.3)
 
+        self.wait()
+        self.play(Transform(plane_2_zero, plane_2_full), run_time=2)
+        self.wait()
+
+        plane_3_zero = create_plane_from_line_endpoints(line_3, GREEN, y_extension=0.01)
+        plane_3_full = create_plane_from_line_endpoints(line_3, GREEN, y_extension=0.5)
+        plane_3_zero.set_opacity(0.3)
+        plane_3_full.set_opacity(0.3)
+
+        self.wait()
+        self.play(Transform(plane_3_zero, plane_3_full), run_time=2)
+        self.wait()
 
 
 

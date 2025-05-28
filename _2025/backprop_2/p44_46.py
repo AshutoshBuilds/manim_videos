@@ -265,6 +265,123 @@ def get_arrow_tip(line, color=None, scale=0.1, tip_position=1.0):
     
     return arrow_tip
 
+# Create planes from line endpoints, extending only in positive y direction
+
+def create_plane_from_line_endpoints(line, color, depth=3.0, y_extension=2.0):
+    """
+    Create a plane from the endpoints of an existing line object.
+    The plane extends in positive y direction and in z direction (depth).
+    
+    Args:
+        line: The existing line object
+        color: Color for the plane
+        depth: How far to extend in z direction (both + and -)
+        y_extension: How far to extend in positive y direction
+    """
+    # Get the endpoints of the line
+    start_point = line.get_start()
+    end_point = line.get_end()
+    
+    # Create the four corners of our plane
+    # Bottom edge (original line endpoints)
+    bottom_left = start_point.copy()
+    bottom_right = end_point.copy()
+    
+    # Top edge (extended in positive y direction)
+    top_left = start_point + np.array([0, y_extension, 0])
+    top_right = end_point + np.array([0, y_extension, 0])
+    
+    # Create a custom surface class for this rectangular plane
+    class RectangularPlane(Surface):
+        def __init__(self, corners, **kwargs):
+            self.corners = corners
+            super().__init__(
+                u_range=(0, 1),
+                v_range=(0, 1), 
+                resolution=(20, 10),
+                **kwargs
+            )
+        
+        def uv_func(self, u, v):
+            # u goes from left to right (along the line)
+            # v goes from bottom to top (y extension)
+            
+            # Interpolate along bottom edge
+            bottom_point = interpolate(self.corners[0], self.corners[1], u)
+            # Interpolate along top edge  
+            top_point = interpolate(self.corners[2], self.corners[3], u)
+            # Interpolate between bottom and top
+            point = interpolate(bottom_point, top_point, v)
+            
+            return point
+    
+    # Create the base plane (no depth yet)
+    base_plane = RectangularPlane(
+        [bottom_left, bottom_right, top_left, top_right],
+        color=color,
+        shading=(0.2, 0.2, 0.6)
+    )
+    
+    # Now extrude this plane in the z direction to give it depth
+    class ExtrudedPlane(Surface):
+        def __init__(self, base_corners, depth, **kwargs):
+            self.base_corners = base_corners
+            self.depth = depth
+            super().__init__(
+                u_range=(0, 1),
+                v_range=(-1, 1),  # -1 to 1 to go from -depth/2 to +depth/2
+                resolution=(20, 10),
+                **kwargs
+            )
+        
+        def uv_func(self, u, v):
+            # u parameter: interpolate along the line (left to right)
+            # v parameter: interpolate in depth (z direction)
+            
+            # Get bottom and top points along the line at parameter u
+            bottom_point = interpolate(self.base_corners[0], self.base_corners[1], u)
+            top_point = interpolate(self.base_corners[2], self.base_corners[3], u)
+            
+            # Interpolate between bottom and top based on y-extension
+            # For now, let's use the middle height
+            middle_point = interpolate(bottom_point, top_point, 0.5)
+            
+            # Add depth in z direction
+            z_offset = v * self.depth / 2
+            final_point = middle_point + np.array([0, 0, z_offset])
+            
+            return final_point
+    
+    # Actually, let's make this simpler - create a plane that extends from the line
+    class LineExtensionPlane(Surface):
+        def __init__(self, line_start, line_end, y_extension, depth, **kwargs):
+            self.line_start = line_start
+            self.line_end = line_end  
+            self.y_extension = y_extension
+            self.depth = depth
+            super().__init__(
+                u_range=(0, 1),  # Along the line
+                v_range=(0, 1),  # From line to extended height
+                resolution=(15, 10),
+                **kwargs
+            )
+        
+        def uv_func(self, u, v):
+            # u: interpolate along original line
+            line_point = interpolate(self.line_start, self.line_end, u)
+            
+            # v: extend in positive y direction
+            extended_point = line_point + np.array([0, v * self.y_extension, 0])
+            
+            return extended_point
+    
+    return LineExtensionPlane(
+        start_point, end_point, y_extension, depth,
+        color=color,
+        shading=(0.2, 0.2, 0.6)
+    )
+
+
 
 class p46_sketch(InteractiveScene):
     def construct(self):
@@ -619,8 +736,23 @@ class p46_sketch(InteractiveScene):
 
         # Ok i can animated those moves later depending on how stuff shakes out. 
         # Now, how do I extend my lintes to be planes?
+        # Create planes from your existing lines
+        plane_1 = create_plane_from_line_endpoints(line_1, '#00FFFF', depth=2.0, y_extension=0.5)
+        plane_2 = create_plane_from_line_endpoints(line_2, YELLOW, depth=2.0, y_extension=0.5)
+        plane_3 = create_plane_from_line_endpoints(line_3, GREEN, depth=2.0, y_extension=0.5)
+        plane_1.set_opacity(0.3)
+        plane_2.set_opacity(0.3)
+        plane_3.set_opacity(0.3)
+
+        self.add(plane_1, plane_2, plane_3)
+
+
 
         self.wait()
+
+
+
+
 
 
 
@@ -692,6 +824,8 @@ class p46_sketch(InteractiveScene):
         # I'll train and zoom in - maybe at the same time we'll see. 
         # Then end with nice clear labels for the 3 regions below 
         # Want to make it really clear it's longitude!
+
+
 
 
 

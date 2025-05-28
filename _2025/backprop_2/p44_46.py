@@ -12,7 +12,7 @@ GREEN='#00a14b'
 
 svg_path='/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backprop2/graphics/to_manim'
 data_path='/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backprop2/hackin'
-heatmap_path='/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backprop2/graphics/to_manim/may_27_3'
+heatmap_path='/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backprop2/graphics/to_manim/may_27_2'
 
 # map_min_x=0.38
 # map_max_x=1.54
@@ -266,6 +266,332 @@ def get_arrow_tip(line, color=None, scale=0.1, tip_position=1.0):
     return arrow_tip
 
 
+class p46_sketch(InteractiveScene):
+    def construct(self):
+        '''
+        Ok starting with p45, I'll work on animating to shared p46 plot, and then start hacking on 3d. 
+        '''
+        data=np.load(data_path+'/cities_1d_3.npy')
+        xs=data[:,:2]
+        ys=data[:,2]
+        weights=data[:,3:9]
+        grads=data[:,9:15]
+        logits=data[:,15:18]
+        yhats=data[:, 18:]
+
+
+        net_background=SVGMobject(svg_path+'/p44_background_2.svg') 
+        self.add(net_background)
+
+        self.frame.reorient(0, 0, 0, (-0.03, -0.02, 0.0), 1.88)
+        europe_map=ImageMobject(svg_path +'/map_cropped_one.png')
+        europe_map.scale(0.28)
+        europe_map.move_to([0.96,0,0])
+        self.add(europe_map)
+
+
+        #Alrighty, so I think this is where it makes sense to grab welch_axes??
+        # x_axis_1=WelchXAxis(x_min=-7, x_max=18, x_ticks=[], x_tick_height=0.15,        
+        #                     x_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=5)
+        # y_axis_1=WelchYAxis(y_min=-18, y_max=10, y_ticks=[], y_tick_width=0.15,        
+        #                   y_label_font_size=20, stroke_width=2.5, arrow_tip_scale=0.1, axis_length_on_canvas=3)
+        # self.add(x_axis_1, y_axis_1)
+
+        # Ok maybe not actually? Let me try a standard manim axis...
+
+        axes_1 = Axes(
+            x_range=[-15, 15, 1],
+            y_range=[-15, 15, 1],
+            width=0.32,
+            height=0.32,
+            axis_config={
+                "color": CHILL_BROWN,
+                "include_ticks": False,
+                "include_numbers": False,
+                "include_tip": True,
+                "stroke_width":3,
+                "tip_config": {"width":0.02, "length":0.02}
+                }
+        )
+        axes_2=Axes(
+            x_range=[-15, 15, 1],
+            y_range=[-15, 15, 1],
+            width=0.32,
+            height=0.32,
+            axis_config={
+                "color": CHILL_BROWN,
+                "include_ticks": False,
+                "include_numbers": False,
+                "include_tip": True,
+                "stroke_width":3,
+                "tip_config": {"width":0.02, "length":0.02}
+                }
+        )
+        axes_3=Axes(
+            x_range=[-15, 15, 1],
+            y_range=[-15, 15, 1],
+            width=0.32,
+            height=0.32,
+            axis_config={
+                "color": CHILL_BROWN,
+                "include_ticks": False,
+                "include_numbers": False,
+                "include_tip": True,
+                "stroke_width":3,
+                "tip_config": {"width":0.02, "length":0.02}
+                }
+        )
+
+        axes_1.move_to([-0.95, 0.44, 0])
+        axes_2.move_to([-0.95, 0.0, 0])
+        axes_3.move_to([-0.95, -0.44, 0])
+        self.add(axes_1, axes_2, axes_3)
+
+        # for i in range(len(xs)):
+        i=0
+            
+        # if i>0:
+        #     self.remove(line_1, arrow_tip_1)
+        #     self.remove(line_2, arrow_tip_2)
+        #     self.remove(line_3, arrow_tip_3)
+        #     self.remove(nums)
+        #     self.remove(heatmaps)
+
+
+        nums = VGroup()
+        x = xs[i, -1]
+        tx = Tex(str(x) + r'^\circ')
+        tx.scale(0.13)
+        tx.move_to([-1.49, 0.02, 0])
+        nums.add(tx)
+        
+        # Weights - using consistent formatting
+        w = weights[i, :]
+        tm1 = Tex(format_number(w[0], total_chars=6)).set_color('#00FFFF')
+        tm1.scale(0.12)
+        tm1.move_to([-1.185, 0.54, 0])
+        nums.add(tm1)
+        
+        tm2 = Tex(format_number(w[1], total_chars=6)).set_color(YELLOW)
+        tm2.scale(0.12)
+        tm2.move_to([-1.185, 0.1, 0])
+        nums.add(tm2)
+        
+        tm3 = Tex(format_number(w[2], total_chars=6)).set_color(GREEN)
+        tm3.scale(0.12)
+        tm3.move_to([-1.185, -0.33, 0])
+        nums.add(tm3)
+        
+        # Biases
+        tb1 = Tex(format_number(w[3], total_chars=6)).set_color('#00FFFF')
+        tb1.scale(0.12)
+        tb1.move_to([-1.185, 0.37, 0])
+        nums.add(tb1)
+        
+        tb2 = Tex(format_number(w[4], total_chars=6)).set_color(YELLOW)
+        tb2.scale(0.12)
+        tb2.move_to([-1.185, -0.07, 0])
+        nums.add(tb2)
+        
+        tb3 = Tex(format_number(w[5], total_chars=6)).set_color(GREEN)
+        tb3.scale(0.12)
+        tb3.move_to([-1.185, -0.51, 0])
+        nums.add(tb3)
+        
+        # Logits
+        tl1 = Tex(format_number(logits[i, 0], total_chars=6)).set_color('#00FFFF')
+        tl1.scale(0.16)
+        tl1.move_to([-0.52, 0.37, 0])
+        nums.add(tl1)
+        
+        tl2 = Tex(format_number(logits[i, 1], total_chars=6)).set_color(YELLOW)
+        tl2.scale(0.16)
+        tl2.move_to([-0.52, 0.015, 0])
+        nums.add(tl2)
+        
+        tl3 = Tex(format_number(logits[i, 2], total_chars=6)).set_color(GREEN)
+        tl3.scale(0.16)  
+        tl3.move_to([-0.52, -0.335, 0])
+        nums.add(tl3)
+        
+        # Predictions
+        yhat1 = Tex(format_number(yhats[i, 0], total_chars=6)).set_color('#00FFFF')
+        yhat1.scale(0.16)
+        yhat1.move_to([0.22, 0.37, 0])
+        nums.add(yhat1)
+        
+        yhat2 = Tex(format_number(yhats[i, 1], total_chars=6)).set_color(YELLOW)
+        yhat2.scale(0.16)
+        yhat2.move_to([0.22, 0.015, 0])
+        nums.add(yhat2)
+        
+        yhat3 = Tex(format_number(yhats[i, 2], total_chars=6)).set_color(GREEN)
+        yhat3.scale(0.16)
+        yhat3.move_to([0.22, -0.335, 0])
+        nums.add(yhat3)
+
+
+    
+        def line_function_1(x): return weights[i,0] * x + weights[i,3]
+        line_1 = axes_1.get_graph(line_function_1, color='#00FFFF', x_range=[-14, 14])
+        arrow_tip_1 = get_arrow_tip(line_1, color='#00FFFF', scale=0.1)
+
+        def line_function_2(x): return weights[i,1] * x + weights[i,4]
+        line_2 = axes_2.get_graph(line_function_2, color=YELLOW, x_range=[-14, 14])
+        arrow_tip_2 = get_arrow_tip(line_2, color=YELLOW, scale=0.1)
+
+        def line_function_3(x): return weights[i,2] * x + weights[i,5]
+        line_3 = axes_3.get_graph(line_function_3, color=GREEN, x_range=[-14, 14])
+        arrow_tip_3 = get_arrow_tip(line_3, color=GREEN, scale=0.1)
+
+        heatmaps=Group()
+        heatmap_yhat3=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_3.png')
+        heatmap_yhat3.scale([0.29, 0.28, 0.28])
+        heatmap_yhat3.move_to([0.96,0,0])
+        heatmap_yhat3.set_opacity(0.5)
+        heatmaps.add(heatmap_yhat3)
+
+        heatmap_yhat1=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_1.png')
+        heatmap_yhat1.scale([0.29, 0.28, 0.28])
+        heatmap_yhat1.move_to([0.96,0,0])
+        heatmap_yhat1.set_opacity(0.5)
+        heatmaps.add(heatmap_yhat1)
+
+        heatmap_yhat2=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_2.png')
+        heatmap_yhat2.scale([0.29, 0.28, 0.28])
+        heatmap_yhat2.move_to([0.96,0,0])
+        heatmap_yhat2.set_opacity(0.5)
+        heatmaps.add(heatmap_yhat2)
+
+
+        self.add(axes_1, line_1, arrow_tip_1)
+        self.add(axes_2, line_2, arrow_tip_2)
+        self.add(axes_3, line_3, arrow_tip_3)
+        self.add(nums)
+        self.add(heatmaps)
+        self.wait(0.1)
+
+
+        # Ok start working through this animation 
+        # Drop bounding boxes, bring my plots together into one, 
+        # I guess drop 2 axes - i also want to zoom in and I think we'll 
+        # add some ticks etc -> either in pure manim or AE exports. 
+
+        top_plot_group=VGroup(axes_1, line_1, arrow_tip_1)
+        middle_plot_group=VGroup(axes_2, line_2, arrow_tip_2)
+        bottom_plot_group=VGroup(axes_3, line_3, arrow_tip_3)
+        
+
+        background_elements_to_remove=background_elements_to_remove = [31, 32, 33, 34, 35, 36, 45, 46, 47, 48, 49, 50, 82, 83, 84, 85, 86, 89, 90]
+        background_elements_to_keep = [i for i in range(len(net_background)) if i not in background_elements_to_remove]
+        self.wait()
+
+        self.play(top_plot_group.animate.scale(1.5).move_to([-1.0, 0.025, 0]),
+                  middle_plot_group.animate.scale(1.5).move_to([-1.0, 0.025, 0]),
+                  bottom_plot_group.animate.scale(1.5).move_to([-1.0, 0.025, 0]),
+                  *[FadeOut(net_background[o]) for o in background_elements_to_remove],
+                  *[net_background[o].animate.set_opacity(0.5) for o in background_elements_to_keep],
+                  FadeOut(nums[1:7]),
+                  nums[0].animate.set_opacity(0.3), 
+                  nums[7:].animate.set_opacity(0.3),
+                  # arrow_tip_1.animate.scale(0.7),
+                  # arrow_tip_2.animate.scale(0.7),
+                  # arrow_tip_3.animate.scale(0.7),
+                  self.frame.animate.reorient(0, 0, 0, (-0.64, 0.0, 0.0), 1.14),
+                  run_time=4.0
+            )
+
+        self.remove(axes_1, axes_3)
+        self.remove(arrow_tip_2) #Occlusions
+        self.add(arrow_tip_2)
+        self.wait()
+
+        self.play(line_1.animate.set_opacity(0.5),
+                  line_2.animate.set_opacity(0.5),
+                  line_3.animate.set_opacity(0.5),
+                  arrow_tip_1.animate.scale(0.7).set_opacity(0.5),
+                  arrow_tip_2.animate.scale(0.7).set_opacity(0.5),
+                  arrow_tip_3.animate.scale(0.7).set_opacity(0.5),
+                  run_time=0.5
+              )
+        self.wait()
+
+        #Ah would be cool to bring back up th opacity on h1 and y hat 1 when i mention them in the script!
+
+
+
+
+
+        # self.play(top_plot_group.animate.scale(1.5).move_to([-1.0, 0.025, 0]),
+        #           middle_plot_group.animate.scale(1.5).move_to([-1.0, 0.025, 0]),
+        #           bottom_plot_group.animate.scale(1.5).move_to([-1.0, 0.025, 0]),
+        #           # FadeOut(axes_1),
+        #           # FadeOut(axes_3),
+        #           *[FadeOut(net_background[o]) for o in background_elements_to_remove],
+        #           *[net_background[o].animate.set_opacity(0.5) for o in background_elements_to_keep],
+        #           # FadeOut(net_background[84:87]),
+        #           # FadeOut(net_background[89:91]),
+        #           # FadeOut(net_background[83]),
+        #           # FadeOut(net_background[82]),
+        #           # FadeOut(net_background[32:37]),
+        #           # FadeOut(net_background[45:51]),
+        #           # FadeOut(net_background[31]),
+        #           FadeOut(nums[1:7]),
+        #           # top_plot_group.animate.scale(1.5),
+        #           # middle_plot_group.animate.scale(1.5),
+        #           # bottom_plot_group.animate.scale(1.5),
+        #           # arrow_tip_1.animate.scale(0.7),
+        #           # arrow_tip_2.animate.scale(0.7),
+        #           # arrow_tip_3.animate.scale(0.7),
+        #           self.frame.animate.reorient(0, 0, 0, (-0.64, 0.0, 0.0), 1.14),
+        #           run_time=4.0
+        #     )
+
+        # self.play(top_plot_group.animate.move_to([-0.95, 0.0, 0]), run_time=3.0)
+        # self.play(bottom_plot_group.animate.move_to([-0.95, 0.0, 0]), run_time=3.0)
+
+        # self.play(FadeOut(axes_1))
+        # self.play(FadeOut(axes_3))
+
+        # self.wait()
+
+        # self.remove(net_background[84:87]) #Bottom surrounding square, some arrows
+        # self.remove(net_background[89:91])
+        # self.remove(net_background[83])
+        # self.remove(net_background[82])
+
+        # self.remove(net_background[32:37])
+        # self.remove(net_background[45:51])
+        # self.remove(net_background[31]) #Random m
+
+        # self.remove(nums[1:7])
+
+        # top_plot_group.scale(1.5)
+        # middle_plot_group.scale(1.5)
+        # bottom_plot_group.scale(1.5)
+        # arrow_tip_1.scale(0.7)
+        # arrow_tip_2.scale(0.7)
+        # arrow_tip_3.scale(0.7)
+
+        # middle_plot_group.move_to([-1.0, 0.025, 0])
+        # top_plot_group.move_to([-1.0, 0.025, 0])
+        # bottom_plot_group.move_to([-1.0, 0.025, 0])
+
+        # self.frame.reorient(0, 0, 0, (-0.64, 0.0, 0.0), 1.14)
+
+        #Ok yeah so I think this is going to be a progressive zoom in deal. So i think we'll have our first layer of zoom, then 
+        # I'll add some labels and talk about the mapping from x to input to output, and add some labels etc, then 
+        # I'll train and zoom in - maybe at the same time we'll see. 
+        # Then end with nice clear labels for the 3 regions below 
+        # Want to make it really clear it's longitude!
+
+
+
+
+        self.wait()
+        self.embed()
+
+
 class p45_sketch(InteractiveScene):
     def construct(self):
         '''
@@ -485,7 +811,7 @@ class p45_sketch(InteractiveScene):
 class p44_v2(InteractiveScene):
     def construct(self):
 
-        data=np.load(data_path+'/cities_1d_3.npy')
+        data=np.load(data_path+'/cities_1d_2.npy')
         xs=data[:,:2]
         ys=data[:,2]
         weights=data[:,3:9]
@@ -512,7 +838,8 @@ class p44_v2(InteractiveScene):
                 self.remove(nums)
                 self.remove(grad_regions)
                 self.remove(heatmaps)
-                self.remove(training_point)  
+                self.remove(training_point) 
+                self.remove(step_label,step_count)  
                 # self.wait(0.1)       
 
             nums=get_numbers(i, xs, weights, logits, yhats)
@@ -556,7 +883,20 @@ class p44_v2(InteractiveScene):
             training_point=Dot([canvas_x, canvas_y, 0], radius=0.012)
             if ys[i]==0.0: training_point.set_color('#00FFFF')
             elif ys[i]==1.0: training_point.set_color(YELLOW)
-            elif ys[i]==2.0: training_point.set_color(GREEN)      
+            elif ys[i]==2.0: training_point.set_color(GREEN)   
+
+            step_label=Text("Step=")  
+            step_label.set_color(CHILL_BROWN)
+            step_label.scale(0.12)
+            step_label.move_to([1.3, -0.85, 0])
+
+            step_count=Text(str(i).zfill(3))
+            step_count.set_color(CHILL_BROWN)
+            step_count.scale(0.12)
+            step_count.move_to([1.43, -0.85, 0])
+
+            self.add(step_label,step_count) 
+
 
             self.add(nums)
             self.add(grad_regions)

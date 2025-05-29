@@ -114,6 +114,91 @@ class p46_sketch(InteractiveScene):
         self.add(europe_map)
 
 
+        i=0
+
+        x1 = xs[i, 0]  # First input feature
+        x2 = xs[i, 1]  # Second input feature
+        
+        nums = VGroup()
+        
+        # First input value
+        tx1 = Tex(str(x1) + r'^\circ')
+        tx1.scale(0.12)
+        tx1.move_to([-1.53, 0.155, 0])  
+        nums.add(tx1)
+        
+        # Second input value
+        tx2 = Tex(str(x2) + r'^\circ')
+        tx2.scale(0.12)
+        tx2.move_to([-1.52, -0.19, 0])  
+        nums.add(tx2)
+
+        #   Neuron 1 weights (cyan)
+        w = weights[i, :]
+        tm1_1 = Tex(format_number(w[0], total_chars=6)).set_color('#00FFFF')
+        tm1_1.scale(0.12)
+        tm1_1.move_to([-1.04, 0.85, 0])
+        nums.add(tm1_1)
+        
+        tm1_2 = Tex(format_number(w[1], total_chars=6)).set_color('#00FFFF')
+        tm1_2.scale(0.12)
+        tm1_2.move_to([-1.04, 0.72, 0])
+        nums.add(tm1_2)       
+
+        tb1 = Tex(format_number(w[8], total_chars=6)).set_color('#00FFFF')
+        tb1.scale(0.12)
+        tb1.move_to([-1.04, 0.59, 0])
+        nums.add(tb1)
+
+        tm2_1 = Tex(format_number(w[2], total_chars=6)).set_color(YELLOW)
+        tm2_1.scale(0.12)
+        tm2_1.move_to([-1.04, 0.38, 0])
+        nums.add(tm2_1)
+        
+        tm2_2 = Tex(format_number(w[3], total_chars=6)).set_color(YELLOW)
+        tm2_2.scale(0.12)
+        tm2_2.move_to([-1.04, 0.25, 0])
+        nums.add(tm2_2)       
+
+        tb2 = Tex(format_number(w[9], total_chars=6)).set_color(YELLOW)
+        tb2.scale(0.12)
+        tb2.move_to([-1.04, 0.12, 0])
+        nums.add(tb2)
+
+        tm3_1 = Tex(format_number(w[4], total_chars=6)).set_color(GREEN)
+        tm3_1.scale(0.12)
+        tm3_1.move_to([-1.04, -0.08, 0])
+        nums.add(tm3_1)
+        
+        t3_2 = Tex(format_number(w[5], total_chars=6)).set_color(GREEN)
+        t3_2.scale(0.12)
+        t3_2.move_to([-1.04, -0.21, 0])
+        nums.add(t3_2)       
+
+        tb3 = Tex(format_number(w[10], total_chars=6)).set_color(GREEN)
+        tb3.scale(0.12)
+        tb3.move_to([-1.04, -0.34, 0])
+        nums.add(tb3)
+
+        tm4_1 = Tex(format_number(w[6], total_chars=6)).set_color('#FF00FF')
+        tm4_1.scale(0.12)
+        tm4_1.move_to([-1.04, -0.54, 0])
+        nums.add(tm4_1)
+        
+        t4_2 = Tex(format_number(w[7], total_chars=6)).set_color('#FF00FF')
+        t4_2.scale(0.12)
+        t4_2.move_to([-1.04, -0.68, 0])
+        nums.add(t4_2)       
+
+        tb4 = Tex(format_number(w[11], total_chars=6)).set_color('#FF00FF')
+        tb4.scale(0.12)
+        tb4.move_to([-1.04, -0.82, 0])
+        nums.add(tb4)
+
+
+        self.add(nums)
+
+
         self.wait()
         self.embed()
 

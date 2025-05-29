@@ -354,7 +354,7 @@ class LinearPlane(Surface):
         super().__init__(
             u_range=(-12, 12),
             v_range=(-12, 12),
-            resolution=(20, 20),
+            resolution=(64, 64), #Looks nice at 256, but is slow, maybe crank for final
             color='#00FFFF',
             **kwargs
         )
@@ -471,26 +471,26 @@ class p46_sketch_3(InteractiveScene):
 
         axes_1.move_to([-0.80, 0, 0.7])
         # axes_1.rotate(-90*DEGREES, [1,0,0]) #Flip up #Going to need ot noodle with rotation to match map
-        # axes_1.rotate(-30*DEGREES, [0,0,1]) #Twist around vertical
+        axes_1.rotate(-90*DEGREES, [0,0,1]) #Twist around vertical
 
         axes_2.move_to([-0.80, 0, 0.24])
         # axes_2.rotate(-90*DEGREES, [1,0,0]) #Flip up #Going to need ot noodle with rotation to match map
-        # axes_2.rotate(-30*DEGREES, [0,0,1]) #Twist around vertical
+        axes_2.rotate(-90*DEGREES, [0,0,1]) #Twist around vertical
         
         axes_3.move_to([-0.80, 0, -0.22])
         # axes_3.rotate(-90*DEGREES, [1,0,0]) #Flip up #Going to need ot noodle with rotation to match map
-        # axes_3.rotate(-30*DEGREES, [0,0,1]) #Twist around vertical
+        axes_3.rotate(-90*DEGREES, [0,0,1]) #Twist around vertical
 
         axes_4.move_to([-0.80, 0,  -0.7])
         # axes_4.rotate(-90*DEGREES, [1,0,0]) #Flip up #Going to need ot noodle with rotation to match map
-        # axes_4.rotate(-30*DEGREES, [0,0,1]) #Twist around vertical
+        axes_4.rotate(-90*DEGREES, [0,0,1]) #Twist around vertical
 
         self.add(axes_1, axes_2, axes_3, axes_4)
         self.wait()
 
         vertical_viz_scale=0.4
 
-        i=0
+        i=450
 
         # for i in range(len(xs)):
         #     if i>0:
@@ -575,15 +575,45 @@ class p46_sketch_3(InteractiveScene):
 
         self.wait()
 
-        # self.wait(0.1)
+        #Alright fancy 3d scene time, let's to! First let me manually remove everything that I'm going to fade out. 
+        self.remove(nums)
+        self.remove(net_background)
+        self.remove(heatmaps)
+        self.remove(training_point)
+        self.remove(step_label,step_count) 
 
-        # stuff_to_rotate_every_iteration=Group(step_label,step_count, nums, heatmaps, training_point)
-        # stuff_to_rotate_every_iteration.rotate(90*DEGREES, [1, 0, 0])
+        # Ok, now for the animation -> probalby makes sense to scale and move the 3d axes at the same time? 
+        # If that's funky I can try a camera move
+        ap1=Group(axes_1, plane_1)
+        ap2=Group(axes_2, plane_2)
+        ap3=Group(axes_3, plane_3)
+        ap4=Group(axes_4, plane_4)
 
-        
-        
-        
-        # self.add(grad_regions) #I'm runnign out of steam here to do grad regions, leaving out for now - it's alraedy prettty complex!
+        # ap1.move_to([0,0,0])
+        # ap1.scale(5.5)
+
+        # europe_map.rotate(-90*DEGREES, [1,0,0])
+        # europe_map.move_to([-0.05,-0.05,0.00])
+
+        self.wait()
+        self.play(ap1.animate.scale(5.5).move_to([0,0,0]).set_opacity(0.4),
+                    ap2.animate.scale(5.5).move_to([0,0,0]).set_opacity(0.4),
+                    ap3.animate.scale(5.5).move_to([0,0,0]).set_opacity(0.4),
+                    ap4.animate.scale(5.5).move_to([0,0,0]).set_opacity(0.4),
+                    europe_map.animate.rotate(-90*DEGREES, [1,0,0]).move_to([-0.05,-0.05,0.00]),
+                    self.frame.animate.reorient(22, 35, 0, (0.04, -0.02, -0.04), 1.98),
+                    run_time=7.0
+            )
+        self.remove(axes_2, axes_3, axes_4)
+        self.wait()
+
+
+        self.wait()
+
+
+
+
+
 
 
 

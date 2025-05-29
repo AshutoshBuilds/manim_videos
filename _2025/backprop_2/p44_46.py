@@ -756,7 +756,7 @@ class p46_sketch(InteractiveScene):
         self.add(axes_1, axes_2, axes_3)
 
         # for i in range(len(xs)):
-        i=200 #0
+        i=300 #0
             
         # if i>0:
         #     self.remove(line_1, arrow_tip_1)

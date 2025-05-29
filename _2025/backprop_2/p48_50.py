@@ -90,6 +90,134 @@ def latlong_to_canvas(lat, long,
     return x, y
 
 
+
+def get_dem_numbers_3d(i, xs, weights, logits, yhats):
+    x1 = xs[i, 0]  # First input feature
+    x2 = xs[i, 1]  # Second input feature
+    
+    nums = VGroup()
+    
+    # First input value
+    tx1 = Tex(str(x1) + r'^\circ')
+    tx1.scale(0.12).rotate(90*DEGREES, [1, 0, 0])
+    tx1.move_to([-1.53, 0, 0.155])  
+    nums.add(tx1)
+    
+    # Second input value
+    tx2 = Tex(str(x2) + r'^\circ')
+    tx2.scale(0.12).rotate(90*DEGREES, [1, 0, 0])
+    tx2.move_to([-1.52, 0, -0.19])  
+    nums.add(tx2)
+
+    #   Neuron 1 weights (cyan)
+    w = weights[i, :]
+    tm1_1 = Tex(format_number(w[0], total_chars=6)).set_color('#00FFFF')
+    tm1_1.scale(0.12)
+    tm1_1.rotate(90*DEGREES, [1, 0, 0])
+    tm1_1.move_to([-1.04, 0, 0.85])
+    nums.add(tm1_1)
+    
+    tm1_2 = Tex(format_number(w[1], total_chars=6)).set_color('#00FFFF')
+    tm1_2.scale(0.12)
+    tm1_2.rotate(90*DEGREES, [1, 0, 0])
+    tm1_2.move_to([-1.04, 0, 0.72])
+    nums.add(tm1_2)       
+
+    tb1 = Tex(format_number(w[8], total_chars=6)).set_color('#00FFFF')
+    tb1.scale(0.12).rotate(90*DEGREES, [1, 0, 0])
+    tb1.move_to([-1.04,0,  0.59])
+    nums.add(tb1)
+
+    tm2_1 = Tex(format_number(w[2], total_chars=6)).set_color(YELLOW)
+    tm2_1.scale(0.12).rotate(90*DEGREES, [1, 0, 0])
+    tm2_1.move_to([-1.04,0,  0.38])
+    nums.add(tm2_1)
+    
+    tm2_2 = Tex(format_number(w[3], total_chars=6)).set_color(YELLOW)
+    tm2_2.scale(0.12).rotate(90*DEGREES, [1, 0, 0])
+    tm2_2.move_to([-1.04,0,  0.25])
+    nums.add(tm2_2)       
+
+    tb2 = Tex(format_number(w[9], total_chars=6)).set_color(YELLOW)
+    tb2.scale(0.12).rotate(90*DEGREES, [1, 0, 0])
+    tb2.move_to([-1.04,0,  0.12])
+    nums.add(tb2)
+
+    tm3_1 = Tex(format_number(w[4], total_chars=6)).set_color(GREEN)
+    tm3_1.scale(0.12).rotate(90*DEGREES, [1, 0, 0])
+    tm3_1.move_to([-1.04, 0, -0.08])
+    nums.add(tm3_1)
+    
+    t3_2 = Tex(format_number(w[5], total_chars=6)).set_color(GREEN)
+    t3_2.scale(0.12).rotate(90*DEGREES, [1, 0, 0])
+    t3_2.move_to([-1.04, 0, -0.21])
+    nums.add(t3_2)       
+
+    tb3 = Tex(format_number(w[10], total_chars=6)).set_color(GREEN)
+    tb3.scale(0.12).rotate(90*DEGREES, [1, 0, 0])
+    tb3.move_to([-1.04, 0, -0.34])
+    nums.add(tb3)
+
+    tm4_1 = Tex(format_number(w[6], total_chars=6)).set_color('#FF00FF')
+    tm4_1.scale(0.12).rotate(90*DEGREES, [1, 0, 0])
+    tm4_1.move_to([-1.04, 0, -0.54])
+    nums.add(tm4_1)
+    
+    t4_2 = Tex(format_number(w[7], total_chars=6)).set_color('#FF00FF')
+    t4_2.scale(0.12).rotate(90*DEGREES, [1, 0, 0])
+    t4_2.move_to([-1.04, 0, -0.68])
+    nums.add(t4_2)       
+
+    tb4 = Tex(format_number(w[11], total_chars=6)).set_color('#FF00FF')
+    tb4.scale(0.12).rotate(90*DEGREES, [1, 0, 0])
+    tb4.move_to([-1.04, 0, -0.82])
+    nums.add(tb4)
+
+
+    # Logits
+    tl1 = Tex(format_number(logits[i, 0], total_chars=6)).set_color('#00FFFF')
+    tl1.scale(0.14).rotate(90*DEGREES, [1, 0, 0])
+    tl1.move_to([-0.49, 0, 0.54])
+    nums.add(tl1)
+    
+    tl2 = Tex(format_number(logits[i, 1], total_chars=6)).set_color(YELLOW)
+    tl2.scale(0.14).rotate(90*DEGREES, [1, 0, 0])
+    tl2.move_to([-0.48, 0, 0.18])
+    nums.add(tl2)
+    
+    tl3 = Tex(format_number(logits[i, 2], total_chars=6)).set_color(GREEN)
+    tl3.scale(0.14).rotate(90*DEGREES, [1, 0, 0])  
+    tl3.move_to([-0.49, -0, -0.17]) #tl3.move_to([-0.49, -0.17, 0])
+    nums.add(tl3)
+
+    tl4 = Tex(format_number(logits[i, 3], total_chars=6)).set_color("#FF00FF")
+    tl4.scale(0.14).rotate(90*DEGREES, [1, 0, 0])  
+    tl4.move_to([-0.48, 0, -0.5])
+    nums.add(tl4)
+
+    #Predictions
+    yhat1 = Tex(format_number(yhats[i, 0], total_chars=6)).set_color('#00FFFF')
+    yhat1.scale(0.18).rotate(90*DEGREES, [1, 0, 0])
+    yhat1.move_to([0.18, 0, 0.36])
+    nums.add(yhat1)
+    
+    yhat2 = Tex(format_number(yhats[i, 1], total_chars=6)).set_color(YELLOW)
+    yhat2.scale(0.18).rotate(90*DEGREES, [1, 0, 0])
+    yhat2.move_to([0.18, 0, 0.12])
+    nums.add(yhat2)
+    
+    yhat3 = Tex(format_number(yhats[i, 2], total_chars=6)).set_color(GREEN)
+    yhat3.scale(0.18).rotate(90*DEGREES, [1, 0, 0])
+    yhat3.move_to([0.18, 0, -0.12])
+    nums.add(yhat3)
+
+    yhat4 = Tex(format_number(yhats[i, 3], total_chars=6)).set_color('#FF00FF')
+    yhat4.scale(0.18).rotate(90*DEGREES, [1, 0, 0])
+    yhat4.move_to([0.18, 0, -0.35])
+    nums.add(yhat4)
+
+    return nums
+
 def get_dem_numbers(i, xs, weights, logits, yhats):
     x1 = xs[i, 0]  # First input feature
     x2 = xs[i, 1]  # Second input feature
@@ -240,6 +368,231 @@ class LinearPlane(Surface):
         return self.axes.c2p(x1, x2, z)
 
 
+
+class p46_sketch_3(InteractiveScene):
+    def construct(self):
+        '''
+        Ok now let's try to everything is Psuedo3d, so I can do the "bring everything together in 3D and pan around" deal 
+        '''
+        data=np.load(data_path+'/cities_2d_1.npy')
+        xs=data[:,:2]
+        ys=data[:,2]
+        weights=data[:,3:15]
+        grads=data[:,15:27]
+        logits=data[:,27:31]
+        yhats=data[:, 31:]
+
+
+        net_background=SVGMobject(svg_path+'/p_48_background_1.svg') 
+        
+        # self.frame.reorient(0, 0, 0, (-0.03, 0.01, 0.0), 2.01)
+        europe_map=ImageMobject(svg_path +'/map_cropped_one.png')
+        europe_map.scale(0.28)
+        europe_map.move_to([0.96,0,0])
+
+        # self.add(net_background)
+        # self.add(europe_map)
+
+        axes_1 = ThreeDAxes(
+            x_range=[-15, 15, 1],
+            y_range=[-15, 15, 1],
+            z_range=[-10, 10, 1],
+            width=0.28,
+            height=0.28,
+            depth=0.28,
+            axis_config={
+                "color": CHILL_BROWN,
+                "include_ticks": False,
+                "include_numbers": False,
+                "include_tip": True,
+                "stroke_width":2,
+                "tip_config": {"width":0.015, "length":0.015}
+                }
+        )
+
+        axes_2 = ThreeDAxes(
+            x_range=[-15, 15, 1],
+            y_range=[-15, 15, 1],
+            z_range=[-10, 10, 1],
+            width=0.28,
+            height=0.28,
+            depth=0.28,
+            axis_config={
+                "color": CHILL_BROWN,
+                "include_ticks": False,
+                "include_numbers": False,
+                "include_tip": True,
+                "stroke_width":2,
+                "tip_config": {"width":0.015, "length":0.015}
+                }
+        )
+
+        axes_3 = ThreeDAxes(
+            x_range=[-15, 15, 1],
+            y_range=[-15, 15, 1],
+            z_range=[-10, 10, 1],
+            width=0.28,
+            height=0.28,
+            depth=0.28,
+            axis_config={
+                "color": CHILL_BROWN,
+                "include_ticks": False,
+                "include_numbers": False,
+                "include_tip": True,
+                "stroke_width":2,
+                "tip_config": {"width":0.015, "length":0.015}
+                }
+        )
+
+        axes_4 = ThreeDAxes(
+            x_range=[-15, 15, 1],
+            y_range=[-15, 15, 1],
+            z_range=[-10, 10, 1],
+            width=0.28,
+            height=0.28,
+            depth=0.28,
+            axis_config={
+                "color": CHILL_BROWN,
+                "include_ticks": False,
+                "include_numbers": False,
+                "include_tip": True,
+                "stroke_width":2,
+                "tip_config": {"width":0.015, "length":0.015}
+                }
+        )
+
+
+        # stuff_to_rotate_once=Group(net_background, europe_map, axes_1) #, axes_1, axes_2, axes_3, axes_4)
+        net_background.rotate(90*DEGREES, [1, 0, 0])
+        europe_map.rotate(90*DEGREES, [1, 0, 0])
+        self.add(net_background, europe_map)
+        self.frame.reorient(0, 90, 0, (-0.02, 0.01, -0.0), 1.98)
+        # self.wait()
+
+        axes_1.move_to([-0.80, 0, 0.7])
+        # axes_1.rotate(-90*DEGREES, [1,0,0]) #Flip up #Going to need ot noodle with rotation to match map
+        # axes_1.rotate(-30*DEGREES, [0,0,1]) #Twist around vertical
+
+        axes_2.move_to([-0.80, 0, 0.24])
+        # axes_2.rotate(-90*DEGREES, [1,0,0]) #Flip up #Going to need ot noodle with rotation to match map
+        # axes_2.rotate(-30*DEGREES, [0,0,1]) #Twist around vertical
+        
+        axes_3.move_to([-0.80, 0, -0.22])
+        # axes_3.rotate(-90*DEGREES, [1,0,0]) #Flip up #Going to need ot noodle with rotation to match map
+        # axes_3.rotate(-30*DEGREES, [0,0,1]) #Twist around vertical
+
+        axes_4.move_to([-0.80, 0,  -0.7])
+        # axes_4.rotate(-90*DEGREES, [1,0,0]) #Flip up #Going to need ot noodle with rotation to match map
+        # axes_4.rotate(-30*DEGREES, [0,0,1]) #Twist around vertical
+
+        self.add(axes_1, axes_2, axes_3, axes_4)
+        self.wait()
+
+        vertical_viz_scale=0.4
+
+        i=0
+
+        # for i in range(len(xs)):
+        #     if i>0:
+        #         self.remove(nums)
+        #         self.remove(plane_1, plane_2, plane_3, plane_4)
+        #         # self.remove(grad_regions)
+        #         self.remove(heatmaps)
+        #         self.remove(training_point) 
+        #         self.remove(step_label,step_count)  
+
+
+        # nums=get_dem_numbers(i, xs, weights, logits, yhats)
+        nums=get_dem_numbers_3d(i, xs, weights, logits, yhats)
+
+
+        plane_1=LinearPlane(axes_1, weights[i,0], weights[i,1], weights[i,8], vertical_viz_scale=vertical_viz_scale)
+        plane_1.set_opacity(0.6)
+        plane_1.set_color('#00FFFF')
+
+        plane_2=LinearPlane(axes_2, weights[i,2], weights[i,3], weights[i,9], vertical_viz_scale=vertical_viz_scale)
+        plane_2.set_opacity(0.6)
+        plane_2.set_color(YELLOW)
+
+        plane_3=LinearPlane(axes_3, weights[i,4], weights[i,5], weights[i,10], vertical_viz_scale=vertical_viz_scale)
+        plane_3.set_opacity(0.6)
+        plane_3.set_color(GREEN)
+
+        plane_4=LinearPlane(axes_4, weights[i,6], weights[i,7], weights[i,11], vertical_viz_scale=vertical_viz_scale)
+        plane_4.set_opacity(0.6)
+        plane_4.set_color('#FF00FF')
+
+        heatmaps=Group()
+        heatmap_yhat3=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_3.png')
+        heatmap_yhat3.scale([0.29, 0.28, 0.28])
+        heatmap_yhat3.move_to([0.96,0,0])
+        heatmap_yhat3.set_opacity(0.5)
+        heatmaps.add(heatmap_yhat3)
+
+        heatmap_yhat1=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_1.png')
+        heatmap_yhat1.scale([0.29, 0.28, 0.28])
+        heatmap_yhat1.move_to([0.96,0,0])
+        heatmap_yhat1.set_opacity(0.5)
+        heatmaps.add(heatmap_yhat1)
+
+        heatmap_yhat2=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_2.png')
+        heatmap_yhat2.scale([0.29, 0.28, 0.28])
+        heatmap_yhat2.move_to([0.96,0,0])
+        heatmap_yhat2.set_opacity(0.5)
+        heatmaps.add(heatmap_yhat2)
+
+        heatmap_yhat4=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_4.png')
+        heatmap_yhat4.scale([0.29, 0.28, 0.28])
+        heatmap_yhat4.move_to([0.96,0,0])
+        heatmap_yhat4.set_opacity(0.5)
+        heatmaps.add(heatmap_yhat4)
+
+        heatmaps.rotate(90*DEGREES, [1, 0, 0])
+
+        canvas_x, canvas_y=latlong_to_canvas(xs[i][0], xs[i][1])
+        training_point=Dot([canvas_x, 0, canvas_y], radius=0.012)
+        if ys[i]==0.0: training_point.set_color('#00FFFF')
+        elif ys[i]==1.0: training_point.set_color(YELLOW)
+        elif ys[i]==2.0: training_point.set_color(GREEN)   
+        elif ys[i]==3.0: training_point.set_color('#FF00FF')   
+        training_point.rotate(90*DEGREES, [1, 0, 0])
+
+        step_label=Text("Step=")  
+        step_label.set_color(CHILL_BROWN)
+        step_label.scale(0.12).rotate(90*DEGREES, [1, 0, 0])
+        step_label.move_to([1.3, 0, -0.85])
+
+        step_count=Text(str(i).zfill(3))
+        step_count.set_color(CHILL_BROWN)
+        step_count.scale(0.12).rotate(90*DEGREES, [1, 0, 0])
+        step_count.move_to([1.43, 0, -0.85])
+
+        self.add(plane_1, plane_2, plane_3, plane_4)
+        self.add(nums)
+        self.add(step_label,step_count) 
+        self.add(heatmaps)
+        self.add(training_point)
+
+        self.wait()
+
+        # self.wait(0.1)
+
+        # stuff_to_rotate_every_iteration=Group(step_label,step_count, nums, heatmaps, training_point)
+        # stuff_to_rotate_every_iteration.rotate(90*DEGREES, [1, 0, 0])
+
+        
+        
+        
+        # self.add(grad_regions) #I'm runnign out of steam here to do grad regions, leaving out for now - it's alraedy prettty complex!
+
+
+
+        self.wait()
+        self.embed()
+
+
+
+
 class p46_sketch_2(InteractiveScene):
     def construct(self):
         '''
@@ -339,7 +692,7 @@ class p46_sketch_2(InteractiveScene):
         axes_2.move_to([-0.80, 0.24, 0])
         axes_2.rotate(-90*DEGREES, [1,0,0]) #Flip up #Going to need ot noodle with rotation to match map
         axes_2.rotate(-30*DEGREES, [0,1,0]) #Twist around vertical
-        
+
         axes_3.move_to([-0.80, -0.22, 0])
         axes_3.rotate(-90*DEGREES, [1,0,0]) #Flip up #Going to need ot noodle with rotation to match map
         axes_3.rotate(-30*DEGREES, [0,1,0]) #Twist around vertical

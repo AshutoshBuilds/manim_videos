@@ -617,6 +617,10 @@ class p46_sketch_3(InteractiveScene):
         self.remove(axes_2, axes_3, axes_4)
         self.wait()
 
+        ## Ok this took some noodling, but the goemetry of the planes now matches the heatmap!
+        ## I need to tweak spacing etc once i swap in the map, and do a nice pan, an dmaybe
+        ## highlight one plane at a time with opacities, but proof of concept looks good!
+
 
         self.wait()
 

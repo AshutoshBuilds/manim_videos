@@ -12,7 +12,7 @@ GREEN='#00a14b'
 
 svg_path='/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backprop2/graphics/to_manim'
 data_path='/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backprop2/hackin'
-heatmap_path='/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backprop2/graphics/to_manim/may_28_1'
+heatmap_path='/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backprop2/graphics/to_manim/may_28_2'
 
 
 def format_number(num, total_chars=6, align='right'):
@@ -352,8 +352,10 @@ class LinearPlane(Surface):
         self.b = b
         self.vertical_viz_scale=vertical_viz_scale
         super().__init__(
-            u_range=(-12, 12),
-            v_range=(-12, 12),
+            # u_range=(-12, 12),
+            # v_range=(-12, 12),
+            u_range=(-6, 11),
+            v_range=(-8, 4),
             resolution=(64, 64), #Looks nice at 256, but is slow, maybe crank for final
             color='#00FFFF',
             **kwargs
@@ -374,7 +376,7 @@ class p46_sketch_3(InteractiveScene):
         '''
         Ok now let's try to everything is Psuedo3d, so I can do the "bring everything together in 3D and pan around" deal 
         '''
-        data=np.load(data_path+'/cities_2d_1.npy')
+        data=np.load(data_path+'/cities_2d_2.npy')
         xs=data[:,:2]
         ys=data[:,2]
         weights=data[:,3:15]
@@ -394,8 +396,10 @@ class p46_sketch_3(InteractiveScene):
         # self.add(europe_map)
 
         axes_1 = ThreeDAxes(
-            x_range=[-15, 15, 1],
-            y_range=[-15, 15, 1],
+            # x_range=[-15, 15, 1],
+            # y_range=[-15, 15, 1],
+            x_range=[-6, 11, 1],
+            y_range=[-8, 4, 1],
             z_range=[-10, 10, 1],
             width=0.28,
             height=0.28,
@@ -411,8 +415,10 @@ class p46_sketch_3(InteractiveScene):
         )
 
         axes_2 = ThreeDAxes(
-            x_range=[-15, 15, 1],
-            y_range=[-15, 15, 1],
+            # x_range=[-15, 15, 1],
+            # y_range=[-15, 15, 1],
+            x_range=[-6, 11, 1],
+            y_range=[-8, 4, 1],
             z_range=[-10, 10, 1],
             width=0.28,
             height=0.28,
@@ -428,8 +434,10 @@ class p46_sketch_3(InteractiveScene):
         )
 
         axes_3 = ThreeDAxes(
-            x_range=[-15, 15, 1],
-            y_range=[-15, 15, 1],
+            # x_range=[-15, 15, 1],
+            # y_range=[-15, 15, 1],
+            x_range=[-6, 11, 1],
+            y_range=[-8, 4, 1],
             z_range=[-10, 10, 1],
             width=0.28,
             height=0.28,
@@ -445,8 +453,10 @@ class p46_sketch_3(InteractiveScene):
         )
 
         axes_4 = ThreeDAxes(
-            x_range=[-15, 15, 1],
-            y_range=[-15, 15, 1],
+            # x_range=[-15, 15, 1],
+            # y_range=[-15, 15, 1],
+            x_range=[-6, 11, 1],
+            y_range=[-8, 4, 1],
             z_range=[-10, 10, 1],
             width=0.28,
             height=0.28,
@@ -471,19 +481,19 @@ class p46_sketch_3(InteractiveScene):
 
         axes_1.move_to([-0.80, 0, 0.7])
         # axes_1.rotate(-90*DEGREES, [1,0,0]) #Flip up #Going to need ot noodle with rotation to match map
-        axes_1.rotate(-90*DEGREES, [0,0,1]) #Twist around vertical
+        # axes_1.rotate(-90*DEGREES, [0,0,1]) #Twist around vertical
 
         axes_2.move_to([-0.80, 0, 0.24])
         # axes_2.rotate(-90*DEGREES, [1,0,0]) #Flip up #Going to need ot noodle with rotation to match map
-        axes_2.rotate(-90*DEGREES, [0,0,1]) #Twist around vertical
+        # axes_2.rotate(-90*DEGREES, [0,0,1]) #Twist around vertical
         
         axes_3.move_to([-0.80, 0, -0.22])
         # axes_3.rotate(-90*DEGREES, [1,0,0]) #Flip up #Going to need ot noodle with rotation to match map
-        axes_3.rotate(-90*DEGREES, [0,0,1]) #Twist around vertical
+        # axes_3.rotate(-90*DEGREES, [0,0,1]) #Twist around vertical
 
         axes_4.move_to([-0.80, 0,  -0.7])
         # axes_4.rotate(-90*DEGREES, [1,0,0]) #Flip up #Going to need ot noodle with rotation to match map
-        axes_4.rotate(-90*DEGREES, [0,0,1]) #Twist around vertical
+        # axes_4.rotate(-90*DEGREES, [0,0,1]) #Twist around vertical
 
         self.add(axes_1, axes_2, axes_3, axes_4)
         self.wait()
@@ -506,19 +516,19 @@ class p46_sketch_3(InteractiveScene):
         nums=get_dem_numbers_3d(i, xs, weights, logits, yhats)
 
 
-        plane_1=LinearPlane(axes_1, weights[i,0], weights[i,1], weights[i,8], vertical_viz_scale=vertical_viz_scale)
+        plane_1=LinearPlane(axes_1, weights[i,1], weights[i,0], weights[i,8], vertical_viz_scale=vertical_viz_scale)
         plane_1.set_opacity(0.6)
         plane_1.set_color('#00FFFF')
 
-        plane_2=LinearPlane(axes_2, weights[i,2], weights[i,3], weights[i,9], vertical_viz_scale=vertical_viz_scale)
+        plane_2=LinearPlane(axes_2, weights[i,3], weights[i,2], weights[i,9], vertical_viz_scale=vertical_viz_scale)
         plane_2.set_opacity(0.6)
         plane_2.set_color(YELLOW)
 
-        plane_3=LinearPlane(axes_3, weights[i,4], weights[i,5], weights[i,10], vertical_viz_scale=vertical_viz_scale)
+        plane_3=LinearPlane(axes_3, weights[i,5], weights[i,4], weights[i,10], vertical_viz_scale=vertical_viz_scale)
         plane_3.set_opacity(0.6)
         plane_3.set_color(GREEN)
 
-        plane_4=LinearPlane(axes_4, weights[i,6], weights[i,7], weights[i,11], vertical_viz_scale=vertical_viz_scale)
+        plane_4=LinearPlane(axes_4, weights[i,7], weights[i,6], weights[i,11], vertical_viz_scale=vertical_viz_scale)
         plane_4.set_opacity(0.6)
         plane_4.set_color('#FF00FF')
 

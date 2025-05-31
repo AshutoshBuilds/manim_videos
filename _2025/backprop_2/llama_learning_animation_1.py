@@ -109,7 +109,7 @@ def get_mlp(w1,
             neuron_stroke_width=1.0, 
             neuron_stroke_color='#948979', 
             line_stroke_color='#948979', 
-            connection_display_thresh=1.1,
+            connection_display_thresh=0.4,
             grad_display_thresh=0.5):
 
     INPUT_NEURONS = w1.shape[0]
@@ -182,7 +182,7 @@ def get_mlp(w1,
             if abs(i-j)>6: continue #Let's try just drawing local ones. 
             start_point, end_point = get_edge_points(in_neuron, hidden_neuron, NEURON_RADIUS)
             line = Line(start_point, end_point)
-            line.set_stroke(opacity=np.clip(0.8*(np.abs(w1[i, j])-connection_display_thresh), 0.1, 1), width=line_weight)
+            line.set_stroke(opacity=np.clip(10.0*(np.abs(w1[i, j])-connection_display_thresh), 0.1, 1), width=line_weight)
             line.set_color(line_stroke_color)
             connections.add(line)
 
@@ -192,7 +192,7 @@ def get_mlp(w1,
             if abs(i-j)>6: continue #Let's try just drawing local ones.
             start_point, end_point = get_edge_points(hidden_neuron, out_neuron, NEURON_RADIUS)
             line = Line(start_point, end_point) #, stroke_opacity=line_opacity, stroke_width=line_weight)
-            line.set_stroke(opacity=np.clip(0.8*(np.abs(w2[i, j])-connection_display_thresh), 0.1, 1), width=line_weight)
+            line.set_stroke(opacity=np.clip(10.0*(np.abs(w2[i, j])-connection_display_thresh), 0.1, 1), width=line_weight)
             line.set_color(line_stroke_color)
             connections.add(line)
 
@@ -235,9 +235,9 @@ def get_mlp(w1,
 class LlamaLearningSketchOne(InteractiveScene):
     def construct(self):
 
-        w1 = np.random.randn(32, 34) 
-        w2 = np.random.randn(34, 32)  
-        grads_1 = np.random.randn(32, 34) 
+        # w1 = np.random.randn(32, 34) 
+        # w2 = np.random.randn(34, 32)  
+        grads_1 = np.random.randn(32, 34) #Do to -> replace with da real nums
         grads_2 = np.random.randn(34, 32) 
         # neuron_fills=[np.random.randn(32), np.random.randn(34), np.random.randn(32)]
 
@@ -249,11 +249,11 @@ class LlamaLearningSketchOne(InteractiveScene):
             np.load(data_dir + '/blocks.'+str(layer_num)+'.hook_mlp_out.npy')
         ]
 
-        # net = Network([W1, W2])
-        # self.add(net)
 
+        w1=np.load(data_dir + '/blocks.'+str(layer_num)+'.mlp.W_in'+'.npy')
+        w2=np.load(data_dir + '/blocks.'+str(layer_num)+'.mlp.W_out'+'.npy')
 
-        mlp=get_mlp(w1, w2, neuron_fills, grads_1=grads_1, grads_2=grads_2)
+        mlp=get_mlp(w1, w2, neuron_fills) #, grads_1=grads_1, grads_2=grads_2)
         mlp.move_to([-4, 0, 0])
 
         #Probably wrap this up.

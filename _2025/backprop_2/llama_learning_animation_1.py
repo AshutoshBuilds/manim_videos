@@ -27,6 +27,7 @@ def get_edge_points(circle1, circle2, neuron_radius):
 
 
 viridis_colormap=plt.get_cmap("viridis")
+blues_colormap=plt.get_cmap("Blues")
 custom_cmap_tans = mcolors.LinearSegmentedColormap.from_list('custom', ['#000000', '#dfd0b9'], N=256)
 
 # def get_nueron_color(value, vmin=-2, vmax=2):        
@@ -40,17 +41,25 @@ def get_nueron_color(value, vmax=2.5):
     rgba = custom_cmap_tans(value_clipped) #Would also like to try a monochrome tan option
     return Color(rgb=rgba[:3])
 
+def get_grad_color(value, vmin=-2, vmax=2):        
+    value_clipped = np.clip((value - vmin) / (vmax - vmin), 0, 1)
+    rgba = blues_colormap(value_clipped) #Would also like to try a monochrome tan option
+    return Color(rgb=rgba[:3])
+
 
 def get_mlp(w1, 
             w2,
             neuron_fills=None, #Black if None
-            # grads,
+            grads_1=None,
+            grads_2=None,
             line_weight=1.0, 
             line_opacity=0.5, 
             neuron_stroke_width=2.0, 
             neuron_stroke_color='#948979', 
             line_stroke_color='#948979', 
-            connection_display_thresh=1.1):
+            connection_display_thresh=1.1,
+            grad_display_thresh=0.5):
+
     INPUT_NEURONS = w1.shape[0]
     HIDDEN_NEURONS = w1.shape[1]
     OUTPUT_NEURONS = w1.shape[0]
@@ -115,6 +124,7 @@ def get_mlp(w1,
             
     # Create connections with edge points
     connections = VGroup()
+    grad_conections=VGroup()
     
     # Connect input to hidden layer
     for i, in_neuron in enumerate(input_layer):
@@ -122,10 +132,21 @@ def get_mlp(w1,
             if np.abs(w1[i, j])<connection_display_thresh: continue
             start_point, end_point = get_edge_points(in_neuron, hidden_neuron, NEURON_RADIUS)
             line = Line(start_point, end_point)
-            line.set_stroke(opacity=np.clip(1.0*(np.abs(w1[i, j])-connection_display_thresh), 0, 1), width=line_weight)
+            line.set_stroke(opacity=np.clip(0.8*(np.abs(w1[i, j])-connection_display_thresh), 0, 1), width=line_weight)
             # print(np.clip(1.0*(np.abs(w1[i, j])-connection_display_thresh), 0, 1))
             line.set_color(line_stroke_color)
             connections.add(line)
+            if grads_1 is not None:
+                if np.abs(grads_1[i, j])<grad_display_thresh: continue
+                line_grad = Line(start_point, end_point)
+                # line_grad.set_stroke(opacity=np.clip(0.8*(np.abs(grads_1[i, j])-connection_display_thresh), 0, 1), 
+                #                     width=np.abs(grads_1[i, j]))
+                line_grad.set_stroke(opacity=0.8, width=2)
+                # print(np.clip(1.0*(np.abs(w1[i, j])-connection_display_thresh), 0, 1))
+
+                line_grad.set_color(get_grad_color(grads_1[i, j]))
+                grad_conections.add(line_grad)
+
             
     # Connect hidden to output layer
     for i, hidden_neuron in enumerate(hidden_layer):
@@ -133,13 +154,14 @@ def get_mlp(w1,
             if np.abs(w2[i, j])<connection_display_thresh: continue
             start_point, end_point = get_edge_points(hidden_neuron, out_neuron, NEURON_RADIUS)
             line = Line(start_point, end_point) #, stroke_opacity=line_opacity, stroke_width=line_weight)
-            line.set_stroke(opacity=np.clip(1.0*(np.abs(w2[i, j])-connection_display_thresh), 0, 1), width=line_weight)
+            line.set_stroke(opacity=np.clip(0.8*(np.abs(w2[i, j])-connection_display_thresh), 0, 1), width=line_weight)
 
             line.set_color(line_stroke_color)
             connections.add(line)
 
                 
-    return VGroup(connections, input_layer, hidden_layer, output_layer, dots)
+    # return VGroup(connections, input_layer, hidden_layer, output_layer, dots, grad_conections)
+    return VGroup(grad_conections, input_layer, hidden_layer, output_layer, dots)
 
 
 class LlamaLearningSketchOne(InteractiveScene):
@@ -147,6 +169,8 @@ class LlamaLearningSketchOne(InteractiveScene):
 
         w1 = np.random.randn(20, 24) 
         w2 = np.random.randn(24, 20)  
+        grads_1 = np.random.randn(20, 24) 
+        grads_2 = np.random.randn(20, 24) 
         neuron_fills=[np.random.randn(20), np.random.randn(24), np.random.randn(20)]
 
         # net = Network([W1, W2])
@@ -154,7 +178,7 @@ class LlamaLearningSketchOne(InteractiveScene):
 
 
 
-        mlp=get_mlp(w1, w2, neuron_fills)
+        mlp=get_mlp(w1, w2, neuron_fills, grads_1=grads_1)
         self.add(mlp)
         self.remove(mlp[2][1]); self.add(mlp[2][1]) #Ok seems like I'm just exploiting a bug, but this fixes layering. 
         self.remove(mlp[1][1]); self.add(mlp[1][1])
@@ -183,6 +207,14 @@ class LlamaLearningSketchOne(InteractiveScene):
         # Ok yeah the absolute value does help visually a bit i think. 
         # Ok that will take some noodling, but I think it's not terrible. 
         # I think it could be cool/interesting to have the activations in monochrom, and the grads in color. 
+        #
+        # Ok, again for the grads, viridis is kinda meh -> leaning towards monochrom blues or maybe yellows
+        # This opens up the possility of showing grads from different examples in different colors - which could be 
+        # pretty cool! 
+        # I dont' quite want the standard Blues colormaps, ideally i want a grad of zero to be transparent, not white
+        # Let me look into that next. If I can't do it with color I should be able to go from black to my color and use 
+        # opacity to acheve something similar
+        # Not sure yet if I want to show weights and grads or just grads!
 
         
         self.wait()

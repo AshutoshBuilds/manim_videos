@@ -67,9 +67,9 @@ def get_mlp(w1,
     INPUT_NEURONS = w1.shape[0]
     HIDDEN_NEURONS = w1.shape[1]
     OUTPUT_NEURONS = w1.shape[0]
-    NEURON_RADIUS = 0.08
-    LAYER_SPACING = 0.25
-    VERTICAL_SPACING = 0.25
+    NEURON_RADIUS = 0.065
+    LAYER_SPACING = 0.28
+    VERTICAL_SPACING = 0.2
     DOTS_SCALE=0.5
     
     # Create layers
@@ -234,18 +234,18 @@ class AttentionPattern(VMobject):
 class LlamaLearningSketchOne(InteractiveScene):
     def construct(self):
 
-        w1 = np.random.randn(20, 24) 
-        w2 = np.random.randn(24, 20)  
-        grads_1 = np.random.randn(20, 24) 
-        grads_2 = np.random.randn(24, 20) 
-        neuron_fills=[np.random.randn(20), np.random.randn(24), np.random.randn(20)]
+        w1 = np.random.randn(32, 34) 
+        w2 = np.random.randn(34, 32)  
+        grads_1 = np.random.randn(32, 34) 
+        grads_2 = np.random.randn(34, 32) 
+        neuron_fills=[np.random.randn(32), np.random.randn(34), np.random.randn(32)]
 
         # net = Network([W1, W2])
         # self.add(net)
 
 
 
-        mlp=get_mlp(w1, w2, neuron_fills, grads_1=grads_1, grads_2=grads_2)
+        mlp=get_mlp(w1, w2, neuron_fills) #, grads_1=grads_1, grads_2=grads_2)
         self.add(mlp)
         self.remove(mlp[3][1]); self.add(mlp[3][1]) #Ok seems like I'm just exploiting a bug, but this fixes layering. 
         self.remove(mlp[2][1]); self.add(mlp[2][1])
@@ -255,32 +255,36 @@ class LlamaLearningSketchOne(InteractiveScene):
 
         #Probably wrap this up.
         # def get_attention_layer() 
-        attention_border=RoundedRectangle(width=0.6, height=6.3, corner_radius=0.1)
+        attention_border=RoundedRectangle(width=0.6, height=6.4, corner_radius=0.1)
         attention_border.set_stroke(width=0.5, color=CHILL_BROWN)
         self.add(attention_border)
 
 
         attention_patterns=VGroup()
-        num_attention_patterns=12
+        num_attention_patterns=13
         attention_pattern_spacing=0.51
         for i in range(num_attention_patterns):
             if i==num_attention_patterns//2:
-                pass
+                dot = Tex("...").rotate(PI/2, OUT).scale(0.5).move_to([0, num_attention_patterns*attention_pattern_spacing/2 - attention_pattern_spacing*(i+0.5), 0])
+                dot.set_color(CHILL_BROWN)
+                attention_patterns.add(dot) #Just add here?
             else:
+                if i>num_attention_patterns//2: offset=0.15
+                else: offset=-0.15 
                 matrix = np.random.rand(6, 6)
                 attn_pattern = AttentionPattern(matrix=matrix, square_size=0.075, stroke_width=0.5)
-                attn_pattern.move_to([0, num_attention_patterns*attention_pattern_spacing/2 - attention_pattern_spacing*(i+0.5), 0])
+                attn_pattern.move_to([0, num_attention_patterns*attention_pattern_spacing/2+offset - attention_pattern_spacing*(i+0.5), 0])
                 attention_patterns.add(attn_pattern)
 
 
-        self.add(attention_patterns)
+        attention_layer=VGroup(attention_patterns, attention_border)
+        self.add(attention_layer)
 
-        # for i in range(INPUT_NEURONS):
-        #     if i == w1.shape[0]//2:  # Middle position for ellipsis
-        #         dot = Tex("...").rotate(PI/2, OUT).scale(DOTS_SCALE).move_to(LEFT * LAYER_SPACING + UP * ((INPUT_NEURONS//2 - i) * VERTICAL_SPACING))
-        #         dot.set_color(neuron_stroke_color)
-        #         dots.add(dot)
-        #     else:
+        # Ok so far so good, I'll wrap this up into a class shortly -> first though how I make connections to mlp??
+        attention_layer.move_to([-3, 0, 0])
+
+
+
 
 
         self.wait() 

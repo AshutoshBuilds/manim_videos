@@ -29,6 +29,7 @@ def get_edge_points(circle1, circle2, neuron_radius):
 viridis_colormap=plt.get_cmap("viridis")
 blues_colormap=plt.get_cmap("Blues")
 custom_cmap_tans = mcolors.LinearSegmentedColormap.from_list('custom', ['#000000', '#dfd0b9'], N=256)
+custom_cmap_cyan = mcolors.LinearSegmentedColormap.from_list('custom', ['#000000', '#00FFFF'], N=256)
 
 # def get_nueron_color(value, vmin=-2, vmax=2):        
 #         value_clipped = np.clip((value - vmin) / (vmax - vmin), 0, 1)
@@ -43,8 +44,10 @@ def get_nueron_color(value, vmax=2.5):
 
 def get_grad_color(value, vmin=-2, vmax=2):        
     value_clipped = np.clip((value - vmin) / (vmax - vmin), 0, 1)
-    rgba = blues_colormap(value_clipped) #Would also like to try a monochrome tan option
+    rgba = custom_cmap_cyan(value_clipped) #Would also like to try a monochrome tan option
     return Color(rgb=rgba[:3])
+
+
 
 
 def get_mlp(w1, 
@@ -139,9 +142,9 @@ def get_mlp(w1,
             if grads_1 is not None:
                 if np.abs(grads_1[i, j])<grad_display_thresh: continue
                 line_grad = Line(start_point, end_point)
-                # line_grad.set_stroke(opacity=np.clip(0.8*(np.abs(grads_1[i, j])-connection_display_thresh), 0, 1), 
-                #                     width=np.abs(grads_1[i, j]))
-                line_grad.set_stroke(opacity=0.8, width=2)
+                line_grad.set_stroke(opacity=np.clip(0.8*(np.abs(grads_1[i, j])-grad_display_thresh), 0, 1), 
+                                    width=np.abs(grads_1[i, j]))
+                # line_grad.set_stroke(opacity=0.8, width=2)
                 # print(np.clip(1.0*(np.abs(w1[i, j])-connection_display_thresh), 0, 1))
 
                 line_grad.set_color(get_grad_color(grads_1[i, j]))
@@ -158,10 +161,73 @@ def get_mlp(w1,
 
             line.set_color(line_stroke_color)
             connections.add(line)
+            if grads_2 is not None:
+                if np.abs(grads_2[i, j])<grad_display_thresh: continue
+                line_grad = Line(start_point, end_point)
+                line_grad.set_stroke(opacity=np.clip(0.8*(np.abs(grads_2[i, j])-grad_display_thresh), 0, 1), 
+                                    width=np.abs(grads_2[i, j]))
+                # line_grad.set_stroke(opacity=0.8, width=2)
+                # print(np.clip(1.0*(np.abs(w1[i, j])-connection_display_thresh), 0, 1))
+
+                line_grad.set_color(get_grad_color(grads_2[i, j]))
+                grad_conections.add(line_grad)
 
                 
-    # return VGroup(connections, input_layer, hidden_layer, output_layer, dots, grad_conections)
-    return VGroup(grad_conections, input_layer, hidden_layer, output_layer, dots)
+    return VGroup(connections, grad_conections, input_layer, hidden_layer, output_layer, dots)
+    # return VGroup(grad_conections, input_layer, hidden_layer, output_layer, dots)
+
+
+
+class AttentionPattern(VMobject):
+    def __init__(
+        self,
+        matrix,
+        square_size=0.3,
+        min_opacity=0.2,
+        max_opacity=1.0,
+        stroke_width=1.0,
+        stroke_color=CHILL_BROWN,
+        colormap=custom_cmap_tans,
+        **kwargs
+    ):
+        super().__init__(**kwargs)
+        self.matrix = np.array(matrix)
+        self.n_rows, self.n_cols = self.matrix.shape
+        self.square_size = square_size
+        self.min_opacity = min_opacity
+        self.max_opacity = max_opacity
+        self.stroke_width = stroke_width
+        self.stroke_color = stroke_color
+        self._colormap = colormap
+
+        self.build()
+
+    def map_value_to_style(self, val):
+        val_clipped = np.clip(val, 0, 1)
+        rgba = self._colormap(val_clipped)
+        color = Color(rgb=rgba[:3])
+        opacity = self.min_opacity + val_clipped * (self.max_opacity - self.min_opacity)
+        return {"color": color, "opacity": opacity}
+
+    def build(self):
+        self.clear()
+        squares = VGroup()
+        for i in range(self.n_rows):
+            for j in range(self.n_cols):
+                val = self.matrix[i, j]
+                style = self.map_value_to_style(val)
+
+                square = Square(side_length=self.square_size)
+                square.set_fill(style["color"], opacity=style["opacity"])
+                square.set_stroke(self.stroke_color, width=self.stroke_width)
+
+                pos = RIGHT * j * self.square_size + DOWN * i * self.square_size
+                square.move_to(pos)
+                squares.add(square)
+
+        squares.move_to(ORIGIN)
+        self.add(squares)
+
 
 
 class LlamaLearningSketchOne(InteractiveScene):
@@ -170,7 +236,7 @@ class LlamaLearningSketchOne(InteractiveScene):
         w1 = np.random.randn(20, 24) 
         w2 = np.random.randn(24, 20)  
         grads_1 = np.random.randn(20, 24) 
-        grads_2 = np.random.randn(20, 24) 
+        grads_2 = np.random.randn(24, 20) 
         neuron_fills=[np.random.randn(20), np.random.randn(24), np.random.randn(20)]
 
         # net = Network([W1, W2])
@@ -178,10 +244,26 @@ class LlamaLearningSketchOne(InteractiveScene):
 
 
 
-        mlp=get_mlp(w1, w2, neuron_fills, grads_1=grads_1)
+        mlp=get_mlp(w1, w2, neuron_fills, grads_1=grads_1, grads_2=grads_2)
         self.add(mlp)
-        self.remove(mlp[2][1]); self.add(mlp[2][1]) #Ok seems like I'm just exploiting a bug, but this fixes layering. 
-        self.remove(mlp[1][1]); self.add(mlp[1][1])
+        self.remove(mlp[3][1]); self.add(mlp[3][1]) #Ok seems like I'm just exploiting a bug, but this fixes layering. 
+        self.remove(mlp[2][1]); self.add(mlp[2][1])
+        mlp.move_to([-4, 0, 0])
+
+        self.wait()
+
+        matrix = np.random.rand(4, 4)
+        attn_pattern = AttentionPattern(matrix=matrix, square_size=0.1, stroke_width=0.5)
+        self.add(attn_pattern)
+
+        #Probably wrap this up. 
+        attention_border=RoundedRectangle(width=0.6, height=5.0, corner_radius=0.1)
+        attention_border.set_stroke(width=0.5, color=CHILL_BROWN)
+        self.add(attention_border)
+
+        self.wait()
+
+
 
         # Ok, making some progress here - I'm going to need to turn off some portion of the connections I think 
         # for it not be become a wall of fill. I think let's try just not drawing neuronss below some threshold?
@@ -215,6 +297,13 @@ class LlamaLearningSketchOne(InteractiveScene):
         # Let me look into that next. If I can't do it with color I should be able to go from black to my color and use 
         # opacity to acheve something similar
         # Not sure yet if I want to show weights and grads or just grads!
+        # Ok cool yeah I'm not hating the cyan on top of the weights!
+        # Ok cool let's hack on attention patterns a bit now? I'm a bit fuzzy on how I'm going to handle exports - 
+        # will be a good challenge for the morning probably - let me see if I can get some basica attention patterns going -
+        # I'll start with what Pranav did, it look pretty nice!
+
+
+
 
         
         self.wait()

@@ -37,7 +37,7 @@ custom_cmap_cyan = mcolors.LinearSegmentedColormap.from_list('custom', ['#000000
 #         rgba = custom_cmap_tans(value_clipped) #Would also like to try a monochrome tan option
 #         return Color(rgb=rgba[:3])
 
-def get_nueron_color(value, vmax=2.5):        
+def get_nueron_color(value, vmax=0.95):        
     '''Uses abs, a little reductive'''
     value_clipped = np.clip(np.abs(value)/vmax, 0, 1)
     rgba = custom_cmap_tans(value_clipped) #Would also like to try a monochrome tan option
@@ -239,7 +239,15 @@ class LlamaLearningSketchOne(InteractiveScene):
         w2 = np.random.randn(34, 32)  
         grads_1 = np.random.randn(32, 34) 
         grads_2 = np.random.randn(34, 32) 
-        neuron_fills=[np.random.randn(32), np.random.randn(34), np.random.randn(32)]
+        # neuron_fills=[np.random.randn(32), np.random.randn(34), np.random.randn(32)]
+
+        data_dir='/Users/stephen/welch_labs/backprop2/hackin/may_31_1'
+        layer_num=8
+        neuron_fills=[
+            np.load(data_dir + '/blocks.'+str(layer_num)+'.hook_resid_mid.npy'),
+            np.load(data_dir + '/blocks.'+str(layer_num)+'.mlp.hook_post.npy'),
+            np.load(data_dir + '/blocks.'+str(layer_num)+'.hook_mlp_out.npy')
+        ]
 
         # net = Network([W1, W2])
         # self.add(net)

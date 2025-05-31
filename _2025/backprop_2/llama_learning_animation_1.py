@@ -4,8 +4,9 @@ import numpy as np
 import torch
 import sys
 sys.path.append('_2025/backprop_2')
-from network_pranav_pr_1 import *
+# from network_pranav_pr_1 import *
 import matplotlib.colors as mcolors
+import matplotlib.pyplot as plt
 
 
 CHILL_BROWN='#948979'
@@ -252,16 +253,37 @@ class LlamaLearningSketchOne(InteractiveScene):
 
         self.wait()
 
-        matrix = np.random.rand(4, 4)
-        attn_pattern = AttentionPattern(matrix=matrix, square_size=0.1, stroke_width=0.5)
-        self.add(attn_pattern)
-
-        #Probably wrap this up. 
-        attention_border=RoundedRectangle(width=0.6, height=5.0, corner_radius=0.1)
+        #Probably wrap this up.
+        # def get_attention_layer() 
+        attention_border=RoundedRectangle(width=0.6, height=6.3, corner_radius=0.1)
         attention_border.set_stroke(width=0.5, color=CHILL_BROWN)
         self.add(attention_border)
 
-        self.wait()
+
+        attention_patterns=VGroup()
+        num_attention_patterns=12
+        attention_pattern_spacing=0.51
+        for i in range(num_attention_patterns):
+            if i==num_attention_patterns//2:
+                pass
+            else:
+                matrix = np.random.rand(6, 6)
+                attn_pattern = AttentionPattern(matrix=matrix, square_size=0.075, stroke_width=0.5)
+                attn_pattern.move_to([0, num_attention_patterns*attention_pattern_spacing/2 - attention_pattern_spacing*(i+0.5), 0])
+                attention_patterns.add(attn_pattern)
+
+
+        self.add(attention_patterns)
+
+        # for i in range(INPUT_NEURONS):
+        #     if i == w1.shape[0]//2:  # Middle position for ellipsis
+        #         dot = Tex("...").rotate(PI/2, OUT).scale(DOTS_SCALE).move_to(LEFT * LAYER_SPACING + UP * ((INPUT_NEURONS//2 - i) * VERTICAL_SPACING))
+        #         dot.set_color(neuron_stroke_color)
+        #         dots.add(dot)
+        #     else:
+
+
+        self.wait() 
 
 
 

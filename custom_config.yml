@@ -1,7 +1,7 @@
 directories:
   mirror_module_path: False
   removed_mirror_prefix: "/Users/stephen/Stephencwelch Dropbox/Stephen Welch"
-  base: "/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/animation"
+  base: "/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backprop2/animation"
   subdirs:
     raster_images: "images/raster"
     vector_images: "images/vector"
@@ -15,7 +15,7 @@ window:
   full_screen: False
 camera:
   resolution: (3840, 2160) #(3840, 2160) #(7680, 4320) #
-  background_color: "#100810" #191519" #"#000000" ##FFFFFF"
+  background_color: "#000000" #"100810" #191519" #"#000000" ##FFFFFF"
   fps: 30
   background_opacity: 1.0
 file_writer:

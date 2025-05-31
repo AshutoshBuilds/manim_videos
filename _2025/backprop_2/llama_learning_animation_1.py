@@ -48,7 +48,55 @@ def get_grad_color(value, vmin=-2, vmax=2):
     rgba = custom_cmap_cyan(value_clipped) #Would also like to try a monochrome tan option
     return Color(rgb=rgba[:3])
 
+class AttentionPattern(VMobject):
+    def __init__(
+        self,
+        matrix,
+        square_size=0.3,
+        min_opacity=0.2,
+        max_opacity=1.0,
+        stroke_width=1.0,
+        stroke_color=CHILL_BROWN,
+        colormap=custom_cmap_tans,
+        **kwargs
+    ):
+        super().__init__(**kwargs)
+        self.matrix = np.array(matrix)
+        self.n_rows, self.n_cols = self.matrix.shape
+        self.square_size = square_size
+        self.min_opacity = min_opacity
+        self.max_opacity = max_opacity
+        self.stroke_width = stroke_width
+        self.stroke_color = stroke_color
+        self._colormap = colormap
 
+        self.build()
+
+    def map_value_to_style(self, val):
+        val_clipped = np.clip(val, 0, 1)
+        rgba = self._colormap(val_clipped)
+        color = Color(rgb=rgba[:3])
+        opacity = self.min_opacity + val_clipped * (self.max_opacity - self.min_opacity)
+        return {"color": color, "opacity": opacity}
+
+    def build(self):
+        self.clear()
+        squares = VGroup()
+        for i in range(self.n_rows):
+            for j in range(self.n_cols):
+                val = self.matrix[i, j]
+                style = self.map_value_to_style(val)
+
+                square = Square(side_length=self.square_size)
+                square.set_fill(style["color"], opacity=style["opacity"])
+                square.set_stroke(self.stroke_color, width=self.stroke_width)
+
+                pos = RIGHT * j * self.square_size + DOWN * i * self.square_size
+                square.move_to(pos)
+                squares.add(square)
+
+        squares.move_to(ORIGIN)
+        self.add(squares)
 
 
 def get_mlp(w1, 
@@ -58,7 +106,7 @@ def get_mlp(w1,
             grads_2=None,
             line_weight=1.0, 
             line_opacity=0.5, 
-            neuron_stroke_width=2.0, 
+            neuron_stroke_width=1.0, 
             neuron_stroke_color='#948979', 
             line_stroke_color='#948979', 
             connection_display_thresh=1.1,
@@ -67,9 +115,9 @@ def get_mlp(w1,
     INPUT_NEURONS = w1.shape[0]
     HIDDEN_NEURONS = w1.shape[1]
     OUTPUT_NEURONS = w1.shape[0]
-    NEURON_RADIUS = 0.065
-    LAYER_SPACING = 0.28
-    VERTICAL_SPACING = 0.2
+    NEURON_RADIUS = 0.06
+    LAYER_SPACING = 0.23
+    VERTICAL_SPACING = 0.18
     DOTS_SCALE=0.5
     
     # Create layers
@@ -128,107 +176,60 @@ def get_mlp(w1,
             
     # Create connections with edge points
     connections = VGroup()
-    grad_conections=VGroup()
-    
-    # Connect input to hidden layer
     for i, in_neuron in enumerate(input_layer):
         for j, hidden_neuron in enumerate(hidden_layer):
-            if np.abs(w1[i, j])<connection_display_thresh: continue
+            # if np.abs(w1[i, j])<connection_display_thresh: continue
+            if abs(i-j)>6: continue #Let's try just drawing local ones. 
             start_point, end_point = get_edge_points(in_neuron, hidden_neuron, NEURON_RADIUS)
             line = Line(start_point, end_point)
-            line.set_stroke(opacity=np.clip(0.8*(np.abs(w1[i, j])-connection_display_thresh), 0, 1), width=line_weight)
-            # print(np.clip(1.0*(np.abs(w1[i, j])-connection_display_thresh), 0, 1))
+            line.set_stroke(opacity=np.clip(0.8*(np.abs(w1[i, j])-connection_display_thresh), 0.1, 1), width=line_weight)
             line.set_color(line_stroke_color)
             connections.add(line)
-            if grads_1 is not None:
+
+    for i, hidden_neuron in enumerate(hidden_layer):
+        for j, out_neuron in enumerate(output_layer):
+            # if np.abs(w2[i, j])<connection_display_thresh: continue
+            if abs(i-j)>6: continue #Let's try just drawing local ones.
+            start_point, end_point = get_edge_points(hidden_neuron, out_neuron, NEURON_RADIUS)
+            line = Line(start_point, end_point) #, stroke_opacity=line_opacity, stroke_width=line_weight)
+            line.set_stroke(opacity=np.clip(0.8*(np.abs(w2[i, j])-connection_display_thresh), 0.1, 1), width=line_weight)
+            line.set_color(line_stroke_color)
+            connections.add(line)
+
+    grad_conections=VGroup()
+    if grads_1 is not None:
+        for i, in_neuron in enumerate(input_layer):
+            for j, hidden_neuron in enumerate(hidden_layer):
                 if np.abs(grads_1[i, j])<grad_display_thresh: continue
+                if abs(i-j)>6: continue #Need to dial this up or lost it probably, but it is helpful!
+                start_point, end_point = get_edge_points(in_neuron, hidden_neuron, NEURON_RADIUS)
                 line_grad = Line(start_point, end_point)
                 line_grad.set_stroke(opacity=np.clip(0.8*(np.abs(grads_1[i, j])-grad_display_thresh), 0, 1), 
                                     width=np.abs(grads_1[i, j]))
                 # line_grad.set_stroke(opacity=0.8, width=2)
                 # print(np.clip(1.0*(np.abs(w1[i, j])-connection_display_thresh), 0, 1))
-
                 line_grad.set_color(get_grad_color(grads_1[i, j]))
                 grad_conections.add(line_grad)
 
             
     # Connect hidden to output layer
-    for i, hidden_neuron in enumerate(hidden_layer):
-        for j, out_neuron in enumerate(output_layer):
-            if np.abs(w2[i, j])<connection_display_thresh: continue
-            start_point, end_point = get_edge_points(hidden_neuron, out_neuron, NEURON_RADIUS)
-            line = Line(start_point, end_point) #, stroke_opacity=line_opacity, stroke_width=line_weight)
-            line.set_stroke(opacity=np.clip(0.8*(np.abs(w2[i, j])-connection_display_thresh), 0, 1), width=line_weight)
-
-            line.set_color(line_stroke_color)
-            connections.add(line)
-            if grads_2 is not None:
+    if grads_2 is not None:
+        for i, hidden_neuron in enumerate(hidden_layer):
+            for j, out_neuron in enumerate(output_layer):
                 if np.abs(grads_2[i, j])<grad_display_thresh: continue
+                if abs(i-j)>6: continue #Need to dial this up or lost it probably, but it is helpful!
+                start_point, end_point = get_edge_points(hidden_neuron, out_neuron, NEURON_RADIUS)
                 line_grad = Line(start_point, end_point)
                 line_grad.set_stroke(opacity=np.clip(0.8*(np.abs(grads_2[i, j])-grad_display_thresh), 0, 1), 
                                     width=np.abs(grads_2[i, j]))
                 # line_grad.set_stroke(opacity=0.8, width=2)
                 # print(np.clip(1.0*(np.abs(w1[i, j])-connection_display_thresh), 0, 1))
-
                 line_grad.set_color(get_grad_color(grads_2[i, j]))
                 grad_conections.add(line_grad)
 
                 
     return VGroup(connections, grad_conections, input_layer, hidden_layer, output_layer, dots)
     # return VGroup(grad_conections, input_layer, hidden_layer, output_layer, dots)
-
-
-
-class AttentionPattern(VMobject):
-    def __init__(
-        self,
-        matrix,
-        square_size=0.3,
-        min_opacity=0.2,
-        max_opacity=1.0,
-        stroke_width=1.0,
-        stroke_color=CHILL_BROWN,
-        colormap=custom_cmap_tans,
-        **kwargs
-    ):
-        super().__init__(**kwargs)
-        self.matrix = np.array(matrix)
-        self.n_rows, self.n_cols = self.matrix.shape
-        self.square_size = square_size
-        self.min_opacity = min_opacity
-        self.max_opacity = max_opacity
-        self.stroke_width = stroke_width
-        self.stroke_color = stroke_color
-        self._colormap = colormap
-
-        self.build()
-
-    def map_value_to_style(self, val):
-        val_clipped = np.clip(val, 0, 1)
-        rgba = self._colormap(val_clipped)
-        color = Color(rgb=rgba[:3])
-        opacity = self.min_opacity + val_clipped * (self.max_opacity - self.min_opacity)
-        return {"color": color, "opacity": opacity}
-
-    def build(self):
-        self.clear()
-        squares = VGroup()
-        for i in range(self.n_rows):
-            for j in range(self.n_cols):
-                val = self.matrix[i, j]
-                style = self.map_value_to_style(val)
-
-                square = Square(side_length=self.square_size)
-                square.set_fill(style["color"], opacity=style["opacity"])
-                square.set_stroke(self.stroke_color, width=self.stroke_width)
-
-                pos = RIGHT * j * self.square_size + DOWN * i * self.square_size
-                square.move_to(pos)
-                squares.add(square)
-
-        squares.move_to(ORIGIN)
-        self.add(squares)
-
 
 
 class LlamaLearningSketchOne(InteractiveScene):
@@ -244,24 +245,23 @@ class LlamaLearningSketchOne(InteractiveScene):
         # self.add(net)
 
 
-
-        mlp=get_mlp(w1, w2, neuron_fills) #, grads_1=grads_1, grads_2=grads_2)
-        self.add(mlp)
-        self.remove(mlp[3][1]); self.add(mlp[3][1]) #Ok seems like I'm just exploiting a bug, but this fixes layering. 
-        self.remove(mlp[2][1]); self.add(mlp[2][1])
+        mlp=get_mlp(w1, w2, neuron_fills, grads_1=grads_1, grads_2=grads_2)
         mlp.move_to([-4, 0, 0])
-
-        self.wait()
 
         #Probably wrap this up.
         # def get_attention_layer() 
-        attention_border=RoundedRectangle(width=0.6, height=6.4, corner_radius=0.1)
-        attention_border.set_stroke(width=0.5, color=CHILL_BROWN)
-        self.add(attention_border)
+        attention_connections_left=np.random.randn(32, 10)
+        attention_connections_right=np.random.randn(10, 32)
+        attention_connection_display_thresh=0.5
+
+
+        attention_border=RoundedRectangle(width=0.59, height=5.4, corner_radius=0.1)
+        attention_border.set_stroke(width=1.0, color=CHILL_BROWN)
 
 
         attention_patterns=VGroup()
-        num_attention_patterns=13
+        connection_points_left=VGroup()
+        num_attention_patterns=11
         attention_pattern_spacing=0.51
         for i in range(num_attention_patterns):
             if i==num_attention_patterns//2:
@@ -272,22 +272,80 @@ class LlamaLearningSketchOne(InteractiveScene):
                 if i>num_attention_patterns//2: offset=0.15
                 else: offset=-0.15 
                 matrix = np.random.rand(6, 6)
-                attn_pattern = AttentionPattern(matrix=matrix, square_size=0.075, stroke_width=0.5)
+                attn_pattern = AttentionPattern(matrix=matrix, square_size=0.07, stroke_width=0.5)
                 attn_pattern.move_to([0, num_attention_patterns*attention_pattern_spacing/2+offset - attention_pattern_spacing*(i+0.5), 0])
                 attention_patterns.add(attn_pattern)
 
+                connection_point_left=Circle(radius=0)
+                connection_point_left.move_to([-0.59/2.0, num_attention_patterns*attention_pattern_spacing/2+offset - attention_pattern_spacing*(i+0.5), 0])
+                connection_points_left.add(connection_point_left)
 
-        attention_layer=VGroup(attention_patterns, attention_border)
+        attention_layer=VGroup(attention_patterns, attention_border, connection_points_left)
+        attention_layer.move_to([-3.2, 0, 0])
+
+        connections_left=VGroup()
+        for i, mlp_out_neuron in enumerate(mlp[4]):
+            for j, attention_neuron in enumerate(connection_points_left):
+                if np.abs(attention_connections_left[i, j])<attention_connection_display_thresh: continue
+                if abs(i/4-j)>3: continue #Need to dial this up or lost it probably, but it is helpful!
+                start_point, end_point = get_edge_points(mlp_out_neuron, attention_neuron, 0.06)
+                line = Line(start_point, attention_neuron.get_center())
+                # line.set_stroke(width=1, opacity=0.3)
+                line.set_stroke(opacity=np.clip(0.8*(np.abs(w2[i, j])-attention_connection_display_thresh), 0.1, 1), width=1)
+                line.set_color(CHILL_BROWN)
+                connections_left.add(line)
+
+
+        #Order i add stuff here matters for occlusions. 
+        self.add(connections_left)
+        self.add(mlp)
         self.add(attention_layer)
 
+
+        self.remove(mlp[3][1]); self.add(mlp[3][1]) #Ok seems like I'm just exploiting a bug, but this fixes layering. 
+        self.remove(mlp[2][1]); self.add(mlp[2][1])
+        self.remove(mlp[4][1]); self.add(mlp[4][1])
+        
+
+        self.wait()
+
+
+        #Kinda thinking that before I get stuff to grapped up here I should bring in some real data!
+
+
+
+
+
+
+        
+        # self.remove(mlp[4])
+        # self.add(mlp[4])
+        
+        
+
         # Ok so far so good, I'll wrap this up into a class shortly -> first though how I make connections to mlp??
-        attention_layer.move_to([-3, 0, 0])
+        
 
 
 
 
+
+        # self.remove(mlp[0])
+        # self.add(mlp[1])
 
         self.wait() 
+
+
+        #Ok making progress
+        # I think Grads could still use some tuning - not terrible there
+        # The only local connections thing is really helpful visuall -> you do lose a lot though hmmm
+        #
+
+        # man I hope i get to use this animation a few more times, it's takings some thinking!
+        # Ok, so making progress. I've added more mlp neurons and it's getting a bit rat nesty again
+        # For the weights, I kinda wonder if just connecting each neuron to a few neighbors might be the move
+        # Ok nice yeah that's much less rats nesty - mayb i could even do that prbabilisticlaly or something...
+
 
 
 
@@ -331,28 +389,7 @@ class LlamaLearningSketchOne(InteractiveScene):
 
 
 
-        
-        self.wait()
 
-
-
-
-
-
-
-        # self.remove(mlp[2])
-        # self.add(mlp[2])
-        # self.add(mlp[0]) #Connections
-
-        self.wait()
-        self.add()
-
-        
-
-        
-
-
-        mlp[2][1]
 
 
         self.wait()
@@ -363,6 +400,131 @@ class LlamaLearningSketchOne(InteractiveScene):
 
 
 
+# def get_mlp(w1, 
+#             w2,
+#             neuron_fills=None, #Black if None
+#             grads_1=None,
+#             grads_2=None,
+#             line_weight=1.0, 
+#             line_opacity=0.5, 
+#             neuron_stroke_width=2.0, 
+#             neuron_stroke_color='#948979', 
+#             line_stroke_color='#948979', 
+#             connection_display_thresh=1.1,
+#             grad_display_thresh=0.5):
+
+#     INPUT_NEURONS = w1.shape[0]
+#     HIDDEN_NEURONS = w1.shape[1]
+#     OUTPUT_NEURONS = w1.shape[0]
+#     NEURON_RADIUS = 0.065
+#     LAYER_SPACING = 0.28
+#     VERTICAL_SPACING = 0.2
+#     DOTS_SCALE=0.5
+    
+#     # Create layers
+#     input_layer = VGroup()
+#     hidden_layer = VGroup()
+#     output_layer = VGroup()
+#     dots = VGroup()
+    
+#     # Input layer
+#     for i in range(INPUT_NEURONS):
+#         if i == w1.shape[0]//2:  # Middle position for ellipsis
+#             dot = Tex("...").rotate(PI/2, OUT).scale(DOTS_SCALE).move_to(LEFT * LAYER_SPACING + UP * ((INPUT_NEURONS//2 - i) * VERTICAL_SPACING))
+#             dot.set_color(neuron_stroke_color)
+#             dots.add(dot)
+#         else:
+#             neuron = Circle(radius=NEURON_RADIUS, stroke_color=neuron_stroke_color)
+#             neuron.set_stroke(width=neuron_stroke_width)
+#             if neuron_fills is None: 
+#                 neuron.set_fill(color='#000000', opacity=1.0)
+#             else: 
+#                 neuron.set_fill(color=get_nueron_color(neuron_fills[0][i]), opacity=1.0)
+#             neuron.move_to(LEFT * LAYER_SPACING + UP * ((INPUT_NEURONS//2 - i) * VERTICAL_SPACING))
+#             input_layer.add(neuron)
+            
+#     # Hidden layer
+#     for i in range(HIDDEN_NEURONS):
+#         if i == w1.shape[1]//2:  # Middle position for ellipsis
+#             dot = Tex("...").rotate(PI/2, OUT).scale(DOTS_SCALE).move_to(UP * ((HIDDEN_NEURONS//2 - i) * VERTICAL_SPACING))
+#             dot.set_color(neuron_stroke_color)
+#             dots.add(dot)
+#         else:
+#             neuron = Circle(radius=NEURON_RADIUS, stroke_color=neuron_stroke_color)
+#             neuron.set_stroke(width=neuron_stroke_width)
+#             if neuron_fills is None: 
+#                 neuron.set_fill(color='#000000', opacity=1.0)
+#             else: 
+#                 neuron.set_fill(color=get_nueron_color(neuron_fills[1][i]), opacity=1.0)
+#             neuron.move_to(UP * ((HIDDEN_NEURONS//2 - i) * VERTICAL_SPACING))
+#             hidden_layer.add(neuron)
+            
+#     # Output layer
+#     for i in range(OUTPUT_NEURONS):
+#         if i == w1.shape[0]//2:  # Middle position for ellipsis
+#             dot = Tex("...").rotate(PI/2, OUT).scale(DOTS_SCALE).move_to(RIGHT * LAYER_SPACING + UP * ((OUTPUT_NEURONS//2 - i) * VERTICAL_SPACING))
+#             dot.set_color(neuron_stroke_color)
+#             dots.add(dot)
+#         else:
+#             neuron = Circle(radius=NEURON_RADIUS, stroke_color=neuron_stroke_color)
+#             neuron.set_stroke(width=neuron_stroke_width)
+#             if neuron_fills is None: 
+#                 neuron.set_fill(color='#000000', opacity=1.0)
+#             else: 
+#                 neuron.set_fill(color=get_nueron_color(neuron_fills[2][i]), opacity=1.0)
+#             neuron.move_to(RIGHT * LAYER_SPACING + UP * ((OUTPUT_NEURONS//2 - i) * VERTICAL_SPACING))
+#             output_layer.add(neuron)
+            
+#     # Create connections with edge points
+#     connections = VGroup()
+#     grad_conections=VGroup()
+    
+#     # Connect input to hidden layer
+#     for i, in_neuron in enumerate(input_layer):
+#         for j, hidden_neuron in enumerate(hidden_layer):
+#             if np.abs(w1[i, j])<connection_display_thresh: continue
+#             start_point, end_point = get_edge_points(in_neuron, hidden_neuron, NEURON_RADIUS)
+#             line = Line(start_point, end_point)
+#             line.set_stroke(opacity=np.clip(0.8*(np.abs(w1[i, j])-connection_display_thresh), 0, 1), width=line_weight)
+#             # print(np.clip(1.0*(np.abs(w1[i, j])-connection_display_thresh), 0, 1))
+#             line.set_color(line_stroke_color)
+#             connections.add(line)
+#             if grads_1 is not None:
+#                 if np.abs(grads_1[i, j])<grad_display_thresh: continue
+#                 line_grad = Line(start_point, end_point)
+#                 line_grad.set_stroke(opacity=np.clip(0.8*(np.abs(grads_1[i, j])-grad_display_thresh), 0, 1), 
+#                                     width=np.abs(grads_1[i, j]))
+#                 # line_grad.set_stroke(opacity=0.8, width=2)
+#                 # print(np.clip(1.0*(np.abs(w1[i, j])-connection_display_thresh), 0, 1))
+
+#                 line_grad.set_color(get_grad_color(grads_1[i, j]))
+#                 grad_conections.add(line_grad)
+
+            
+#     # Connect hidden to output layer
+#     for i, hidden_neuron in enumerate(hidden_layer):
+#         for j, out_neuron in enumerate(output_layer):
+#             if np.abs(w2[i, j])<connection_display_thresh: continue
+#             start_point, end_point = get_edge_points(hidden_neuron, out_neuron, NEURON_RADIUS)
+#             line = Line(start_point, end_point) #, stroke_opacity=line_opacity, stroke_width=line_weight)
+#             line.set_stroke(opacity=np.clip(0.8*(np.abs(w2[i, j])-connection_display_thresh), 0, 1), width=line_weight)
+
+#             line.set_color(line_stroke_color)
+#             connections.add(line)
+#             if grads_2 is not None:
+#                 if np.abs(grads_2[i, j])<grad_display_thresh: continue
+#                 line_grad = Line(start_point, end_point)
+#                 line_grad.set_stroke(opacity=np.clip(0.8*(np.abs(grads_2[i, j])-grad_display_thresh), 0, 1), 
+#                                     width=np.abs(grads_2[i, j]))
+#                 # line_grad.set_stroke(opacity=0.8, width=2)
+#                 # print(np.clip(1.0*(np.abs(w1[i, j])-connection_display_thresh), 0, 1))
+
+#                 line_grad.set_color(get_grad_color(grads_2[i, j]))
+#                 grad_conections.add(line_grad)
+
+                
+#     return VGroup(connections, grad_conections, input_layer, hidden_layer, output_layer, dots)
+#     # return VGroup(grad_conections, input_layer, hidden_layer, output_layer, dots)
 
 
 

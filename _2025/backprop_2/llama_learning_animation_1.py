@@ -403,6 +403,13 @@ class LlamaLearningSketchOne(InteractiveScene):
         self.wait()
 
 
+        # Man this is going to be cool when I can hook it up with predcitions and labels and everything
+        # For input layer I think show words in order with other neurons in between? That's a little 
+        # handwavy but seems ok to me
+        # For the output -> i think we show connections for topk outputs, and topk words and probs
+        # man I keep thinking of the poster lol. 
+
+
         # Ok Connection from mlps to next attention block is not terrible.
         # Now, I need to hack on attention to next MLP connections
         # Also, gradients
@@ -413,7 +420,7 @@ class LlamaLearningSketchOne(InteractiveScene):
         # Then probably wrap stuff up 
         # Then input output?
 
-
+        #Ok, now for gradients I need to hop on a runpod for a bit right?
 
 
         #Kinda thinking that before I get stuff to grapped up here I should bring in some real data!

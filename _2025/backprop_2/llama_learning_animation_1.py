@@ -257,7 +257,7 @@ class LlamaLearningSketchOne(InteractiveScene):
         # neuron_fills=[np.random.randn(32), np.random.randn(34), np.random.randn(32)]
 
         data_dir='/Users/stephen/welch_labs/backprop2/hackin/may_31_1'
-        layer_num=10
+        layer_num=8
         neuron_fills=[
             np.load(data_dir + '/blocks.'+str(layer_num)+'.hook_resid_mid.npy'),
             np.load(data_dir + '/blocks.'+str(layer_num)+'.mlp.hook_post.npy'),
@@ -270,6 +270,20 @@ class LlamaLearningSketchOne(InteractiveScene):
 
         mlp=get_mlp(w1, w2, neuron_fills) #, grads_1=grads_1, grads_2=grads_2)
         mlp.move_to([-4, 0, 0])
+
+        #Will do this in a more modular way in next iteration:
+        neuron_fills=[
+            np.load(data_dir + '/blocks.'+str(layer_num+1)+'.hook_resid_mid.npy'),
+            np.load(data_dir + '/blocks.'+str(layer_num+1)+'.mlp.hook_post.npy'),
+            np.load(data_dir + '/blocks.'+str(layer_num+1)+'.hook_mlp_out.npy')
+        ]
+
+
+        w1=np.load(data_dir + '/blocks.'+str(layer_num+1)+'.mlp.W_in'+'.npy')
+        w2=np.load(data_dir + '/blocks.'+str(layer_num+1)+'.mlp.W_out'+'.npy')
+
+        mlp2=get_mlp(w1, w2, neuron_fills) #, grads_1=grads_1, grads_2=grads_2)
+        mlp2.move_to([-2.4, 0, 0])
 
         #Probably wrap this up.
         # def get_attention_layer() 
@@ -307,6 +321,7 @@ class LlamaLearningSketchOne(InteractiveScene):
 
         attention_patterns=VGroup()
         connection_points_left=VGroup()
+        connection_points_right=VGroup()
  
         attn_pattern_count=0
         for i in range(num_attention_pattern_slots):
@@ -325,9 +340,13 @@ class LlamaLearningSketchOne(InteractiveScene):
                 connection_point_left=Circle(radius=0)
                 connection_point_left.move_to([-0.59/2.0, num_attention_pattern_slots*attention_pattern_spacing/2+offset - attention_pattern_spacing*(i+0.5), 0])
                 connection_points_left.add(connection_point_left)
+
+                connection_point_right=Circle(radius=0)
+                connection_point_right.move_to([0.59/2.0, num_attention_pattern_slots*attention_pattern_spacing/2+offset - attention_pattern_spacing*(i+0.5), 0])
+                connection_points_right.add(connection_point_right)
                 attn_pattern_count+=1
 
-        attention_layer=VGroup(attention_patterns, attention_border, connection_points_left)
+        attention_layer=VGroup(attention_patterns, attention_border, connection_points_left, connection_points_right)
         attention_layer.move_to([-3.2, 0, 0])
 
         connections_left=VGroup()
@@ -345,23 +364,59 @@ class LlamaLearningSketchOne(InteractiveScene):
                 line.set_color(CHILL_BROWN)
                 connections_left.add(line)
 
+        connections_right=VGroup()
+        attention_connections_right_abs=np.abs(attention_connections_right)
+        attention_connections_right_scaled=attention_connections_right_abs/np.percentile(attention_connections_left_abs, 99)
+        for i, attention_neuron in enumerate(connection_points_right):
+            for j, mlp_in_neuron in enumerate(mlp2[2]):
+                if np.abs(attention_connections_right_scaled[i, j])<0.6: continue
+                if abs(j/4-i)>3: continue #Need to dial this up or lost it probably, but it is helpful!
+                start_point, end_point = get_edge_points(mlp_in_neuron, attention_neuron, 0.06)
+                line = Line(start_point, attention_neuron.get_center())
+                # line.set_stroke(width=1, opacity=0.3)
+                # line.set_stroke(opacity=np.clip(0.8*(np.abs(w2[i, j])-attention_connection_display_thresh), 0.1, 1), width=1)
+                line.set_stroke(opacity=np.clip(attention_connections_right_scaled[i,j], 0, 1), width=1.0*attention_connections_right_scaled[i,j])
+                line.set_color(CHILL_BROWN)
+                connections_right.add(line)
+
+
+
+
 
         #Order i add stuff here matters for occlusions. 
         self.add(connections_left)
+        self.add(connections_right)
         self.add(mlp)
         self.add(attention_layer)
+        self.add(mlp2)
 
 
         self.remove(mlp[3][1]); self.add(mlp[3][1]) #Ok seems like I'm just exploiting a bug, but this fixes layering. 
         self.remove(mlp[2][1]); self.add(mlp[2][1])
         self.remove(mlp[4][1]); self.add(mlp[4][1])
         
+        self.remove(mlp2[3][1]); self.add(mlp2[3][1]) #Ok seems like I'm just exploiting a bug, but this fixes layering. 
+        self.remove(mlp2[2][1]); self.add(mlp2[2][1])
+        self.remove(mlp2[4][1]); self.add(mlp2[4][1])
+
 
         self.wait()
 
 
-        #Kinda thinking that before I get stuff to grapped up here I should bring in some real data!
+        # Ok Connection from mlps to next attention block is not terrible.
+        # Now, I need to hack on attention to next MLP connections
+        # Also, gradients
+        # And of course, wrapping everything a bit more modularly. 
+        # Oh and the the input and output deals layers -> right
+        # Ok, I kinda think let me tackle that next mlp layer next and connections to it
+        # Then gradients
+        # Then probably wrap stuff up 
+        # Then input output?
 
+
+
+
+        #Kinda thinking that before I get stuff to grapped up here I should bring in some real data!
         #Hmm real weight values arr move finicky than I expected - need to noodle with them more!
 
 

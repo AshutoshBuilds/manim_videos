@@ -107,7 +107,7 @@ def get_mlp(w1,
             line_weight=1.0, 
             line_opacity=0.5, 
             neuron_stroke_width=1.0, 
-            neuron_stroke_color='#948979', 
+            neuron_stroke_color='#dfd0b9', 
             line_stroke_color='#948979', 
             connection_display_thresh=0.4,
             grad_display_thresh=0.5):
@@ -176,23 +176,32 @@ def get_mlp(w1,
             
     # Create connections with edge points
     connections = VGroup()
+    w1_abs=np.abs(w1)
+    w1_scaled=w1_abs/np.percentile(w1_abs, 99)
+    # w1_scaled=(w1-w1.min())/(w1.max()-w1.min())
     for i, in_neuron in enumerate(input_layer):
         for j, hidden_neuron in enumerate(hidden_layer):
-            # if np.abs(w1[i, j])<connection_display_thresh: continue
+            if np.abs(w1_scaled[i, j])<0.75: continue
             if abs(i-j)>6: continue #Let's try just drawing local ones. 
             start_point, end_point = get_edge_points(in_neuron, hidden_neuron, NEURON_RADIUS)
             line = Line(start_point, end_point)
-            line.set_stroke(opacity=np.clip(10.0*(np.abs(w1[i, j])-connection_display_thresh), 0.1, 1), width=line_weight)
+
+            line.set_stroke(opacity=np.clip(w1_scaled[i,j], 0, 1), width=1.0*w1_scaled[i,j])
+            # line.set_stroke(opacity=np.clip(0.8*(np.abs(w1[i, j])-connection_display_thresh), 0.1, 1), width=line_weight)
+            
             line.set_color(line_stroke_color)
             connections.add(line)
 
+    w2_abs=np.abs(w2)
+    w2_scaled=w2_abs/np.percentile(w2_abs, 99)
     for i, hidden_neuron in enumerate(hidden_layer):
         for j, out_neuron in enumerate(output_layer):
-            # if np.abs(w2[i, j])<connection_display_thresh: continue
+            if np.abs(w2_scaled[i, j])<0.45: continue
             if abs(i-j)>6: continue #Let's try just drawing local ones.
             start_point, end_point = get_edge_points(hidden_neuron, out_neuron, NEURON_RADIUS)
             line = Line(start_point, end_point) #, stroke_opacity=line_opacity, stroke_width=line_weight)
-            line.set_stroke(opacity=np.clip(10.0*(np.abs(w2[i, j])-connection_display_thresh), 0.1, 1), width=line_weight)
+            # line.set_stroke(opacity=np.clip(0.8*(np.abs(w2[i, j])-connection_display_thresh), 0.1, 1), width=line_weight)
+            line.set_stroke(opacity=np.clip(w2_scaled[i,j], 0, 1), width=1.0*w2_scaled[i,j])
             line.set_color(line_stroke_color)
             connections.add(line)
 
@@ -242,7 +251,7 @@ class LlamaLearningSketchOne(InteractiveScene):
         # neuron_fills=[np.random.randn(32), np.random.randn(34), np.random.randn(32)]
 
         data_dir='/Users/stephen/welch_labs/backprop2/hackin/may_31_1'
-        layer_num=8
+        layer_num=12
         neuron_fills=[
             np.load(data_dir + '/blocks.'+str(layer_num)+'.hook_resid_mid.npy'),
             np.load(data_dir + '/blocks.'+str(layer_num)+'.mlp.hook_post.npy'),
@@ -320,7 +329,7 @@ class LlamaLearningSketchOne(InteractiveScene):
 
         #Kinda thinking that before I get stuff to grapped up here I should bring in some real data!
 
-
+        #Hmm real weight values arr move finicky than I expected - need to noodle with them more!
 
 
 

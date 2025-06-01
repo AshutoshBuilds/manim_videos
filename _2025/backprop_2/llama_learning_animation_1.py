@@ -53,9 +53,10 @@ class AttentionPattern(VMobject):
         self,
         matrix,
         square_size=0.3,
-        min_opacity=0.2,
+        min_opacity=0.0,
         max_opacity=1.0,
         stroke_width=1.0,
+        viz_scaling_factor=2.5, 
         stroke_color=CHILL_BROWN,
         colormap=custom_cmap_tans,
         **kwargs
@@ -65,18 +66,23 @@ class AttentionPattern(VMobject):
         self.n_rows, self.n_cols = self.matrix.shape
         self.square_size = square_size
         self.min_opacity = min_opacity
-        self.max_opacity = max_opacity
+        # self.max_opacity = max_opacity
+        self.max_opacity = np.max(self.matrix)
         self.stroke_width = stroke_width
         self.stroke_color = stroke_color
         self._colormap = colormap
+        self.viz_scaling_factor=viz_scaling_factor
 
         self.build()
 
     def map_value_to_style(self, val):
-        val_clipped = np.clip(val, 0, 1)
-        rgba = self._colormap(val_clipped)
+        # val_clipped = np.clip(val, 0, 1)
+        val_scaled=np.clip(self.viz_scaling_factor*val/self.max_opacity,0, 1)
+        rgba = self._colormap(val_scaled)
         color = Color(rgb=rgba[:3])
-        opacity = self.min_opacity + val_clipped * (self.max_opacity - self.min_opacity)
+        # opacity = self.min_opacity + val_clipped * (self.max_opacity - self.min_opacity)
+        # opacity=val_scaled
+        opacity=1.0
         return {"color": color, "opacity": opacity}
 
     def build(self):
@@ -251,7 +257,7 @@ class LlamaLearningSketchOne(InteractiveScene):
         # neuron_fills=[np.random.randn(32), np.random.randn(34), np.random.randn(32)]
 
         data_dir='/Users/stephen/welch_labs/backprop2/hackin/may_31_1'
-        layer_num=12
+        layer_num=10
         neuron_fills=[
             np.load(data_dir + '/blocks.'+str(layer_num)+'.hook_resid_mid.npy'),
             np.load(data_dir + '/blocks.'+str(layer_num)+'.mlp.hook_post.npy'),
@@ -267,10 +273,33 @@ class LlamaLearningSketchOne(InteractiveScene):
 
         #Probably wrap this up.
         # def get_attention_layer() 
-        attention_connections_left=np.random.randn(32, 10)
-        attention_connections_right=np.random.randn(10, 32)
+        # attention_connections_left=np.random.randn(32, 10)
+        # attention_connections_right=np.random.randn(10, 32)
         attention_connection_display_thresh=0.5
 
+        # Not quite sure how I want to pick attention patterns just jet
+        # Some kinda activation or gradient based ranking probably?
+        # Either way to do want that my incoming and outgoing connections match, ya know?
+        # Maybe just take every thrid for now?
+        all_attn_patterns=np.load(data_dir+'/blocks.'+str(layer_num)+'.attn.hook_pattern.npy')
+        wO_full=np.load(data_dir+'/blocks.'+str(layer_num)+'.attn.W_O.npy')
+        wq_full=np.load(data_dir+'/blocks.'+str(layer_num)+'.attn.W_Q.npy')
+
+        attn_patterns=[]
+        wos=[]
+        wqs=[]
+        for i in range(0, 30, 3): #Just take every thrid pattern for now. 
+            attn_patterns.append(all_attn_patterns[0][i][1:,1:]) #Ignore BOS token
+            wos.append(wO_full[i, 0])
+            wqs.append(wq_full[i, :, 0])
+        wos=np.array(wos)
+        wqs=np.array(wqs)
+        attention_connections_left=wqs.T #Queries
+        attention_connections_right=wos
+
+
+        num_attention_pattern_slots=len(attn_patterns)+1
+        attention_pattern_spacing=0.51
 
         attention_border=RoundedRectangle(width=0.59, height=5.4, corner_radius=0.1)
         attention_border.set_stroke(width=1.0, color=CHILL_BROWN)
@@ -278,37 +307,41 @@ class LlamaLearningSketchOne(InteractiveScene):
 
         attention_patterns=VGroup()
         connection_points_left=VGroup()
-        num_attention_patterns=11
-        attention_pattern_spacing=0.51
-        for i in range(num_attention_patterns):
-            if i==num_attention_patterns//2:
-                dot = Tex("...").rotate(PI/2, OUT).scale(0.5).move_to([0, num_attention_patterns*attention_pattern_spacing/2 - attention_pattern_spacing*(i+0.5), 0])
+ 
+        attn_pattern_count=0
+        for i in range(num_attention_pattern_slots):
+            if i==num_attention_pattern_slots//2:
+                dot = Tex("...").rotate(PI/2, OUT).scale(0.5).move_to([0, num_attention_pattern_slots*attention_pattern_spacing/2 - attention_pattern_spacing*(i+0.5), 0])
                 dot.set_color(CHILL_BROWN)
                 attention_patterns.add(dot) #Just add here?
             else:
-                if i>num_attention_patterns//2: offset=0.15
+                if i>num_attention_pattern_slots//2: offset=0.15
                 else: offset=-0.15 
-                matrix = np.random.rand(6, 6)
-                attn_pattern = AttentionPattern(matrix=matrix, square_size=0.07, stroke_width=0.5)
-                attn_pattern.move_to([0, num_attention_patterns*attention_pattern_spacing/2+offset - attention_pattern_spacing*(i+0.5), 0])
+                # matrix = np.random.rand(6, 6)
+                attn_pattern = AttentionPattern(matrix=attn_patterns[attn_pattern_count], square_size=0.07, stroke_width=0.5)
+                attn_pattern.move_to([0, num_attention_pattern_slots*attention_pattern_spacing/2+offset - attention_pattern_spacing*(i+0.5), 0])
                 attention_patterns.add(attn_pattern)
 
                 connection_point_left=Circle(radius=0)
-                connection_point_left.move_to([-0.59/2.0, num_attention_patterns*attention_pattern_spacing/2+offset - attention_pattern_spacing*(i+0.5), 0])
+                connection_point_left.move_to([-0.59/2.0, num_attention_pattern_slots*attention_pattern_spacing/2+offset - attention_pattern_spacing*(i+0.5), 0])
                 connection_points_left.add(connection_point_left)
+                attn_pattern_count+=1
 
         attention_layer=VGroup(attention_patterns, attention_border, connection_points_left)
         attention_layer.move_to([-3.2, 0, 0])
 
         connections_left=VGroup()
+        attention_connections_left_abs=np.abs(attention_connections_left)
+        attention_connections_left_scaled=attention_connections_left_abs/np.max(attention_connections_left_abs) #np.percentile(attention_connections_left_abs, 99)
         for i, mlp_out_neuron in enumerate(mlp[4]):
             for j, attention_neuron in enumerate(connection_points_left):
-                if np.abs(attention_connections_left[i, j])<attention_connection_display_thresh: continue
+                if np.abs(attention_connections_left_scaled[i, j])<0.5: continue
                 if abs(i/4-j)>3: continue #Need to dial this up or lost it probably, but it is helpful!
                 start_point, end_point = get_edge_points(mlp_out_neuron, attention_neuron, 0.06)
                 line = Line(start_point, attention_neuron.get_center())
                 # line.set_stroke(width=1, opacity=0.3)
-                line.set_stroke(opacity=np.clip(0.8*(np.abs(w2[i, j])-attention_connection_display_thresh), 0.1, 1), width=1)
+                # line.set_stroke(opacity=np.clip(0.8*(np.abs(w2[i, j])-attention_connection_display_thresh), 0.1, 1), width=1)
+                line.set_stroke(opacity=np.clip(attention_connections_left_scaled[i,j], 0, 1), width=1.0*attention_connections_left_scaled[i,j])
                 line.set_color(CHILL_BROWN)
                 connections_left.add(line)
 

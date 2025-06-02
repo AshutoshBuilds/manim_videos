@@ -223,7 +223,7 @@ def get_mlp(w1,
                 line_grad = Line(start_point, end_point)
                 # line_grad.set_stroke(opacity=np.clip(0.8*(np.abs(grads_1[i, j])-grad_display_thresh), 0, 1), 
                 #                     width=np.abs(grads_1[i, j]))
-                line_grad.set_stroke(opacity=np.clip(grads_1_scaled[i,j], 0, 1), width=2.0*grads_1_scaled[i,j]) #width=1)
+                line_grad.set_stroke(opacity=np.clip(grads_1_scaled[i,j], 0, 1), width=np.clip(2.0*grads_1_scaled[i,j], 0, 3)) #width=1)
                 # line.set_stroke(opacity=np.clip(grads_1_scaled[i,j], 0, 1), width=1.0) #0.1*grads_1_scaled[i,j])
                 # print(np.clip(1.0*(np.abs(w1[i, j])-connection_display_thresh), 0, 1))
                 line_grad.set_color(get_grad_color(grads_1_scaled[i, j]))
@@ -242,7 +242,7 @@ def get_mlp(w1,
                 # line_grad.set_stroke(opacity=np.clip(0.8*(np.abs(grads_2[i, j])-grad_display_thresh), 0, 1), 
                 #                     width=np.abs(grads_2[i, j]))
                 # line_grad.set_stroke(opacity=0.8, width=2)
-                line_grad.set_stroke(opacity=np.clip(grads_2_scaled[i,j], 0, 1), width=1.0*grads_2_scaled[i,j])
+                line_grad.set_stroke(opacity=np.clip(grads_2_scaled[i,j], 0, 1), width=np.clip(1.0*grads_2_scaled[i,j], 0, 3))
                 # print(np.clip(1.0*(np.abs(w1[i, j])-connection_display_thresh), 0, 1))
                 line_grad.set_color(get_grad_color(grads_2_scaled[i, j]))
                 grad_conections.add(line_grad)
@@ -370,7 +370,7 @@ class LlamaLearningSketchOne(InteractiveScene):
         mlps=[]
         attns=[]
         start_x=-4.0
-        for layer_count, layer_num in enumerate(range(8,12)):
+        for layer_count, layer_num in enumerate(range(0,16)):
 
             #Kinda clunky interface but meh
             neuron_fills=[snapshot['blocks.'+str(layer_num)+'.hook_resid_mid'],

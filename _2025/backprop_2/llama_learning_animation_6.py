@@ -434,8 +434,6 @@ def get_output_layer(snapshot, empty=False):
             else: 
                 n.set_fill(color='#000000', opacity=1.0)
 
-
-
             #I like the idea of having probs on here, but I think it's too much right now, mayb in part 3
             # if neuron_count<5:
             #     t2=Text(f"{snapshot['topk.probs'][neuron_count]:.4f}", font_size=12)
@@ -451,14 +449,16 @@ def get_output_layer(snapshot, empty=False):
     return output_layer
 
 
-# Well shit I've got the newtork together now, but how the fuck to I animate it? 
-# So, I think in need separate little objects for each activation and, weight, and grad
-# But i also need empty/blank versions of them for the first pass right? 
-# Hmmm. 
-# Ok i think the way to go here is to make a vew big lists/vgroups to can step through as I animated
 
-class LlamaLearningSketchTwo(InteractiveScene):
+class LlamaLearningSketchThree(InteractiveScene):
     def construct(self):
+        '''
+        Ok, making progress here. Current issues is that forward/backward movement is not smooth. 
+        Let me try making forward/backward contrallable via opaicty alone. 
+        There's work-arounds if I can't do this, but this is a nice option - 
+        allows for potential using fancier always redraw methods and progressive rolling if needed
+        Going to start with the simplest possible fade in one at a time appraoch first though
+        '''
 
         pickle_path='/Users/stephen/welch_labs/backprop2/hackin/jun_2_1/snapshot_2.p'
         with open(pickle_path, 'rb') as f:
@@ -468,6 +468,7 @@ class LlamaLearningSketchTwo(InteractiveScene):
         all_activations=VGroup()
         all_activations_empty=VGroup()
         all_grads=VGroup()
+        random_background_stuff=VGroup()
 
         mlps=[]
         attns=[]
@@ -508,11 +509,13 @@ class LlamaLearningSketchTwo(InteractiveScene):
             attn.move_to([start_x+layer_count*1.6, 0, 0]) 
             attns.append(attn)
             all_activations.add(attn[0])
+            random_background_stuff.add(attn[1])
 
             mlp=get_mlp(w1, w2, neuron_fills, grads_1=grads_1, grads_2=grads_2)
             mlp.move_to([start_x+0.8+layer_count*1.6, 0, 0])
             mlps.append(mlp)
             all_activations.add(*mlp[2:-1]) #Skip weights and connections
+            random_background_stuff.add(mlp[-1])
 
             attn_empty=get_attention_layer([np.zeros_like(all_attn_patterns[0][0][1:,1:]) for i in range(len(attn_patterns))])
             attn_empty.move_to([start_x+layer_count*1.6, 0, 0]) 
@@ -534,32 +537,32 @@ class LlamaLearningSketchTwo(InteractiveScene):
                                                                               mlp_out=mlps[-2][4],
                                                                               connection_points_left=attn[2],
                                                                               attention_connections_left_grad=attention_connections_left_grad)
-                self.add(connections_left)
+                # self.add(connections_left)
                 all_weights.add(connections_left)
-                self.add(connections_left_grads)
+                # self.add(connections_left_grads)
                 all_grads.add(connections_left_grads)
 
-            self.add(connections_right)
+            # self.add(connections_right)
             all_weights.add(connections_right)
-            self.add(connections_right_grads)
+            # self.add(connections_right_grads)
             all_grads.add(connections_right_grads)
 
             all_weights.add(mlp[0])
             all_grads.add(mlp[1])
 
 
-            self.add(attn)
-            self.add(mlp)
+            # self.add(attn)
+            # self.add(mlp)
 
-            if len(mlps)>1:
-                self.remove(mlps[-2][3][1]); self.add(mlps[-2][3][1]) #Ok seems like I'm just exploiting a bug, but this fixes layering. 
-                self.remove(mlps[-2][2][1]); self.add(mlps[-2][2][1])
-                # self.remove(mlps[-2][4][1]); self.add(mlps[-2][4][1])
-                self.remove(mlps[-2][4]); self.add(mlps[-2][4]) #Don't ask me how I did it, I just did it, it as confusing.
+        #     if len(mlps)>1:
+        #         self.remove(mlps[-2][3][1]); self.add(mlps[-2][3][1]) #Ok seems like I'm just exploiting a bug, but this fixes layering. 
+        #         self.remove(mlps[-2][2][1]); self.add(mlps[-2][2][1])
+        #         # self.remove(mlps[-2][4][1]); self.add(mlps[-2][4][1])
+        #         self.remove(mlps[-2][4]); self.add(mlps[-2][4]) #Don't ask me how I did it, I just did it, it as confusing.
 
-        self.remove(mlps[-1][3][1]); self.add(mlps[-1][3][1]) #Ok seems like I'm just exploiting a bug, but this fixes layering. 
-        self.remove(mlps[-1][2][1]); self.add(mlps[-1][2][1])
-        self.remove(mlps[-1][4]); self.add(mlps[-1][4]) 
+        # self.remove(mlps[-1][3][1]); self.add(mlps[-1][3][1]) #Ok seems like I'm just exploiting a bug, but this fixes layering. 
+        # self.remove(mlps[-1][2][1]); self.add(mlps[-1][2][1])
+        # self.remove(mlps[-1][4]); self.add(mlps[-1][4]) 
 
 
 
@@ -671,63 +674,95 @@ class LlamaLearningSketchTwo(InteractiveScene):
 
 
 
-        #Ok, let's try a forward pass here...
-        ## --- Clean background --- #
-        self.wait()
-        self.add(wu_connections_grad)
-        self.add(we_connections_grad)
-        wu_connections_grad.set_opacity(0.0)
-        we_connections_grad.set_opacity(0.0)
-        # self.remove(all_grads)
-        all_grads.set_opacity(0.0)
-        self.remove(all_activations)
-        self.add(all_activations_empty)
-        self.add(we_connections)
-        self.add(wu_connections)
-        self.add(input_layer_empty)
-        self.add(output_layer_empty)
 
-        #Occlusions
-        self.remove(output_layer_empty[0][1])
-        self.add(output_layer_empty[0][1])
-        self.remove(input_layer_empty[0])
-        self.add(input_layer_empty[0])
+        #Ok now try to figure out an "opacity change only" forward/backward pass
+
+        self.wait()
+        self.add(random_background_stuff)
+        self.add(we_connections, all_weights, wu_connections)
+
+        backward_pass=VGroup(we_connections_grad, all_grads, wu_connections_grad)
+        self.add(backward_pass)
+        backward_pass.set_opacity(0.0)
+
+        self.add(input_layer_empty, all_activations_empty, output_layer_empty)
         for a in all_activations_empty: #Walk through and correct occlusions
             if len(a)>0: 
                 self.remove(a[1])
                 self.add(a[1])
+        self.remove(input_layer_empty[0]); self.add(input_layer_empty[0])
+
+        forward_pass=VGroup(input_layer, *all_activations, output_layer)
+        self.add(forward_pass)
+        forward_pass.set_opacity(0.0)
+        ###len(forward_pass)=26
+
 
         self.wait()
-        #Ok clean now - how do we do forward pass?
-        #Hmm maybe Forward pass is kinda manual, but then gets wrapped up?
-        self.remove(input_layer_empty)
-        self.add(input_layer)
-        self.wait(0.1)
-        for i in range(len(all_activations_empty)):
-            self.remove(all_activations_empty[i])
-            self.add(all_activations[i])
-            self.wait(0.1)
-        self.remove(output_layer_empty)
-        self.add(output_layer)
-        self.wait(1.0)
+
+        forward_pass.set_opacity(1.0)
+        backward_pass.set_opacity(1.0)
+
+
+
+
+        #Ok, let's try a forward pass here...
+        # ## --- Clean background --- #
+        # self.wait()
+        # self.add(wu_connections_grad)
+        # self.add(we_connections_grad)
+        # wu_connections_grad.set_opacity(0.0)
+        # we_connections_grad.set_opacity(0.0)
+        # # self.remove(all_grads)
+        # all_grads.set_opacity(0.0)
+        # self.remove(all_activations)
+        # self.add(all_activations_empty)
+        # self.add(we_connections)
+        # self.add(wu_connections)
+        # self.add(input_layer_empty)
+        # self.add(output_layer_empty)
+
+        # #Occlusions
+        # self.remove(output_layer_empty[0][1])
+        # self.add(output_layer_empty[0][1])
+        # self.remove(input_layer_empty[0])
+        # self.add(input_layer_empty[0])
+        # for a in all_activations_empty: #Walk through and correct occlusions
+        #     if len(a)>0: 
+        #         self.remove(a[1])
+        #         self.add(a[1])
+
+        # self.wait()
+        # #Ok clean now - how do we do forward pass?
+        # #Hmm maybe Forward pass is kinda manual, but then gets wrapped up?
+        # self.remove(input_layer_empty)
+        # self.add(input_layer)
+        # self.wait(0.1)
+        # for i in range(len(all_activations_empty)):
+        #     self.remove(all_activations_empty[i])
+        #     self.add(all_activations[i])
+        #     self.wait(0.1)
+        # self.remove(output_layer_empty)
+        # self.add(output_layer)
+        # self.wait(1.0)
 
   
-        #Ok, now backward pass
-        wu_connections_grad.set_opacity(1.0)
-        self.remove(output_layer[0])
-        self.add(output_layer[0])
-        self.wait(0.1)
-        for i in range(len(all_grads)-1, -1, -1):
-            # self.add(all_grads[i])
-            all_grads[i].set_opacity(1.0) #Could fade in here i think - nice opacity helps with occlusions!
-            # for m in mlps:
-            #     self.remove(m[3]); self.add(m[3])  
-            #     self.remove(m[2]); self.add(m[2])
-            #     self.remove(m[4]); self.add(m[4]) 
-            self.wait(0.1)
-        we_connections_grad.set_opacity(1.0)
-        self.remove(input_layer[0][1])
-        self.add(input_layer[0][1])
+        # #Ok, now backward pass
+        # wu_connections_grad.set_opacity(1.0)
+        # self.remove(output_layer[0])
+        # self.add(output_layer[0])
+        # self.wait(0.1)
+        # for i in range(len(all_grads)-1, -1, -1):
+        #     # self.add(all_grads[i])
+        #     all_grads[i].set_opacity(1.0) #Could fade in here i think - nice opacity helps with occlusions!
+        #     # for m in mlps:
+        #     #     self.remove(m[3]); self.add(m[3])  
+        #     #     self.remove(m[2]); self.add(m[2])
+        #     #     self.remove(m[4]); self.add(m[4]) 
+        #     self.wait(0.1)
+        # we_connections_grad.set_opacity(1.0)
+        # self.remove(input_layer[0][1])
+        # self.add(input_layer[0][1])
 
         # self.add(mlps[0][2])
         # self.remove(mlps[0][2])

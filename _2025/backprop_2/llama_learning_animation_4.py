@@ -481,6 +481,8 @@ class LlamaLearningSketchOne(InteractiveScene):
 
                     input_layer_text.add(t)
                     prompt_token_count+=1 
+                else:
+                    neuron.set_fill(color='#000000', opacity=1.0)
 
                 neuron.move_to(UP * ((num_input_neurons//2 - i) * vertical_spacing))
                 input_layer_nuerons.add(neuron)
@@ -508,8 +510,6 @@ class LlamaLearningSketchOne(InteractiveScene):
             all_embeddings[i,:]=prompt_token_embeddings[count, :]
             all_embeddings_grad[i,:]=prompt_token_embeddings_grad[count, :]
 
-        #Ok now I want to replace prompt_neuron_indices with the correct values. 
-
         we_connections=VGroup()
         all_embeddings_abs=np.abs(all_embeddings)
         all_embeddings_scaled=all_embeddings_abs/np.percentile(all_embeddings_abs, 95)
@@ -532,7 +532,7 @@ class LlamaLearningSketchOne(InteractiveScene):
         for i, n1 in enumerate(input_layer[0]):
             for j, n2 in enumerate(attns[0][2]):
                 # if np.abs(all_embeddings_grad_scaled[i, j])<0.1: continue
-                if abs(j-i/4)>3: continue #Need to dial this up or lost it probably, but it is helpful!
+                if abs(j-i/4)>4: continue #Need to dial this up or lost it probably, but it is helpful!
                 start_point, end_point = get_edge_points(n1, n2, 0.06)
                 line = Line(start_point, n2.get_center())
                 # line.set_stroke(width=1, opacity=0.3)
@@ -547,17 +547,140 @@ class LlamaLearningSketchOne(InteractiveScene):
         self.add(we_connections_grad)
         self.add(we_connections)
         self.add(input_layer)
-        # self.wait()
+        self.wait()
         
         self.remove(input_layer[0])
         self.add(input_layer[0])
 
 
         #Ok I should probably go ahead and wrap up input stuff but I don't really want to -> 
+        #'topk.indices', 'topk.tokens', 'topk.probs', 'topk.unembed.W_U', 'topk.unembed.W_U.grad'
+
+        output_layer_nuerons=VGroup()
+        output_layer_text=VGroup()
+        num_output_neurons=36   
+
+        neuron_count=0
+        for i in range(num_output_neurons):
+            if i == num_output_neurons//2:  # Middle position for ellipsis
+                dot = Tex("...").rotate(PI/2, OUT).scale(0.4).move_to(UP * ((num_input_neurons//2 - i) * vertical_spacing))
+                dot.set_color(neuron_stroke_color)
+            else:
+                n = Circle(radius=neuron_radius, stroke_color=neuron_stroke_color)
+                n.set_stroke(width=neuron_stroke_width)
+                n.set_fill(color=get_nueron_color(snapshot['topk.probs'][neuron_count],vmax=np.max(snapshot['topk.probs'])), opacity=1.0)
+
+
+                if neuron_count<4: font_size=22
+                else: font_size=12 
+                t=Text(snapshot['topk.tokens'][neuron_count], font_size=font_size, font='myriad-pro')
+                t.set_color(neuron_stroke_color)
+                t.set_opacity(np.clip(snapshot['topk.probs'][neuron_count], 0.3, 1.0))
+                t.move_to((0.2+t.get_right()[0])*RIGHT+ UP* ((-t.get_bottom()+num_input_neurons//2 - i) * vertical_spacing))
+                output_layer_text.add(t)
+
+                #I like the idea of having probs on here, but I think it's too much right now, mayb in part 3
+                # if neuron_count<5:
+                #     t2=Text(f"{snapshot['topk.probs'][neuron_count]:.4f}", font_size=12)
+                #     t2.set_color(neuron_stroke_color)
+                #     t2.set_opacity(np.clip(snapshot['topk.probs'][neuron_count], 0.4, 0.7))
+                #     t2.move_to(t.get_right()+np.array([0.2, 0, 0]))
+                #     output_layer_text.add(t2)
+
+                n.move_to(UP * ((num_input_neurons//2 - i) * vertical_spacing))
+                output_layer_nuerons.add(n)
+                neuron_count+=1
+
+
+        output_layer=VGroup(output_layer_nuerons, dot, output_layer_text)
+        output_layer.move_to([5.5, 0, 0], aligned_edge=LEFT)
+
+        wu_connections=VGroup()
+        unembed_abs=np.abs(snapshot['topk.unembed.W_U'][:,0,:].T)
+        unembed_scaled=unembed_abs/np.percentile(unembed_abs, 98)
+        for i, n1 in enumerate(mlps[-1][4]):
+            for j, n2 in enumerate(output_layer[0]):
+                if np.abs(unembed_scaled[i, j])<0.5: continue
+                if abs(j-i)>8: continue #Need to dial this up or lost it probably, but it is helpful!
+                start_point, end_point = get_edge_points(n1, n2, 0.06)
+                line = Line(start_point, n2.get_center())
+                # line.set_stroke(width=1, opacity=0.3)
+                # line.set_stroke(opacity=np.clip(0.8*(np.abs(w2[i, j])-attention_connection_display_thresh), 0.1, 1), width=1)
+                line.set_stroke(opacity=np.clip(unembed_scaled[i,j], 0.4, 1), width=np.clip(1.0*unembed_scaled[i,j],0.5,1.7))
+                line.set_color(CHILL_BROWN)
+                wu_connections.add(line)
+
+        wu_connections_grad=VGroup()
+        unembed_grad_abs=np.abs(snapshot['topk.unembed.W_U.grad'][:,0,:].T)
+        unembed_scaled_grad=unembed_grad_abs/np.percentile(unembed_grad_abs, 98)
+        for i, n1 in enumerate(mlps[-1][4]):
+            for j, n2 in enumerate(output_layer[0]):
+                if np.abs(unembed_scaled_grad[i, j])<0.5: continue
+                if abs(j-i)>8: continue #Need to dial this up or lost it probably, but it is helpful!
+                start_point, end_point = get_edge_points(n1, n2, 0.06)
+                line = Line(start_point, n2.get_center())
+                # line.set_stroke(width=1, opacity=0.3)
+                # line.set_stroke(opacity=np.clip(0.8*(np.abs(w2[i, j])-attention_connection_display_thresh), 0.1, 1), width=1)
+                # line.set_stroke(opacity=np.clip(unembed_scaled_grad[i,j], 0.4, 1), width=np.clip(1.0*unembed_scaled_grad[i,j],0.5,1.7))
+                # line.set_color(CHILL_BROWN)
+                line.set_stroke(opacity=np.clip(unembed_scaled_grad[i,j], 0, 1), width=np.clip(1.0*unembed_scaled_grad[i,j],0,3))
+                line.set_color(get_grad_color(unembed_scaled_grad[i,j]))
+                wu_connections_grad.add(line)
+
+
+
+        self.add(wu_connections)
+        self.add(wu_connections_grad)
+        self.add(output_layer)
+        self.wait()
+
+        self.remove(output_layer[0][1])
+        self.add(output_layer[0][1])
+
+
+
+        self.wait()
 
 
 
 
+
+       #  vertical_spacing = 0.18
+       #  neuron_radius = 0.06
+       #  neuron_stroke_color='#dfd0b9'
+       #  neuron_stroke_width= 1.0
+
+       #  np.random.seed(25) #Need to figure out how to add variety withotu moving the same token like "The" around
+       #  prompt_neuron_indices=np.random.choice(np.arange(36), len(snapshot['prompt.tokens'])-1) #Don't include last token
+       #  words_to_nudge={' capital':-0.02}
+
+       #  prompt_token_count=0
+       #  neuron_count=0
+       #  for i in range(num_input_neurons):
+       #      if i == num_input_neurons//2:  # Middle position for ellipsis
+       #          dot = Tex("...").rotate(PI/2, OUT).scale(0.4).move_to(UP * ((num_input_neurons//2 - i) * vertical_spacing))
+       #          dot.set_color(neuron_stroke_color)
+       #      else:
+       #          neuron = Circle(radius=neuron_radius, stroke_color=neuron_stroke_color)
+       #          neuron.set_stroke(width=neuron_stroke_width)
+       #          if neuron_count in prompt_neuron_indices:
+       #              neuron.set_fill(color='#dfd0b9', opacity=1.0)
+       #              t=Text(snapshot['prompt.tokens'][prompt_token_count], font_size=24, font='myriad-pro')
+       #              t.set_color(neuron_stroke_color)
+       #              # print(t.get_center())
+       #              t.move_to((0.2+t.get_right()[0])*LEFT+UP * ((-t.get_bottom()+num_input_neurons//2 - i) * vertical_spacing))
+       #              if snapshot['prompt.tokens'][prompt_token_count] in words_to_nudge.keys():
+       #                  t.shift([0, words_to_nudge[snapshot['prompt.tokens'][prompt_token_count]], 0])
+
+       #              input_layer_text.add(t)
+       #              prompt_token_count+=1 
+
+       #          neuron.move_to(UP * ((num_input_neurons//2 - i) * vertical_spacing))
+       #          input_layer_nuerons.add(neuron)
+       #          neuron_count+=1
+
+       #  input_layer=VGroup(input_layer_nuerons, dot, input_layer_text)
+       #  input_layer.move_to([-5.2, 0, 0])
 
 
 

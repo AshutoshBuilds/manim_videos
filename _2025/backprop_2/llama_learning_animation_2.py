@@ -43,8 +43,9 @@ def get_nueron_color(value, vmax=0.95):
     rgba = custom_cmap_tans(value_clipped) #Would also like to try a monochrome tan option
     return Color(rgb=rgba[:3])
 
-def get_grad_color(value, vmin=-2, vmax=2):        
-    value_clipped = np.clip((value - vmin) / (vmax - vmin), 0, 1)
+def get_grad_color(value): #, vmin=-2, vmax=2):        
+    # value_clipped = np.clip((value - vmin) / (vmax - vmin), 0, 1)
+    value_clipped = np.clip(np.abs(value), 0, 1)
     rgba = custom_cmap_cyan(value_clipped) #Would also like to try a monochrome tan option
     return Color(rgb=rgba[:3])
 
@@ -115,8 +116,7 @@ def get_mlp(w1,
             neuron_stroke_width=1.0, 
             neuron_stroke_color='#dfd0b9', 
             line_stroke_color='#948979', 
-            connection_display_thresh=0.4,
-            grad_display_thresh=0.5):
+            connection_display_thresh=0.4):
 
     INPUT_NEURONS = w1.shape[0]
     HIDDEN_NEURONS = w1.shape[1]
@@ -144,7 +144,7 @@ def get_mlp(w1,
             if neuron_fills is None: 
                 neuron.set_fill(color='#000000', opacity=1.0)
             else: 
-                neuron.set_fill(color=get_nueron_color(neuron_fills[0][i]), opacity=1.0)
+                neuron.set_fill(color=get_nueron_color(neuron_fills[0][i], vmax=np.abs(neuron_fills[0]).max()), opacity=1.0)
             neuron.move_to(LEFT * LAYER_SPACING + UP * ((INPUT_NEURONS//2 - i) * VERTICAL_SPACING))
             input_layer.add(neuron)
             
@@ -160,7 +160,7 @@ def get_mlp(w1,
             if neuron_fills is None: 
                 neuron.set_fill(color='#000000', opacity=1.0)
             else: 
-                neuron.set_fill(color=get_nueron_color(neuron_fills[1][i]), opacity=1.0)
+                neuron.set_fill(color=get_nueron_color(neuron_fills[1][i], vmax=np.abs(neuron_fills[1]).max()), opacity=1.0)
             neuron.move_to(UP * ((HIDDEN_NEURONS//2 - i) * VERTICAL_SPACING))
             hidden_layer.add(neuron)
             
@@ -176,7 +176,7 @@ def get_mlp(w1,
             if neuron_fills is None: 
                 neuron.set_fill(color='#000000', opacity=1.0)
             else: 
-                neuron.set_fill(color=get_nueron_color(neuron_fills[2][i]), opacity=1.0)
+                neuron.set_fill(color=get_nueron_color(neuron_fills[2][i], vmax=np.abs(neuron_fills[2]).max()), opacity=1.0)
             neuron.move_to(RIGHT * LAYER_SPACING + UP * ((OUTPUT_NEURONS//2 - i) * VERTICAL_SPACING))
             output_layer.add(neuron)
             
@@ -213,33 +213,38 @@ def get_mlp(w1,
 
     grad_conections=VGroup()
     if grads_1 is not None:
+        grads_1_abs=np.abs(grads_1)
+        grads_1_scaled=grads_1_abs/np.percentile(grads_1_abs, 95)
         for i, in_neuron in enumerate(input_layer):
             for j, hidden_neuron in enumerate(hidden_layer):
-                if np.abs(grads_1[i, j])<grad_display_thresh: continue
+                if np.abs(grads_1_scaled[i, j])<0.5: continue
                 if abs(i-j)>6: continue #Need to dial this up or lost it probably, but it is helpful!
                 start_point, end_point = get_edge_points(in_neuron, hidden_neuron, NEURON_RADIUS)
                 line_grad = Line(start_point, end_point)
                 # line_grad.set_stroke(opacity=np.clip(0.8*(np.abs(grads_1[i, j])-grad_display_thresh), 0, 1), 
                 #                     width=np.abs(grads_1[i, j]))
-                line_grad.set_stroke(opacity=0.8, width=2)
+                line_grad.set_stroke(opacity=np.clip(grads_1_scaled[i,j], 0, 1), width=2.0*grads_1_scaled[i,j]) #width=1)
+                # line.set_stroke(opacity=np.clip(grads_1_scaled[i,j], 0, 1), width=1.0) #0.1*grads_1_scaled[i,j])
                 # print(np.clip(1.0*(np.abs(w1[i, j])-connection_display_thresh), 0, 1))
-                line_grad.set_color(get_grad_color(grads_1[i, j]))
+                line_grad.set_color(get_grad_color(grads_1_scaled[i, j]))
                 grad_conections.add(line_grad)
 
             
-    # Connect hidden to output layer
     if grads_2 is not None:
+        grads_2_abs=np.abs(grads_2)
+        grads_2_scaled=grads_2_abs/np.percentile(grads_2_abs, 97)
         for i, hidden_neuron in enumerate(hidden_layer):
             for j, out_neuron in enumerate(output_layer):
-                if np.abs(grads_2[i, j])<grad_display_thresh: continue
+                if np.abs(grads_2_scaled[i, j])<0.5: continue
                 if abs(i-j)>6: continue #Need to dial this up or lost it probably, but it is helpful!
                 start_point, end_point = get_edge_points(hidden_neuron, out_neuron, NEURON_RADIUS)
                 line_grad = Line(start_point, end_point)
                 # line_grad.set_stroke(opacity=np.clip(0.8*(np.abs(grads_2[i, j])-grad_display_thresh), 0, 1), 
                 #                     width=np.abs(grads_2[i, j]))
-                line_grad.set_stroke(opacity=0.8, width=2)
+                # line_grad.set_stroke(opacity=0.8, width=2)
+                line_grad.set_stroke(opacity=np.clip(grads_2_scaled[i,j], 0, 1), width=1.0*grads_2_scaled[i,j])
                 # print(np.clip(1.0*(np.abs(w1[i, j])-connection_display_thresh), 0, 1))
-                line_grad.set_color(get_grad_color(grads_2[i, j]))
+                line_grad.set_color(get_grad_color(grads_2_scaled[i, j]))
                 grad_conections.add(line_grad)
 
                 
@@ -305,19 +310,24 @@ class LlamaLearningSketchOne(InteractiveScene):
         all_attn_patterns=snapshot['blocks.'+str(layer_num)+'.attn.hook_pattern']
         wO_full=snapshot['blocks.'+str(layer_num)+'.attn.W_O']
         wq_full=snapshot['blocks.'+str(layer_num)+'.attn.W_Q']
+        wO_full_grad=snapshot['blocks.'+str(layer_num)+'.attn.W_O.grad']
+        wq_full_grad=snapshot['blocks.'+str(layer_num)+'.attn.W_Q.grad']
 
         attn_patterns=[]
-        wos=[]
-        wqs=[]
+        wos=[]; wqs=[]
+        wosg=[]; wqsg=[]
         for i in range(0, 30, 3): #Just take every thrid pattern for now. 
             attn_patterns.append(all_attn_patterns[0][i][1:,1:]) #Ignore BOS token
             wos.append(wO_full[i, 0])
             wqs.append(wq_full[i, :, 0])
-        wos=np.array(wos)
-        wqs=np.array(wqs)
+            wosg.append(wO_full_grad[i, 0])
+            wqsg.append(wq_full_grad[i, :, 0])
+        wos=np.array(wos); wqs=np.array(wqs)
+        wosg=np.array(wosg); wqsg=np.array(wqsg)
         attention_connections_left=wqs.T #Queries
         attention_connections_right=wos
-
+        attention_connections_left_grad=wqsg.T #Queries
+        attention_connections_right_grad=wosg
 
         num_attention_pattern_slots=len(attn_patterns)+1
         attention_pattern_spacing=0.51
@@ -367,13 +377,13 @@ class LlamaLearningSketchOne(InteractiveScene):
                 line = Line(start_point, attention_neuron.get_center())
                 # line.set_stroke(width=1, opacity=0.3)
                 # line.set_stroke(opacity=np.clip(0.8*(np.abs(w2[i, j])-attention_connection_display_thresh), 0.1, 1), width=1)
-                line.set_stroke(opacity=np.clip(attention_connections_left_scaled[i,j], 0, 1), width=1.0*attention_connections_left_scaled[i,j])
+                line.set_stroke(opacity=np.clip(attention_connections_left_scaled[i,j], 0, 1), width=np.clip(1.0*attention_connections_left_scaled[i,j],0,3))
                 line.set_color(CHILL_BROWN)
                 connections_left.add(line)
 
         connections_right=VGroup()
         attention_connections_right_abs=np.abs(attention_connections_right)
-        attention_connections_right_scaled=attention_connections_right_abs/np.percentile(attention_connections_left_abs, 99)
+        attention_connections_right_scaled=attention_connections_right_abs/np.percentile(attention_connections_right_abs, 99)
         for i, attention_neuron in enumerate(connection_points_right):
             for j, mlp_in_neuron in enumerate(mlp2[2]):
                 if np.abs(attention_connections_right_scaled[i, j])<0.6: continue
@@ -382,15 +392,46 @@ class LlamaLearningSketchOne(InteractiveScene):
                 line = Line(start_point, attention_neuron.get_center())
                 # line.set_stroke(width=1, opacity=0.3)
                 # line.set_stroke(opacity=np.clip(0.8*(np.abs(w2[i, j])-attention_connection_display_thresh), 0.1, 1), width=1)
-                line.set_stroke(opacity=np.clip(attention_connections_right_scaled[i,j], 0, 1), width=1.0*attention_connections_right_scaled[i,j])
+                line.set_stroke(opacity=np.clip(attention_connections_right_scaled[i,j], 0, 1), width=np.clip(1.0*attention_connections_right_scaled[i,j],0,3))
                 line.set_color(CHILL_BROWN)
                 connections_right.add(line)
 
 
+        connections_left_grads=VGroup()
+        attention_connections_left_grad_abs=np.abs(attention_connections_left_grad)
+        attention_connections_left_grad_scaled=attention_connections_left_grad_abs/np.percentile(attention_connections_left_grad_abs, 98) #np.percentile(attention_connections_left_abs, 99)
+        for i, mlp_out_neuron in enumerate(mlp[4]):
+            for j, attention_neuron in enumerate(connection_points_left):
+                if np.abs(attention_connections_left_grad_scaled[i, j])<0.5: continue
+                if abs(i/4-j)>3: continue #Need to dial this up or lost it probably, but it is helpful!
+                start_point, end_point = get_edge_points(mlp_out_neuron, attention_neuron, 0.06)
+                line = Line(start_point, attention_neuron.get_center())
+                # line.set_stroke(width=1, opacity=0.3)
+                # line.set_stroke(opacity=np.clip(0.8*(np.abs(w2[i, j])-attention_connection_display_thresh), 0.1, 1), width=1)
+                line.set_stroke(opacity=np.clip(attention_connections_left_grad_scaled[i,j], 0, 1), width=np.clip(1.0*attention_connections_left_grad_scaled[i,j],0,2))
+                line.set_color(get_grad_color(attention_connections_left_grad_scaled[i,j]))
+                connections_left_grads.add(line)
+
+        connections_right_grads=VGroup()
+        attention_connections_right_grad_abs=np.abs(attention_connections_right_grad)
+        attention_connections_right_grad_scaled=attention_connections_right_grad_abs/np.percentile(attention_connections_right_grad_abs, 98)
+        for i, attention_neuron in enumerate(connection_points_right):
+            for j, mlp_in_neuron in enumerate(mlp2[2]):
+                if np.abs(attention_connections_right_grad_scaled[i, j])<0.5: continue
+                if abs(j/4-i)>3: continue #Need to dial this up or lost it probably, but it is helpful!
+                start_point, end_point = get_edge_points(mlp_in_neuron, attention_neuron, 0.06)
+                line = Line(start_point, attention_neuron.get_center())
+                # line.set_stroke(width=1, opacity=0.3)
+                # line.set_stroke(opacity=np.clip(0.8*(np.abs(w2[i, j])-attention_connection_display_thresh), 0.1, 1), width=1)
+                line.set_stroke(opacity=np.clip(attention_connections_right_grad_scaled[i,j], 0, 1), width=np.clip(1.0*attention_connections_right_grad_scaled[i,j],0,3))
+                line.set_color(get_grad_color(attention_connections_right_grad_scaled[i,j]))
+                connections_right_grads.add(line)
 
 
 
         #Order i add stuff here matters for occlusions. 
+        self.add(connections_left_grads)
+        self.add(connections_right_grads)
         self.add(connections_left)
         self.add(connections_right)
         self.add(mlp)

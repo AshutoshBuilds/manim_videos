@@ -404,7 +404,7 @@ def get_input_layer(prompt_neuron_indices, snapshot, num_input_neurons=36):
     return input_layer
 
 
-def get_output_layer(snapshot):
+def get_output_layer(snapshot, empty=False):
     output_layer_nuerons=VGroup()
     output_layer_text=VGroup()
     num_output_neurons=36   
@@ -412,7 +412,7 @@ def get_output_layer(snapshot):
     neuron_radius = 0.06
     neuron_stroke_color='#dfd0b9'
     neuron_stroke_width= 1.0
-    
+
     neuron_count=0
     for i in range(num_output_neurons):
         if i == num_output_neurons//2:  # Middle position for ellipsis
@@ -421,16 +421,20 @@ def get_output_layer(snapshot):
         else:
             n = Circle(radius=neuron_radius, stroke_color=neuron_stroke_color)
             n.set_stroke(width=neuron_stroke_width)
-            n.set_fill(color=get_nueron_color(snapshot['topk.probs'][neuron_count],vmax=np.max(snapshot['topk.probs'])), opacity=1.0)
+            if not empty: 
+                n.set_fill(color=get_nueron_color(snapshot['topk.probs'][neuron_count],vmax=np.max(snapshot['topk.probs'])), opacity=1.0)
+                if neuron_count<4: font_size=22
+                else: font_size=12 
+                t=Text(snapshot['topk.tokens'][neuron_count], font_size=font_size, font='myriad-pro')
+                t.set_color(neuron_stroke_color)
+                t.set_opacity(np.clip(snapshot['topk.probs'][neuron_count], 0.3, 1.0))
+                t.move_to((0.2+t.get_right()[0])*RIGHT+ UP* ((-t.get_bottom()+num_output_neurons//2 - i) * vertical_spacing))
+                output_layer_text.add(t)
+
+            else: 
+                n.set_fill(color='#000000', opacity=1.0)
 
 
-            if neuron_count<4: font_size=22
-            else: font_size=12 
-            t=Text(snapshot['topk.tokens'][neuron_count], font_size=font_size, font='myriad-pro')
-            t.set_color(neuron_stroke_color)
-            t.set_opacity(np.clip(snapshot['topk.probs'][neuron_count], 0.3, 1.0))
-            t.move_to((0.2+t.get_right()[0])*RIGHT+ UP* ((-t.get_bottom()+num_output_neurons//2 - i) * vertical_spacing))
-            output_layer_text.add(t)
 
             #I like the idea of having probs on here, but I think it's too much right now, mayb in part 3
             # if neuron_count<5:
@@ -503,20 +507,20 @@ class LlamaLearningSketchTwo(InteractiveScene):
             attn=get_attention_layer(attn_patterns)
             attn.move_to([start_x+layer_count*1.6, 0, 0]) 
             attns.append(attn)
-            all_activations.add(attn)
+            all_activations.add(attn[0])
 
             mlp=get_mlp(w1, w2, neuron_fills, grads_1=grads_1, grads_2=grads_2)
             mlp.move_to([start_x+0.8+layer_count*1.6, 0, 0])
             mlps.append(mlp)
-            all_activations.add(mlp[2:]) #Skip weights and connections
+            all_activations.add(*mlp[2:-1]) #Skip weights and connections
 
             attn_empty=get_attention_layer([np.zeros_like(all_attn_patterns[0][0][1:,1:]) for i in range(len(attn_patterns))])
             attn_empty.move_to([start_x+layer_count*1.6, 0, 0]) 
-            all_activations_empty.add(attn_empty)
+            all_activations_empty.add(attn_empty[0])
 
             mlp_empty=get_mlp(w1, w2)
             mlp_empty.move_to([start_x+0.8+layer_count*1.6, 0, 0])
-            all_activations_empty.add(mlp_empty[2:]) #Skip weights and connections
+            all_activations_empty.add(*mlp_empty[2:-1]) #Skip weights and connections
 
 
             connections_right, connections_right_grads=get_mlp_connections_right(attention_connections_right=attention_connections_right, 
@@ -558,32 +562,17 @@ class LlamaLearningSketchTwo(InteractiveScene):
         self.remove(mlps[-1][4]); self.add(mlps[-1][4]) 
 
 
-        ## --- Clean background --- #
-        # self.wait()
-        # self.remove(all_grads)
-        # self.remove(all_activations)
-        # self.add(all_activations_empty)
 
-        # for a in all_activations_empty: #Walk through and correct occlusions
-        #     for aa in a:
-        #         if len(aa)>0: 
-        #             self.remove(aa[1])
-        #             self.add(aa[1])
-        # self.wait()
-
-
-        # Ok now inputs/prompt
-        # Maybe active input circles are fully colored in and everything else is black? That could look cool I think. 
-
-
-
+        #Inputs 
         num_input_neurons = 36
         np.random.seed(25) #Need to figure out how to add variety withotu moving the same token like "The" around
         prompt_neuron_indices=np.random.choice(np.arange(36), len(snapshot['prompt.tokens'])-1) #Don't include last token
 
         input_layer = get_input_layer(prompt_neuron_indices, snapshot, num_input_neurons=num_input_neurons)
-        input_layer.move_to([-5.2, 0, 0])
+        input_layer.move_to([-4.7, 0, 0], aligned_edge=RIGHT)
 
+        input_layer_empty = get_input_layer([], snapshot, num_input_neurons=num_input_neurons)
+        input_layer_empty.move_to([-4.7, 0, 0], aligned_edge=RIGHT)
 
 
         # Okie dokie -> Let me add intput/first attention layer connections - this will need to be a separate function
@@ -640,10 +629,12 @@ class LlamaLearningSketchTwo(InteractiveScene):
 
         #Ok I should probably go ahead and wrap up input stuff but I don't really want to -> 
         #'topk.indices', 'topk.tokens', 'topk.probs', 'topk.unembed.W_U', 'topk.unembed.W_U.grad'
-        
-        output_layer=get_output_layer(snapshot)
-        output_layer.move_to([5.5, 0, 0], aligned_edge=LEFT)
 
+        output_layer=get_output_layer(snapshot)
+        output_layer.move_to([5.45, -3.21, 0], aligned_edge=LEFT+BOTTOM)
+
+        output_layer_empty=get_output_layer(snapshot, empty=True)
+        output_layer_empty.move_to([5.45, -3.21, 0], aligned_edge=LEFT+BOTTOM)
 
 
         wu_connections=VGroup()
@@ -678,30 +669,74 @@ class LlamaLearningSketchTwo(InteractiveScene):
                 line.set_color(get_grad_color(unembed_scaled_grad[i,j]))
                 wu_connections_grad.add(line)
 
+
+
         #Ok, let's try a forward pass here...
-
-
-
-
-        self.add(we_connections_grad)
-        self.add(we_connections)
-        self.add(input_layer)
+        ## --- Clean background --- #
         self.wait()
-        
-        self.remove(input_layer[0])
-        self.add(input_layer[0])
-
-        self.add(wu_connections)
         self.add(wu_connections_grad)
+        self.add(we_connections_grad)
+        wu_connections_grad.set_opacity(0.0)
+        we_connections_grad.set_opacity(0.0)
+        # self.remove(all_grads)
+        all_grads.set_opacity(0.0)
+        self.remove(all_activations)
+        self.add(all_activations_empty)
+        self.add(we_connections)
+        self.add(wu_connections)
+        self.add(input_layer_empty)
+        self.add(output_layer_empty)
+
+        #Occlusions
+        self.remove(output_layer_empty[0][1])
+        self.add(output_layer_empty[0][1])
+        self.remove(input_layer_empty[0])
+        self.add(input_layer_empty[0])
+        for a in all_activations_empty: #Walk through and correct occlusions
+            if len(a)>0: 
+                self.remove(a[1])
+                self.add(a[1])
+
+        self.wait()
+        #Ok clean now - how do we do forward pass?
+        #Hmm maybe Forward pass is kinda manual, but then gets wrapped up?
+        self.remove(input_layer_empty)
+        self.add(input_layer)
+        self.wait(0.1)
+        for i in range(len(all_activations_empty)):
+            self.remove(all_activations_empty[i])
+            self.add(all_activations[i])
+            self.wait(0.1)
+        self.remove(output_layer_empty)
         self.add(output_layer)
-        self.wait()
+        self.wait(1.0)
 
-        self.remove(output_layer[0][1])
-        self.add(output_layer[0][1])
+  
+        #Ok, now backward pass
+        wu_connections_grad.set_opacity(1.0)
+        self.remove(output_layer[0])
+        self.add(output_layer[0])
+        self.wait(0.1)
+        for i in range(len(all_grads)-1, -1, -1):
+            # self.add(all_grads[i])
+            all_grads[i].set_opacity(1.0) #Could fade in here i think - nice opacity helps with occlusions!
+            # for m in mlps:
+            #     self.remove(m[3]); self.add(m[3])  
+            #     self.remove(m[2]); self.add(m[2])
+            #     self.remove(m[4]); self.add(m[4]) 
+            self.wait(0.1)
+        we_connections_grad.set_opacity(1.0)
+        self.remove(input_layer[0][1])
+        self.add(input_layer[0][1])
+
+        self.add(mlps[0][2])
+        self.remove(mlps[0][2])
+
+        for m in mlps:
+            self.remove(m[3]); self.add(m[3])
 
 
 
-        self.wait()
 
 
 

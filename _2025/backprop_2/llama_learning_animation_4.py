@@ -452,6 +452,7 @@ class LlamaLearningSketchOne(InteractiveScene):
 
         np.random.seed(25) #Need to figure out how to add variety withotu moving the same token like "The" around
         prompt_neuron_indices=np.random.choice(np.arange(36), len(snapshot['prompt.tokens'])-1) #Don't include last token
+        words_to_nudge={' capital':-0.02}
 
         prompt_token_count=0
         for i in range(num_input_neurons):
@@ -466,15 +467,18 @@ class LlamaLearningSketchOne(InteractiveScene):
                     neuron.set_fill(color='#dfd0b9', opacity=1.0)
                     t=Text(snapshot['prompt.tokens'][prompt_token_count], font_size=24, font='myriad-pro')
                     t.set_color(neuron_stroke_color)
-                    print(t.get_right())
-                    t.move_to((0.2+t.get_right()[0])*LEFT+UP * ((num_input_neurons//2 - i) * vertical_spacing))
+                    # print(t.get_center())
+                    t.move_to((0.2+t.get_right()[0])*LEFT+UP * ((-t.get_bottom()+num_input_neurons//2 - i) * vertical_spacing))
+                    if snapshot['prompt.tokens'][prompt_token_count] in words_to_nudge.keys():
+                        t.shift([0, words_to_nudge[snapshot['prompt.tokens'][prompt_token_count]], 0])
+
                     input_layer.add(t)
                     prompt_token_count+=1 
 
                 neuron.move_to(UP * ((num_input_neurons//2 - i) * vertical_spacing))
                 input_layer.add(neuron)
 
-        input_layer.move_to([-5.5, 0, 0])
+        input_layer.move_to([-5.2, 0, 0])
 
         self.add(input_layer)
         self.wait()

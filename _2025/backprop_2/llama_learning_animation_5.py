@@ -364,6 +364,88 @@ def get_mlp_connections_right(attention_connections_right, mlp_in, connection_po
                 connections_right_grads.add(line)
     return connections_right, connections_right_grads
 
+def get_input_layer(prompt_neuron_indices, snapshot, num_input_neurons=36):
+    input_layer_nuerons=VGroup()
+    input_layer_text=VGroup()
+    vertical_spacing = 0.18
+    neuron_radius = 0.06
+    neuron_stroke_color='#dfd0b9'
+    neuron_stroke_width= 1.0
+    words_to_nudge={' capital':-0.02}
+
+    prompt_token_count=0
+    neuron_count=0
+    for i in range(num_input_neurons):
+        if i == num_input_neurons//2:  # Middle position for ellipsis
+            dot = Tex("...").rotate(PI/2, OUT).scale(0.4).move_to(UP * ((num_input_neurons//2 - i) * vertical_spacing))
+            dot.set_color(neuron_stroke_color)
+        else:
+            neuron = Circle(radius=neuron_radius, stroke_color=neuron_stroke_color)
+            neuron.set_stroke(width=neuron_stroke_width)
+            if neuron_count in prompt_neuron_indices:
+                neuron.set_fill(color='#dfd0b9', opacity=1.0)
+                t=Text(snapshot['prompt.tokens'][prompt_token_count], font_size=24, font='myriad-pro')
+                t.set_color(neuron_stroke_color)
+                # print(t.get_center())
+                t.move_to((0.2+t.get_right()[0])*LEFT+UP * ((-t.get_bottom()+num_input_neurons//2 - i) * vertical_spacing))
+                if snapshot['prompt.tokens'][prompt_token_count] in words_to_nudge.keys():
+                    t.shift([0, words_to_nudge[snapshot['prompt.tokens'][prompt_token_count]], 0])
+
+                input_layer_text.add(t)
+                prompt_token_count+=1 
+            else:
+                neuron.set_fill(color='#000000', opacity=1.0)
+
+            neuron.move_to(UP * ((num_input_neurons//2 - i) * vertical_spacing))
+            input_layer_nuerons.add(neuron)
+            neuron_count+=1
+
+    input_layer=VGroup(input_layer_nuerons, dot, input_layer_text)
+    return input_layer
+
+
+def get_output_layer(snapshot):
+    output_layer_nuerons=VGroup()
+    output_layer_text=VGroup()
+    num_output_neurons=36   
+    vertical_spacing = 0.18
+    neuron_radius = 0.06
+    neuron_stroke_color='#dfd0b9'
+    neuron_stroke_width= 1.0
+    
+    neuron_count=0
+    for i in range(num_output_neurons):
+        if i == num_output_neurons//2:  # Middle position for ellipsis
+            dot = Tex("...").rotate(PI/2, OUT).scale(0.4).move_to(UP * ((num_output_neurons//2 - i) * vertical_spacing))
+            dot.set_color(neuron_stroke_color)
+        else:
+            n = Circle(radius=neuron_radius, stroke_color=neuron_stroke_color)
+            n.set_stroke(width=neuron_stroke_width)
+            n.set_fill(color=get_nueron_color(snapshot['topk.probs'][neuron_count],vmax=np.max(snapshot['topk.probs'])), opacity=1.0)
+
+
+            if neuron_count<4: font_size=22
+            else: font_size=12 
+            t=Text(snapshot['topk.tokens'][neuron_count], font_size=font_size, font='myriad-pro')
+            t.set_color(neuron_stroke_color)
+            t.set_opacity(np.clip(snapshot['topk.probs'][neuron_count], 0.3, 1.0))
+            t.move_to((0.2+t.get_right()[0])*RIGHT+ UP* ((-t.get_bottom()+num_output_neurons//2 - i) * vertical_spacing))
+            output_layer_text.add(t)
+
+            #I like the idea of having probs on here, but I think it's too much right now, mayb in part 3
+            # if neuron_count<5:
+            #     t2=Text(f"{snapshot['topk.probs'][neuron_count]:.4f}", font_size=12)
+            #     t2.set_color(neuron_stroke_color)
+            #     t2.set_opacity(np.clip(snapshot['topk.probs'][neuron_count], 0.4, 0.7))
+            #     t2.move_to(t.get_right()+np.array([0.2, 0, 0]))
+            #     output_layer_text.add(t2)
+
+            n.move_to(UP * ((num_output_neurons//2 - i) * vertical_spacing))
+            output_layer_nuerons.add(n)
+            neuron_count+=1
+    output_layer=VGroup(output_layer_nuerons, dot, output_layer_text)
+    return output_layer
+
 
 # Well shit I've got the newtork together now, but how the fuck to I animate it? 
 # So, I think in need separate little objects for each activation and, weight, and grad
@@ -434,7 +516,7 @@ class LlamaLearningSketchTwo(InteractiveScene):
 
             mlp_empty=get_mlp(w1, w2)
             mlp_empty.move_to([start_x+0.8+layer_count*1.6, 0, 0])
-            all_activations_empty.add(mlp[2:]) #Skip weights and connections
+            all_activations_empty.add(mlp_empty[2:]) #Skip weights and connections
 
 
             connections_right, connections_right_grads=get_mlp_connections_right(attention_connections_right=attention_connections_right, 
@@ -476,59 +558,32 @@ class LlamaLearningSketchTwo(InteractiveScene):
         self.remove(mlps[-1][4]); self.add(mlps[-1][4]) 
 
 
-        self.wait()
+        ## --- Clean background --- #
+        # self.wait()
+        # self.remove(all_grads)
+        # self.remove(all_activations)
+        # self.add(all_activations_empty)
 
-        self.remove(all_grads)
-        self.remove(all_activations)
-        self.add(all_activations_empty)
-
+        # for a in all_activations_empty: #Walk through and correct occlusions
+        #     for aa in a:
+        #         if len(aa)>0: 
+        #             self.remove(aa[1])
+        #             self.add(aa[1])
+        # self.wait()
 
 
         # Ok now inputs/prompt
         # Maybe active input circles are fully colored in and everything else is black? That could look cool I think. 
 
 
-        input_layer_nuerons=VGroup()
-        input_layer_text=VGroup()
-        num_input_neurons=36
-        vertical_spacing = 0.18
-        neuron_radius = 0.06
-        neuron_stroke_color='#dfd0b9'
-        neuron_stroke_width= 1.0
 
+        num_input_neurons = 36
         np.random.seed(25) #Need to figure out how to add variety withotu moving the same token like "The" around
         prompt_neuron_indices=np.random.choice(np.arange(36), len(snapshot['prompt.tokens'])-1) #Don't include last token
-        words_to_nudge={' capital':-0.02}
 
-        prompt_token_count=0
-        neuron_count=0
-        for i in range(num_input_neurons):
-            if i == num_input_neurons//2:  # Middle position for ellipsis
-                dot = Tex("...").rotate(PI/2, OUT).scale(0.4).move_to(UP * ((num_input_neurons//2 - i) * vertical_spacing))
-                dot.set_color(neuron_stroke_color)
-            else:
-                neuron = Circle(radius=neuron_radius, stroke_color=neuron_stroke_color)
-                neuron.set_stroke(width=neuron_stroke_width)
-                if neuron_count in prompt_neuron_indices:
-                    neuron.set_fill(color='#dfd0b9', opacity=1.0)
-                    t=Text(snapshot['prompt.tokens'][prompt_token_count], font_size=24, font='myriad-pro')
-                    t.set_color(neuron_stroke_color)
-                    # print(t.get_center())
-                    t.move_to((0.2+t.get_right()[0])*LEFT+UP * ((-t.get_bottom()+num_input_neurons//2 - i) * vertical_spacing))
-                    if snapshot['prompt.tokens'][prompt_token_count] in words_to_nudge.keys():
-                        t.shift([0, words_to_nudge[snapshot['prompt.tokens'][prompt_token_count]], 0])
-
-                    input_layer_text.add(t)
-                    prompt_token_count+=1 
-                else:
-                    neuron.set_fill(color='#000000', opacity=1.0)
-
-                neuron.move_to(UP * ((num_input_neurons//2 - i) * vertical_spacing))
-                input_layer_nuerons.add(neuron)
-                neuron_count+=1
-
-        input_layer=VGroup(input_layer_nuerons, dot, input_layer_text)
+        input_layer = get_input_layer(prompt_neuron_indices, snapshot, num_input_neurons=num_input_neurons)
         input_layer.move_to([-5.2, 0, 0])
+
 
 
         # Okie dokie -> Let me add intput/first attention layer connections - this will need to be a separate function
@@ -585,45 +640,11 @@ class LlamaLearningSketchTwo(InteractiveScene):
 
         #Ok I should probably go ahead and wrap up input stuff but I don't really want to -> 
         #'topk.indices', 'topk.tokens', 'topk.probs', 'topk.unembed.W_U', 'topk.unembed.W_U.grad'
-
-        output_layer_nuerons=VGroup()
-        output_layer_text=VGroup()
-        num_output_neurons=36   
-
-        neuron_count=0
-        for i in range(num_output_neurons):
-            if i == num_output_neurons//2:  # Middle position for ellipsis
-                dot = Tex("...").rotate(PI/2, OUT).scale(0.4).move_to(UP * ((num_input_neurons//2 - i) * vertical_spacing))
-                dot.set_color(neuron_stroke_color)
-            else:
-                n = Circle(radius=neuron_radius, stroke_color=neuron_stroke_color)
-                n.set_stroke(width=neuron_stroke_width)
-                n.set_fill(color=get_nueron_color(snapshot['topk.probs'][neuron_count],vmax=np.max(snapshot['topk.probs'])), opacity=1.0)
-
-
-                if neuron_count<4: font_size=22
-                else: font_size=12 
-                t=Text(snapshot['topk.tokens'][neuron_count], font_size=font_size, font='myriad-pro')
-                t.set_color(neuron_stroke_color)
-                t.set_opacity(np.clip(snapshot['topk.probs'][neuron_count], 0.3, 1.0))
-                t.move_to((0.2+t.get_right()[0])*RIGHT+ UP* ((-t.get_bottom()+num_input_neurons//2 - i) * vertical_spacing))
-                output_layer_text.add(t)
-
-                #I like the idea of having probs on here, but I think it's too much right now, mayb in part 3
-                # if neuron_count<5:
-                #     t2=Text(f"{snapshot['topk.probs'][neuron_count]:.4f}", font_size=12)
-                #     t2.set_color(neuron_stroke_color)
-                #     t2.set_opacity(np.clip(snapshot['topk.probs'][neuron_count], 0.4, 0.7))
-                #     t2.move_to(t.get_right()+np.array([0.2, 0, 0]))
-                #     output_layer_text.add(t2)
-
-                n.move_to(UP * ((num_input_neurons//2 - i) * vertical_spacing))
-                output_layer_nuerons.add(n)
-                neuron_count+=1
-
-
-        output_layer=VGroup(output_layer_nuerons, dot, output_layer_text)
+        
+        output_layer=get_output_layer(snapshot)
         output_layer.move_to([5.5, 0, 0], aligned_edge=LEFT)
+
+
 
         wu_connections=VGroup()
         unembed_abs=np.abs(snapshot['topk.unembed.W_U'][:,0,:].T)
@@ -656,6 +677,8 @@ class LlamaLearningSketchTwo(InteractiveScene):
                 line.set_stroke(opacity=np.clip(unembed_scaled_grad[i,j], 0, 1), width=np.clip(0.7*unembed_scaled_grad[i,j],0,3))
                 line.set_color(get_grad_color(unembed_scaled_grad[i,j]))
                 wu_connections_grad.add(line)
+
+        #Ok, let's try a forward pass here...
 
 
 

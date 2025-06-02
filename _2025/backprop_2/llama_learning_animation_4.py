@@ -133,6 +133,7 @@ def get_mlp(w1,
     dots = VGroup()
     
     # Input layer
+    neuron_count=0
     for i in range(INPUT_NEURONS):
         if i == w1.shape[0]//2:  # Middle position for ellipsis
             dot = Tex("...").rotate(PI/2, OUT).scale(DOTS_SCALE).move_to(LEFT * LAYER_SPACING + UP * ((INPUT_NEURONS//2 - i) * VERTICAL_SPACING))
@@ -144,11 +145,13 @@ def get_mlp(w1,
             if neuron_fills is None: 
                 neuron.set_fill(color='#000000', opacity=1.0)
             else: 
-                neuron.set_fill(color=get_nueron_color(neuron_fills[0][i], vmax=np.abs(neuron_fills[0]).max()), opacity=1.0)
+                neuron.set_fill(color=get_nueron_color(neuron_fills[0][neuron_count], vmax=np.abs(neuron_fills[0]).max()), opacity=1.0)
             neuron.move_to(LEFT * LAYER_SPACING + UP * ((INPUT_NEURONS//2 - i) * VERTICAL_SPACING))
             input_layer.add(neuron)
+            neuron_count+=1
             
     # Hidden layer
+    neuron_count=0
     for i in range(HIDDEN_NEURONS):
         if i == w1.shape[1]//2:  # Middle position for ellipsis
             dot = Tex("...").rotate(PI/2, OUT).scale(DOTS_SCALE).move_to(UP * ((HIDDEN_NEURONS//2 - i) * VERTICAL_SPACING))
@@ -160,11 +163,13 @@ def get_mlp(w1,
             if neuron_fills is None: 
                 neuron.set_fill(color='#000000', opacity=1.0)
             else: 
-                neuron.set_fill(color=get_nueron_color(neuron_fills[1][i], vmax=np.abs(neuron_fills[1]).max()), opacity=1.0)
+                neuron.set_fill(color=get_nueron_color(neuron_fills[1][neuron_count], vmax=np.abs(neuron_fills[1]).max()), opacity=1.0)
             neuron.move_to(UP * ((HIDDEN_NEURONS//2 - i) * VERTICAL_SPACING))
             hidden_layer.add(neuron)
+            neuron_count+=1
             
     # Output layer
+    neuron_count=0
     for i in range(OUTPUT_NEURONS):
         if i == w1.shape[0]//2:  # Middle position for ellipsis
             dot = Tex("...").rotate(PI/2, OUT).scale(DOTS_SCALE).move_to(RIGHT * LAYER_SPACING + UP * ((OUTPUT_NEURONS//2 - i) * VERTICAL_SPACING))
@@ -176,9 +181,10 @@ def get_mlp(w1,
             if neuron_fills is None: 
                 neuron.set_fill(color='#000000', opacity=1.0)
             else: 
-                neuron.set_fill(color=get_nueron_color(neuron_fills[2][i], vmax=np.abs(neuron_fills[2]).max()), opacity=1.0)
+                neuron.set_fill(color=get_nueron_color(neuron_fills[2][neuron_count], vmax=np.abs(neuron_fills[2]).max()), opacity=1.0)
             neuron.move_to(RIGHT * LAYER_SPACING + UP * ((OUTPUT_NEURONS//2 - i) * VERTICAL_SPACING))
             output_layer.add(neuron)
+            neuron_count+=1
             
     # Create connections with edge points
     connections = VGroup()
@@ -456,6 +462,7 @@ class LlamaLearningSketchOne(InteractiveScene):
         words_to_nudge={' capital':-0.02}
 
         prompt_token_count=0
+        neuron_count=0
         for i in range(num_input_neurons):
             if i == num_input_neurons//2:  # Middle position for ellipsis
                 dot = Tex("...").rotate(PI/2, OUT).scale(0.4).move_to(UP * ((num_input_neurons//2 - i) * vertical_spacing))
@@ -463,7 +470,7 @@ class LlamaLearningSketchOne(InteractiveScene):
             else:
                 neuron = Circle(radius=neuron_radius, stroke_color=neuron_stroke_color)
                 neuron.set_stroke(width=neuron_stroke_width)
-                if i in prompt_neuron_indices:
+                if neuron_count in prompt_neuron_indices:
                     neuron.set_fill(color='#dfd0b9', opacity=1.0)
                     t=Text(snapshot['prompt.tokens'][prompt_token_count], font_size=24, font='myriad-pro')
                     t.set_color(neuron_stroke_color)
@@ -477,6 +484,7 @@ class LlamaLearningSketchOne(InteractiveScene):
 
                 neuron.move_to(UP * ((num_input_neurons//2 - i) * vertical_spacing))
                 input_layer_nuerons.add(neuron)
+                neuron_count+=1
 
         input_layer=VGroup(input_layer_nuerons, dot, input_layer_text)
         input_layer.move_to([-5.2, 0, 0])
@@ -539,51 +547,25 @@ class LlamaLearningSketchOne(InteractiveScene):
         self.add(we_connections_grad)
         self.add(we_connections)
         self.add(input_layer)
-        self.wait()
-
-
+        # self.wait()
         
         self.remove(input_layer[0])
         self.add(input_layer[0])
+
+
+        #Ok I should probably go ahead and wrap up input stuff but I don't really want to -> 
+
+
+
+
+
+
+
+
         self.wait()
 
 
 
-    #         neuron_stroke_width=1.0, 
-    #         neuron_stroke_color='#dfd0b9', 
-    #         line_stroke_color='#948979', 
-    #         connection_display_thresh=0.4):
-
-    # INPUT_NEURONS = w1.shape[0]
-    # HIDDEN_NEURONS = w1.shape[1]
-    # OUTPUT_NEURONS = w1.shape[0]
-    # NEURON_RADIUS = 0.06
-    # LAYER_SPACING = 0.23
-    # VERTICAL_SPACING = 0.18
-    # DOTS_SCALE=0.5
-    
-    # # Create layers
-    # input_layer = VGroup()
-    # hidden_layer = VGroup()
-    # output_layer = VGroup()
-    # dots = VGroup()
-    
-    # # Input layer
-    # for i in range(INPUT_NEURONS):
-    #     if i == w1.shape[0]//2:  # Middle position for ellipsis
-    #         dot = Tex("...").rotate(PI/2, OUT).scale(DOTS_SCALE).move_to(LEFT * LAYER_SPACING + UP * ((INPUT_NEURONS//2 - i) * VERTICAL_SPACING))
-    #         dot.set_color(neuron_stroke_color)
-    #         dots.add(dot)
-    #     else:
-    #         neuron = Circle(radius=NEURON_RADIUS, stroke_color=neuron_stroke_color)
-    #         neuron.set_stroke(width=neuron_stroke_width)
-    #         if neuron_fills is None: 
-    #             neuron.set_fill(color='#000000', opacity=1.0)
-    #         else: 
-    #             neuron.set_fill(color=get_nueron_color(neuron_fills[0][i], vmax=np.abs(neuron_fills[0]).max()), opacity=1.0)
-    #         neuron.move_to(LEFT * LAYER_SPACING + UP * ((INPUT_NEURONS//2 - i) * VERTICAL_SPACING))
-    #         input_layer.add(neuron)
-            
 
 
 

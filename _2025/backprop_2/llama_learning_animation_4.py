@@ -402,39 +402,120 @@ class LlamaLearningSketchOne(InteractiveScene):
             attention_connections_left_grad=wqsg.T #Queries
             attention_connections_right_grad=wosg
 
-            mlp=get_mlp(w1, w2, neuron_fills, grads_1=grads_1, grads_2=grads_2)
-            mlp.move_to([start_x+layer_count*1.6, 0, 0])
-            mlps.append(mlp)
-
             attn=get_attention_layer(attn_patterns)
-            attn.move_to([start_x+0.8+layer_count*1.6, 0, 0])
+            attn.move_to([start_x+layer_count*1.6, 0, 0]) 
             attns.append(attn)
 
-            connections_left, connections_left_grads=get_mlp_connections_left(attention_connections_left=attention_connections_left, 
-                                                                              mlp_out=mlp[4],
-                                                                              connection_points_left=attn[2],
-                                                                              attention_connections_left_grad=attention_connections_left_grad)
+            mlp=get_mlp(w1, w2, neuron_fills, grads_1=grads_1, grads_2=grads_2)
+            mlp.move_to([start_x+0.8+layer_count*1.6, 0, 0])
+            mlps.append(mlp)
+
+            connections_right, connections_right_grads=get_mlp_connections_right(attention_connections_right=attention_connections_right, 
+                                                                               mlp_in=mlp[2],
+                                                                               connection_points_right=attn[3],
+                                                                               attention_connections_right_grad=attention_connections_right_grad)
+
 
             if len(mlps)>1:
-                connections_right, connections_right_grads=get_mlp_connections_right(attention_connections_right=attention_connections_right, 
-                                                                                   mlp_in=mlp[2],
-                                                                                   connection_points_right=attns[-2][3],
-                                                                                   attention_connections_right_grad=attention_connections_right_grad)
-                self.add(connections_right)
-                self.add(connections_right_grads)
+                connections_left, connections_left_grads=get_mlp_connections_left(attention_connections_left=attention_connections_left, 
+                                                                              mlp_out=mlps[-2][4],
+                                                                              connection_points_left=attn[2],
+                                                                              attention_connections_left_grad=attention_connections_left_grad)
+                self.add(connections_left)
+                self.add(connections_left_grads)
 
-
-
-
-            self.add(connections_left)
-            self.add(connections_left_grads)
-            self.add(mlp)
+            self.add(connections_right)
+            self.add(connections_right_grads)
             self.add(attn)
+            self.add(mlp)
+
+            if len(mlps)>1:
+                self.remove(mlps[-2][3][1]); self.add(mlps[-2][3][1]) #Ok seems like I'm just exploiting a bug, but this fixes layering. 
+                self.remove(mlps[-2][2][1]); self.add(mlps[-2][2][1])
+                # self.remove(mlps[-2][4][1]); self.add(mlps[-2][4][1])
+                self.remove(mlps[-2][4]); self.add(mlps[-2][4]) #Don't ask me how I did it, I just did it, it as confusing.
+
+        self.remove(mlps[-1][3][1]); self.add(mlps[-1][3][1]) #Ok seems like I'm just exploiting a bug, but this fixes layering. 
+        self.remove(mlps[-1][2][1]); self.add(mlps[-1][2][1])
+        self.remove(mlps[-1][4]); self.add(mlps[-1][4]) 
+
+        # Ok now inputs/prompt
+        # Maybe active input circles are fully colored in and everything else is black? That could look cool I think. 
 
 
-            self.remove(mlp[3][1]); self.add(mlp[3][1]) #Ok seems like I'm just exploiting a bug, but this fixes layering. 
-            self.remove(mlp[2][1]); self.add(mlp[2][1])
-            self.remove(mlp[4][1]); self.add(mlp[4][1])
+        input_layer=VGroup()
+        num_input_neurons=36
+        vertical_spacing = 0.18
+        neuron_radius = 0.06
+        neuron_stroke_color='#dfd0b9'
+        neuron_stroke_width= 1.0
+
+        np.random.seed(25) #Need to figure out how to add variety withotu moving the same token like "The" around
+        prompt_neuron_indices=np.random.choice(np.arange(36), len(snapshot['prompt.tokens'])-1) #Don't include last token
+
+        prompt_token_count=0
+        for i in range(num_input_neurons):
+            if i == num_input_neurons//2:  # Middle position for ellipsis
+                dot = Tex("...").rotate(PI/2, OUT).scale(0.4).move_to(UP * ((num_input_neurons//2 - i) * vertical_spacing))
+                dot.set_color(neuron_stroke_color)
+                input_layer.add(dot)
+            else:
+                neuron = Circle(radius=neuron_radius, stroke_color=neuron_stroke_color)
+                neuron.set_stroke(width=neuron_stroke_width)
+                if i in prompt_neuron_indices:
+                    neuron.set_fill(color='#dfd0b9', opacity=1.0)
+                    t=Text(snapshot['prompt.tokens'][prompt_token_count], font_size=24, font='myriad-pro')
+                    t.set_color(neuron_stroke_color)
+                    print(t.get_right())
+                    t.move_to((0.2+t.get_right()[0])*LEFT+UP * ((num_input_neurons//2 - i) * vertical_spacing))
+                    input_layer.add(t)
+                    prompt_token_count+=1 
+
+                neuron.move_to(UP * ((num_input_neurons//2 - i) * vertical_spacing))
+                input_layer.add(neuron)
+
+        input_layer.move_to([-5.5, 0, 0])
+
+        self.add(input_layer)
+        self.wait()
+
+
+
+    #         neuron_stroke_width=1.0, 
+    #         neuron_stroke_color='#dfd0b9', 
+    #         line_stroke_color='#948979', 
+    #         connection_display_thresh=0.4):
+
+    # INPUT_NEURONS = w1.shape[0]
+    # HIDDEN_NEURONS = w1.shape[1]
+    # OUTPUT_NEURONS = w1.shape[0]
+    # NEURON_RADIUS = 0.06
+    # LAYER_SPACING = 0.23
+    # VERTICAL_SPACING = 0.18
+    # DOTS_SCALE=0.5
+    
+    # # Create layers
+    # input_layer = VGroup()
+    # hidden_layer = VGroup()
+    # output_layer = VGroup()
+    # dots = VGroup()
+    
+    # # Input layer
+    # for i in range(INPUT_NEURONS):
+    #     if i == w1.shape[0]//2:  # Middle position for ellipsis
+    #         dot = Tex("...").rotate(PI/2, OUT).scale(DOTS_SCALE).move_to(LEFT * LAYER_SPACING + UP * ((INPUT_NEURONS//2 - i) * VERTICAL_SPACING))
+    #         dot.set_color(neuron_stroke_color)
+    #         dots.add(dot)
+    #     else:
+    #         neuron = Circle(radius=NEURON_RADIUS, stroke_color=neuron_stroke_color)
+    #         neuron.set_stroke(width=neuron_stroke_width)
+    #         if neuron_fills is None: 
+    #             neuron.set_fill(color='#000000', opacity=1.0)
+    #         else: 
+    #             neuron.set_fill(color=get_nueron_color(neuron_fills[0][i], vmax=np.abs(neuron_fills[0]).max()), opacity=1.0)
+    #         neuron.move_to(LEFT * LAYER_SPACING + UP * ((INPUT_NEURONS//2 - i) * VERTICAL_SPACING))
+    #         input_layer.add(neuron)
+            
 
 
 
@@ -444,74 +525,21 @@ class LlamaLearningSketchOne(InteractiveScene):
 
 
 
-
-# class LlamaLearningSketchOne(InteractiveScene):
-#     def construct(self):
-
-
-#         pickle_path='/Users/stephen/welch_labs/backprop2/hackin/jun_1_1/snapshot_1.p'
-#         with open(pickle_path, 'rb') as f:
-#             snapshot = pickle.load(f)
-
-
-#         layer_num=8
-
-#         #Kinda clunky interface but meh
-#         neuron_fills=[snapshot['blocks.'+str(layer_num)+'.hook_resid_mid'],
-#                       snapshot['blocks.'+str(layer_num)+'.mlp.hook_post'],
-#                       snapshot['blocks.'+str(layer_num)+'.hook_mlp_out']]
-#         w1=snapshot['blocks.'+str(layer_num)+'.mlp.W_in']
-#         w2=snapshot['blocks.'+str(layer_num)+'.mlp.W_out']
-#         grads_1=snapshot['blocks.'+str(layer_num)+'.mlp.W_in.grad']
-#         grads_2=snapshot['blocks.'+str(layer_num)+'.mlp.W_out.grad']
-#         all_attn_patterns=snapshot['blocks.'+str(layer_num)+'.attn.hook_pattern']
-#         wO_full=snapshot['blocks.'+str(layer_num)+'.attn.W_O']
-#         wq_full=snapshot['blocks.'+str(layer_num)+'.attn.W_Q']
-#         wO_full_grad=snapshot['blocks.'+str(layer_num)+'.attn.W_O.grad']
-#         wq_full_grad=snapshot['blocks.'+str(layer_num)+'.attn.W_Q.grad']
-
-#         attn_patterns=[]
-#         wos=[]; wqs=[]
-#         wosg=[]; wqsg=[]
-#         for i in range(0, 30, 3): #Just take every thrid pattern for now. 
-#             attn_patterns.append(all_attn_patterns[0][i][1:,1:]) #Ignore BOS token
-#             wos.append(wO_full[i, 0])
-#             wqs.append(wq_full[i, :, 0])
-#             wosg.append(wO_full_grad[i, 0])
-#             wqsg.append(wq_full_grad[i, :, 0])
-#         wos=np.array(wos); wqs=np.array(wqs)
-#         wosg=np.array(wosg); wqsg=np.array(wqsg)
-#         attention_connections_left=wqs.T #Queries
-#         attention_connections_right=wos
-#         attention_connections_left_grad=wqsg.T #Queries
-#         attention_connections_right_grad=wosg
-
-#         mlp=get_mlp(w1, w2, neuron_fills, grads_1=grads_1, grads_2=grads_2)
-#         mlp.move_to([-4, 0, 0])
-
-#         attn=get_attention_layer(attn_patterns)
-#         attn.move_to([-3.2, 0, 0])
-
-#         connections_left, connections_left_grads=get_mlp_connections_left(attention_connections_left=attention_connections_left, 
-#                                                                           mlp_out=mlp[4],
-#                                                                           connection_points_left=attn[2],
-#                                                                           attention_connections_left_grad=attention_connections_left_grad)
-
-#         self.add(connections_left)
-#         self.add(connections_left_grads)
-#         self.add(mlp)
-#         self.add(attn)
-
-
-#         self.remove(mlp[3][1]); self.add(mlp[3][1]) #Ok seems like I'm just exploiting a bug, but this fixes layering. 
-#         self.remove(mlp[2][1]); self.add(mlp[2][1])
-#         self.remove(mlp[4][1]); self.add(mlp[4][1])
+        # self.remove(mlps[1][4])
+        # self.add(mlps[1][4])
 
 
 
 
-#         self.wait()
-#         self.embed()
+
+
+
+
+
+
+
+
+
 
 
 

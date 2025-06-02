@@ -700,8 +700,16 @@ class LlamaLearningSketchThree(InteractiveScene):
 
         self.wait()
 
-        forward_pass.set_opacity(1.0)
-        backward_pass.set_opacity(1.0)
+        #forward_pass.set_opacity(1.0)
+        #backward_pass.set_opacity(1.0)
+
+        for i, f in enumerate(forward_pass):
+            if (i-1)%4==0: run_time=0.4
+            elif i==0: run_time=0.2
+            else: run_time=0.1
+            self.play(f.animate.set_opacity(1.0), run_time=run_time)
+
+
 
 
 

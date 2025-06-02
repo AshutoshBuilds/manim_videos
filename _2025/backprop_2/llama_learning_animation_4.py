@@ -363,7 +363,7 @@ def get_mlp_connections_right(attention_connections_right, mlp_in, connection_po
 class LlamaLearningSketchOne(InteractiveScene):
     def construct(self):
 
-        pickle_path='/Users/stephen/welch_labs/backprop2/hackin/jun_2_1/snapshot_1.p'
+        pickle_path='/Users/stephen/welch_labs/backprop2/hackin/jun_2_1/snapshot_2.p'
         with open(pickle_path, 'rb') as f:
             snapshot = pickle.load(f)
 
@@ -443,7 +443,8 @@ class LlamaLearningSketchOne(InteractiveScene):
         # Maybe active input circles are fully colored in and everything else is black? That could look cool I think. 
 
 
-        input_layer=VGroup()
+        input_layer_nuerons=VGroup()
+        input_layer_text=VGroup()
         num_input_neurons=36
         vertical_spacing = 0.18
         neuron_radius = 0.06
@@ -459,7 +460,6 @@ class LlamaLearningSketchOne(InteractiveScene):
             if i == num_input_neurons//2:  # Middle position for ellipsis
                 dot = Tex("...").rotate(PI/2, OUT).scale(0.4).move_to(UP * ((num_input_neurons//2 - i) * vertical_spacing))
                 dot.set_color(neuron_stroke_color)
-                input_layer.add(dot)
             else:
                 neuron = Circle(radius=neuron_radius, stroke_color=neuron_stroke_color)
                 neuron.set_stroke(width=neuron_stroke_width)
@@ -472,15 +472,79 @@ class LlamaLearningSketchOne(InteractiveScene):
                     if snapshot['prompt.tokens'][prompt_token_count] in words_to_nudge.keys():
                         t.shift([0, words_to_nudge[snapshot['prompt.tokens'][prompt_token_count]], 0])
 
-                    input_layer.add(t)
+                    input_layer_text.add(t)
                     prompt_token_count+=1 
 
                 neuron.move_to(UP * ((num_input_neurons//2 - i) * vertical_spacing))
-                input_layer.add(neuron)
+                input_layer_nuerons.add(neuron)
 
+        input_layer=VGroup(input_layer_nuerons, dot, input_layer_text)
         input_layer.move_to([-5.2, 0, 0])
 
+
+        # Okie dokie -> Let me add intput/first attention layer connections - this will need to be a separate function
+        # Ok right and I need to bring two matrices together here -> hmm. 
+        
+        all_embeddings=[]; all_embeddings_grad=[]; prompt_token_embeddings=[]; prompt_token_embeddings_grad=[]
+        for i in range(0, 30, 3):
+            all_embeddings.append(snapshot['embed.W_E'][0, :num_input_neurons, i])
+            all_embeddings_grad.append(snapshot['embed.W_E.grad'][0, :num_input_neurons, i])
+            prompt_token_embeddings.append(snapshot['prompt.embed.W_E'][:, 0, i])
+            prompt_token_embeddings_grad.append(snapshot['prompt.embed.W_E.grad'][:, 0, i])
+        all_embeddings=np.array(all_embeddings).T
+        all_embeddings_grad=np.array(all_embeddings_grad).T
+        prompt_token_embeddings=np.array(prompt_token_embeddings).T
+        prompt_token_embeddings_grad=np.array(prompt_token_embeddings_grad).T
+
+        for count, i in enumerate(prompt_neuron_indices):
+            all_embeddings[i,:]=prompt_token_embeddings[count, :]
+            all_embeddings_grad[i,:]=prompt_token_embeddings_grad[count, :]
+
+        #Ok now I want to replace prompt_neuron_indices with the correct values. 
+
+        we_connections=VGroup()
+        all_embeddings_abs=np.abs(all_embeddings)
+        all_embeddings_scaled=all_embeddings_abs/np.percentile(all_embeddings_abs, 95)
+        for i, n1 in enumerate(input_layer[0]):
+            for j, n2 in enumerate(attns[0][2]):
+                # if np.abs(all_embeddings_scaled[i, j])<0.1: continue
+                if abs(j-i/4)>3: continue #Need to dial this up or lost it probably, but it is helpful!
+                start_point, end_point = get_edge_points(n1, n2, 0.06)
+                line = Line(start_point, n2.get_center())
+                # line.set_stroke(width=1, opacity=0.3)
+                # line.set_stroke(opacity=np.clip(0.8*(np.abs(w2[i, j])-attention_connection_display_thresh), 0.1, 1), width=1)
+                line.set_stroke(opacity=np.clip(all_embeddings_scaled[i,j], 0.4, 1), width=np.clip(1.0*all_embeddings_scaled[i,j],0.5,1.7))
+                line.set_color(CHILL_BROWN)
+                we_connections.add(line)
+
+
+        we_connections_grad=VGroup()
+        all_embeddings_grad_abs=np.abs(all_embeddings_grad)
+        all_embeddings_grad_scaled=all_embeddings_grad_abs/np.percentile(all_embeddings_grad_abs, 95)
+        for i, n1 in enumerate(input_layer[0]):
+            for j, n2 in enumerate(attns[0][2]):
+                # if np.abs(all_embeddings_grad_scaled[i, j])<0.1: continue
+                if abs(j-i/4)>3: continue #Need to dial this up or lost it probably, but it is helpful!
+                start_point, end_point = get_edge_points(n1, n2, 0.06)
+                line = Line(start_point, n2.get_center())
+                # line.set_stroke(width=1, opacity=0.3)
+                # line.set_stroke(opacity=np.clip(0.8*(np.abs(w2[i, j])-attention_connection_display_thresh), 0.1, 1), width=1)
+                # line.set_stroke(opacity=np.clip(all_embeddings_grad_scaled[i,j], 0.4, 1), width=np.clip(1.0*all_embeddings_grad_scaled[i,j],0.5,1.7))
+                # line.set_color(CHILL_BROWN)
+                line.set_stroke(opacity=np.clip(all_embeddings_grad_scaled[i,j], 0, 1), width=np.clip(1.0*all_embeddings_grad_scaled[i,j],0,3))
+                line.set_color(get_grad_color(all_embeddings_grad_scaled[i,j]))
+                we_connections_grad.add(line)
+
+
+        self.add(we_connections_grad)
+        self.add(we_connections)
         self.add(input_layer)
+        self.wait()
+
+
+        
+        self.remove(input_layer[0])
+        self.add(input_layer[0])
         self.wait()
 
 

@@ -514,7 +514,8 @@ class LlamaLearningSketchThree(InteractiveScene):
             mlp=get_mlp(w1, w2, neuron_fills, grads_1=grads_1, grads_2=grads_2)
             mlp.move_to([start_x+0.8+layer_count*1.6, 0, 0])
             mlps.append(mlp)
-            all_activations.add(*mlp[2:-1]) #Skip weights and connections
+            # all_activations.add(*mlp[2:-1]) #Skip weights and connections
+            all_activations.add(mlp[2:-1]) #Try as a single block, might actually animate better?
             random_background_stuff.add(mlp[-1])
 
             attn_empty=get_attention_layer([np.zeros_like(all_attn_patterns[0][0][1:,1:]) for i in range(len(attn_patterns))])
@@ -681,7 +682,7 @@ class LlamaLearningSketchThree(InteractiveScene):
         self.add(random_background_stuff)
         self.add(we_connections, all_weights, wu_connections)
 
-        backward_pass=VGroup(we_connections_grad, all_grads, wu_connections_grad)
+        backward_pass=VGroup(we_connections_grad, *all_grads, wu_connections_grad)
         self.add(backward_pass)
         backward_pass.set_opacity(0.0)
 
@@ -692,101 +693,62 @@ class LlamaLearningSketchThree(InteractiveScene):
                 self.add(a[1])
         self.remove(input_layer_empty[0]); self.add(input_layer_empty[0])
 
-        forward_pass=VGroup(input_layer, *all_activations, output_layer)
+        forward_pass=VGroup(input_layer[:-1], *all_activations, output_layer[:-1]) #Leaving out text for now
         self.add(forward_pass)
         forward_pass.set_opacity(0.0)
         ###len(forward_pass)=26
 
+        all_steps=VGroup(*forward_pass, *backward_pass[::-1])
+        fade_animations = []
+        for i, f in enumerate(all_steps):
+            anim = f.animate.set_opacity(1.0)
+            fade_animations.append(anim)
+        # fade_animations.append(backward_pass.animate.set_opacity(0.0))
+        # fade_animations.append(forward_pass.animate.set_opacity(0.0))
+
 
         self.wait()
+        self.play(
+            AnimationGroup(*fade_animations, lag_ratio=0.2, run_time=2.0) # ok yeah lower lag ratio is more overlap. 
+        )
+
+        self.wait()
+
+
+
 
         #forward_pass.set_opacity(1.0)
         #backward_pass.set_opacity(1.0)
 
-        for i, f in enumerate(forward_pass):
-            if (i-1)%4==0: run_time=0.4
-            elif i==0: run_time=0.2
-            else: run_time=0.1
-            self.play(f.animate.set_opacity(1.0), run_time=run_time)
+        # fade_animations = []
+        # for i, f in enumerate(forward_pass):
+        #     # if (i-1)%4==0: 
+        #     #     run_time=0.5 #2.0
+        #     # elif i==0: 
+        #     #     run_time=0.5
+        #     # else: 
+        #     #     run_time=0.15
+            
+        #     # Create the animation with proper run_time
+        #     anim = f.animate.set_opacity(1.0)
+        #     fade_animations.append(anim)
+        #     # fade_animations.append(FadeIn(f, run_time=run_time))
 
 
-
-
-
-
-        #Ok, let's try a forward pass here...
-        # ## --- Clean background --- #
-        # self.wait()
-        # self.add(wu_connections_grad)
-        # self.add(we_connections_grad)
-        # wu_connections_grad.set_opacity(0.0)
-        # we_connections_grad.set_opacity(0.0)
-        # # self.remove(all_grads)
-        # all_grads.set_opacity(0.0)
-        # self.remove(all_activations)
-        # self.add(all_activations_empty)
-        # self.add(we_connections)
-        # self.add(wu_connections)
-        # self.add(input_layer_empty)
-        # self.add(output_layer_empty)
-
-        # #Occlusions
-        # self.remove(output_layer_empty[0][1])
-        # self.add(output_layer_empty[0][1])
-        # self.remove(input_layer_empty[0])
-        # self.add(input_layer_empty[0])
-        # for a in all_activations_empty: #Walk through and correct occlusions
-        #     if len(a)>0: 
-        #         self.remove(a[1])
-        #         self.add(a[1])
 
         # self.wait()
-        # #Ok clean now - how do we do forward pass?
-        # #Hmm maybe Forward pass is kinda manual, but then gets wrapped up?
-        # self.remove(input_layer_empty)
-        # self.add(input_layer)
-        # self.wait(0.1)
-        # for i in range(len(all_activations_empty)):
-        #     self.remove(all_activations_empty[i])
-        #     self.add(all_activations[i])
-        #     self.wait(0.1)
-        # self.remove(output_layer_empty)
-        # self.add(output_layer)
-        # self.wait(1.0)
 
-  
-        # #Ok, now backward pass
-        # wu_connections_grad.set_opacity(1.0)
-        # self.remove(output_layer[0])
-        # self.add(output_layer[0])
-        # self.wait(0.1)
-        # for i in range(len(all_grads)-1, -1, -1):
-        #     # self.add(all_grads[i])
-        #     all_grads[i].set_opacity(1.0) #Could fade in here i think - nice opacity helps with occlusions!
-        #     # for m in mlps:
-        #     #     self.remove(m[3]); self.add(m[3])  
-        #     #     self.remove(m[2]); self.add(m[2])
-        #     #     self.remove(m[4]); self.add(m[4]) 
-        #     self.wait(0.1)
-        # we_connections_grad.set_opacity(1.0)
-        # self.remove(input_layer[0][1])
-        # self.add(input_layer[0][1])
-
-        # self.add(mlps[0][2])
-        # self.remove(mlps[0][2])
-
-        # for m in mlps:
-        #     self.remove(m[3]); self.add(m[3])
-
-        # Ok this is great progress - I think next I just need to work on making feel smoother and brining in more examples
-        # First thing I'll try is just a little fade in. 
-        # Also maybe less of pause between MLP layers so there's more of a constant velocity thing going on ya know?
-        # I really want it to feeel like a wave
-        # more nuclear option is to animate the grad drawings left of right for backprop, may not be as bad as I think, we'll see if 
-        # we need it -> definitely try fade in first. 
-        # I want it to feel as smooth/organic as I can make it. 
+        # # Play them with overlapping timing
+        # self.play(
+        #     AnimationGroup(*fade_animations, lag_ratio=0.1, run_time=2.0) # ok yeah lower lag ratio is more overlap. 
+        # )
 
 
+        # for i, f in enumerate(forward_pass):
+        #     if (i-1)%4==0: run_time=2.0
+        #     elif i==0: run_time=1.0
+        #     else: run_time=0.7
+        #     self.play(f.animate.set_opacity(1.0), run_time=run_time)
 
 
 

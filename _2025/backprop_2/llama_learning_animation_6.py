@@ -696,21 +696,131 @@ class LlamaLearningSketchThree(InteractiveScene):
         forward_pass=VGroup(input_layer[:-1], *all_activations, output_layer[:-1]) #Leaving out text for now
         self.add(forward_pass)
         forward_pass.set_opacity(0.0)
+
+
+
+        def create_lag_animation(objects, total_time=2.0, lag_ratio=0.2, start_opacity=0.0, end_opacity=1.0):
+            num_objects = len(objects)
+            if num_objects == 0:
+                return
+            
+            # Calculate timing
+            lag_time = lag_ratio * total_time / num_objects if num_objects > 1 else 0
+            individual_time = (total_time - (num_objects - 1) * lag_time) / num_objects
+            
+            # Create time tracker
+            time_tracker = ValueTracker(0)
+            
+            def update_opacity(obj, dt, index):
+                current_time = time_tracker.get_value()
+                start_time = index * lag_time
+                end_time = start_time + individual_time
+                
+                if current_time < start_time:
+                    obj.set_opacity(start_opacity)
+                elif current_time > end_time:
+                    obj.set_opacity(end_opacity)
+                else:
+                    progress = (current_time - start_time) / individual_time
+                    opacity = start_opacity + (end_opacity - start_opacity) * progress
+                    obj.set_opacity(opacity)
+            
+            # Add updaters to each object
+            for i, obj in enumerate(objects):
+                obj.add_updater(lambda o, dt, idx=i: update_opacity(o, dt, idx))
+            
+            # Animate the time tracker
+            self.play(time_tracker.animate.set_value(total_time), run_time=total_time)
+            
+            # Remove updaters
+            for obj in objects:
+                obj.clear_updaters()
+
+        # Usage:
+        self.wait()
+        create_lag_animation(list(forward_pass), total_time=6.0, lag_ratio=0.2, start_opacity=0.0, end_opacity=1.0)
+        create_lag_animation(list(backward_pass[::-1]), total_time=6.0, lag_ratio=0.2, start_opacity=0.0, end_opacity=1.0)
+
+
+
+
         ###len(forward_pass)=26
 
-        all_steps=VGroup(*forward_pass, *backward_pass[::-1])
-        fade_animations = []
-        for i, f in enumerate(all_steps):
-            anim = f.animate.set_opacity(1.0)
-            fade_animations.append(anim)
+        # forward_pass.set_opacity(1.0)
+        # backward_pass.set_opacity(1.0)
+
+        # all_steps=VGroup(*forward_pass, *backward_pass[::-1])
+
+        # all_steps.set_opacity(1.0)
+
+        # fade_animations = []
+        # for i, f in enumerate(forward_pass):
+        #     anim = f.animate.set_opacity(1.0)
+        #     fade_animations.append(anim)
+
+        # self.wait()
+        # self.play(
+        #     AnimationGroup(*[o.animate.set_opacity(1.0) for o in forward_pass], lag_ratio=0.2, run_time=2.0) # ok yeah lower lag ratio is more overlap. 
+        # )
+
+        # self.wait()
+        # For backward pass
+
+        # backward_pass.set_opacity(1.0) #No Occlusion issues
+        # backward_pass.set_opacity(0.0)
+
+        # self.play( #Places these objects on top!!
+        #     AnimationGroup(*[o.animate.set_opacity(1.0) for o in backward_pass[::-1]], lag_ratio=0.2, run_time=2.0) # ok yeah lower lag ratio is more overlap. 
+        # )
+
+        # self.remove(input_layer[0]); self.add(input_layer[0])
+        # self.remove(output_layer[0]); self.add(output_layer[0])
+        # for a in all_activations: #Walk through and correct occlusions
+        #     if len(a)>2: 
+        #         self.remove(a[0]); self.add(a[0])
+        #         self.remove(a[1]); self.add(a[1])
+        #         self.remove(a[2]); self.add(a[2])
+
+        # self.wait()
+
+        # self.play(
+        #     LaggedStart(*[o.animate.set_opacity(1.0) for o in backward_pass[::-1]], lag_ratio=0.2, run_time=2.0)
+        # )
+
+
+        # self.play( #Places these objects on top!!
+        #     AnimationGroup(*[o.animate.set_opacity(1.0) for o in backward_pass[::-1]], lag_ratio=0.2, run_time=2.0) # ok yeah lower lag ratio is more overlap. 
+        # )
+
+
+
+
+
+
+
+        # self.play(
+        #     AnimationGroup(*[FadeIn(o) for o in backward_pass[::-1]], lag_ratio=0.2, run_time=2.0) # ok yeah lower lag ratio is more overlap. 
+        # )
+
+
+        # self.play(
+        #     AnimationGroup(*[o.animate.set_opacity(1.0) for o in backward_pass[::-1]], lag_ratio=0.2, run_time=2.0) # ok yeah lower lag ratio is more overlap. 
+        # )
+
+
+        # forward_pass.set_opacity(1.0)
+        #Maybe i could use a fade out at the end?
+        # fade_animations.append(FadeOut(backward_pass))
         # fade_animations.append(backward_pass.animate.set_opacity(0.0))
         # fade_animations.append(forward_pass.animate.set_opacity(0.0))
 
 
         self.wait()
-        self.play(
-            AnimationGroup(*fade_animations, lag_ratio=0.2, run_time=2.0) # ok yeah lower lag ratio is more overlap. 
-        )
+        # self.play(
+        #     Succession(AnimationGroup(*fade_animations, lag_ratio=0.2, run_time=30e.0), # ok yeah lower lag ratio is more overlap.
+        #               AnimationGroup(all_steps.animate.set_opacity(0.0), run_time=1.0))  
+        # )
+
 
         self.wait()
 

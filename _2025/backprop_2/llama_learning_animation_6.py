@@ -699,14 +699,18 @@ class LlamaLearningSketchThree(InteractiveScene):
 
 
 
-        def create_lag_animation(objects, total_time=2.0, lag_ratio=0.2, start_opacity=0.0, end_opacity=1.0):
+        def create_lag_animation(self, objects, total_time=2.0, lag_ratio=0.2, start_opacity=0.0, end_opacity=1.0):
             num_objects = len(objects)
             if num_objects == 0:
                 return
             
             # Calculate timing
-            lag_time = lag_ratio * total_time / num_objects if num_objects > 1 else 0
-            individual_time = (total_time - (num_objects - 1) * lag_time) / num_objects
+            # individual_time is how long each object takes to animate
+            individual_time = total_time
+            # lag_time is the delay between starts
+            lag_time = lag_ratio * individual_time
+            # actual_total_time is when the last animation finishes
+            actual_total_time = individual_time + (num_objects - 1) * lag_time
             
             # Create time tracker
             time_tracker = ValueTracker(0)
@@ -729,8 +733,8 @@ class LlamaLearningSketchThree(InteractiveScene):
             for i, obj in enumerate(objects):
                 obj.add_updater(lambda o, dt, idx=i: update_opacity(o, dt, idx))
             
-            # Animate the time tracker
-            self.play(time_tracker.animate.set_value(total_time), run_time=total_time)
+            # Animate the time tracker to the actual total time
+            self.play(time_tracker.animate.set_value(actual_total_time), run_time=actual_total_time)
             
             # Remove updaters
             for obj in objects:
@@ -738,9 +742,15 @@ class LlamaLearningSketchThree(InteractiveScene):
 
         # Usage:
         self.wait()
-        create_lag_animation(list(forward_pass), total_time=6.0, lag_ratio=0.2, start_opacity=0.0, end_opacity=1.0)
-        create_lag_animation(list(backward_pass[::-1]), total_time=6.0, lag_ratio=0.2, start_opacity=0.0, end_opacity=1.0)
+        create_lag_animation(self, list(forward_pass), total_time=6.0, lag_ratio=0.2, start_opacity=0.0, end_opacity=1.0)
+        create_lag_animation(self, list(backward_pass[::-1]), total_time=6.0, lag_ratio=0.2, start_opacity=0.0, end_opacity=1.0)
 
+        # Ok if this works I can ideally pull out the self.play, and combine it with a camera move!
+        # Alright I'm going to go to sleep. Timeline this week is getting legit - probably 4 am wake up makes sense. 
+        # I think there is a good/fine path here -> claude's idea of using a value tracker to control all the opacities makes a ton 
+        # of sense -> i should be able to make this work well. 
+        # Ok yeah render test looks good -> I think I can chain multiple of these together with Sequential and join with a camera
+        # move basically. Dope. 
 
 
 

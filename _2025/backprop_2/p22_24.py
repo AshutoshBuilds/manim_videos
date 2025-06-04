@@ -4,6 +4,7 @@ from welch_axes import *
 from functools import partial
 import numpy as np
 import torch
+import glob
 
 CHILL_BROWN='#948979'
 YELLOW='#ffd35a'
@@ -113,17 +114,17 @@ def get_numbers_2(x, w, logits, yhats):
     numbers.add(tl3)
     
     # Predictions
-    yhat1 = Tex(format_number(yhats[0], total_chars=6)).set_color('#00FFFF')
+    yhat1 = Tex(f"{yhats[0]:.3f}").set_color('#00FFFF')
     yhat1.scale(0.16)
     yhat1.move_to([0.22, 0.37, 0])
     numbers.add(yhat1)
     
-    yhat2 = Tex(format_number(yhats[1], total_chars=6)).set_color(YELLOW)
+    yhat2 = Tex(f"{yhats[1]:.3f}").set_color(YELLOW)
     yhat2.scale(0.16)
     yhat2.move_to([0.22, 0.015, 0])
     numbers.add(yhat2)
     
-    yhat3 = Tex(format_number(yhats[2], total_chars=6)).set_color(GREEN)
+    yhat3 = Tex(f"{yhats[2]:.3f}").set_color(GREEN)
     yhat3.scale(0.16)
     yhat3.move_to([0.22, -0.335, 0])
     numbers.add(yhat3)
@@ -142,7 +143,8 @@ class p22_24(InteractiveScene):
         self.add(net_background)
         # self.frame.reorient(0, 0, 0, (-0.07, -0.02, 0.0), 1.91)
         # self.frame.reorient(0, 0, 0, (-0.22, -0.03, 0.0), 1.74)
-        self.frame.reorient(0, 0, 0, (-0.31, -0.02, 0.0), 1.62)
+        # self.frame.reorient(0, 0, 0, (-0.31, -0.02, 0.0), 1.62)
+        self.frame.reorient(0, 0, 0, (0.0, 0.07, 0.0), 1.97)
 
         data=np.load(data_path+'/cities_1d_2.npy')
         xs=data[:,:2]
@@ -155,15 +157,62 @@ class p22_24(InteractiveScene):
         x=2.3514
         w=[1, 0, -1, 0, 0, 0]
         logits=[2.34, 0, -2.34]
-        yhats=[0.91, 0.09, 0.00]
+        yhats=[0.905, 0.086, 0.008]
         nums=get_numbers_2(x, w, logits, yhats)
         self.add(nums)
 
+        net_background.shift([0,0.23,0])
+        nums.shift([0,.23,0])
+
+        # self.wait()
+
+        
+        layers=VGroup()
+        for p in sorted(glob.glob(svg_path+'/p22_24/*.svg')):
+            layers.add(SVGMobject(p)[1:])  
+            
+        self.add(layers[:7])
+        # self.wait()  
+
+        m3_label=net_background[40:42].copy()
+        m3_label.scale(1.2)
+        m3_label.move_to([1.48, -0.67, 0])
+        self.add(m3_label)
+
+        loss_label=layers[1][:4].copy()
+        loss_label.scale(0.75)
+        loss_label.move_to([[0.7, 0.05, 0]])
+        self.add(loss_label)
+
+        yhat2 = Tex("0.086").set_color(YELLOW)
+        yhat2.scale(0.14)
+        yhat2.move_to([1.205, 0.18, 0])
+        self.add(yhat2)
+
+        loss = Tex(format_number(2.45, total_chars=6)).set_color(YELLOW)
+        loss.scale(0.16)
+        loss.move_to([1.5, 0.18, 0])
+        self.add(loss)
+
+        loss_copy = loss.copy()
+        loss_copy.move_to([0.7, -0.05, 0])
+        self.add(loss_copy)
+
+        m0=nums[2].copy()
+        m0.move_to([0.79, -0.68, 0])
+        self.add(m0)
+
         self.wait()
 
-        box = SurroundingRectangle(nums[2], color=YELLOW, buff=0.025)
-        self.play(ShowCreation(box))
-        self.wait()
+
+        #DON'T FORGET TO UPDATE ALL PROBS when we change the one wieght!
+
+
+
+
+        # box = SurroundingRectangle(nums[2], color=YELLOW, buff=0.025)
+        # self.play(ShowCreation(box))
+        # self.wait()
 
 
 

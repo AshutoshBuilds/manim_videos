@@ -246,6 +246,8 @@ class p26_28(InteractiveScene):
         self.play(FadeIn(dLdm2))
         self.wait()
 
+
+
         h1_eq = Tex(r"h_1 = m_1 x + b_1").set_color(BLUE)
         h2_eq = Tex(r"h_2 = m_2 x + b_2").set_color(YELLOW)
         h3_eq = Tex(r"h_3 = m_3 x + b_3").set_color(GREEN)
@@ -311,12 +313,23 @@ class p26_28(InteractiveScene):
 
 
         center_eqs.scale(0.16)
-        center_eqs.move_to([0.7, -1.1, 0])
+        center_eqs.move_to([0.7, -1.0, 0])
+        center_eqs_2.scale(0.16)
+        center_eqs_2.move_to([0.7, -1.0, 0])
         h_eqs.scale(0.16)
-        h_eqs.move_to([-0.2, -1.1, 0])
+        h_eqs.move_to([-0.2, -1.0, 0])
 
         self.wait()
-        self.play(self.frame.animate.reorient(0, 0, 0, (0.28, -0.53, 0.0), 1.76))
+        # self.play(self.frame.animate.reorient(0, 0, 0, (0.28, -0.53, 0.0), 1.76))
+        temp_opacity=0.5
+        self.play(FadeOut(yellow_cross), FadeOut(layers[5]), FadeOut(layers[6]), FadeOut(m0), FadeOut(m1), 
+                  FadeOut(loss_copy), FadeOut(loss_copy_2), dLdm2.animate.move_to([1.15, -0.15, 0]).set_opacity(temp_opacity),
+                  layers[3].animate.set_opacity(temp_opacity), layers[2].animate.set_opacity(temp_opacity), layers[4].animate.set_opacity(temp_opacity), 
+                  loss_label.animate.set_opacity(temp_opacity), m2_label.animate.set_opacity(temp_opacity), tm2.animate.set_opacity(temp_opacity),
+                  nums[:2].animate.set_opacity(temp_opacity), nums[3:-6].animate.set_opacity(temp_opacity), nums_2[-7:].animate.set_opacity(temp_opacity),
+                  net_background.animate.set_opacity(temp_opacity),
+                  self.frame.animate.reorient(0, 0, 0, (0.25, -0.58, 0.0), 1.64))
+
         self.play(Write(center_eqs), Write(h_eqs), run_time=2)
 
 
@@ -337,35 +350,28 @@ class p26_28(InteractiveScene):
         self.play(ShowCreation(box))
         self.wait()
 
-        self.fad
-
-
-
-
-        self.add(ce_label)
-
-        self.add(center_eqs)
-        self.add(h_eqs)        
-
-        self.wait()
-        
-        
-        
-        self.wait()
-        
+        self.play(FadeOut(box))
         self.play(
             ReplacementTransform(center_eqs, center_eqs_2), run_time=2
         )
-        
         self.wait()
         
+        big_eq.scale(0.16)
+        big_eq.move_to([0.7, -1.0, 0])
+        big_eq_2.scale(0.16)
+        big_eq_2.move_to([0.7, -1.0, 0])
+        big_eq_3.scale(0.16)
+        big_eq_3.move_to([0.7, -1.0, 0])
+        big_eq_4.scale(0.16)
+        big_eq_4.move_to([0.7, -1.0, 0])
+
         self.play(
+            FadeOut(ce_label), FadeOut(softmax_label),
             ReplacementTransform(cross_entropy_loss_eq_2[0:9], big_eq[0:9]),
             ReplacementTransform(cross_entropy_loss_eq_2[12], big_eq[24]),
             ReplacementTransform(softmax_eq_2[4:19], big_eq[9:24]),
             FadeOut(VGroup(cross_entropy_loss_eq_2[9:12], softmax_eq_2[0:4])), run_time=2
         )
-        
         self.wait()
         
         self.play(
@@ -377,9 +383,8 @@ class p26_28(InteractiveScene):
             FadeOut(h1_eq[0:3]),
             FadeOut(big_eq[14:16]), run_time=2
         )
-            
         self.wait()    
-                                
+
         self.play(
             ReplacementTransform(big_eq_2[0:10], big_eq_3[0:10]),
             ReplacementTransform(big_eq_2[28], big_eq_3[36]),
@@ -390,7 +395,6 @@ class p26_28(InteractiveScene):
             ReplacementTransform(h2_eq[3:9].copy(), big_eq_3[10:16]),
             ReplacementTransform(h2_eq[3:9], big_eq_3[26:32]), run_time=2
         )
-        
         self.wait()
         
         self.play(
@@ -402,7 +406,6 @@ class p26_28(InteractiveScene):
         )
         
         self.wait()
-        
         self.play(big_eq_4.animate.shift(UP * 2), run_time=2)
         
         self.wait()
@@ -415,6 +418,35 @@ class p26_28(InteractiveScene):
             Write(final_eq[52]),
             ReplacementTransform(big_eq_4[5:41].copy(), final_eq[16:52]), run_time=2
         )
+
+
+
+        #Ok so now fade out network and stuff, move camera down, and substitute. 
+        #Probably fade and camera move first. 
+        #Ok as I'm hacking through here I'm realizing that I don't want ot fully lose the context of 
+        # the nerual network diagram
+
+
+        # self.play(FadeOut(yellow_cross), FadeOut(layers[5]), FadeOut(layers[6]), FadeOut(m0), FadeOut(m1), 
+        #           FadeOut(loss_copy), FadeOut(loss_copy_2), dLdm2.animate.move_to([1.15, -0.15, 0]).set_opacity(0.3),
+        #           layers[3].animate.set_opacity(0.2), layers[2].animate.set_opacity(0.2), layers[4].animate.set_opacity(0.2), 
+        #           loss_label.animate.set_opacity(0.2), m2_label.animate.set_opacity(0.2), tm2.animate.set_opacity(0.2),
+        #           nums[:2].animate.set_opacity(0.2), nums[3:-6].animate.set_opacity(0.2), nums_2[-7:].animate.set_opacity(0.2),
+        #           net_background.animate.set_opacity(0.2),
+        #           self.frame.animate.reorient(0, 0, 0, (0.47, -1.09, 0.0), 1.71), run_time=1.5)
+
+        # dLdm2.move_to([1.15, -0.15, 0]).set_opacity(0.2)
+  
+
+        # self.play(FadeOut(net), FadeOut(dLdm2), FadeOut(yellow_cross), FadeOut(layers[1])) 
+    
+        # self.play(*[o.animate.set_opacity(0.2) for o in [net, dLdm2, yellow_cross, layers[1], yhat2, loss, layers[3], m2_label, loss_label, layers[2], m0, loss_copy]])
+        # for o in [net, dLdm2, yellow_cross, layers, yhat2, loss, m2_label, 
+        #         loss_label, m0, loss_copy, m1, loss_copy_2]:
+        #     self.remove(o)
+        # self.play(self.frame.animate.reorient(0, 0, 0, (0.47, -1.09, 0.0), 1.71))
+        # self.wait()
+        
 
 
 

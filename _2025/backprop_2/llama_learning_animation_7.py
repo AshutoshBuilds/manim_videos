@@ -450,7 +450,7 @@ def get_output_layer(snapshot, empty=False):
 
 
 
-class LlamaLearningSketchThree(InteractiveScene):
+class LlamaLearningSketchFour(InteractiveScene):
     def construct(self):
         '''
         Ok, making progress here. Current issues is that forward/backward movement is not smooth. 
@@ -473,7 +473,8 @@ class LlamaLearningSketchThree(InteractiveScene):
         mlps=[]
         attns=[]
         start_x=-4.0
-        for layer_count, layer_num in enumerate([0, 1, 2, 3, 12, 13, 14, 15]):
+        # for layer_count, layer_num in enumerate([0, 1, 2, 3, 12, 13, 14, 15]):
+        for layer_count, layer_num in enumerate([0, 1, 2, 3, 4, 5, 10, 11, 12, 13, 14, 15]):
         # for layer_count, layer_num in enumerate([0, 1, 2, 13, 14, 15]):
 
             #Kinda clunky interface but meh
@@ -759,24 +760,101 @@ class LlamaLearningSketchThree(InteractiveScene):
             lag_ratio=0.5, 
             start_opacity=0.0, 
             end_opacity=1.0,
-            fade_out_time=0.7
+            fade_out_time=7.0
         )
 
         # self.wait()
         # Play with smooth camera move
         # self.frame.reorient(0, 0, 0, (2.49, 0.33, 0.0), 0.91)
-        self.frame.reorient(0, 0, 0, (3.22, 0.72, 0.0), 1.26)
+        self.frame.reorient(-89, 69, 0, (1.19, -0.11, -0.7), 8.95) #Looking "down the barrel"
         self.wait()
         self.play(
             time_tracker.animate.set_value(total_time),
-            self.camera.frame.animate.reorient(0, 0, 0, (1.98, 1.15, 0.0), 11.65),  # One smooth camera move
+            # self.camera.frame.animate.reorient(0, 0, 0, (1.99, -0.04, 0.0), 8.59),  # One smooth camera move
+            self.camera.frame.animate.reorient(0, 0, 0, (5.2, -1.28, 0.0), 12.35),
+            run_time=total_time,
+            rate_func=linear
+        )
+
+
+        # --Trying this approach from claude to end camera move early - there's one more good loking option from claude too
+        def update_time_tracker(mob, alpha):
+            time_tracker.set_value(alpha * total_time)
+
+        self.play(
+            AnimationGroup(
+                UpdateFromFunc(time_tracker, update_time_tracker, rate_func=linear),
+                self.camera.frame.animate.reorient(0, 0, 0, (5.2, -1.28, 0.0), 12.35),
+                rate_func=lambda t: rate_func_with_early_end(t, complete_at=0.7)
+            ),
             run_time=total_time
         )
+
+        ## --
 
         # Clear updaters
         for obj in objects:
             obj.clear_updaters()
 
+
+        ## ------ LlamaLearningSketchFour_jun_4_1.mp4 ----- ## Looks pretty nice at like 5x!
+
+        # time_tracker, total_time, objects = create_looping_lag_animation(
+        #     list(forward_pass) + list(backward_pass[::-1]), 
+        #     num_loops=5,
+        #     individual_time=1.0, 
+        #     lag_ratio=0.5, 
+        #     start_opacity=0.0, 
+        #     end_opacity=1.0,
+        #     fade_out_time=7.0
+        # )
+
+        # # self.wait()
+        # # Play with smooth camera move
+        # # self.frame.reorient(0, 0, 0, (2.49, 0.33, 0.0), 0.91)
+        # self.frame.reorient(-89, 69, 0, (1.19, -0.11, -0.7), 8.95) #Looking "down the barrel"
+        # self.wait()
+        # self.play(
+        #     time_tracker.animate.set_value(total_time),
+        #     # self.camera.frame.animate.reorient(0, 0, 0, (1.99, -0.04, 0.0), 8.59),  # One smooth camera move
+        #     self.camera.frame.animate.reorient(0, 0, 0, (5.2, -1.28, 0.0), 12.35),
+        #     run_time=total_time,
+        #     rate_func=linear
+        # )
+
+        # # Clear updaters
+        # for obj in objects:
+        #     obj.clear_updaters()
+
+
+        ## ------
+
+
+
+        ## - - - - --  LlamaLearningSketchFour_jun_3_1
+        # time_tracker, total_time, objects = create_looping_lag_animation(
+        #     list(forward_pass) + list(backward_pass[::-1]), 
+        #     num_loops=10,
+        #     individual_time=1.0, 
+        #     lag_ratio=0.5, 
+        #     start_opacity=0.0, 
+        #     end_opacity=1.0,
+        #     fade_out_time=3.0
+        # )
+
+        # # self.wait()
+        # # Play with smooth camera move
+        # # self.frame.reorient(0, 0, 0, (2.49, 0.33, 0.0), 0.91)
+        # self.frame.reorient(-89, 69, 0, (1.19, -0.11, -0.7), 8.95)
+        # self.wait()
+        # self.play(
+        #     time_tracker.animate.set_value(total_time),
+        #     self.camera.frame.animate.reorient(0, 0, 0, (1.99, -0.04, 0.0), 8.59),  # One smooth camera move
+        #     run_time=total_time
+        # )
+
+
+        ## - - - - - - 
 
         # create_lag_animation(self, list(forward_pass)+list(backward_pass[::-1]), individual_time=1.0, lag_ratio=0.5, start_opacity=0.0, end_opacity=1.0)
         # create_lag_animation(self, list(backward_pass[::-1]), individual_time=1.5, lag_ratio=0.2, start_opacity=0.0, end_opacity=1.0)

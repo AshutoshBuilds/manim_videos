@@ -144,7 +144,7 @@ class p22_24(InteractiveScene):
         # self.frame.reorient(0, 0, 0, (-0.07, -0.02, 0.0), 1.91)
         # self.frame.reorient(0, 0, 0, (-0.22, -0.03, 0.0), 1.74)
         # self.frame.reorient(0, 0, 0, (-0.31, -0.02, 0.0), 1.62)
-        self.frame.reorient(0, 0, 0, (0.0, 0.07, 0.0), 1.97)
+        self.frame.reorient(0, 0, 0, (-0.56, 0.23, 0.0), 1.56)
 
         data=np.load(data_path+'/cities_1d_2.npy')
         xs=data[:,:2]
@@ -166,43 +166,101 @@ class p22_24(InteractiveScene):
 
         # self.wait()
 
-        
         layers=VGroup()
         for p in sorted(glob.glob(svg_path+'/p22_24/*.svg')):
             layers.add(SVGMobject(p)[1:])  
-            
-        self.add(layers[:7])
-        # self.wait()  
-
-        m3_label=net_background[40:42].copy()
-        m3_label.scale(1.2)
-        m3_label.move_to([1.48, -0.67, 0])
-        self.add(m3_label)
-
-        loss_label=layers[1][:4].copy()
-        loss_label.scale(0.75)
-        loss_label.move_to([[0.7, 0.05, 0]])
-        self.add(loss_label)
-
+         
         yhat2 = Tex("0.086").set_color(YELLOW)
         yhat2.scale(0.14)
         yhat2.move_to([1.205, 0.18, 0])
-        self.add(yhat2)
-
         loss = Tex(format_number(2.45, total_chars=6)).set_color(YELLOW)
         loss.scale(0.16)
         loss.move_to([1.5, 0.18, 0])
-        self.add(loss)
-
-        loss_copy = loss.copy()
-        loss_copy.move_to([0.7, -0.05, 0])
-        self.add(loss_copy)
-
-        m0=nums[2].copy()
-        m0.move_to([0.79, -0.68, 0])
-        self.add(m0)
 
         self.wait()
+        self.play(self.frame.animate.reorient(0, 0, 0, (0.0, 0.07, 0.0), 1.97), 
+                  FadeIn(layers[:2]), FadeIn(yhat2), FadeIn(loss), run_time=3)
+
+        self.wait()
+
+        self.play(ShowCreation(layers[3]))
+
+        m2_label=net_background[42:44].copy()
+        loss_label=layers[1][:4].copy()
+        self.add(m2_label, loss_label)
+
+        self.play(loss_label.animate.scale(0.75).move_to([0.7, 0.05, 0]), run_time=1.0)
+        self.play(m2_label.animate.scale(1.2).move_to([1.48, -0.67, 0]), run_time=4.0)
+
+        self.wait()
+
+        m0=nums[2].copy()
+        loss_copy = loss.copy()
+        self.play(m0.animate.move_to([0.79, -0.68, 0]), run_time=3.0)
+        self.play(loss_copy.animate.move_to([0.7, -0.05, 0]), run_time=1.2)
+        self.add(layers[2])
+
+        self.wait()
+
+        box = SurroundingRectangle(nums[2], color=YELLOW, buff=0.025)
+        self.play(ShowCreation(box))
+        tm2 = Tex(format_number(0.1, total_chars=6)).set_color(YELLOW)
+        tm2.scale(0.15)
+        tm2.move_to([-1.155, 0.015+0.23, 0])
+        self.play(Transform(nums[2], tm2))
+        self.wait()
+
+        #Ok, now update all yhs and yhats at once!
+        w=[1, 0.1, -1, 0, 0, 0]
+        logits=[2.34, 0.23, -2.34]
+        yhats=[0.885, 0.107, 0.008]
+        nums_2=get_numbers_2(x, w, logits, yhats)
+        nums_2.shift([0,.23,0])
+
+        self.play(*[Transform(nums[i], nums_2[i]) for i in [-6, -5, -4, -3, -2, -1]])
+        self.wait()
+
+        yhat2_new = nums_2[-2].copy()
+        loss_new = Tex(format_number(2.24, total_chars=6)).set_color(YELLOW)
+        loss_new.scale(0.16)
+        loss_new.move_to([1.5, 0.18, 0])
+        self.play(yhat2_new.animate.scale(0.8).move_to([1.205, 0.18, 0]), 
+                  FadeOut(yhat2), run_time=2.0)
+        self.play(Transform(loss, loss_new))
+        self.wait()
+
+        m1=nums_2[2].copy()
+        loss_copy_2 = loss_new.copy()
+        self.play(m1.animate.move_to([1.25, -0.68, 0]), run_time=2.0)
+        self.play(loss_copy_2.animate.move_to([0.7, -0.49, 0]), run_time=1.0)  
+        self.add(layers[4])
+        self.wait()
+
+
+
+        # yhat2_new.scale(0.14)
+        # yhat2_new.move_to([1.205, 0.18, 0])
+
+
+
+
+        # m3_label.scale(1.2)
+        # m3_label.move_to([1.48, -0.67, 0])
+        # self.add(m3_label)
+
+        
+        # loss_label.scale(0.75)
+        # loss_label.move_to([[0.7, 0.05, 0]])
+        # self.add(loss_label)
+
+
+
+
+        # loss_copy = loss.copy()
+        # loss_copy.move_to([0.7, -0.05, 0])
+        # self.add(loss_copy)
+
+ 
 
 
         #DON'T FORGET TO UPDATE ALL PROBS when we change the one wieght!

@@ -10,7 +10,8 @@ CHILL_BROWN='#948979'
 YELLOW='#ffd35a'
 BLUE='#65c8d0'
 GREEN='#00a14b'
-
+CHILL_GREEN='#6c946f'
+CHILL_BLUE='#3d5c6f'
 
 svg_path='/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backprop2/graphics/to_manim'
 data_path='/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backprop2/hackin'
@@ -436,15 +437,71 @@ class p26_28(InteractiveScene):
 
         #Cool now move back to big newtork!
         temp_opacity=0.8
+        temp_opacity_2=0.5 #Use to make numbers more chill
         self.play(self.frame.animate.reorient(0, 0, 0, (0.21, -0.42, 0.0), 1.71), 
                   FadeOut(big_derivative), FadeOut(final_eq), FadeOut(big_eq_4),
                   dLdm2.animate.set_opacity(temp_opacity),
                   layers[3].animate.set_opacity(temp_opacity), layers[2].animate.set_opacity(temp_opacity), layers[4].animate.set_opacity(temp_opacity), 
-                  loss_label.animate.set_opacity(temp_opacity), m2_label.animate.set_opacity(temp_opacity), tm2.animate.set_opacity(temp_opacity),
-                  nums[:2].animate.set_opacity(temp_opacity), nums[3:-6].animate.set_opacity(temp_opacity), nums_2[-7:].animate.set_opacity(temp_opacity),
+                  loss_label.animate.set_opacity(temp_opacity), m2_label.animate.set_opacity(temp_opacity), tm2.animate.set_opacity(temp_opacity_2),
+                  nums[:2].animate.set_opacity(temp_opacity_2), nums[3:-6].animate.set_opacity(temp_opacity_2), nums_2[-7:].animate.set_opacity(temp_opacity_2),
                   net_background.animate.set_opacity(temp_opacity), run_time=3.0)
 
         self.wait()
+
+
+        #Ok lets keep rolling to p29 here - first I need some opaque rounded rectangles. 
+        rect1=RoundedRectangle(0.28, 0.48, 0.02)
+        rect1.set_stroke(width=0)
+        rect1.set_color(CHILL_GREEN)
+        rect1.set_opacity(0.4)
+
+        rect2=RoundedRectangle(0.225, 0.48, 0.02)
+        rect2.set_stroke(width=0)
+        rect2.set_color(CHILL_BLUE)
+        rect2.set_opacity(0.4)
+
+        rect1.move_to([-0.19, -0.36,  1])
+        rect2.move_to([0.142, -0.36,  1])
+
+        dLdm2b=dLdm2.copy()
+        dLdm2b.set_color(WHITE).set_opacity(1.0)
+        dLdm2b.scale(0.9)
+        dLdm2b.move_to([-1.0, -0.9, 0])
+
+        modular_eq_1=Tex("=")
+        modular_eq_2=Tex(r"\frac{\partial h}{\partial m_2}")
+        modular_eq_3=Tex(r"\cdot")
+        modular_eq_4=Tex(r"\frac{\partial L}{\partial h}")
+
+        modular_eq=VGroup(modular_eq_1, modular_eq_2, modular_eq_3, modular_eq_4)
+        modular_eq_1.scale(0.17)
+        modular_eq_2.scale(0.17)
+        modular_eq_3.scale(0.35)
+        modular_eq_4.scale(0.17)
+        modular_eq_1.move_to([-0.85, -0.9, 0])
+        modular_eq_2.move_to([-0.55, -0.9, 0])
+        modular_eq_3.move_to([-0.2, -0.9, 0])
+        modular_eq_4.move_to([0.1, -0.9, 0])
+
+
+        self.wait()
+        self.play(FadeIn(rect1))
+        self.play(FadeIn(rect2))
+        self.wait()
+        self.play(FadeIn(modular_eq_2))
+        self.play(FadeIn(modular_eq_4))
+        self.wait()
+        self.play(ReplacementTransform(dLdm2, dLdm2b), run_time=3.0)
+        self.add(modular_eq_1, modular_eq_3)
+        self.wait()
+
+        # self.add(rect1, rect2, dLdm2b, modular_eq)
+
+
+
+
+
+
 
         # self.add(big_derivative)
         # self.frame.reorient(0, 0, 0, (0.76, -1.85, 0.0), 2.21)

@@ -364,6 +364,8 @@ class p26_28(InteractiveScene):
         big_eq_3.move_to([0.7, -1.0, 0])
         big_eq_4.scale(0.16)
         big_eq_4.move_to([0.7, -1.0, 0])
+        final_eq.scale(0.16)
+        final_eq.move_to([0.7, -1.0, 0])
 
         self.play(
             FadeOut(ce_label), FadeOut(softmax_label),
@@ -406,20 +408,57 @@ class p26_28(InteractiveScene):
         )
         
         self.wait()
-        self.play(big_eq_4.animate.shift(UP * 2), run_time=2)
-        
+        # self.play(big_eq_4.animate.shift(UP * 2), run_time=2)
+            
+        final_eq.move_to([ 0.7, -1.22 ,  0. ])    
+        # self.add(final_eq)
+
+        self.play(ReplacementTransform(dLdm2[0].copy(), final_eq[0]),
+                  ReplacementTransform(dLdm2[2:].copy(), final_eq[5:9]), 
+                  ReplacementTransform(big_eq_4[0:4].copy(), final_eq[1:5]),
+                  run_time=1.5)
+        self.add(final_eq[9]) #Equals sign
+        self.play(ReplacementTransform(dLdm2[0].copy(), final_eq[10]),
+                  ReplacementTransform(dLdm2[2:].copy(), final_eq[11:15]),
+                  run_time=1.5)
+        self.play(ReplacementTransform(big_eq_4[5:41].copy(), final_eq[16:52]))
+        # self.play(Write(final_eq[52]), Write(final_eq[15]))
+        self.add(final_eq[52], final_eq[15])
         self.wait()
         
-        self.play(
-            Write(final_eq[0]),
-            Write(final_eq[5:16]),
-            ReplacementTransform(big_eq_4[0:4], final_eq[1:5]),
-            ReplacementTransform(big_eq_4[4], final_eq[9]),
-            Write(final_eq[52]),
-            ReplacementTransform(big_eq_4[5:41].copy(), final_eq[16:52]), run_time=2
-        )
+        big_derivative=SVGMobject(svg_path+'/big_derivative.svg')
+        big_derivative.scale(0.75)
+        big_derivative.move_to([1.35, -2.15, 0])
+
+        self.play(FadeIn(big_derivative), 
+                  self.frame.animate.reorient(0, 0, 0, (0.81, -1.9, 0.0), 2.22), run_time=2.0)
+        self.wait()
+
+        #Cool now move back to big newtork!
+        temp_opacity=0.8
+        self.play(self.frame.animate.reorient(0, 0, 0, (0.21, -0.42, 0.0), 1.71), 
+                  FadeOut(big_derivative), FadeOut(final_eq), FadeOut(big_eq_4),
+                  dLdm2.animate.set_opacity(temp_opacity),
+                  layers[3].animate.set_opacity(temp_opacity), layers[2].animate.set_opacity(temp_opacity), layers[4].animate.set_opacity(temp_opacity), 
+                  loss_label.animate.set_opacity(temp_opacity), m2_label.animate.set_opacity(temp_opacity), tm2.animate.set_opacity(temp_opacity),
+                  nums[:2].animate.set_opacity(temp_opacity), nums[3:-6].animate.set_opacity(temp_opacity), nums_2[-7:].animate.set_opacity(temp_opacity),
+                  net_background.animate.set_opacity(temp_opacity), run_time=3.0)
+
+        self.wait()
+
+        # self.add(big_derivative)
+        # self.frame.reorient(0, 0, 0, (0.76, -1.85, 0.0), 2.21)
+        # self.play(ShowCreation(big_derivative))
 
 
+        # self.play(
+        #     Write(final_eq[0]),
+        #     Write(final_eq[5:16]),
+        #     ReplacementTransform(big_eq_4[0:4], final_eq[1:5]),
+        #     ReplacementTransform(big_eq_4[4], final_eq[9]),
+        #     Write(final_eq[52]),
+        #     ReplacementTransform(big_eq_4[5:41].copy(), final_eq[16:52]), run_time=2
+        # )
 
         #Ok so now fade out network and stuff, move camera down, and substitute. 
         #Probably fade and camera move first. 

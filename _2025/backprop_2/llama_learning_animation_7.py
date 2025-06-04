@@ -749,17 +749,32 @@ class LlamaLearningSketchThree(InteractiveScene):
         self.wait()
         time_tracker, actual_total_time, objects = create_lag_animation(
             list(forward_pass) + list(backward_pass[::-1]), 
-            individual_time=1.5, 
-            lag_ratio=0.2, 
+            individual_time=1.0, 
+            lag_ratio=0.5, 
             start_opacity=0.0, 
             end_opacity=1.0,
-            fade_out_time=1.2  # This replaces your separate fade-out animation
+            fade_out_time=0.7  # This replaces your separate fade-out animation
+        )
+
+        forward_pass_copy=forward_pass.copy()
+        backward_pass_copy=backward_pass.copy()
+        time_tracker_2, actual_total_time_2, objects_2 = create_lag_animation(
+            list(forward_pass) + list(backward_pass[::-1]), 
+            individual_time=1.0, 
+            lag_ratio=0.5, 
+            start_opacity=0.0, 
+            end_opacity=1.0,
+            fade_out_time=0.7  # This replaces your separate fade-out animation
         )
 
         self.wait()
-        self.play(time_tracker.animate.set_value(actual_total_time), run_time=actual_total_time)
-        for obj in objects:
-            obj.clear_updaters()
+        # self.play(time_tracker.animate.set_value(actual_total_time), run_time=actual_total_time)
+
+        self.play(Succession(time_tracker.animate.set_value(actual_total_time),
+                             time_tracker_2.animate.set_value(actual_total_time), run_time=2*actual_total_time))
+
+        # for obj in objects:
+        #     obj.clear_updaters()
 
         self.wait()
 

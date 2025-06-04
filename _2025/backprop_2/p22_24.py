@@ -224,7 +224,7 @@ class p22_24(InteractiveScene):
         loss_new = Tex(format_number(2.24, total_chars=6)).set_color(YELLOW)
         loss_new.scale(0.16)
         loss_new.move_to([1.5, 0.18, 0])
-        self.play(yhat2_new.animate.scale(0.8).move_to([1.205, 0.18, 0]), 
+        self.play(yhat2_new.animate.scale(0.9).move_to([1.205, 0.18, 0]), 
                   FadeOut(yhat2), run_time=2.0)
         self.play(Transform(loss, loss_new))
         self.wait()
@@ -236,7 +236,54 @@ class p22_24(InteractiveScene):
         self.add(layers[4])
         self.wait()
 
+        self.play(FadeIn(layers[5]))
+        self.wait()
+        self.play(FadeIn(layers[6]))
+        self.wait()
 
+        net=VGroup(net_background, nums)
+        plot_to_move=VGroup(layers[2:5], m2_label, loss_label)
+
+        self.wait()
+        self.remove(box); nums[-6:].set_color(CHILL_BROWN); nums[0].set_color(CHILL_BROWN)
+        self.play(FadeOut(layers[0:2]), FadeOut(layers[5:7]),
+                  FadeOut(loss_copy_2), FadeOut(m1), FadeOut(m0), FadeOut(loss_copy), 
+                  FadeOut(loss_new), FadeOut(loss), FadeOut(yhat2_new), 
+                  net.animate.scale(0.78).move_to([0.38,0.018,0]),
+                  plot_to_move.animate.scale(0.58).move_to([-0.68, 0.645, 0]),
+                  self.frame.animate.reorient(0, 0, 0, (-0.05, -0.02, 0.0), 2.00),
+                  run_time=3.0)
+        self.add(layers[7])
+        self.add(layers[8])
+        self.remove(plot_to_move)
+        self.wait()
+
+        self.play(ShowCreation(layers[9]))
+        self.wait()
+
+        m2_plot=layers[8][-21:]
+        # self.add(m2_plot_copy)
+        # to_fade=VGroup(layers[8][:-21], layers[7], layers[9], net)
+
+        self.play(FadeOut(layers[8][:-21]), FadeOut(layers[7]), FadeOut(layers[9]), FadeOut(net))
+        self.play(m2_plot.animate.scale(2.2).move_to([-0.19,-0.015,0]), run_time=1.5)
+        self.add(layers[10])
+        self.wait()
+
+        # self.add(layers[9])
+
+        
+        # net.scale(0.78)
+        # net.move_to([0.38,0.018,0])
+
+        
+        # plot_to_move.scale(0.58)
+        # plot_to_move.move_to([-0.68, 0.645, 0])
+
+        # self.frame.reorient(0, 0, 0, (-0.05, -0.02, 0.0), 2.00)
+
+        # # nums_2[-6:].set_color(CHILL_BROWN)
+        # nums[-6:].set_color(CHILL_BROWN)
 
         # yhat2_new.scale(0.14)
         # yhat2_new.move_to([1.205, 0.18, 0])

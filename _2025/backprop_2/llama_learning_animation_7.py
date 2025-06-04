@@ -700,17 +700,16 @@ class LlamaLearningSketchThree(InteractiveScene):
 
 
 
-        def create_lag_animation(objects, individual_time=1.5, lag_ratio=0.2, start_opacity=0.0, end_opacity=1.0):
+        def create_lag_animation(objects, individual_time=1.5, lag_ratio=0.2, start_opacity=0.0, end_opacity=1.0, fade_out_time=1.0):
             num_objects = len(objects)
             if num_objects == 0:
                 return
             
             # Calculate timing
-            # individual_time is how long each object takes to animate
-            # lag_time is the delay between starts
             lag_time = lag_ratio * individual_time
-            # actual_total_time is when the last animation finishes
-            actual_total_time = individual_time + (num_objects - 1) * lag_time
+            fade_in_total_time = individual_time + (num_objects - 1) * lag_time
+            # Add fade_out_time to the total
+            actual_total_time = fade_in_total_time + fade_out_time
             
             # Create time tracker
             time_tracker = ValueTracker(0)
@@ -720,46 +719,68 @@ class LlamaLearningSketchThree(InteractiveScene):
                 start_time = index * lag_time
                 end_time = start_time + individual_time
                 
-                if current_time < start_time:
-                    obj.set_opacity(start_opacity)
-                elif current_time > end_time:
-                    obj.set_opacity(end_opacity)
+                if current_time <= fade_in_total_time:
+                    # Fade in phase
+                    if current_time < start_time:
+                        obj.set_opacity(start_opacity)
+                    elif current_time > end_time:
+                        obj.set_opacity(end_opacity)
+                    else:
+                        progress = (current_time - start_time) / individual_time
+                        opacity = start_opacity + (end_opacity - start_opacity) * progress
+                        obj.set_opacity(opacity)
                 else:
-                    progress = (current_time - start_time) / individual_time
-                    opacity = start_opacity + (end_opacity - start_opacity) * progress
+                    # Fade out phase - all objects fade together
+                    fade_progress = (current_time - fade_in_total_time) / fade_out_time
+                    fade_progress = min(fade_progress, 1.0)  # Clamp to 1
+                    opacity = end_opacity * (1 - fade_progress)
                     obj.set_opacity(opacity)
             
             # Add updaters to each object
             for i, obj in enumerate(objects):
                 obj.add_updater(lambda o, dt, idx=i: update_opacity(o, dt, idx))
             
-            # Animate the time tracker to the actual total time
-            # self.play(time_tracker.animate.set_value(actual_total_time), run_time=actual_total_time)
-            
-            # Remove updaters
-            # for obj in objects:
-            #     obj.clear_updaters()
             return time_tracker, actual_total_time, objects
+
 
         # Usage:
         self.wait()
-        # create_lag_animation(self, list(forward_pass)+list(backward_pass[::-1]), individual_time=1.0, lag_ratio=0.5, start_opacity=0.0, end_opacity=1.0)
-        # create_lag_animation(self, list(backward_pass[::-1]), individual_time=1.5, lag_ratio=0.2, start_opacity=0.0, end_opacity=1.0)
-        time_tracker, actual_total_time, objects=create_lag_animation(list(forward_pass)+list(backward_pass[::-1]), 
-                                                            individual_time=1.5, lag_ratio=0.2, start_opacity=0.0, end_opacity=1.0)
+
+        self.wait()
+        time_tracker, actual_total_time, objects = create_lag_animation(
+            list(forward_pass) + list(backward_pass[::-1]), 
+            individual_time=1.5, 
+            lag_ratio=0.2, 
+            start_opacity=0.0, 
+            end_opacity=1.0,
+            fade_out_time=1.2  # This replaces your separate fade-out animation
+        )
 
         self.wait()
         self.play(time_tracker.animate.set_value(actual_total_time), run_time=actual_total_time)
         for obj in objects:
             obj.clear_updaters()
 
-        forward_pass.set_opacity(0.0)
-
         self.wait()
-        self.play(forward_pass.animate.set_opacity(0.0),
-                  backward_pass.animate.set_opacity(0.0), run_time=2.0)
 
-        self.play(time_tracker.animate.set_value(actual_total_time), run_time=actual_total_time)
+
+        # create_lag_animation(self, list(forward_pass)+list(backward_pass[::-1]), individual_time=1.0, lag_ratio=0.5, start_opacity=0.0, end_opacity=1.0)
+        # create_lag_animation(self, list(backward_pass[::-1]), individual_time=1.5, lag_ratio=0.2, start_opacity=0.0, end_opacity=1.0)
+        # time_tracker, actual_total_time, objects=create_lag_animation(list(forward_pass)+list(backward_pass[::-1]), 
+        #                                                     individual_time=1.5, lag_ratio=0.2, start_opacity=0.0, end_opacity=1.0)
+
+        # self.wait()
+        # self.play(time_tracker.animate.set_value(actual_total_time), run_time=actual_total_time)
+        # for obj in objects:
+        #     obj.clear_updaters()
+
+        # forward_pass.set_opacity(0.0)
+
+        # self.wait()
+        # self.play(forward_pass.animate.set_opacity(0.0),
+        #           backward_pass.animate.set_opacity(0.0), run_time=2.0)
+
+        # self.play(time_tracker.animate.set_value(actual_total_time), run_time=actual_total_time)
 
         # Succession
 

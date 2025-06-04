@@ -310,20 +310,46 @@ class p26_28(InteractiveScene):
         big_eq_4.move_to(ORIGIN)
 
 
-        self.wait()
         center_eqs.scale(0.16)
-        center_eqs.move_to([1.0, -1.1, 0])
-        self.add(center_eqs)
-
+        center_eqs.move_to([0.7, -1.1, 0])
         h_eqs.scale(0.16)
-        h_eqs.move_to([-0.2, -1.0, 0])
-        self.add(h_eqs)
+        h_eqs.move_to([-0.2, -1.1, 0])
 
-        self.frame.reorient(0, 0, 0, (0.31, -0.53, 0.0), 1.76)
+        self.wait()
+        self.play(self.frame.animate.reorient(0, 0, 0, (0.28, -0.53, 0.0), 1.76))
+        self.play(Write(center_eqs), Write(h_eqs), run_time=2)
+
+
+        ce_label=Text('Cross-Entropy Loss', font='myriad-pro')
+        ce_label.set_color(CHILL_BROWN)
+        ce_label.scale(0.08)
+        ce_label.next_to(cross_entropy_loss_eq, RIGHT)
+
+        softmax_label=Text('Softmax', font='myriad-pro')
+        softmax_label.set_color(CHILL_BROWN)
+        softmax_label.scale(0.08)
+        softmax_label.next_to(softmax_eq, RIGHT)
+
+        self.play(FadeIn(ce_label), FadeIn(softmax_label))
+        self.wait()
+
+        box = SurroundingRectangle(cross_entropy_loss_eq, color=YELLOW, buff=0.025)
+        self.play(ShowCreation(box))
+        self.wait()
+
+        self.fad
+
+
+
+
+        self.add(ce_label)
+
+        self.add(center_eqs)
+        self.add(h_eqs)        
 
         self.wait()
         
-        self.play(Write(center_eqs), Write(h_eqs), run_time=2)
+        
         
         self.wait()
         

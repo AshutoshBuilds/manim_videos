@@ -498,6 +498,113 @@ class p26_28(InteractiveScene):
         # self.add(rect1, rect2, dLdm2b, modular_eq)
 
 
+        #Starting p30
+        blocks=VGroup()
+        for p in sorted(glob.glob(svg_path+'/p30_31/*.svg')):
+            blocks.add(SVGMobject(p)[1:])  
+
+
+        blocks[0].scale(0.9)
+        blocks[0].move_to([0.3, -0.4, 0])
+
+        rect3=RoundedRectangle(0.5, 0.5, 0.02)
+        rect3.set_stroke(width=0)
+        rect3.set_color(CHILL_GREEN)
+        rect3.set_opacity(0.4)
+        rect3.move_to([-0.13, -0.4, 0])
+
+        rect4=RoundedRectangle(0.5, 0.5, 0.02)
+        rect4.set_stroke(width=0)
+        rect4.set_color(CHILL_BLUE)
+        rect4.set_opacity(0.4)
+        rect4.move_to([0.725, -0.4, 0])
+
+        temp_opacity=0.0
+        self.wait()
+        self.play(FadeOut(modular_eq), FadeOut(dLdm2b),
+                  dLdm2.animate.set_opacity(temp_opacity),
+                  layers[3].animate.set_opacity(temp_opacity), layers[2].animate.set_opacity(temp_opacity), layers[4].animate.set_opacity(temp_opacity), 
+                  loss_label.animate.set_opacity(temp_opacity), m2_label.animate.set_opacity(temp_opacity), tm2.animate.set_opacity(temp_opacity),
+                  nums[:2].animate.set_opacity(temp_opacity), nums[3:-6].animate.set_opacity(temp_opacity), nums_2[-7:].animate.set_opacity(temp_opacity),
+                  net_background.animate.set_opacity(temp_opacity), run_time=1.2)
+
+        self.play(ReplacementTransform(rect1, rect3), 
+                 ReplacementTransform(rect2, rect4), run_time=3.0)
+        self.add(blocks[0])
+        self.wait()
+
+        simple_eq_1=Tex("y=2x")
+        simple_eq_2=Tex("z=4y")
+
+        simple_eq_1.scale(0.22)
+        simple_eq_1.move_to(rect3.get_center())
+        simple_eq_2.scale(0.22)
+        simple_eq_2.move_to(rect4.get_center())
+
+        # self.add(simple_eq_1, simple_eq_2)
+
+        self.play(Write(simple_eq_1))
+        self.wait()
+        self.play(Write(simple_eq_2))
+        self.wait()
+
+
+        simple_eq_3=Tex("z=4y=4(2x)=8x")
+        simple_eq_3.scale(0.22)
+        simple_eq_3.move_to([0.3, -0.9, 0])
+
+        self.play(ReplacementTransform(simple_eq_2.copy(), simple_eq_3[:4]))
+        self.add(simple_eq_3[4])
+        self.wait()
+        self.add(simple_eq_3[5:7])
+        self.play(ReplacementTransform(simple_eq_1[2:].copy(), simple_eq_3[7:9]))
+        self.add(simple_eq_3[9])
+        self.wait()
+        self.play(FadeIn(simple_eq_3[10:]))
+        self.wait()
+
+        blocks[1].scale(0.9)
+        blocks[1].move_to([0.36, -1.32, 0])
+
+        self.play(self.frame.animate.reorient(0, 0, 0, (0.21, -0.83, 0.0), 1.71),
+                    ShowCreation(blocks[1]), run_time=1.5)
+
+        blocks[2].scale(0.9)
+        blocks[2].move_to([0.30, -0.35, 0])
+
+        dydx=Tex(r"\frac{d y}{d x}=2")
+        dydx.scale(0.15)
+        dydx.move_to([-0.10, -0.25, 0])
+
+        dzdy=Tex(r"\frac{d z}{d y}=4")
+        dzdy.scale(0.15)
+        dzdy.move_to([0.85, -0.35, 0])
+
+        self.wait()
+        self.play(FadeOut(blocks[1]), FadeOut(simple_eq_3), FadeIn(blocks[2]),
+                  simple_eq_1.animate.move_to(rect3.get_center()+np.array([0,-0.17,0])), 
+                  simple_eq_2.animate.move_to(rect4.get_center()+np.array([0,-0.17,0])))
+
+
+        self.play(Write(dydx))
+        self.wait()
+        self.play(Write(dzdy))
+
+
+
+
+        self.add(blocks[2])
+
+
+
+        # self.add(simple_eq_3)
+
+
+        self.wait()
+
+
+
+
 
 
 

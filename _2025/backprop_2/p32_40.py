@@ -516,18 +516,56 @@ class p32_40(InteractiveScene):
         little_m2_loss_plot.next_to(result, RIGHT, buff=0.04)
 
         self.play(ShowCreation(little_m2_loss_plot))
-        self.play(result[1:].copy().animate.move_to([1.0, -0.65, 0]).scale(0.75).set_color(YELLOW))
+        result_copy=result[1:].copy()
+        self.play(result_copy.animate.move_to([1.0, -0.65, 0]).scale(0.75).set_color(YELLOW))
         self.wait()
 
-        #ok so i think we land on the 6 partial derivatives I do a clean start/break at p40?
+        #ok so i think we land on the  6 partial derivatives I do a clean start/break at p40?
+        big_final_eq=VGroup(dldm2_final[:6], equals_4, x_eq, x_copy, paren_1, minus_4, paren_2, result, y2_copy, yhat_copy, y_minus_yhat, result_copy)
+        full_gradient=Tex(r"\left[ \frac{\partial L}{\partial m_1}, \hspace{1mm} \frac{\partial L}{\partial m_2}, \hspace{1mm} \frac{\partial L}{\partial m_3}, \hspace{1mm} \frac{\partial L}{\partial b_1}, \hspace{1mm} \frac{\partial L}{\partial b_2}, \hspace{1mm} \frac{\partial L}{\partial b_3} \right]")
+        full_gradient.scale(0.2)
 
-        full_gradient=Tex(r"\begin{bmatrix} \frac{\partial L}{\partial m_1} & \frac{\partial L}{\partial m_2} & \frac{\partial L}{\partial m_3} & \frac{\partial L}{\partial b_1} & \frac{\partial L}{\partial b_2} & \frac{\partial L}{\partial b_3} \end{bmatrix}")
-        full_gradient.scale(0.4)
+        self.play(ReplacementTransform(dldm2_final[:6].copy(), full_gradient[8:14]), 
+                  rect_1.animate.set_opacity(0.0),
+                  rect_2.animate.set_opacity(0.0), 
+                  FadeOut(nums),
+                  FadeOut(net_background), 
+                  FadeOut(y1), 
+                  FadeOut(y2), 
+                  FadeOut(y3), 
+                  FadeOut(p34_blocks[0]),
+                  FadeOut(error_equations), 
+                  FadeOut(p34_blocks[1]), 
+                  FadeOut(dldh_eq), 
+                  FadeOut(big_final_eq), 
+                  FadeOut(little_m2_loss_plot), 
+                  FadeOut(modular_eq_1b),
+                  FadeOut(result_copy), 
+                  self.frame.animate.reorient(0, 0, 0, (0.0, 0.0, 0.0), 1.75),
+                  run_time=3)
         self.add(full_gradient)
+        self.wait()
+
+        gradient_label=SVGMobject(svg_path+'/gradient_label.svg')
+        gradient_label.scale(0.083)
+        gradient_label.move_to([0,-0.27,0])
+
+        self.play(FadeIn(gradient_label))
+        # self.play(ShowCreation(gradient_label))
+        self.wait()
+        self.play(FadeOut(gradient_label))
 
 
         self.wait(20)
         self.embed()
+
+
+
+
+
+
+
+
 
 
 

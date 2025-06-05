@@ -135,7 +135,7 @@ def get_numbers_3(x, w, logits, yhats):
     return numbers
 
 
-class p32_40(InteractiveScene):
+class p40_44(InteractiveScene):
     def construct(self):
         '''
         
@@ -149,22 +149,81 @@ class p32_40(InteractiveScene):
         nums=get_numbers_3(x, w, logits, yhats)
     
 
-        # full_gradient=Tex(r"\begin{bmatrix} \frac{\partial L}{\partial m_1} & \frac{\partial L}{\partial m_2} & \frac{\partial L}{\partial m_3} & \frac{\partial L}{\partial b_1} & \frac{\partial L}{\partial b_2} & \frac{\partial L}{\partial b_3} \end{bmatrix}")
-        # full_gradient=Tex(r"\left[ \frac{\partial L}{\partial m_1}, \frac{\partial L}{\partial m_2}, \frac{\partial L}{\partial m_3}, \frac{\partial L}{\partial b_1}, \frac{\partial L}{\partial b_2}, \frac{\partial L}{\partial b_3} \right]")
         full_gradient=Tex(r"\left[ \frac{\partial L}{\partial m_1}, \hspace{1mm} \frac{\partial L}{\partial m_2}, \hspace{1mm} \frac{\partial L}{\partial m_3}, \hspace{1mm} \frac{\partial L}{\partial b_1}, \hspace{1mm} \frac{\partial L}{\partial b_2}, \hspace{1mm} \frac{\partial L}{\partial b_3} \right]")
         full_gradient.scale(0.2)
         self.add(full_gradient)
-
         self.frame.reorient(0, 0, 0, (0.0, 0.0, 0.0), 1.75)
 
+        grade_eq_scale=0.15
+        grad_1=Tex(r"\frac{\partial L}{\partial m_1} = x(\hat{y}_1-y_1)=2.14").scale(grade_eq_scale)
+        grad_2=Tex(r"\frac{\partial L}{\partial m_2} = x(\hat{y}_2-y_2)=-2.14 ").scale(grade_eq_scale)
+        grad_3=Tex(r"\frac{\partial L}{\partial m_3} = x(\hat{y}_3-y_3)=0.00 ").scale(grade_eq_scale)
+        grad_4=Tex(r"\frac{\partial L}{\partial b_1} = (\hat{y}_1-y_1)=0.91").scale(grade_eq_scale)
+        grad_5=Tex(r"\frac{\partial L}{\partial b_2} = (\hat{y}_2-y_2)=-0.91").scale(grade_eq_scale)
+        grad_6=Tex(r"\frac{\partial L}{\partial b_3} = (\hat{y}_3-y_3)=0.00" ).scale(grade_eq_scale)
+        grad_eqs=VGroup(grad_1, grad_2, grad_3, grad_4, grad_5, grad_6)
+        grad_1[-4:].set_color('#00FFFF')
+        grad_2[-5:].set_color(YELLOW)
+        grad_3[-4:].set_color(GREEN)
+        grad_4[-4:].set_color('#00FFFF')
+        grad_5[-5:].set_color(YELLOW)
+        grad_6[-4:].set_color(GREEN)
 
+        vertical_spacing=0.2
+        x_start=0.55
+        for i, g in enumerate(grad_eqs):
+            g.move_to([x_start, vertical_spacing*(2.5-i), 0], aligned_edge=LEFT)
 
         self.wait()
 
-        
-        # self.frame.reorient(0, 0, 0, (-0.62, -0.1, 0.0), 1.56)
-        self.add(net_background, nums)
+        self.play(ReplacementTransform(full_gradient[1:7], grad_1[:6]),
+                  ReplacementTransform(full_gradient[8:14], grad_2[:6]),
+                  ReplacementTransform(full_gradient[15:21], grad_3[:6]),
+                  ReplacementTransform(full_gradient[22:28], grad_4[:6]),
+                  ReplacementTransform(full_gradient[29:35], grad_5[:6]),
+                  ReplacementTransform(full_gradient[36:42], grad_6[:6]),
+                  FadeOut(full_gradient[0]), 
+                  FadeOut(full_gradient[7]), 
+                  FadeOut(full_gradient[14]), 
+                  FadeOut(full_gradient[21]), 
+                  FadeOut(full_gradient[28]), 
+                  FadeOut(full_gradient[35]),
+                  FadeOut(full_gradient[42]),
+                  FadeIn(net_background), 
+                  FadeIn(nums),
+                  self.frame.animate.reorient(0, 0, 0, (-0.1, -0.02, 0.0), 1.94),
+                  run_time=2.4
+                  )
 
+        self.wait()
+        self.add(grad_2[6:-6])
+        self.wait()
+        self.play(Write(grad_1[6:-5]),
+                  Write(grad_3[6:-5]),
+                  Write(grad_4[6:-5]),
+                  Write(grad_5[6:-7]),
+                  Write(grad_6[6:-5]),
+             )
+        self.wait()
+
+
+        
+        vector_eqs=SVGMobject(svg_path+'/vector_eqs_1.svg')
+        vector_eqs.scale(0.58)
+        vector_eqs.move_to([1.4,0,0])
+
+        self.play(ShowCreation(vector_eqs), 
+                 self.frame.animate.reorient(0, 0, 0, (0.01, -0.04, 0.0), 1.96))
+        self.wait()
+
+        self.play(FadeOut(vector_eqs))
+        self.play(Write(grad_1[-5:]),
+                Write(grad_2[-6:]),
+                Write(grad_3[-5:]),
+                Write(grad_4[-5:]),
+                Write(grad_5[-6:]),
+                Write(grad_6[-5:]))
+        self.wait()
 
 
 

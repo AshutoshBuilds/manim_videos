@@ -240,18 +240,30 @@ class p32_40(InteractiveScene):
         p35_net_background=VGroup()
         for p in sorted(glob.glob(svg_path+'/p_35/*.svg')):
             p35_net_background.add(SVGMobject(p)[1:])  
+        
+
+        # make some backround vars actually vars for later
+        x_label=Tex('x').set_color(CHILL_BROWN).scale(0.16)
+        x_label.move_to([-1.49, -0.05, 0])
+        m2_label=Tex('m_2').set_color(CHILL_BROWN).scale(0.11)
+        m2_label.move_to([-1.155, -0.05, 0])
+        b2_label=Tex('b_2').set_color(CHILL_BROWN).scale(0.11)
+        b2_label.move_to([-0.87, -0.055, 0])
+        h2_label=Tex('h_2').set_color(CHILL_BROWN).scale(0.11)
+        h2_label.move_to([-0.51, -0.055, 0])
+        manual_background_labels=VGroup(x_label, m2_label, b2_label, h2_label)
         self.wait()
 
-        self.wait()
         self.play(FadeOut(softmax_derivative), run_time=1.0)
-        self.play(FadeIn(p35_net_background[:3]),
-                  not_softmax_box.animate.set_opacity(1.0), 
+        self.play(FadeIn(p35_net_background[:2]),
+                  FadeIn(manual_background_labels),
+                  # not_softmax_box.animate.set_opacity(1.0), 
                   nums.animate.set_opacity(1.0), 
                   dldh_with_border.animate.scale(0.8).move_to([1.28, 0.7, 0]),
                   self.frame.animate.reorient(0, 0, 0, (-0.02, 0.0, 0.0), 1.90), run_time=2.0)
         self.remove(softmax_box)
         self.add(p34_blocks[0], p34_blocks[1][:-1])
-        self.wait(0)
+        self.wait()
 
         y1=Tex("0").set_color("#00FFFF").scale(0.19).next_to(nums[-3], RIGHT, buff=0.24)
         y2=Tex("1").set_color(YELLOW).scale(0.19).next_to(nums[-2], RIGHT, buff=0.24)
@@ -339,7 +351,7 @@ class p32_40(InteractiveScene):
         cross_out_line.rotate(DEGREES*45)
         cross_out_line.move_to(modular_eq_4b)
 
-        y_minus_yhat=Tex("(\hat{y}-y)").scale(0.18).set_color(YELLOW)
+        y_minus_yhat=Tex("(\hat{y}_2-y_2)").scale(0.18).set_color(YELLOW)
         y_minus_yhat.next_to(modular_eq_4b, RIGHT, buff=0.05)
 
 
@@ -350,12 +362,89 @@ class p32_40(InteractiveScene):
 
         self.play(rect_1.animate.set_opacity(0.0),rect_2.animate.set_opacity(0.0), 
                   FadeOut(nums[1]), FadeOut(nums[3]), FadeOut(nums[4]), FadeOut(nums[6]),
-                  FadeOut(nums[7]), FadeOut(nums[9:]), FadeOut(y1), FadeOut(y2), FadeOut(y3), 
-                  FadeOut(error_equations), FadeOut(p34_blocks[1]), FadeOut(dldh_eq))
+                  FadeOut(nums[7]), FadeOut(nums[9:]), FadeOut(y1), FadeOut(y2), FadeOut(y3), FadeOut(p34_blocks[0]),
+                  FadeOut(error_equations), FadeOut(p34_blocks[1]), FadeOut(dldh_eq), FadeOut(p35_net_background[0]))
+        self.wait()
 
-        self.remove(net_background[:20])
+        h2_eq=Tex("h_2=m_2x+b_2").scale(0.2)
+        h2_eq.move_to([-0.9, -0.3, 0])
 
-        self.add(net_background)
+        self.play(ReplacementTransform(h2_label.copy(), h2_eq[:2]))
+        self.add(h2_eq[2])
+        self.play(ReplacementTransform(m2_label.copy(), h2_eq[3:5]), ReplacementTransform(x_label.copy(), h2_eq[5]))
+        self.add(h2_eq[6])
+        self.play(ReplacementTransform(b2_label.copy(), h2_eq[7:]))
+        self.wait()
+
+        p36_blocks=VGroup()
+        for p in sorted(glob.glob(svg_path+'/p36/*.svg')):
+            p36_blocks.add(SVGMobject(p)[1:])    
+        p36_blocks[0].move_to([-0.9, 0.13, 0])    
+
+        x_labelb=Tex('x').set_color(CHILL_BROWN).scale(0.2)
+        x_labelb.move_to([-0.55, -0.2, 0])
+        m2_labelb=Tex('m_2').set_color(YELLOW).scale(0.2)
+        m2_labelb.move_to([-0.77, 0.19, 0])
+        b2_labelb=Tex('b_2').set_color(YELLOW).scale(0.2)
+        b2_labelb.move_to([-1.26, -0.05, 0])
+        h2_labelb=Tex('h_2').set_color(CHILL_BROWN).scale(0.2)
+        h2_labelb.move_to([-1.27, 0.48, 0])
+        manual_labels_b=VGroup(x_labelb, m2_labelb, b2_labelb, h2_labelb)
+
+        self.wait(0)
+        self.remove(nums[0], nums[2], nums[5], nums[8], p35_net_background[1], manual_background_labels)
+        self.play(ShowCreation(p36_blocks[0]))
+        self.play(ReplacementTransform(h2_eq[:2].copy(), h2_labelb),ReplacementTransform(h2_eq[5].copy(), x_labelb))
+        self.play(ReplacementTransform(h2_eq[3:5].copy(), m2_labelb))
+        self.play(ReplacementTransform(h2_eq[-2:].copy(), b2_labelb))
+        self.wait()
+
+        box = SurroundingRectangle(modular_eq_2b, color=YELLOW, buff=0.025)
+        self.play(ShowCreation(box))
+        self.wait()
+        self.play(FadeOut(box))
+
+        plot_2=p36_blocks[0].copy()
+        plot_2.move_to([0.0, 0.13, 0])
+
+        x_labelc=Tex('x').set_color(YELLOW).scale(0.2)
+        x_labelc.move_to([-0.77+0.87, 0.19, 0])
+        m2_labelc=Tex('m_2').set_color(CHILL_BROWN).scale(0.2)
+        m2_labelc.move_to([-0.55+0.93, -0.2, 0])
+        b2_labelc=Tex('b_2').set_color(YELLOW).scale(0.2)
+        b2_labelc.move_to([-1.26+0.9, -0.05, 0])
+        h2_labelc=Tex('h_2').set_color(CHILL_BROWN).scale(0.2)
+        h2_labelc.move_to([-1.27+0.9, 0.48, 0])
+        manual_labels_c=VGroup(x_labelc, m2_labelc, b2_labelc, h2_labelc)
+
+        h2_eq_copy=h2_eq.copy().move_to([0, -0.3, 0])
+
+
+        self.play(ReplacementTransform(p36_blocks[0].copy(), plot_2), 
+                 ReplacementTransform(x_labelb.copy(), x_labelc), 
+                 ReplacementTransform(m2_labelb.copy(), m2_labelc),
+                 ReplacementTransform(b2_labelb.copy(), b2_labelc),
+                 ReplacementTransform(h2_labelb.copy(), h2_labelc),
+                 ReplacementTransform(h2_eq.copy(), h2_eq_copy), run_time=2.5)
+
+
+        #Ok now I need ot cros out dh/dmw, and bring x ver from the second plot!
+
+        self.wait()
+        
+
+
+        self.wait()
+
+
+
+
+
+
+
+
+
+
 
         self.wait()
         self.embed()

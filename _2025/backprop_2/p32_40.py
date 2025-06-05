@@ -236,11 +236,20 @@ class p32_40(InteractiveScene):
         p34_blocks[4].move_to([1.4, 0.42, 0 ])
         p34_blocks[5].move_to([1.4, 0.0, 0 ])
 
+        # Go ahead and load up modular net background we need for p35
+        p35_net_background=VGroup()
+        for p in sorted(glob.glob(svg_path+'/p_35/*.svg')):
+            p35_net_background.add(SVGMobject(p)[1:])  
+        self.wait()
+
         self.wait()
         self.play(FadeOut(softmax_derivative), run_time=1.0)
-        self.play(not_softmax_box.animate.set_opacity(1.0), nums.animate.set_opacity(1.0), 
+        self.play(FadeIn(p35_net_background[:3]),
+                  not_softmax_box.animate.set_opacity(1.0), 
+                  nums.animate.set_opacity(1.0), 
                   dldh_with_border.animate.scale(0.8).move_to([1.28, 0.7, 0]),
                   self.frame.animate.reorient(0, 0, 0, (-0.02, 0.0, 0.0), 1.90), run_time=2.0)
+        self.remove(softmax_box)
         self.add(p34_blocks[0], p34_blocks[1][:-1])
         self.wait(0)
 
@@ -269,6 +278,7 @@ class p32_40(InteractiveScene):
         minus_3=Tex("-").scale(0.2).next_to(nums[-1], RIGHT, buff=0.09)
         equals_3=Tex("=").scale(0.2).next_to(y3, RIGHT, buff=0.12)
         d_3=Tex("0.00").set_color(GREEN).scale(0.18).next_to(y3, RIGHT, buff=0.28)
+        error_equations=VGroup(minus_1, equals_1, d_1, minus_2, equals_2, d_2, minus_3, equals_3, d_3)
 
 
         self.play(FadeIn(p34_blocks[1][-1]), FadeOut(dldh_border),
@@ -297,6 +307,55 @@ class p32_40(InteractiveScene):
         self.play(FadeIn(minus_3), FadeIn(equals_3), FadeIn(d_3))
         self.wait()
 
+        #p35
+        self.play(rect_1.animate.set_opacity(0.3), rect_2.animate.set_opacity(0.3), 
+                  FadeOut(p34_blocks[5]), FadeOut(p34_blocks[4]), FadeOut(d_1_copy), FadeOut(d_2_copy), 
+                  self.frame.animate.reorient(0, 0, 0, (-0.17, -0.07, 0.0), 1.81))
+
+
+
+        dldmb=Tex(r"\frac{\partial L}{\partial m_2}")
+        modular_eq_1b=Tex("=")
+        modular_eq_2b=Tex(r"\frac{\partial h_2}{\partial m_2}")
+        modular_eq_3b=Tex(r"\cdot")
+        modular_eq_4b=Tex(r"\frac{\partial L}{\partial h_2}")
+
+        modular_eqb=VGroup(dldmb, modular_eq_1b, modular_eq_2b, modular_eq_3b, modular_eq_4b)
+        dldmb.scale(0.17)
+        modular_eq_1b.scale(0.22)
+        modular_eq_2b.scale(0.17)
+        modular_eq_3b.scale(0.35)
+        modular_eq_4b.scale(0.17)
+        dldmb.move_to([-1.5, -0.7, 0])
+        modular_eq_1b.next_to(dldmb, RIGHT, buff=0.15)
+        modular_eq_2b.next_to(modular_eq_1b, RIGHT, buff=0.14)
+        modular_eq_3b.next_to(modular_eq_2b, RIGHT, buff=0.35)
+        modular_eq_4b.next_to(modular_eq_3b, RIGHT, buff=0.33)
+
+        self.play(FadeIn(modular_eqb))
+        self.wait()
+
+        cross_out_line=Line(ORIGIN, RIGHT*0.3).set_stroke(color=YELLOW, width=3)
+        cross_out_line.rotate(DEGREES*45)
+        cross_out_line.move_to(modular_eq_4b)
+
+        y_minus_yhat=Tex("(\hat{y}-y)").scale(0.18).set_color(YELLOW)
+        y_minus_yhat.next_to(modular_eq_4b, RIGHT, buff=0.05)
+
+
+        self.play(ReplacementTransform(dldh_eq[-4:].copy(), y_minus_yhat[1:-1]), run_time=2.0)
+        self.add(y_minus_yhat)
+        self.play(ShowCreation(cross_out_line))
+        self.wait()
+
+        self.play(rect_1.animate.set_opacity(0.0),rect_2.animate.set_opacity(0.0), 
+                  FadeOut(nums[1]), FadeOut(nums[3]), FadeOut(nums[4]), FadeOut(nums[6]),
+                  FadeOut(nums[7]), FadeOut(nums[9:]), FadeOut(y1), FadeOut(y2), FadeOut(y3), 
+                  FadeOut(error_equations), FadeOut(p34_blocks[1]), FadeOut(dldh_eq))
+
+        self.remove(net_background[:20])
+
+        self.add(net_background)
 
         self.wait()
         self.embed()

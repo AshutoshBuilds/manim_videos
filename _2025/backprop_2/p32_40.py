@@ -208,11 +208,13 @@ class p32_40(InteractiveScene):
         dldh_eq.move_to([1.28, -0.95, 0])
         dldh_border=RoundedRectangle(dldh_eq.get_width()+0.1, dldh_eq.get_height()+0.1, 0.02).move_to(dldh_eq.get_center())
         dldh_border.set_color(YELLOW).set_stroke(width=2)
+        dldh_with_border=VGroup(dldh_eq, dldh_border)
 
         #p33a animation
         self.wait()
-        self.remove(rect_1, rect_2, not_softmax_box)
-        self.play(nums.animate.set_opacity(0.0), modular_eq[:-1].animate.set_opacity(0.0))
+        # self.remove(rect_1, rect_2, not_softmax_box)
+        self.play(nums.animate.set_opacity(0.0), modular_eq[:-1].animate.set_opacity(0.0),
+                 rect_1.animate.set_opacity(0.0), rect_2.animate.set_opacity(0.0), not_softmax_box.animate.set_opacity(0.0))
         self.play(ShowCreation(softmax_derivative),
                   # self.frame.animate.reorient(0, 0, 0, (0.86, -0.1, 0.0), 2.95),
                   self.frame.animate.reorient(0, 0, 0, (1.35, -0.11, 0.0), 2.40),
@@ -228,12 +230,73 @@ class p32_40(InteractiveScene):
         p34_blocks=VGroup()
         for p in sorted(glob.glob(svg_path+'/p34/*.svg')):
             p34_blocks.add(SVGMobject(p)[1:])  
+        p34_blocks[0].move_to([-0.02, 0.01, 0])
+        p34_blocks[1].move_to([0.62, 0.54, 0])
+        p34_blocks[2].move_to([-0.057, 0.047, 0])
+        p34_blocks[4].move_to([1.4, 0.42, 0 ])
+        p34_blocks[5].move_to([1.4, 0.0, 0 ])
 
         self.wait()
         self.play(FadeOut(softmax_derivative), run_time=1.0)
-
-        self.play(FadeIn(not_softmax_box), nums.animate.set_opacity(1.0), 
+        self.play(not_softmax_box.animate.set_opacity(1.0), nums.animate.set_opacity(1.0), 
+                  dldh_with_border.animate.scale(0.8).move_to([1.28, 0.7, 0]),
                   self.frame.animate.reorient(0, 0, 0, (-0.02, 0.0, 0.0), 1.90), run_time=2.0)
+        self.add(p34_blocks[0], p34_blocks[1][:-1])
+        self.wait(0)
+
+        y1=Tex("0").set_color("#00FFFF").scale(0.19).next_to(nums[-3], RIGHT, buff=0.24)
+        y2=Tex("1").set_color(YELLOW).scale(0.19).next_to(nums[-2], RIGHT, buff=0.24)
+        y3=Tex("0").set_color(GREEN).scale(0.19).next_to(nums[-1], RIGHT, buff=0.24)
+
+        self.play(FadeIn(y1))
+        self.play(FadeIn(y2))
+        self.play(FadeIn(y3))
+        self.wait()
+
+        self.play(ShowCreation(p34_blocks[2]))
+        self.remove(p34_blocks[2])
+        self.wait()
+
+
+        minus_1=Tex("-").scale(0.2).next_to(nums[-3], RIGHT, buff=0.09)
+        equals_1=Tex("=").scale(0.2).next_to(y1, RIGHT, buff=0.12)
+        d_1=Tex("0.91").set_color("#00FFFF").scale(0.18).next_to(y1, RIGHT, buff=0.28)
+
+        minus_2=Tex("-").scale(0.2).next_to(nums[-2], RIGHT, buff=0.09)
+        equals_2=Tex("=").scale(0.2).next_to(y2, RIGHT, buff=0.12)
+        d_2=Tex("-0.91").set_color(YELLOW).scale(0.18).next_to(y2, RIGHT, buff=0.28)
+
+        minus_3=Tex("-").scale(0.2).next_to(nums[-1], RIGHT, buff=0.09)
+        equals_3=Tex("=").scale(0.2).next_to(y3, RIGHT, buff=0.12)
+        d_3=Tex("0.00").set_color(GREEN).scale(0.18).next_to(y3, RIGHT, buff=0.28)
+
+
+        self.play(FadeIn(p34_blocks[1][-1]), FadeOut(dldh_border),
+                  dldh_eq.animate.set_color(CHILL_BROWN).scale(0.75).move_to([0.93, 0.58, 0]))
+        self.play(Write(minus_1), Write(equals_1), Write(d_1))
+        self.wait()
+
+        d_1_copy=d_1.copy()
+        d_1_copy.scale(0.85)
+        d_1_copy.move_to([1.61, 0.57, 0])
+
+        self.play(ShowCreation(p34_blocks[4]), self.frame.animate.reorient(0, 0, 0, (0.03, -0.01, 0.0), 2.05))
+        self.play(ReplacementTransform(d_1.copy(), d_1_copy))
+        self.wait()
+
+        d_2_copy=d_2.copy()
+        d_2_copy.scale(0.85)
+        d_2_copy.move_to([1.66, 0.08, 0])
+
+        self.play(Write(minus_2), Write(equals_2), Write(d_2))
+        self.wait()
+        self.play(ShowCreation(p34_blocks[5]))
+        self.play(ReplacementTransform(d_2.copy(), d_2_copy))
+        self.wait()
+
+        self.play(FadeIn(minus_3), FadeIn(equals_3), FadeIn(d_3))
+        self.wait()
+
 
         self.wait()
         self.embed()

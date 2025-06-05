@@ -144,7 +144,7 @@ class p32_40(InteractiveScene):
 
         x=2.3514
         w=[1, 0, -1, 0, 0, 0]
-        logits=[2.34, 0, -2.34]
+        logits=[2.35, 0, -2.35]
         yhats=[0.91, 0.09, 0.00]
         nums=get_numbers_3(x, w, logits, yhats)
         

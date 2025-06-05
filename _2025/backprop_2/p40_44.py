@@ -140,14 +140,30 @@ class p40_44(InteractiveScene):
         '''
         
         '''
-        net_background=SVGMobject(svg_path+'/p44_background_1.svg')[1:]
+        # net_background=SVGMobject(svg_path+'/p44_background_1.svg')[1:]
+        net_background=SVGMobject(svg_path+'/p40_net_background_manim.svg')[1:]
 
+        
         x=2.3514
         w=[1, 0, -1, 0, 0, 0]
         logits=[2.34, 0, -2.34]
         yhats=[0.91, 0.09, 0.00]
         nums=get_numbers_3(x, w, logits, yhats)
     
+        m1_label=Tex('m_1').set_color(CHILL_BROWN).scale(0.11)
+        m1_label.move_to([-1.19, 0.14, 0])
+        b1_label=Tex('b_1').set_color(CHILL_BROWN).scale(0.11)
+        b1_label.move_to([-0.87, 0.29, 0])
+        m2_label=Tex('m_2').set_color(CHILL_BROWN).scale(0.11)
+        m2_label.move_to([-1.155, -0.05, 0])
+        b2_label=Tex('b_2').set_color(CHILL_BROWN).scale(0.11)
+        b2_label.move_to([-0.87, -0.055, 0])
+        m3_label=Tex('m_3').set_color(CHILL_BROWN).scale(0.11)
+        m3_label.move_to([-1.16, -0.23, 0])
+        b3_label=Tex('b_3').set_color(CHILL_BROWN).scale(0.11)
+        b3_label.move_to([-0.87, -0.4, 0])
+        manual_labels=VGroup(m1_label, b1_label, m2_label, b2_label, m3_label, b3_label)
+        # self.add(net_background, nums, manual_labels)
 
         full_gradient=Tex(r"\left[ \frac{\partial L}{\partial m_1}, \hspace{1mm} \frac{\partial L}{\partial m_2}, \hspace{1mm} \frac{\partial L}{\partial m_3}, \hspace{1mm} \frac{\partial L}{\partial b_1}, \hspace{1mm} \frac{\partial L}{\partial b_2}, \hspace{1mm} \frac{\partial L}{\partial b_3} \right]")
         full_gradient.scale(0.2)
@@ -190,6 +206,7 @@ class p40_44(InteractiveScene):
                   FadeOut(full_gradient[35]),
                   FadeOut(full_gradient[42]),
                   FadeIn(net_background), 
+                  FadeIn(manual_labels),
                   FadeIn(nums),
                   self.frame.animate.reorient(0, 0, 0, (-0.1, -0.02, 0.0), 1.94),
                   run_time=2.4
@@ -223,15 +240,41 @@ class p40_44(InteractiveScene):
                 Write(grad_4[-5:]),
                 Write(grad_5[-6:]),
                 Write(grad_6[-5:]))
+        
+
+        p42_blocks=VGroup()
+        for p in sorted(glob.glob(svg_path+'/p42/*.svg')):
+            p42_blocks.add(SVGMobject(p)[1:])    
+        p42_blocks.move_to([-0.01, 0.13, 0])
         self.wait()
 
+        grad_2_val=grad_2[-5:].copy()
+        self.play(FadeIn(p42_blocks[1]), self.frame.animate.reorient(0, 0, 0, (-0.12, 0.23, 0.0), 1.94), run_time=2.0)
+        self.play(ShowCreation(p42_blocks[3]), grad_2_val.animate.move_to([0.15, 0.85, 0]))
+        self.wait()
+
+        box=SurroundingRectangle(nums[-2], color=YELLOW, buff=0.025)
+        self.play(ShowCreation(box))
+        self.wait()
+
+        x=2.3514
+        w=[1, 0.1, -1, 0, 0, 0]
+        logits=[2.34, 0.234, -2.34]
+        yhats=[0.91, 0.09, 0.00]
+        nums2=get_numbers_3(x, w, logits, yhats)
 
 
 
 
+        # Hmm yeah showing all the numbers ticking around as I change m2 would be pretty cool
+        # Same thing I do when visualizing training right?
+        # Hmm actually I think the numbers ticking right now is going to be ditracting - > but I do 
+        # think changing the number once will make sense/be helpful - easier to animate too - let's try that. 
 
 
 
+        self.add(p42_blocks)
+        
 
 
 

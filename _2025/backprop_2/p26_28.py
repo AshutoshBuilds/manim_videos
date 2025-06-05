@@ -197,7 +197,7 @@ class p26_28(InteractiveScene):
 
         #Ok, now update all yhs and yhats at once!
         w=[1, 0.1, -1, 0, 0, 0]
-        logits=[2.35, 0.23, -2.35]
+        logits=[2.35, 0.24, -2.35]
         yhats=[0.885, 0.107, 0.008]
         nums_2=get_numbers_2(x, w, logits, yhats)
         nums_2.shift([0,.23,0])

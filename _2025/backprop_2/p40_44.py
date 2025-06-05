@@ -146,7 +146,7 @@ class p40_44(InteractiveScene):
         
         x=2.3514
         w=[1, 0, -1, 0, 0, 0]
-        logits=[2.34, 0, -2.34]
+        logits=[2.35, 0, -2.35]
         yhats=[0.91, 0.09, 0.00]
         nums=get_numbers_3(x, w, logits, yhats)
     
@@ -250,26 +250,113 @@ class p40_44(InteractiveScene):
 
         grad_2_val=grad_2[-5:].copy()
         self.play(FadeIn(p42_blocks[1]), self.frame.animate.reorient(0, 0, 0, (-0.12, 0.23, 0.0), 1.94), run_time=2.0)
-        self.play(ShowCreation(p42_blocks[3]), grad_2_val.animate.move_to([0.15, 0.85, 0]))
+        self.play(ShowCreation(p42_blocks[3]), grad_2_val.animate.move_to([0.15, 0.85, 0]), run_time=1.5)
         self.wait()
 
         box=SurroundingRectangle(nums[-2], color=YELLOW, buff=0.025)
         self.play(ShowCreation(box))
         self.wait()
 
-        x=2.3514
         w=[1, 0.1, -1, 0, 0, 0]
-        logits=[2.34, 0.234, -2.34]
-        yhats=[0.91, 0.09, 0.00]
+        logits=[2.35, 0.24, -2.35]
+        yhats=[0.89, 0.11, 0.00]
         nums2=get_numbers_3(x, w, logits, yhats)
 
+        box2=SurroundingRectangle(nums[2], color=YELLOW, buff=0.025)
+        self.play(ShowCreation(box2))
+        self.wait()
 
+        self.play(ReplacementTransform(nums[2], nums2[2]))
+        self.play(ReplacementTransform(nums[8], nums2[8]),
+                  ReplacementTransform(nums[11], nums2[11]), 
+                  ReplacementTransform(nums[10], nums2[10]),
+                  ReplacementTransform(nums[12], nums2[12]))
+        self.wait()
+        self.play(FadeOut(box), FadeOut(box2))
+        self.wait()
 
+        box3=SurroundingRectangle(grad_1[-4:], color="#00FFFF", buff=0.025)
+        self.play(ShowCreation(box3))
+        self.wait()
 
+        grad_1_val=grad_1[-4:].copy()
+        self.play(FadeIn(p42_blocks[0]))
+        self.play(ShowCreation(p42_blocks[2]), grad_1_val.animate.move_to([-0.45, 0.855, 0]), run_time=1.5)
+        self.wait()
+
+        w=[1.1, 0.1, -1, 0, 0, 0]
+        logits=[2.59, 0.24, -2.35]
+        yhats=[0.91, 0.09, 0.00]
+        nums3=get_numbers_3(x, w, logits, yhats)
+
+        box4=SurroundingRectangle(nums[1], color="#00FFFF", buff=0.025)
+        self.play(ShowCreation(box4))
+
+        self.remove(nums[1], nums[7], nums[10:12])
+        self.add(nums2[1], nums2[7], nums2[10:12])
+        self.wait()
+        self.play(ReplacementTransform(nums2[1], nums3[1]))
+        self.play(ReplacementTransform(nums2[7], nums3[7]),
+                  ReplacementTransform(nums2[11], nums3[11]), 
+                  ReplacementTransform(nums2[10], nums3[10]),
+                  ReplacementTransform(nums2[12], nums3[12]))
+        self.wait()
+        self.play(FadeOut(box3), FadeOut(box4))
+        self.wait()
+
+        self.play(ShowCreation(p42_blocks[4]))
+        self.wait()
+
+        self.play(ShowCreation(p42_blocks[5]))
+        self.wait()       
         # Hmm yeah showing all the numbers ticking around as I change m2 would be pretty cool
         # Same thing I do when visualizing training right?
         # Hmm actually I think the numbers ticking right now is going to be ditracting - > but I do 
         # think changing the number once will make sense/be helpful - easier to animate too - let's try that. 
+
+        #Ok time to gear up to move to big gradient descent equation
+        #Jump to end and then reconstruct here. Actually let me sort out my fade outs real quick first. 
+        # Ok so i probably want to make vectors including brackets in manim, and bring in other stuff from illustraotr
+        p43_blocks=VGroup()
+        for p in sorted(glob.glob(svg_path+'/p43/*.svg')):
+            p43_blocks.add(SVGMobject(p)[1:])    
+        p43_blocks.move_to([-0.01, 0.13, 0])
+
+
+
+
+
+        self.play(FadeOut(net_background),
+                  FadeOut(nums[0]),
+                  FadeOut(nums3[1]),
+                  FadeOut(nums2[2]),
+                  FadeOut(nums[3]),
+                  FadeOut(nums[4:7]),
+                  FadeOut(nums3[7]),
+                  FadeOut(nums2[8]),
+                  FadeOut(nums[9]),
+                  FadeOut(nums3[10]),
+                  FadeOut(nums3[11]),
+                  FadeOut(nums3[12]),
+                  FadeOut(p42_blocks),
+                  FadeOut(grad_1_val),
+                  FadeOut(grad_2_val),
+            )
+
+        self.wait()
+
+
+        #I think rearrange param vector first, then fade out all the grad math. 
+
+
+
+
+        self.play(FadeOut(grad_1[6:]),
+                  FadeOut(grad_2[6:]),
+                  FadeOut(grad_3[6:]),
+                  FadeOut(grad_4[6:]),
+                  FadeOut(grad_5[6:]),
+                  FadeOut(grad_6[6:]))
 
 
 

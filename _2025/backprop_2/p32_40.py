@@ -363,7 +363,8 @@ class p32_40(InteractiveScene):
         self.play(rect_1.animate.set_opacity(0.0),rect_2.animate.set_opacity(0.0), 
                   FadeOut(nums[1]), FadeOut(nums[3]), FadeOut(nums[4]), FadeOut(nums[6]),
                   FadeOut(nums[7]), FadeOut(nums[9:]), FadeOut(y1), FadeOut(y2), FadeOut(y3), FadeOut(p34_blocks[0]),
-                  FadeOut(error_equations), FadeOut(p34_blocks[1]), FadeOut(dldh_eq), FadeOut(p35_net_background[0]))
+                  FadeOut(error_equations), FadeOut(p34_blocks[1]), FadeOut(dldh_eq), FadeOut(p35_net_background[0]), 
+                  self.frame.animate.reorient(0, 0, 0, (-0.57, -0.14, 0.0), 1.76))
         self.wait()
 
         h2_eq=Tex("h_2=m_2x+b_2").scale(0.2)
@@ -428,25 +429,104 @@ class p32_40(InteractiveScene):
                  ReplacementTransform(h2_eq.copy(), h2_eq_copy), run_time=2.5)
 
 
-        #Ok now I need ot cros out dh/dmw, and bring x ver from the second plot!
+        #Ok now I need ot cross out dh/dmw, and bring x ver from the second plot!
+        self.wait()
+
+        x_eq=x_labelc.copy().next_to(modular_eq_2b, RIGHT, buff=0.05)
+
+        cross_out_line_2=Line(ORIGIN, RIGHT*0.3).set_stroke(color=YELLOW, width=3)
+        cross_out_line_2.rotate(DEGREES*45)
+        cross_out_line_2.move_to(modular_eq_2b)
+
+        self.play(ReplacementTransform(x_labelc, x_eq), run_time=2)
+        self.play(ShowCreation(cross_out_line_2))
+        self.wait()
+
+        #Start p37
+        self.remove(net_background)
+        net_background.set_opacity(1.0)
+        # self.add(net_background)
+        self.play(FadeOut(manual_labels_c), FadeOut(manual_labels_b), FadeOut(plot_2), FadeOut(p36_blocks[0]), 
+                  FadeOut(h2_eq), FadeOut(h2_eq_copy))
+        self.play(rect_1.animate.set_opacity(0.2),rect_2.animate.set_opacity(0.2), FadeIn(nums), 
+                  FadeIn(net_background), FadeIn(y1), FadeIn(y2), FadeIn(y3), FadeIn(p34_blocks[0]),
+                  FadeIn(error_equations), FadeIn(p34_blocks[1]), FadeIn(dldh_eq),
+                  self.frame.animate.reorient(0, 0, 0, (-0.26, -0.07, 0.0), 1.75))
+        self.wait()
+
+        box3 = SurroundingRectangle(nums[2], color=YELLOW, buff=0.025)
+        self.play(ShowCreation(box3))
+        self.wait()
+        box4 = SurroundingRectangle(nums[0], color=YELLOW, buff=0.025)
+        self.play(ShowCreation(box4))
+        self.wait()
+        self.play(FadeOut(box3), FadeOut(box4)) 
+        self.wait()
+
+        #So i was foing to do a tick the number up/tick the number down thing - but I'm not sure it actually helps make the p37 point. Let's keep moving. 
+        #Start p38
+
+        dldm2_final=Tex(r"\frac{\partial L}{\partial m_2} \hspace{1mm} = \hspace{1mm} x \hspace{1mm} (\hat{y}_2-y)").scale(0.17)
+        dldm2_final[7:].set_color(YELLOW)
+        dldm2_final.next_to(dldmb, RIGHT, buff=0.1)
+
+        self.play(FadeOut(cross_out_line), FadeOut(cross_out_line_2), FadeOut(modular_eq_2b), FadeOut(modular_eq_3b) ,FadeOut(modular_eq_4b))
+        self.play(ReplacementTransform(dldmb, dldm2_final[:6]),
+                  # ReplacementTransform(modular_eq_1b, dldm2_final[6]),
+                  modular_eq_1b.animate.move_to(dldm2_final[6]),
+                  # ReplacementTransform(x_eq, dldm2_final[7]),
+                  # ReplacementTransform(y_minus_yhat, dldm2_final[8:])
+                  x_eq.animate.move_to(dldm2_final[7]),
+                  y_minus_yhat.animate.next_to(dldm2_final[7], RIGHT, buff=0.05).shift(0.007*UP), run_time=2.5)
 
         self.wait()
+
+        equals_4=Tex("=").scale(0.17)
+        equals_4.next_to(y_minus_yhat, buff=0.05)
         
-
-
+        x_copy=nums[0].copy()
+        self.play(x_copy.animate.next_to(equals_4, buff=0.07).scale(1.35).shift(0.007*UP), run_time=1.2)
+        self.add(equals_4)
         self.wait()
 
+        paren_1=Tex("(").scale(0.17).set_color(YELLOW)
+        paren_1.next_to(x_copy, buff=0.05)
+        yhat_copy=nums[-2].copy()
+        self.play(yhat_copy.animate.next_to(paren_1, buff=0.03).scale(1.1), run_time=1.2)
+        self.add(paren_1)
 
+        minus_4=Tex("-").scale(0.17).set_color(YELLOW)
+        minus_4.next_to(yhat_copy, buff=0.05)
+        y2_copy=y2.copy()
+        self.play(y2_copy.animate.next_to(minus_4, buff=0.03).scale(1.00), run_time=1.2)
+        self.add(minus_4)
 
-
-
-
-
-
-
-
+        paren_2=Tex(")").scale(0.17).set_color(YELLOW)
+        paren_2.next_to(y2_copy, buff=0.03)
+        self.add(paren_2)
 
         self.wait()
+        result=Tex("=-2.140").scale(0.185)
+        result.next_to(paren_2, buff=0.05)
+        self.play(Write(result))
+        self.wait()
+
+        little_m2_loss_plot=SVGMobject(svg_path+'/little_m2_loss_plot_1.svg')
+        little_m2_loss_plot.scale(0.2)
+        little_m2_loss_plot.next_to(result, RIGHT, buff=0.04)
+
+        self.play(ShowCreation(little_m2_loss_plot))
+        self.play(result[1:].copy().animate.move_to([1.0, -0.65, 0]).scale(0.75).set_color(YELLOW))
+        self.wait()
+
+        #ok so i think we land on the 6 partial derivatives I do a clean start/break at p40?
+
+        full_gradient=Tex(r"\begin{bmatrix} \frac{\partial L}{\partial m_1} & \frac{\partial L}{\partial m_2} & \frac{\partial L}{\partial m_3} & \frac{\partial L}{\partial b_1} & \frac{\partial L}{\partial b_2} & \frac{\partial L}{\partial b_3} \end{bmatrix}")
+        full_gradient.scale(0.4)
+        self.add(full_gradient)
+
+
+        self.wait(20)
         self.embed()
 
 

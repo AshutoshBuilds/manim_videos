@@ -180,7 +180,7 @@ class p32_40(InteractiveScene):
 
 
         #p32c animation
-        self.frame.reorient(0, 0, 0, (-0.58, -0.1, 0.0), 1.56)
+        self.frame.reorient(0, 0, 0, (-0.62, -0.1, 0.0), 1.56)
         self.add(net_background, nums)
         self.wait(0)
         self.play(FadeIn(dldm))
@@ -192,18 +192,52 @@ class p32_40(InteractiveScene):
         self.wait()
 
 
+        #p33
+        softmax_box=VGroup(net_background[18:34], net_background[11])
+        not_softmax_box=VGroup(net_background[:11], net_background[12:18], net_background[34:])
+
+        # self.remove(not_softmax_box)
+        softmax_derivative=SVGMobject(svg_path+'/p33_to_manim.svg')[1:]
+        softmax_derivative.scale(1.17)
+        softmax_derivative.move_to([1.4,-0.07,0])
+
+        dldh_eq=Tex(r"\frac{\partial L}{\partial h}=\hat{y}-y")
+        dldh_eq.scale(0.25)
+        dldh_eq.move_to([1.28, -0.95, 0])
+        dldh_border=RoundedRectangle(dldh_eq.get_width()+0.1, dldh_eq.get_height()+0.1, 0.02).move_to(dldh_eq.get_center())
+        dldh_border.set_color(YELLOW).set_stroke(width=2)
+
+        #p33a animation
+        self.wait()
+        self.remove(rect_1, rect_2, not_softmax_box)
+        self.play(nums.animate.set_opacity(0.0), modular_eq[:-1].animate.set_opacity(0.0))
+        self.play(ShowCreation(softmax_derivative),
+                  # self.frame.animate.reorient(0, 0, 0, (0.86, -0.1, 0.0), 2.95),
+                  self.frame.animate.reorient(0, 0, 0, (1.35, -0.11, 0.0), 2.40),
+                  ReplacementTransform(modular_eq[-1], dldh_eq[:5]),
+                  run_time=3
+                  )
+        self.add(dldh_eq)
+        self.wait()
+        self.play(ShowCreation(dldh_border))
+        self.wait()
+
+
+        # self.play(not_softmax_box.animate.set_opacity(0.0), modular_eq[:-1].animate.set_opacity(0.0), nums.animate.set_opacity(0.0))
+
+                 # rect_1.animate.set_opacity(0.0), rect_2.animate.set_opacity(0.0), run_time=2)
+
 
         self.wait()
 
 
+        self.add(dldh_eq, dldh_border)
+
+        self.play(ShowCreation(softmax_derivative), run_time=2.0)
 
 
-
-
-
-
-
-
+        self.frame.reorient(0, 0, 0, (0.86, -0.1, 0.0), 2.95)
+        self.add(softmax_derivative)
 
 
         self.wait()

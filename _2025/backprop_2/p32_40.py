@@ -140,7 +140,7 @@ class p32_40(InteractiveScene):
         '''
         
         '''
-        net_background=SVGMobject(svg_path+'/p44_background_1.svg')
+        net_background=SVGMobject(svg_path+'/p44_background_1.svg')[1:]
 
         x=2.3514
         w=[1, 0, -1, 0, 0, 0]
@@ -192,9 +192,11 @@ class p32_40(InteractiveScene):
         self.wait()
 
 
-        #p33
-        softmax_box=VGroup(net_background[18:34], net_background[11])
-        not_softmax_box=VGroup(net_background[:11], net_background[12:18], net_background[34:])
+        #p33 animation
+        # softmax_box=VGroup(net_background[18:34], net_background[11])
+        # not_softmax_box=VGroup(net_background[:11], net_background[12:18], net_background[34:])
+        softmax_box=VGroup(net_background[17:33], net_background[10])
+        not_softmax_box=VGroup(net_background[:10], net_background[11:17], net_background[33:])
 
         # self.remove(not_softmax_box)
         softmax_derivative=SVGMobject(svg_path+'/p33_to_manim.svg')[1:]
@@ -222,23 +224,16 @@ class p32_40(InteractiveScene):
         self.play(ShowCreation(dldh_border))
         self.wait()
 
-
-        # self.play(not_softmax_box.animate.set_opacity(0.0), modular_eq[:-1].animate.set_opacity(0.0), nums.animate.set_opacity(0.0))
-
-                 # rect_1.animate.set_opacity(0.0), rect_2.animate.set_opacity(0.0), run_time=2)
-
+        #p34 setup
+        p34_blocks=VGroup()
+        for p in sorted(glob.glob(svg_path+'/p34/*.svg')):
+            p34_blocks.add(SVGMobject(p)[1:])  
 
         self.wait()
+        self.play(FadeOut(softmax_derivative), run_time=1.0)
 
-
-        self.add(dldh_eq, dldh_border)
-
-        self.play(ShowCreation(softmax_derivative), run_time=2.0)
-
-
-        self.frame.reorient(0, 0, 0, (0.86, -0.1, 0.0), 2.95)
-        self.add(softmax_derivative)
-
+        self.play(FadeIn(not_softmax_box), nums.animate.set_opacity(1.0), 
+                  self.frame.animate.reorient(0, 0, 0, (-0.02, 0.0, 0.0), 1.90), run_time=2.0)
 
         self.wait()
         self.embed()

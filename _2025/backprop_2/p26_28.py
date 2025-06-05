@@ -566,7 +566,7 @@ class p26_28(InteractiveScene):
         blocks[1].scale(0.9)
         blocks[1].move_to([0.36, -1.32, 0])
 
-        self.play(self.frame.animate.reorient(0, 0, 0, (0.21, -0.83, 0.0), 1.71),
+        self.play(self.frame.animate.reorient(0, 0, 0, (0.27, -0.84, 0.0), 1.66),
                     ShowCreation(blocks[1]), run_time=1.5)
 
         blocks[2].scale(0.9)
@@ -583,17 +583,41 @@ class p26_28(InteractiveScene):
         self.wait()
         self.play(FadeOut(blocks[1]), FadeOut(simple_eq_3), FadeIn(blocks[2]),
                   simple_eq_1.animate.move_to(rect3.get_center()+np.array([0,-0.17,0])), 
-                  simple_eq_2.animate.move_to(rect4.get_center()+np.array([0,-0.17,0])))
+                  simple_eq_2.animate.move_to(rect4.get_center()+np.array([0,-0.17,0])), 
+                  self.frame.animate.reorient(0, 0, 0, (0.29, -0.69, 0.0), 1.52), run_time=1.5)
 
 
         self.play(Write(dydx))
         self.wait()
         self.play(Write(dzdy))
+        self.wait()
+
+        simple_eq_4=Tex("2 \\ \cdot \\  4  \\ = \\ 8")
+        simple_eq_4.scale(0.20)
+        simple_eq_4.move_to([0.3, -0.85, 0])
+
+        self.play(ReplacementTransform(dydx[-1].copy(), simple_eq_4[0]), 
+                  ReplacementTransform(dzdy[-1].copy(), simple_eq_4[2]),run_time=2)
+        self.add(simple_eq_4)
+        self.wait()
+
+        simple_eq_5=Tex(r"\frac{d y}{d x} \cdot \frac{d z}{d y} = \frac{d z}{d x} ")
+        simple_eq_5.scale(0.19)
+        simple_eq_5.move_to([0.3, -1.06, 0])
+
+        self.play(ReplacementTransform(dydx[:5].copy(), simple_eq_5[:5]), 
+                  ReplacementTransform(dzdy[:5].copy(), simple_eq_5[6:11]),run_time=2)
+        self.add(simple_eq_5)
+        self.wait()
+
+        blocks[4].scale(0.95)
+        blocks[4].next_to(simple_eq_5, DOWN, buff=0.05)
+        self.play(FadeIn(blocks[4]))
 
 
+        # self.add(simple_eq_5)
 
-
-        self.add(blocks[2])
+        # self.add(blocks[2])
 
 
 

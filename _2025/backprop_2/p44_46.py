@@ -1277,7 +1277,7 @@ class p46b(InteractiveScene):
         step_count.next_to(step_label, RIGHT, buff=0.003)
         self.play(FadeIn(step_label), FadeIn(step_count))
 
-        for i in range(347, len(xs)): #TO DO -> CHANGE STARTING NUMBER TO 1 TO ACTUALLY PLAY ANIMATION
+        for i in range(1, len(xs)): #TO DO -> CHANGE STARTING NUMBER TO 1 TO ACTUALLY PLAY ANIMATION
             if i>0:
                 self.remove(line_1, arrow_tip_1)
                 self.remove(line_2, arrow_tip_2)
@@ -1443,25 +1443,35 @@ class p46b(InteractiveScene):
         matching_plane_1, matching_surface_1 = create_matching_plane_and_surface(line_1_long, softmax_curve_1, y_extension=0.5, color='#00FFFF')
         matching_plane_2, matching_surface_2 = create_matching_plane_and_surface(line_2_long, softmax_curve_2, y_extension=0.5, color=YELLOW)
         matching_plane_3, matching_surface_3 = create_matching_plane_and_surface(line_3_long, softmax_curve_3, y_extension=0.5, color=GREEN)
-
+        
         self.wait()
 
 
         self.remove(plane_1_zero, plane_2_zero, plane_3_zero)
         self.add(matching_plane_1, matching_plane_2, matching_plane_3)
         self.remove(arrow_tip_1, arrow_tip_2, arrow_tip_3)
-
-
-        self.wait()
         self.play(Transform(matching_plane_1, matching_surface_1), 
                   ReplacementTransform(line_1, softmax_curve_1),  
                   Transform(matching_plane_2, matching_surface_2), 
                   ReplacementTransform(line_2, softmax_curve_2), 
                   Transform(matching_plane_3, matching_surface_3), 
                   ReplacementTransform(line_3, softmax_curve_3), 
-                  run_time=3)   
-
+                  run_time=3)  
+        matching_plane_3.shift([0,0,-0.0001]) #Removes a visual artifact 
         self.wait()
+
+        # self.remove(matching_plane_3)
+        # self.add(matching_plane_3)
+
+
+        # self.remove(matching_plane_1); self.add(matching_plane_1)
+        # self.remove(matching_surface_1); #self.add(matching_plane_1)
+        # self.remove(matching_surface_2)
+        # self.remove(matching_surface_3)
+        # self.remove(matching_plane_2); self.add(matching_plane_2)
+        # self.remove(matching_plane_3); #self.add(matching_surface_3)
+
+        
 
 
         self.play(self.frame.animate.reorient(0, 0, 0, (-1.03, 0.24, 0.1), 0.62), run_time=7)

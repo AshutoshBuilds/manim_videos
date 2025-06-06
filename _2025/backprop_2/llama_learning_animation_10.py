@@ -449,7 +449,7 @@ def get_output_layer(snapshot, empty=False):
     return output_layer
 
 
-class LlamaLearningNine(InteractiveScene):
+class LlamaLearningTen(InteractiveScene):
     def construct(self):
         '''
         Getting close! Next hurdle is to bring in different examples. 
@@ -468,7 +468,7 @@ class LlamaLearningNine(InteractiveScene):
         all_backward_passes=[]
         all_forward_passes=[]
 
-        random_seeds=[25, 26, 27, 28, 39] #For ordering input neurons
+        random_seeds=[25, 26, 27, 28, 29, 30, 31, 32, 33, 34] #For ordering input neurons
         for snapshot_count, snapshot_index in enumerate([0, 7, 11]):
             snapshot=snapshots[snapshot_index]
 
@@ -709,8 +709,6 @@ class LlamaLearningNine(InteractiveScene):
 
         #Ok nothing has broken so far lol. 
 
-
-
         def create_multi_snapshot_animation(self, all_forward_passes, all_backward_passes, 
                                            individual_time=1.0, lag_ratio=0.5, 
                                            start_opacity=0.0, end_opacity=1.0,
@@ -731,7 +729,7 @@ class LlamaLearningNine(InteractiveScene):
                 pause_between_snapshots: Pause time between snapshots
             """
             
-            def create_snapshot_animation(forward_pass, backward_pass, time_offset=0):
+            def create_snapshot_animation(forward_pass, backward_pass, time_offset=0, is_final=False):
                 """Creates animation for a single snapshot"""
                 objects = list(forward_pass) + list(backward_pass[::-1])
                 num_objects = len(objects)
@@ -764,13 +762,16 @@ class LlamaLearningNine(InteractiveScene):
                         obj.set_opacity(opacity)
                     elif snapshot_time <= animation_time:
                         obj.set_opacity(end_opacity)
-                    # Fade out phase
-                    elif snapshot_time <= animation_time + fade_out_time:
+                    # Fade out phase (skip for final snapshot)
+                    elif not is_final and snapshot_time <= animation_time + fade_out_time:
                         fade_progress = (snapshot_time - animation_time) / fade_out_time
                         opacity = end_opacity * (1 - fade_progress)
                         obj.set_opacity(opacity)
-                    else:
+                    elif not is_final:
                         obj.set_opacity(0)
+                    else:
+                        # Keep final snapshot visible
+                        obj.set_opacity(end_opacity)
                 
                 return objects, animation_time, update_opacity
             
@@ -779,17 +780,23 @@ class LlamaLearningNine(InteractiveScene):
             snapshot_data = []
             
             for i, (forward, backward) in enumerate(zip(all_forward_passes, all_backward_passes)):
-                objects, anim_time, updater_func = create_snapshot_animation(forward, backward, total_time)
+                is_final = (i == len(all_forward_passes) - 1)
+                objects, anim_time, updater_func = create_snapshot_animation(forward, backward, total_time, is_final)
                 
                 if objects:
                     snapshot_data.append({
                         'objects': objects,
                         'start_time': total_time,
                         'animation_time': anim_time,
-                        'updater_func': updater_func
+                        'updater_func': updater_func,
+                        'is_final': is_final
                     })
                     
-                    total_time += anim_time + fade_out_time + pause_between_snapshots
+                    # Don't add fade_out_time or pause for the final snapshot
+                    if not is_final:
+                        total_time += anim_time + fade_out_time + pause_between_snapshots
+                    else:
+                        total_time += anim_time
             
             # Remove the final pause
             total_time -= pause_between_snapshots
@@ -805,17 +812,22 @@ class LlamaLearningNine(InteractiveScene):
                     obj.add_updater(updater)
                     all_updaters.append((obj, updater))
             
-            # # Play the animation
+            # Play the animation
             # self.play(time_tracker.animate.set_value(total_time), run_time=total_time)
             
             # # Clean up updaters
             # for obj, updater in all_updaters:
             #     obj.remove_updater(updater)
             
-            # # Ensure all objects are at 0 opacity at the end
+            # # Ensure non-final objects are at 0 opacity and final objects stay visible
             # for snapshot in snapshot_data:
             #     for obj in snapshot['objects']:
-            #         obj.set_opacity(0)
+            #         if snapshot['is_final']:
+            #             obj.set_opacity(end_opacity)
+            #         else:
+            #             obj.set_opacity(0)
+
+       
 
             return time_tracker, total_time
 

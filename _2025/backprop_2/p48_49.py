@@ -57,12 +57,16 @@ def format_number_fixed_decimal(num, decimal_places=2, total_chars=6):
     return formatted.rjust(total_chars)
 
 
-
 def latlong_to_canvas(lat, long, 
+                      label=None,
                       map_min_x=0.38, map_max_x=1.54,
                       map_min_y=-0.56, map_max_y=0.56,
                       min_long=-7.0, max_long=18.0,
-                      min_lat=36.0, max_lat=56.0):
+                      min_lat=36.0, max_lat=56.0,
+                      paris_adjust=[0,0,0],
+                      madrid_adjust=[0,0,0],
+                      berlin_adjust=[0,0,0], 
+                      barcelona_adjust=[0,0,0]):
     """
     Convert latitude/longitude coordinates to canvas x,y coordinates.
     
@@ -86,7 +90,17 @@ def latlong_to_canvas(lat, long,
     # Map to canvas coordinates
     x = map_min_x + long_normalized * (map_max_x - map_min_x)
     y = map_min_y + lat_normalized * (map_max_y - map_min_y)
-    
+
+    if label is not None:
+        if label==0: 
+            x=x+madrid_adjust[0]; y=y+madrid_adjust[1]
+        if label==1: 
+            x=x+paris_adjust[0]; y=y+paris_adjust[1]
+        if label==2: 
+            x=x+berlin_adjust[0]; y=y+berlin_adjust[1]
+        if label==3: 
+            x=x+barcelona_adjust[0]; y=y+barcelona_adjust[1]
+
     return x, y
 
 
@@ -385,7 +399,7 @@ class p48_49(InteractiveScene):
         yhats=data[:, 31:]
 
 
-        net_background=SVGMobject(svg_path+'/p_48_background_1.svg') 
+        net_background=SVGMobject(svg_path+'/p_48_background_1.svg')[1:]
         
         europe_map=ImageMobject(svg_path +'/map_exports.00_00_34_10.Still002.png')
         europe_map.scale(0.28)
@@ -491,7 +505,9 @@ class p48_49(InteractiveScene):
 
         self.wait()
         # self.frame.reorient(0, 90, 0, (-0.02, 0.01, -0.0), 1.98)
-        self.frame.reorient(0, 89, 0, (0.95, 0.01, 0.0), 1.18)
+        # self.frame.reorient(0, 89, 0, (0.95, 0.01, 0.0), 1.18)
+        # self.frame.reorient(0, 89, 0, (0.94, 0.01, 0.01), 1.27)
+        self.frame.reorient(0, 89, 0, (0.95, 0.01, -0.01), 1.28)
         self.add(europe_map)
         self.wait()
 
@@ -514,22 +530,73 @@ class p48_49(InteractiveScene):
         # The other final long pole in the tent is of course the big intro animation. 
         # Maybe I go poke at that for a bit and come back to this? Maybe i can get some good renders out here. 
         # Ok let's do that. 
+        #Noodling to get exact bounds to plug into jupyter notebook
+        min_long=-6.0
+        max_long=16.5
+        min_lat=38.6
+        max_lat=53.5  
+        # i=2
+        # canvas_x, canvas_y=latlong_to_canvas(xs[i][0], 
+        #                                     xs[i][1],
+        #                                     label=ys[i], 
+        #                                     min_long=min_long, 
+        #                                     max_long=max_long, 
+        #                                     min_lat=min_lat, 
+        #                                     max_lat=max_lat, 
+        #                                     berlin_adjust=[0,0,0])
+        # training_point=Dot([canvas_x, 0, canvas_y], radius=0.012)
+        # if ys[i]==0.0: training_point.set_color('#00FFFF')
+        # elif ys[i]==1.0: training_point.set_color(YELLOW)
+        # elif ys[i]==2.0: training_point.set_color(GREEN)   
+        # elif ys[i]==3.0: training_point.set_color('#FF00FF')   
+        # training_point.rotate(90*DEGREES, [1, 0, 0])
 
+        # self.add(training_point)
+        # self.remove(training_point)
 
-        ## maybe like a ShowCreation vibes when in introduce this thing?
+        map_tick_overlays_2=SVGMobject(svg_path+'/map_tick_overlays_2.svg')[1:]
+        map_tick_overlays_2.rotate(90*DEGREES, [1, 0, 0])
+        map_tick_overlays_2.scale([0.63, 0.63, 0.63])
+        map_tick_overlays_2.move_to([1.009, 0, -0.01])
 
-
-
-
-        self.add(net_background, europe_map)
-        self.frame.reorient(0, 90, 0, (-0.02, 0.01, -0.0), 1.98)
-        # self.wait()
-
-        self.add(axes_1, axes_2, axes_3, axes_4)
+        self.play(FadeIn(map_tick_overlays_2), FadeOut(box2), FadeOut(box))
         self.wait()
 
+        ## maybe like a ShowCreation vibes when in introduce this thing?
+        i=0
         vertical_viz_scale=0.4
+        nums=get_dem_numbers_3d(i, xs, weights, logits, yhats)
+        plane_1=LinearPlane(axes_1, weights[i,1], weights[i,0], weights[i,8], vertical_viz_scale=vertical_viz_scale)
+        plane_1.set_opacity(0.6)
+        plane_1.set_color('#00FFFF')
 
+        plane_2=LinearPlane(axes_2, weights[i,3], weights[i,2], weights[i,9], vertical_viz_scale=vertical_viz_scale)
+        plane_2.set_opacity(0.6)
+        plane_2.set_color(YELLOW)
+
+        plane_3=LinearPlane(axes_3, weights[i,5], weights[i,4], weights[i,10], vertical_viz_scale=vertical_viz_scale)
+        plane_3.set_opacity(0.6)
+        plane_3.set_color(GREEN)
+
+        plane_4=LinearPlane(axes_4, weights[i,7], weights[i,6], weights[i,11], vertical_viz_scale=vertical_viz_scale)
+        plane_4.set_opacity(0.6)
+        plane_4.set_color('#FF00FF')
+
+        self.wait()
+        self.play(FadeIn(net_background), FadeIn(nums), self.frame.animate.reorient(0, 89, 0, (-0.0, 0.01, -0.01), 1.99),
+                 run_time=2.5)
+
+        self.wait()
+        self.play(ShowCreation(axes_1), ShowCreation(axes_2), ShowCreation(axes_3), ShowCreation(axes_4))
+        self.wait()
+        self.play(FadeIn(plane_1), FadeIn(plane_2), FadeIn(plane_3), FadeIn(plane_4))
+
+
+
+
+
+
+        #Training loop time?
         i=450
 
         # for i in range(len(xs)):
@@ -543,7 +610,7 @@ class p48_49(InteractiveScene):
 
 
         # nums=get_dem_numbers(i, xs, weights, logits, yhats)
-        nums=get_dem_numbers_3d(i, xs, weights, logits, yhats)
+        
 
 
         plane_1=LinearPlane(axes_1, weights[i,1], weights[i,0], weights[i,8], vertical_viz_scale=vertical_viz_scale)

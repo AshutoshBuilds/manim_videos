@@ -469,7 +469,7 @@ class LlamaLearningTen(InteractiveScene):
         all_forward_passes=[]
 
         random_seeds=[25, 26, 27, 28, 29, 30, 31, 32, 33, 34] #For ordering input neurons
-        for snapshot_count, snapshot_index in enumerate([0, 7, 11]):
+        for snapshot_count, snapshot_index in enumerate([0, 7, 11, 12, 13, 14, 15]):
             snapshot=snapshots[snapshot_index]
 
             all_weights=VGroup()
@@ -674,7 +674,8 @@ class LlamaLearningTen(InteractiveScene):
         ## -- end big ole loop
         self.wait()
 
-        self.frame.reorient(0, 0, 0, (2.04, -0.57, 0.0), 8.63)
+        # self.frame.reorient(0, 0, 0, (2.04, -0.57, 0.0), 8.63)
+        self.frame.reorient(0, 0, 0, (1.99, -0.04, 0.0), 8.32)
         self.add(random_background_stuff)
         self.add(we_connections, all_weights, wu_connections)
 
@@ -834,7 +835,7 @@ class LlamaLearningTen(InteractiveScene):
         time_tracker, total_time = create_multi_snapshot_animation(self, all_forward_passes, all_backward_passes, 
                                                    individual_time=1.0, lag_ratio=0.5, 
                                                    start_opacity=0.0, end_opacity=1.0,
-                                                   fade_out_time=1.0, pause_between_snapshots=0.5)
+                                                   fade_out_time=7.0, pause_between_snapshots=0.5)
 
         self.wait()
 

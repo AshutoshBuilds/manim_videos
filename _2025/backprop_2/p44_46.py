@@ -667,6 +667,7 @@ class p44(InteractiveScene):
                 self.remove(grad_regions)
                 self.remove(heatmaps)
                 self.remove(training_point) 
+                self.remove(map_tick_overlays)
                 if step_label is not None: 
                     self.remove(step_label,step_count)  
                 # self.wait(0.1)       
@@ -727,12 +728,11 @@ class p44(InteractiveScene):
             step_count.move_to([1.43, -0.85, 0])
 
             self.add(step_label,step_count) 
-
-
             self.add(nums)
             self.add(grad_regions)
             self.add(heatmaps)
             self.add(training_point)
+            self.add(map_tick_overlays)
             self.wait(0.1)
 
 
@@ -881,6 +881,9 @@ class p46a(InteractiveScene):
         europe_map.scale(0.28)
         europe_map.move_to([0.96,0,0])        
 
+        map_tick_overlays=SVGMobject(svg_path+'/map_tick_overlays_1.svg')[1:]
+        map_tick_overlays.scale([0.965, 0.96, 0.965])
+        map_tick_overlays.shift([-0.077, 0.0185, 0])
 
         step_label=Text("Step=")  
         step_label.set_color(CHILL_BROWN)
@@ -899,6 +902,7 @@ class p46a(InteractiveScene):
         self.add(heatmaps)
         self.add(training_point)
         self.add(step_label, step_count)
+        self.add(map_tick_overlays)
         self.wait()
 
 
@@ -994,6 +998,8 @@ class p46a(InteractiveScene):
                 self.remove(nums)
                 self.remove(step_label,step_count)
                 self.remove(heatmaps)
+                self.remove(map_tick_overlays)
+
   
             nums=get_numbers_b(i, xs, weights, logits, yhats)
 
@@ -1045,6 +1051,7 @@ class p46a(InteractiveScene):
             self.add(axes_3, line_3, arrow_tip_3)
             self.add(nums)
             self.add(heatmaps)
+            self.add(map_tick_overlays)
             self.wait(0.1)
 
 
@@ -1073,7 +1080,20 @@ class p46b(InteractiveScene):
         europe_map.scale(0.28)
         europe_map.move_to([0.96,0,0])
         
+        #Add 3d map early to layering works out.
+        europe_map_2=ImageMobject(svg_path +'/map_exports.00_00_01_13.Still001.png')
+        europe_map_2.scale(0.28)
+        europe_map_2.move_to([0.96,0,0])
+        europe_map_2.scale(0.4)
+        europe_map_2.move_to([-1.005, 0.25, -0.01]) #Not going to fine tune too much here until I have the final map. 
+        self.add(europe_map_2)
+        europe_map_2.set_opacity(0.0)
 
+
+        map_tick_overlays=SVGMobject(svg_path+'/map_tick_overlays_1.svg')[1:]
+        map_tick_overlays.scale([0.965, 0.96, 0.965])
+        map_tick_overlays.shift([-0.077, 0.0185, 0])
+ 
         axes_1 = Axes(
             x_range=[-15, 15, 1],
             y_range=[-15, 15, 1],
@@ -1126,15 +1146,15 @@ class p46b(InteractiveScene):
         nums=get_numbers_b(i, xs, weights, logits, yhats)
     
         def line_function_1(x): return weights[i,0] * x + weights[i,3]
-        line_1 = axes_1.get_graph(line_function_1, stroke_width=3, color='#00FFFF', x_range=[-14, 14])
+        line_1 = axes_1.get_graph(line_function_1, stroke_width=3, color='#00FFFF', x_range=[-12, 12])
         arrow_tip_1 = get_arrow_tip(line_1, color='#00FFFF', scale=0.08)
 
         def line_function_2(x): return weights[i,1] * x + weights[i,4]
-        line_2 = axes_2.get_graph(line_function_2, stroke_width=3, color=YELLOW, x_range=[-14, 14])
+        line_2 = axes_2.get_graph(line_function_2, stroke_width=3, color=YELLOW, x_range=[-12, 12])
         arrow_tip_2 = get_arrow_tip(line_2, color=YELLOW, scale=0.08)
 
         def line_function_3(x): return weights[i,2] * x + weights[i,5]
-        line_3 = axes_3.get_graph(line_function_3, stroke_width=3, color=GREEN, x_range=[-14, 14])
+        line_3 = axes_3.get_graph(line_function_3, stroke_width=3, color=GREEN, x_range=[-12, 12])
         arrow_tip_3 = get_arrow_tip(line_3, color=GREEN, scale=0.08)
 
         heatmaps=Group()
@@ -1168,6 +1188,7 @@ class p46b(InteractiveScene):
         self.add(axes_3, line_3, arrow_tip_3)
         self.add(nums)
         self.add(heatmaps)
+        self.add(map_tick_overlays)
         self.wait()
 
 
@@ -1210,6 +1231,7 @@ class p46b(InteractiveScene):
         overlays_2=SVGMobject(svg_path+'/p46_overlays_2.svg') 
         overlays_1.scale(0.57)
         overlays_1.move_to([-0.64, 0.003, 0])
+
         self.wait()
 
         self.play(FadeIn(overlays_1[1:]), nums[0].animate.set_opacity(1.0), nums[7].animate.set_opacity(1.0))
@@ -1224,6 +1246,8 @@ class p46b(InteractiveScene):
 
         overlays_2.scale(0.30)
         overlays_2.move_to([-1.02, 0.025, 0])
+        madrid_label=overlays_2[1:18] #Nudge this bad boi?
+        madrid_label.shift([0.015, 0, 0])
         self.wait()
 
         #Zoom in and run training just on little plot
@@ -1253,7 +1277,7 @@ class p46b(InteractiveScene):
         step_count.next_to(step_label, RIGHT, buff=0.003)
         self.play(FadeIn(step_label), FadeIn(step_count))
 
-        for i in range(1, len(xs)):
+        for i in range(347, len(xs)): #TO DO -> CHANGE STARTING NUMBER TO 1 TO ACTUALLY PLAY ANIMATION
             if i>0:
                 self.remove(line_1, arrow_tip_1)
                 self.remove(line_2, arrow_tip_2)
@@ -1295,121 +1319,75 @@ class p46b(InteractiveScene):
 
         self.wait()
 
+        #Hmm i need ot make the lines longer...
+
+        def line_function_1(x): return weights[i,0] * x + weights[i,3]
+        line_1_long = axes_1.get_graph(line_function_1, color='#00FFFF', x_range=[-14.5, 14.5])
+        arrow_tip_1_long = get_arrow_tip(line_1_long, color='#00FFFF', scale=0.1)
+
+        def line_function_2(x): return weights[i,1] * x + weights[i,4]
+        line_2_long = axes_2.get_graph(line_function_2, color=YELLOW, x_range=[-14.5, 14.5])
+        arrow_tip_2_long = get_arrow_tip(line_2_long, color=YELLOW, scale=0.1)
+
+        def line_function_3(x): return weights[i,2] * x + weights[i,5]
+        line_3_long = axes_3.get_graph(line_function_3, color=GREEN, x_range=[-14.5, 14.5])
+        arrow_tip_3_long = get_arrow_tip(line_3_long, color=GREEN, scale=0.1)
 
 
 
+        #Can i jump to 3d cleanly?
+        # self.frame.animate.reorient(0, 0, 0, (-1.02, 0.02, 0.0), 0.62)
 
-
-
-        # Ok this looks pretty good, major components of the sketch are coming together. 
-        # Now, the most complex transition, maybe in the whole video -> but it's going to be dope,
-        # is going from this 2d view to a 3d planes over the map view, and then morphing these guys into softmax curvy planes. 
-        # It's a quick line in the script (might exapnd, we'll see) - but I think it's pretty important pedagogically 
-        # I want to make it really visceral that we're just fitting planes, because this as about to break when we go to Barlay Hertog
-        # Now, how the FUCK an I going to turn my lines into planes, my a-axis into the map, and now that I'm looking at it, I really think the cool move here
-        # is to have the little points and ideally the labels for each city move to their locations on the map!
-        # Do I might have to play that whole game again that I did last time were where all the 2d stuff has actually been rotated up
-        # Unclear to me at point I need to switch to this viewpoint -> might be all the way through -> well see. 
-        # Let me start though by rotating what I have. 
-
-        stuff_to_rotate=VGroup(axes_2, line_1, line_2, line_3, arrow_tip_1, arrow_tip_2, arrow_tip_3)
+        # self.play(ReplacementTransform(line_1, line_1_long))
+        self.wait()
+        self.remove(europe_map, heatmaps, map_tick_overlays, step_label, step_count)
+        stuff_to_rotate=VGroup(axes_2, line_1_long, line_2_long, line_3_long, arrow_tip_1_long, arrow_tip_2_long, arrow_tip_3_long, 
+                              line_1, line_2, line_3, arrow_tip_1, arrow_tip_2, arrow_tip_3)
         stuff_to_rotate.rotate(90*DEGREES, [1, 0, 0])
         overlays_2.rotate(90*DEGREES, [1, 0, 0])
-        self.frame.reorient(0, 90, 0, (-1.0, 0.02, -0.0), 0.62)
+        self.frame.reorient(0, 90, 0, (-1.02, 0.02, 0.0), 0.62)
         self.wait()
 
-        # Ok so the move I'm kinda seeing in my had is camera pans to the left, and the planes and map "grow/exapnd out of the back of the lines"
-        # The map could also just be a reveal, right? and then points move over?
-        # The reveal is simple, let me try that first. 
-
-        self.remove(heatmaps)
-        # self.remove(europe_map) #I could move over the one i already have, but that seems like more complexity than I need. Well shit it makes ordering weird if I reimport actually? 
-        # europe_map_2=ImageMobject(svg_path +'/map_cropped_one.png')
-        # europe_map_2.scale(0.1)
-        # europe_map_2.move_to([-1, 0, 0])
-        # self.remove(stuff_to_rotate, overlays_2)
-        # self.add(europe_map_2)
-        # self.add(stuff_to_rotate, overlays_2)
-
-        europe_map.scale(0.4)
-        europe_map.move_to([-1, 0.23, 0]) #Not going to fine tune too much here until I have the final map. 
-
-        self.frame.reorient(-30, 59, 0, (-1.02, 0.04, -0.0), 0.62) #So this can be a cool pan to the side/reveal. 
-
-        ## Hmm make planes or dots/maybe labels next? 
-        ## Let's take a rough crack at dots/labels. 
-        ## Most obvous thing to do here is to just move my 2d labels, this might look fine 
-        ## I'm tempted to change the grouping/layering first though in illustrator instead of sifting through all the elements manually. 
-        ## Yeah let me do that next
-        # self.remove(overlays_2[:30])
-
-        # self.remove(overlays_2[1:18]) #Madrid label
-        # self.remove(overlays_2[18:33] #Paris label
-        # self.remove(overlays_2[33:50]) #Berlin label
+        #Ok so there is a little jump here -> I'm going to try to fix/hide it in premiere to save time. 
+        europe_map_2.set_opacity(1.0)
+        
         madrid_label=overlays_2[1:18]
-        madrid_center=madrid_label.get_center()
-        madrid_label.move_to([-1.07489443,  0.1     , -0.06620278])
-
-        paris_label=overlays_2[18:33]
-        paris_label.move_to([-0.98353332,  0.3     , -0.06596944])
-
+        # madrid_center=madrid_label.get_center()
         berlin_label=overlays_2[33:50]
-        berlin_label.move_to([-0.83665553,  0.4     , -0.06464722])
-
-        # Ok i can animated those moves later depending on how stuff shakes out. 
-        # Now, how do I extend my lintes to be planes?
-        # Create planes from your existing lines
-        # plane_1 = create_plane_from_line_endpoints(line_1, '#00FFFF', depth=2.0, y_extension=0.5)
-        # plane_2 = create_plane_from_line_endpoints(line_2, YELLOW, depth=2.0, y_extension=0.5)
-        # plane_3 = create_plane_from_line_endpoints(line_3, GREEN, depth=2.0, y_extension=0.5)
-        # plane_1.set_opacity(0.3)
-        # plane_2.set_opacity(0.3)
-        # plane_3.set_opacity(0.3)
-
-        # self.add(plane_1, plane_2, plane_3)
-
-        #Ok dope, basic planes are working -> my gut here is that we'll want to actually lose the city labels - I'll test when I come through on the next pass. 
-        #Now I do think animating these planes growing "out of the lines" is pretty helpful/important - let me take a crack at that now. 
-        # Can i just like scale the plane around the arrow axis and then have to animate/scale out?
-        self.frame.reorient(11, 60, 0, (-0.98, 0.06, 0.02), 0.62)
+        paris_label=overlays_2[18:33]
 
 
-        plane_1_zero = create_plane_from_line_endpoints(line_1, '#00FFFF', y_extension=0.01)
-        plane_1_full = create_plane_from_line_endpoints(line_1, '#00FFFF', y_extension=0.5)
+        plane_1_zero = create_plane_from_line_endpoints(line_1_long, '#00FFFF', y_extension=0.01)
+        plane_1_full = create_plane_from_line_endpoints(line_1_long, '#00FFFF', y_extension=0.5)
         plane_1_zero.set_opacity(0.3)
         plane_1_full.set_opacity(0.3)
 
-        self.wait()
-        self.play(Transform(plane_1_zero, plane_1_full), run_time=2)
-        self.wait()
-
-        #Nice that works! I can noodle a bit, but I think i like the idea of them coming in sequentially. Might work better with some script tweaks - no big deal. 
-
-
-        plane_2_zero = create_plane_from_line_endpoints(line_2, YELLOW, y_extension=0.01)
-        plane_2_full = create_plane_from_line_endpoints(line_2, YELLOW, y_extension=0.5)
+        plane_2_zero = create_plane_from_line_endpoints(line_2_long, YELLOW, y_extension=0.01)
+        plane_2_full = create_plane_from_line_endpoints(line_2_long, YELLOW, y_extension=0.5)
         plane_2_zero.set_opacity(0.3)
         plane_2_full.set_opacity(0.3)
 
-        self.wait()
-        self.play(Transform(plane_2_zero, plane_2_full), run_time=2)
-        self.wait()
-
-        plane_3_zero = create_plane_from_line_endpoints(line_3, GREEN, y_extension=0.01)
-        plane_3_full = create_plane_from_line_endpoints(line_3, GREEN, y_extension=0.5)
+        plane_3_zero = create_plane_from_line_endpoints(line_3_long, GREEN, y_extension=0.01)
+        plane_3_full = create_plane_from_line_endpoints(line_3_long, GREEN, y_extension=0.5)
         plane_3_zero.set_opacity(0.3)
         plane_3_full.set_opacity(0.3)
 
         self.wait()
-        self.play(Transform(plane_3_zero, plane_3_full), run_time=2)
+        self.play(self.frame.animate.reorient(-30, 59, 0, (-1.02, 0.04, -0.0), 0.62), 
+                        madrid_label.animate.move_to([-1.065,  0.12     , -0.06620278]),
+                        paris_label.animate.move_to([-0.97,  0.295     , -0.06596944]),
+                        berlin_label.animate.move_to([-0.805,  0.38     , -0.06464722]),
+                    run_time=3.0
+        )
         self.wait()
 
-        # Ok, now maybe the scariest part -> how the hell do I turn these lines and planes into softmax outputs?
-        # Ok going straight to the surface with Claude didn't quite pan out - let me try to get the line working first, then will try surface.
-
-        # x_values = np.linspace(-14, 14, 100)
-        # logit_1 = weights[i][0] * x_values + weights[i][3]
-        # probs_1=torch.nn.Softmax(0)(torch.tensor(logit_1))
+        #Ok the dope thing here would be planes coming out one at a time during a continuous camera move. 
+        self.play(self.frame.animate.reorient(18, 57, 0, (-0.95, 0.08, 0.05), 0.62), 
+                 Transform(plane_1_zero, plane_1_full), 
+                 Transform(plane_2_zero, plane_2_full), 
+                 Transform(plane_3_zero, plane_3_full), 
+                 run_time=3.0)
+        self.wait()
 
 
         def softmax_function(x):
@@ -1426,18 +1404,15 @@ class p46b(InteractiveScene):
         
         softmax_viz_scale=5.0
         neuron_index=0
-        softmax_curve_1 = axes_2.get_graph(softmax_function, x_range=(-14, 14), color='#00FFFF', stroke_width=3)
+        softmax_curve_1 = axes_2.get_graph(softmax_function, x_range=(-14.5, 14.5), color='#00FFFF', stroke_width=3)
         neuron_index=1
-        softmax_curve_2 = axes_2.get_graph(softmax_function, x_range=(-14, 14), color=YELLOW, stroke_width=3)
+        softmax_curve_2 = axes_2.get_graph(softmax_function, x_range=(-14.5, 14.5), color=YELLOW, stroke_width=3)
         neuron_index=2
-        softmax_curve_3 = axes_2.get_graph(softmax_function, x_range=(-14, 14), color=GREEN, stroke_width=3)      
+        softmax_curve_3 = axes_2.get_graph(softmax_function, x_range=(-14.5, 14.5), color=GREEN, stroke_width=3)      
 
         # self.add(softmax_curve_1) 
 
         self.wait()
-        # self.play(Transform(line_1, softmax_curve_1), run_time=3)
-        # self.play(ReplacementTransform(line_1, softmax_curve_1), run_time=3) #No dice
-        # Explicitly set properties to match line
         softmax_curve_1.set_fill(opacity=0)
         softmax_curve_1.set_stroke(color='#00FFFF', width=3)
         softmax_curve_2.set_fill(opacity=0)
@@ -1446,6 +1421,13 @@ class p46b(InteractiveScene):
         softmax_curve_3.set_stroke(color=GREEN, width=3)
         
         # Make sure original line also has no fill
+        line_1_long.set_fill(opacity=0)
+        line_1_long.set_stroke(color='#00FFFF', width=3)
+        line_2_long.set_fill(opacity=0)
+        line_2_long.set_stroke(color=YELLOW, width=3)
+        line_3_long.set_fill(opacity=0)
+        line_3_long.set_stroke(color=GREEN, width=3)
+
         line_1.set_fill(opacity=0)
         line_1.set_stroke(color='#00FFFF', width=3)
         line_2.set_fill(opacity=0)
@@ -1458,9 +1440,9 @@ class p46b(InteractiveScene):
         softmax_surface_3 = create_surface_from_curve_simple(curve=softmax_curve_3, y_extension=0.5)
 
 
-        matching_plane_1, matching_surface_1 = create_matching_plane_and_surface(line_1, softmax_curve_1, y_extension=0.5, color='#00FFFF')
-        matching_plane_2, matching_surface_2 = create_matching_plane_and_surface(line_2, softmax_curve_2, y_extension=0.5, color=YELLOW)
-        matching_plane_3, matching_surface_3 = create_matching_plane_and_surface(line_3, softmax_curve_3, y_extension=0.5, color=GREEN)
+        matching_plane_1, matching_surface_1 = create_matching_plane_and_surface(line_1_long, softmax_curve_1, y_extension=0.5, color='#00FFFF')
+        matching_plane_2, matching_surface_2 = create_matching_plane_and_surface(line_2_long, softmax_curve_2, y_extension=0.5, color=YELLOW)
+        matching_plane_3, matching_surface_3 = create_matching_plane_and_surface(line_3_long, softmax_curve_3, y_extension=0.5, color=GREEN)
 
         self.wait()
 
@@ -1481,132 +1463,16 @@ class p46b(InteractiveScene):
 
         self.wait()
 
-        # self.play(Transform(matching_plane_1, matching_surface_1), 
-        #           ReplacementTransform(line_1, softmax_curve_1),  
-        #           run_time=3)
 
-
-        # Use ReplacementTransform
-        # self.play(ReplacementTransform(line_1, softmax_curve_1), run_time=3)
-
+        self.play(self.frame.animate.reorient(0, 0, 0, (-1.03, 0.24, 0.1), 0.62), run_time=7)
         self.wait()
-        self.embed()
+
+        #Looking good - just seeing some green jumpiness in one of the surfaces on the move? Let me do the real render and see if it persists. 
 
 
 
 
-        # self.wait()
-        # self.add(softmax_surface_1)
-        # self.play(ReplacementTransform(plane_1_full, softmax_surface_1), run_time=3) #Eh? Negativo. 
-
-
-        # matching_plane, matching_surface = create_matching_plane_and_surface(
-        #     line_1, softmax_curve_1, y_extension=0.5, color='#00FFFF'
-        # )
-
-        # matching_plane, matching_surface = create_matching_plane_and_surface_fixed(
-        #     line_1, softmax_curve_1, y_extension=0.5, color='#00FFFF'
-        # )
-
-
-        # self.wait()
-
-        # self.remove(plane_1_full)
-        
-        # self.remove(plane_1_zero)
-        
-        # self.add(matching_plane)
-
-        # self.play(Transform(matching_plane, matching_surface), run_time=3)
-
-        # self.wait()
-
-
-        # def create_matching_softmax_curve():
-        #     softmax_curve_1 = axes_2.get_graph(
-        #         softmax_function,
-        #         x_range=(-14, 14),
-        #         color='#00FFFF',
-        #         stroke_width=3
-        #     )
-        #     # Explicitly set no fill
-        #     softmax_curve_1.set_fill(opacity=0)
-        #     softmax_curve_1.set_stroke(color='#00FFFF', width=3)
-        #     return softmax_curve_1
-
-        # softmax_curve_1 = create_matching_softmax_curve()
-        # self.play(ReplacementTransform(line_1, softmax_curve_1), run_time=3)
-
-
-        # self.play(top_plot_group.animate.scale(1.5).move_to([-1.0, 0.025, 0]),
-        #           middle_plot_group.animate.scale(1.5).move_to([-1.0, 0.025, 0]),
-        #           bottom_plot_group.animate.scale(1.5).move_to([-1.0, 0.025, 0]),
-        #           # FadeOut(axes_1),
-        #           # FadeOut(axes_3),
-        #           *[FadeOut(net_background[o]) for o in background_elements_to_remove],
-        #           *[net_background[o].animate.set_opacity(0.5) for o in background_elements_to_keep],
-        #           # FadeOut(net_background[84:87]),
-        #           # FadeOut(net_background[89:91]),
-        #           # FadeOut(net_background[83]),
-        #           # FadeOut(net_background[82]),
-        #           # FadeOut(net_background[32:37]),
-        #           # FadeOut(net_background[45:51]),
-        #           # FadeOut(net_background[31]),
-        #           FadeOut(nums[1:7]),
-        #           # top_plot_group.animate.scale(1.5),
-        #           # middle_plot_group.animate.scale(1.5),
-        #           # bottom_plot_group.animate.scale(1.5),
-        #           # arrow_tip_1.animate.scale(0.7),
-        #           # arrow_tip_2.animate.scale(0.7),
-        #           # arrow_tip_3.animate.scale(0.7),
-        #           self.frame.animate.reorient(0, 0, 0, (-0.64, 0.0, 0.0), 1.14),
-        #           run_time=4.0
-        #     )
-
-        # self.play(top_plot_group.animate.move_to([-0.95, 0.0, 0]), run_time=3.0)
-        # self.play(bottom_plot_group.animate.move_to([-0.95, 0.0, 0]), run_time=3.0)
-
-        # self.play(FadeOut(axes_1))
-        # self.play(FadeOut(axes_3))
-
-        # self.wait()
-
-        # self.remove(net_background[84:87]) #Bottom surrounding square, some arrows
-        # self.remove(net_background[89:91])
-        # self.remove(net_background[83])
-        # self.remove(net_background[82])
-
-        # self.remove(net_background[32:37])
-        # self.remove(net_background[45:51])
-        # self.remove(net_background[31]) #Random m
-
-        # self.remove(nums[1:7])
-
-        # top_plot_group.scale(1.5)
-        # middle_plot_group.scale(1.5)
-        # bottom_plot_group.scale(1.5)
-        # arrow_tip_1.scale(0.7)
-        # arrow_tip_2.scale(0.7)
-        # arrow_tip_3.scale(0.7)
-
-        # middle_plot_group.move_to([-1.0, 0.025, 0])
-        # top_plot_group.move_to([-1.0, 0.025, 0])
-        # bottom_plot_group.move_to([-1.0, 0.025, 0])
-
-        # self.frame.reorient(0, 0, 0, (-0.64, 0.0, 0.0), 1.14)
-
-        #Ok yeah so I think this is going to be a progressive zoom in deal. So i think we'll have our first layer of zoom, then 
-        # I'll add some labels and talk about the mapping from x to input to output, and add some labels etc, then 
-        # I'll train and zoom in - maybe at the same time we'll see. 
-        # Then end with nice clear labels for the 3 regions below 
-        # Want to make it really clear it's longitude!
-
-
-
-
-
-
-        self.wait()
+        self.wait(20)
         self.embed()
 
 

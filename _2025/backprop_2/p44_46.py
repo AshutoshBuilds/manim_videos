@@ -1254,7 +1254,7 @@ class p46b(InteractiveScene):
         self.play(self.frame.animate.reorient(0, 0, 0, (-1.02, 0.02, 0.0), 0.62),
                   *[net_background[o].animate.set_opacity(0.0) for o in background_elements_to_keep],
                   nums[0].animate.set_opacity(0.0), nums[7:].animate.set_opacity(0.0), 
-                  overlays_1[1:].animate.set_opacity(0.0)
+                  overlays_1[1:].animate.set_opacity(0.0), run_time=3.0
                  )
         self.add(overlays_2[1:])
         self.wait()

@@ -371,7 +371,7 @@ class LinearPlane(Surface):
 
 
 
-class p48_49(InteractiveScene):
+class p46_sketch_3(InteractiveScene):
     def construct(self):
         '''
         Ok now let's try to everything is Psuedo3d, so I can do the "bring everything together in 3D and pan around" deal 
@@ -387,9 +387,13 @@ class p48_49(InteractiveScene):
 
         net_background=SVGMobject(svg_path+'/p_48_background_1.svg') 
         
-        europe_map=ImageMobject(svg_path +'/map_exports.00_00_34_10.Still002.png')
+        # self.frame.reorient(0, 0, 0, (-0.03, 0.01, 0.0), 2.01)
+        europe_map=ImageMobject(svg_path +'/map_cropped_one.png')
         europe_map.scale(0.28)
         europe_map.move_to([0.96,0,0])
+
+        # self.add(net_background)
+        # self.add(europe_map)
 
         axes_1 = ThreeDAxes(
             # x_range=[-15, 15, 1],
@@ -468,8 +472,12 @@ class p48_49(InteractiveScene):
         )
 
 
+        # stuff_to_rotate_once=Group(net_background, europe_map, axes_1) #, axes_1, axes_2, axes_3, axes_4)
         net_background.rotate(90*DEGREES, [1, 0, 0])
         europe_map.rotate(90*DEGREES, [1, 0, 0])
+        self.add(net_background, europe_map)
+        self.frame.reorient(0, 90, 0, (-0.02, 0.01, -0.0), 1.98)
+        # self.wait()
 
         axes_1.move_to([-0.80, 0, 0.7])
         # axes_1.rotate(-90*DEGREES, [1,0,0]) #Flip up #Going to need ot noodle with rotation to match map
@@ -486,44 +494,6 @@ class p48_49(InteractiveScene):
         axes_4.move_to([-0.80, 0,  -0.7])
         # axes_4.rotate(-90*DEGREES, [1,0,0]) #Flip up #Going to need ot noodle with rotation to match map
         # axes_4.rotate(-90*DEGREES, [0,0,1]) #Twist around vertical
-        # stuff_to_rotate_once=Group(net_background, europe_map, axes_1) #, axes_1, axes_2, axes_3, axes_4)
-
-
-        self.wait()
-        # self.frame.reorient(0, 90, 0, (-0.02, 0.01, -0.0), 1.98)
-        self.frame.reorient(0, 89, 0, (0.95, 0.01, 0.0), 1.18)
-        self.add(europe_map)
-        self.wait()
-
-        box=Rectangle(0.18, 0.05).set_color('$FF00FF')
-        box.rotate(90*DEGREES, [1, 0, 0])
-        box.move_to([0.86, 0, -0.36])
-        self.play(ShowCreation(box))
-        self.wait()
-
-
-        box2=Rectangle(0.15, 0.05).set_color(YELLOW)
-        box2.rotate(90*DEGREES, [1, 0, 0])
-        box2.move_to([0.87, 0, 0.19])
-        self.play(ShowCreation(box2))
-        self.wait()
-
-
-        # Ok, a few different things to figure out here -> let me start by aligning nicely to the map. 
-        # Hmm do I want to do that first, or wait for new map from Sam? It will most likeley be a bit different
-        # The other final long pole in the tent is of course the big intro animation. 
-        # Maybe I go poke at that for a bit and come back to this? Maybe i can get some good renders out here. 
-        # Ok let's do that. 
-
-
-        ## maybe like a ShowCreation vibes when in introduce this thing?
-
-
-
-
-        self.add(net_background, europe_map)
-        self.frame.reorient(0, 90, 0, (-0.02, 0.01, -0.0), 1.98)
-        # self.wait()
 
         self.add(axes_1, axes_2, axes_3, axes_4)
         self.wait()
@@ -663,6 +633,410 @@ class p48_49(InteractiveScene):
 
         self.wait()
         self.embed()
+
+
+
+
+
+
+
+class p46_sketch_2(InteractiveScene):
+    def construct(self):
+        '''
+        Ok starting with p45, I'll work on animating to shared p46 plot, and then start hacking on 3d. 
+        '''
+        data=np.load(data_path+'/cities_2d_1.npy')
+        xs=data[:,:2]
+        ys=data[:,2]
+        weights=data[:,3:15]
+        grads=data[:,15:27]
+        logits=data[:,27:31]
+        yhats=data[:, 31:]
+
+
+        net_background=SVGMobject(svg_path+'/p_48_background_1.svg') 
+        self.add(net_background)
+
+        self.frame.reorient(0, 0, 0, (-0.03, 0.01, 0.0), 2.01)
+        europe_map=ImageMobject(svg_path +'/map_cropped_one.png')
+        europe_map.scale(0.28)
+        europe_map.move_to([0.96,0,0])
+        self.add(europe_map)
+
+        axes_1 = ThreeDAxes(
+            x_range=[-15, 15, 1],
+            y_range=[-15, 15, 1],
+            z_range=[-10, 10, 1],
+            width=0.28,
+            height=0.28,
+            depth=0.28,
+            axis_config={
+                "color": CHILL_BROWN,
+                "include_ticks": False,
+                "include_numbers": False,
+                "include_tip": True,
+                "stroke_width":2,
+                "tip_config": {"width":0.015, "length":0.015}
+                }
+        )
+
+        axes_2 = ThreeDAxes(
+            x_range=[-15, 15, 1],
+            y_range=[-15, 15, 1],
+            z_range=[-10, 10, 1],
+            width=0.28,
+            height=0.28,
+            depth=0.28,
+            axis_config={
+                "color": CHILL_BROWN,
+                "include_ticks": False,
+                "include_numbers": False,
+                "include_tip": True,
+                "stroke_width":2,
+                "tip_config": {"width":0.015, "length":0.015}
+                }
+        )
+
+        axes_3 = ThreeDAxes(
+            x_range=[-15, 15, 1],
+            y_range=[-15, 15, 1],
+            z_range=[-10, 10, 1],
+            width=0.28,
+            height=0.28,
+            depth=0.28,
+            axis_config={
+                "color": CHILL_BROWN,
+                "include_ticks": False,
+                "include_numbers": False,
+                "include_tip": True,
+                "stroke_width":2,
+                "tip_config": {"width":0.015, "length":0.015}
+                }
+        )
+
+        axes_4 = ThreeDAxes(
+            x_range=[-15, 15, 1],
+            y_range=[-15, 15, 1],
+            z_range=[-10, 10, 1],
+            width=0.28,
+            height=0.28,
+            depth=0.28,
+            axis_config={
+                "color": CHILL_BROWN,
+                "include_ticks": False,
+                "include_numbers": False,
+                "include_tip": True,
+                "stroke_width":2,
+                "tip_config": {"width":0.015, "length":0.015}
+                }
+        )
+
+
+        axes_1.move_to([-0.80, 0.7, 0])
+        axes_1.rotate(-90*DEGREES, [1,0,0]) #Flip up #Going to need ot noodle with rotation to match map
+        axes_1.rotate(-30*DEGREES, [0,1,0]) #Twist around vertical
+
+        axes_2.move_to([-0.80, 0.24, 0])
+        axes_2.rotate(-90*DEGREES, [1,0,0]) #Flip up #Going to need ot noodle with rotation to match map
+        axes_2.rotate(-30*DEGREES, [0,1,0]) #Twist around vertical
+
+        axes_3.move_to([-0.80, -0.22, 0])
+        axes_3.rotate(-90*DEGREES, [1,0,0]) #Flip up #Going to need ot noodle with rotation to match map
+        axes_3.rotate(-30*DEGREES, [0,1,0]) #Twist around vertical
+
+        axes_4.move_to([-0.80, -0.7, 0])
+        axes_4.rotate(-90*DEGREES, [1,0,0]) #Flip up #Going to need ot noodle with rotation to match map
+        axes_4.rotate(-30*DEGREES, [0,1,0]) #Twist around vertical
+
+        self.add(axes_1, axes_2, axes_3, axes_4)
+        vertical_viz_scale=0.4
+
+        for i in range(len(xs)):
+            if i>0:
+                self.remove(nums)
+                self.remove(plane_1, plane_2, plane_3, plane_4)
+                # self.remove(grad_regions)
+                self.remove(heatmaps)
+                self.remove(training_point) 
+                self.remove(step_label,step_count)  
+
+
+            nums=get_dem_numbers(i, xs, weights, logits, yhats)
+
+            plane_1=LinearPlane(axes_1, weights[i,0], weights[i,1], weights[i,8], vertical_viz_scale=vertical_viz_scale)
+            plane_1.set_opacity(0.6)
+            plane_1.set_color('#00FFFF')
+
+            plane_2=LinearPlane(axes_2, weights[i,2], weights[i,3], weights[i,9], vertical_viz_scale=vertical_viz_scale)
+            plane_2.set_opacity(0.6)
+            plane_2.set_color(YELLOW)
+
+            plane_3=LinearPlane(axes_3, weights[i,4], weights[i,5], weights[i,10], vertical_viz_scale=vertical_viz_scale)
+            plane_3.set_opacity(0.6)
+            plane_3.set_color(GREEN)
+
+            plane_4=LinearPlane(axes_4, weights[i,6], weights[i,7], weights[i,11], vertical_viz_scale=vertical_viz_scale)
+            plane_4.set_opacity(0.6)
+            plane_4.set_color('#FF00FF')
+
+            heatmaps=Group()
+            heatmap_yhat3=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_3.png')
+            heatmap_yhat3.scale([0.29, 0.28, 0.28])
+            heatmap_yhat3.move_to([0.96,0,0])
+            heatmap_yhat3.set_opacity(0.5)
+            heatmaps.add(heatmap_yhat3)
+
+            heatmap_yhat1=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_1.png')
+            heatmap_yhat1.scale([0.29, 0.28, 0.28])
+            heatmap_yhat1.move_to([0.96,0,0])
+            heatmap_yhat1.set_opacity(0.5)
+            heatmaps.add(heatmap_yhat1)
+
+            heatmap_yhat2=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_2.png')
+            heatmap_yhat2.scale([0.29, 0.28, 0.28])
+            heatmap_yhat2.move_to([0.96,0,0])
+            heatmap_yhat2.set_opacity(0.5)
+            heatmaps.add(heatmap_yhat2)
+
+            heatmap_yhat4=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_4.png')
+            heatmap_yhat4.scale([0.29, 0.28, 0.28])
+            heatmap_yhat4.move_to([0.96,0,0])
+            heatmap_yhat4.set_opacity(0.5)
+            heatmaps.add(heatmap_yhat4)
+
+            canvas_x, canvas_y=latlong_to_canvas(xs[i][0], xs[i][1])
+            training_point=Dot([canvas_x, canvas_y, 0], radius=0.012)
+            if ys[i]==0.0: training_point.set_color('#00FFFF')
+            elif ys[i]==1.0: training_point.set_color(YELLOW)
+            elif ys[i]==2.0: training_point.set_color(GREEN)   
+            elif ys[i]==3.0: training_point.set_color('#FF00FF')   
+
+            step_label=Text("Step=")  
+            step_label.set_color(CHILL_BROWN)
+            step_label.scale(0.12)
+            step_label.move_to([1.3, -0.85, 0])
+
+            step_count=Text(str(i).zfill(3))
+            step_count.set_color(CHILL_BROWN)
+            step_count.scale(0.12)
+            step_count.move_to([1.43, -0.85, 0])
+
+            self.add(step_label,step_count) 
+            self.add(plane_1, plane_2, plane_3, plane_4)
+            self.add(nums)
+            # self.add(grad_regions) #I'm runnign out of steam here to do grad regions, leaving out for now - it's alraedy prettty complex!
+            self.add(heatmaps)
+            self.add(training_point)
+            self.wait(0.1)
+
+
+        self.wait()
+        self.embed()
+
+
+
+
+class p46_sketch(InteractiveScene):
+    def construct(self):
+        '''
+        Ok starting with p45, I'll work on animating to shared p46 plot, and then start hacking on 3d. 
+        '''
+        data=np.load(data_path+'/cities_2d_1.npy')
+        xs=data[:,:2]
+        ys=data[:,2]
+        weights=data[:,3:15]
+        grads=data[:,15:27]
+        logits=data[:,27:31]
+        yhats=data[:, 31:]
+
+
+        net_background=SVGMobject(svg_path+'/p_48_background_1.svg') 
+        self.add(net_background)
+
+        self.frame.reorient(0, 0, 0, (-0.03, 0.01, 0.0), 2.01)
+        europe_map=ImageMobject(svg_path +'/map_cropped_one.png')
+        europe_map.scale(0.28)
+        europe_map.move_to([0.96,0,0])
+        self.add(europe_map)
+
+
+        i=300
+        vertical_viz_scale=0.4
+        nums=get_dem_numbers(i, xs, weights, logits, yhats)
+        self.add(nums)
+
+        axes_1 = ThreeDAxes(
+            x_range=[-15, 15, 1],
+            y_range=[-15, 15, 1],
+            z_range=[-10, 10, 1],
+            width=0.28,
+            height=0.28,
+            depth=0.28,
+            axis_config={
+                "color": CHILL_BROWN,
+                "include_ticks": False,
+                "include_numbers": False,
+                "include_tip": True,
+                "stroke_width":2,
+                "tip_config": {"width":0.015, "length":0.015}
+                }
+        )
+
+        axes_1.move_to([-0.80, 0.7, 0])
+        axes_1.rotate(-90*DEGREES, [1,0,0]) #Flip up #Going to need ot noodle with rotation to match map
+        axes_1.rotate(-30*DEGREES, [0,1,0]) #Twist around vertical
+        plane_1=LinearPlane(axes_1, weights[i,0], weights[i,1], weights[i,8], vertical_viz_scale=vertical_viz_scale)
+        plane_1.set_opacity(0.6)
+        plane_1.set_color('#00FFFF')
+
+
+        axes_2 = ThreeDAxes(
+            x_range=[-15, 15, 1],
+            y_range=[-15, 15, 1],
+            z_range=[-10, 10, 1],
+            width=0.28,
+            height=0.28,
+            depth=0.28,
+            axis_config={
+                "color": CHILL_BROWN,
+                "include_ticks": False,
+                "include_numbers": False,
+                "include_tip": True,
+                "stroke_width":2,
+                "tip_config": {"width":0.015, "length":0.015}
+                }
+        )
+
+        axes_2.move_to([-0.80, 0.24, 0])
+        axes_2.rotate(-90*DEGREES, [1,0,0]) #Flip up #Going to need ot noodle with rotation to match map
+        axes_2.rotate(-30*DEGREES, [0,1,0]) #Twist around vertical
+        plane_2=LinearPlane(axes_2, weights[i,2], weights[i,3], weights[i,9], vertical_viz_scale=vertical_viz_scale)
+        plane_2.set_opacity(0.6)
+        plane_2.set_color(YELLOW)
+
+        axes_3 = ThreeDAxes(
+            x_range=[-15, 15, 1],
+            y_range=[-15, 15, 1],
+            z_range=[-10, 10, 1],
+            width=0.28,
+            height=0.28,
+            depth=0.28,
+            axis_config={
+                "color": CHILL_BROWN,
+                "include_ticks": False,
+                "include_numbers": False,
+                "include_tip": True,
+                "stroke_width":2,
+                "tip_config": {"width":0.015, "length":0.015}
+                }
+        )
+
+        axes_3.move_to([-0.80, -0.22, 0])
+        axes_3.rotate(-90*DEGREES, [1,0,0]) #Flip up #Going to need ot noodle with rotation to match map
+        axes_3.rotate(-30*DEGREES, [0,1,0]) #Twist around vertical
+        plane_3=LinearPlane(axes_3, weights[i,4], weights[i,5], weights[i,10], vertical_viz_scale=vertical_viz_scale)
+        plane_3.set_opacity(0.6)
+        plane_3.set_color(GREEN)
+
+        axes_4 = ThreeDAxes(
+            x_range=[-15, 15, 1],
+            y_range=[-15, 15, 1],
+            z_range=[-10, 10, 1],
+            width=0.28,
+            height=0.28,
+            depth=0.28,
+            axis_config={
+                "color": CHILL_BROWN,
+                "include_ticks": False,
+                "include_numbers": False,
+                "include_tip": True,
+                "stroke_width":2,
+                "tip_config": {"width":0.015, "length":0.015}
+                }
+        )
+
+        axes_4.move_to([-0.80, -0.7, 0])
+        axes_4.rotate(-90*DEGREES, [1,0,0]) #Flip up #Going to need ot noodle with rotation to match map
+        axes_4.rotate(-30*DEGREES, [0,1,0]) #Twist around vertical
+        plane_4=LinearPlane(axes_4, weights[i,6], weights[i,7], weights[i,11], vertical_viz_scale=vertical_viz_scale)
+        plane_4.set_opacity(0.6)
+        plane_4.set_color('#FF00FF')
+
+
+        self.add(axes_1, plane_1, axes_2, plane_2, axes_3, plane_3, axes_4, plane_4)
+
+        self.wait()
+
+
+        heatmaps=Group()
+        heatmap_yhat3=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_3.png')
+        heatmap_yhat3.scale([0.29, 0.28, 0.28])
+        heatmap_yhat3.move_to([0.96,0,0])
+        heatmap_yhat3.set_opacity(0.5)
+        heatmaps.add(heatmap_yhat3)
+
+        heatmap_yhat1=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_1.png')
+        heatmap_yhat1.scale([0.29, 0.28, 0.28])
+        heatmap_yhat1.move_to([0.96,0,0])
+        heatmap_yhat1.set_opacity(0.5)
+        heatmaps.add(heatmap_yhat1)
+
+        heatmap_yhat2=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_2.png')
+        heatmap_yhat2.scale([0.29, 0.28, 0.28])
+        heatmap_yhat2.move_to([0.96,0,0])
+        heatmap_yhat2.set_opacity(0.5)
+        heatmaps.add(heatmap_yhat2)
+
+        heatmap_yhat4=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_4.png')
+        heatmap_yhat4.scale([0.29, 0.28, 0.28])
+        heatmap_yhat4.move_to([0.96,0,0])
+        heatmap_yhat4.set_opacity(0.5)
+        heatmaps.add(heatmap_yhat4)
+
+        canvas_x, canvas_y=latlong_to_canvas(xs[i][0], xs[i][1])
+        training_point=Dot([canvas_x, canvas_y, 0], radius=0.012)
+        if ys[i]==0.0: training_point.set_color('#00FFFF')
+        elif ys[i]==1.0: training_point.set_color(YELLOW)
+        elif ys[i]==2.0: training_point.set_color(GREEN)   
+        elif ys[i]==3.0: training_point.set_color('#FF00FF')   
+
+        step_label=Text("Step=")  
+        step_label.set_color(CHILL_BROWN)
+        step_label.scale(0.12)
+        step_label.move_to([1.3, -0.85, 0])
+
+        step_count=Text(str(i).zfill(3))
+        step_count.set_color(CHILL_BROWN)
+        step_count.scale(0.12)
+        step_count.move_to([1.43, -0.85, 0])
+
+        self.add(step_label,step_count) 
+        self.add(nums)
+        # self.add(grad_regions) #I'm runnign out of steam here to do grad regions, leaving out for now - it's alraedy prettty complex!
+        self.add(heatmaps)
+        self.add(training_point)
+
+
+        self.wait()
+        self.embed()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

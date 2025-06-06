@@ -401,7 +401,9 @@ class p48_49(InteractiveScene):
 
         net_background=SVGMobject(svg_path+'/p_48_background_1.svg')[1:]
         
-        europe_map=ImageMobject(svg_path +'/map_exports.00_00_34_10.Still002.png')
+        # europe_map=ImageMobject(svg_path +'/map_exports.00_00_34_10.Still002.png')
+        europe_map=ImageMobject(svg_path +'/map_exports.00_00_54_12.Still004.png')
+        
         europe_map.scale(0.28)
         europe_map.move_to([0.96,0,0])
 
@@ -513,14 +515,14 @@ class p48_49(InteractiveScene):
 
         box=Rectangle(0.18, 0.05).set_color('$FF00FF')
         box.rotate(90*DEGREES, [1, 0, 0])
-        box.move_to([0.86, 0, -0.36])
+        box.move_to([0.875, 0, -0.361])
         self.play(ShowCreation(box))
         self.wait()
 
 
-        box2=Rectangle(0.15, 0.05).set_color(YELLOW)
+        box2=Rectangle(0.11, 0.05).set_color(YELLOW)
         box2.rotate(90*DEGREES, [1, 0, 0])
-        box2.move_to([0.87, 0, 0.19])
+        box2.move_to([0.848, 0, 0.187])
         self.play(ShowCreation(box2))
         self.wait()
 
@@ -620,6 +622,11 @@ class p48_49(InteractiveScene):
                 # self.remove(grad_regions)
                 if heatmaps is not None:
                     self.remove(heatmaps)
+                    # in terminal: ulimit -n 8192
+                    del heatmap_yhat1
+                    del heatmap_yhat2
+                    del heatmap_yhat3
+                    del heatmap_yhat4
                 if training_point is not None:
                     self.remove(training_point) 
                 if step_label is not None:

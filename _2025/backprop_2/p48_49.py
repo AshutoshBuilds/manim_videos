@@ -12,7 +12,7 @@ GREEN='#00a14b'
 
 svg_path='/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backprop2/graphics/to_manim'
 data_path='/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backprop2/hackin'
-heatmap_path='/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backprop2/graphics/to_manim/may_28_2'
+heatmap_path='/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backprop2/graphics/to_manim/jun_6_2'
 
 
 def format_number(num, total_chars=6, align='right'):
@@ -370,7 +370,7 @@ class LinearPlane(Surface):
             # v_range=(-12, 12),
             u_range=(-6, 11),
             v_range=(-8, 4),
-            resolution=(64, 64), #Looks nice at 256, but is slow, maybe crank for final
+            resolution=(256, 256), #Looks nice at 256, but is slow, maybe crank for final
             color='#00FFFF',
             **kwargs
         )
@@ -390,7 +390,7 @@ class p48_49(InteractiveScene):
         '''
         Ok now let's try to everything is Psuedo3d, so I can do the "bring everything together in 3D and pan around" deal 
         '''
-        data=np.load(data_path+'/cities_2d_2.npy')
+        data=np.load(data_path+'/cities_2d_4.npy')
         xs=data[:,:2]
         ys=data[:,2]
         weights=data[:,3:15]
@@ -590,135 +590,153 @@ class p48_49(InteractiveScene):
         self.play(ShowCreation(axes_1), ShowCreation(axes_2), ShowCreation(axes_3), ShowCreation(axes_4))
         self.wait()
         self.play(FadeIn(plane_1), FadeIn(plane_2), FadeIn(plane_3), FadeIn(plane_4))
+        self.wait()
 
+        #Quick show of backprop equations
+        backprop_eqs=SVGMobject(svg_path+'/2d_backprop_eqs.svg')
+        backprop_eqs.rotate(DEGREES*90, [1,0,0])
+        backprop_eqs.scale(0.52)
+        backprop_eqs.move_to([1.0, 0, 0])
 
+        self.play(europe_map.animate.set_opacity(0.03), map_tick_overlays_2.animate.set_opacity(0.03))
+        self.add(backprop_eqs)
+        self.wait()
 
-
+        self.play(FadeOut(backprop_eqs), europe_map.animate.set_opacity(1.0), map_tick_overlays_2.animate.set_opacity(1.0))
+        # europe_map.set_opacity(1.0)
+        # map_tick_overlays_2.set_opacity(1.0)
+        self.wait()
 
 
         #Training loop time?
-        i=450
+        # i=450
+        step_label=None
+        heatmaps=None
+        training_point=None
+        for i in range(1, len(xs)): #TO DO -> change starting time to 1, 495 to go fast
+            if i>0:
+                self.remove(nums)
+                self.remove(plane_1, plane_2, plane_3, plane_4)
+                # self.remove(grad_regions)
+                if heatmaps is not None:
+                    self.remove(heatmaps)
+                if training_point is not None:
+                    self.remove(training_point) 
+                if step_label is not None:
+                    self.remove(step_label,step_count)  
+                self.remove(map_tick_overlays_2)
 
-        # for i in range(len(xs)):
-        #     if i>0:
-        #         self.remove(nums)
-        #         self.remove(plane_1, plane_2, plane_3, plane_4)
-        #         # self.remove(grad_regions)
-        #         self.remove(heatmaps)
-        #         self.remove(training_point) 
-        #         self.remove(step_label,step_count)  
 
+            nums=get_dem_numbers(i, xs, weights, logits, yhats)
+            nums.rotate(90*DEGREES, [1, 0, 0])
+            
+            plane_1=LinearPlane(axes_1, weights[i,1], weights[i,0], weights[i,8], vertical_viz_scale=vertical_viz_scale)
+            plane_1.set_opacity(0.6)
+            plane_1.set_color('#00FFFF')
 
-        # nums=get_dem_numbers(i, xs, weights, logits, yhats)
-        
+            plane_2=LinearPlane(axes_2, weights[i,3], weights[i,2], weights[i,9], vertical_viz_scale=vertical_viz_scale)
+            plane_2.set_opacity(0.6)
+            plane_2.set_color(YELLOW)
 
+            plane_3=LinearPlane(axes_3, weights[i,5], weights[i,4], weights[i,10], vertical_viz_scale=vertical_viz_scale)
+            plane_3.set_opacity(0.6)
+            plane_3.set_color(GREEN)
 
-        plane_1=LinearPlane(axes_1, weights[i,1], weights[i,0], weights[i,8], vertical_viz_scale=vertical_viz_scale)
-        plane_1.set_opacity(0.6)
-        plane_1.set_color('#00FFFF')
+            plane_4=LinearPlane(axes_4, weights[i,7], weights[i,6], weights[i,11], vertical_viz_scale=vertical_viz_scale)
+            plane_4.set_opacity(0.6)
+            plane_4.set_color('#FF00FF')
 
-        plane_2=LinearPlane(axes_2, weights[i,3], weights[i,2], weights[i,9], vertical_viz_scale=vertical_viz_scale)
-        plane_2.set_opacity(0.6)
-        plane_2.set_color(YELLOW)
+            heatmaps=Group()
+            heatmap_yhat3=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_3.png')
+            heatmap_yhat3.scale([0.28, 0.283, 0.28])
+            heatmap_yhat3.move_to([0.958,0,0])
+            heatmap_yhat3.set_opacity(0.5)
+            heatmaps.add(heatmap_yhat3)
 
-        plane_3=LinearPlane(axes_3, weights[i,5], weights[i,4], weights[i,10], vertical_viz_scale=vertical_viz_scale)
-        plane_3.set_opacity(0.6)
-        plane_3.set_color(GREEN)
+            heatmap_yhat1=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_1.png')
+            heatmap_yhat1.scale([0.28, 0.283, 0.28])
+            heatmap_yhat1.move_to([0.958,0,0])
+            heatmap_yhat1.set_opacity(0.5)
+            heatmaps.add(heatmap_yhat1)
 
-        plane_4=LinearPlane(axes_4, weights[i,7], weights[i,6], weights[i,11], vertical_viz_scale=vertical_viz_scale)
-        plane_4.set_opacity(0.6)
-        plane_4.set_color('#FF00FF')
+            heatmap_yhat2=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_2.png')
+            heatmap_yhat2.scale([0.28, 0.283, 0.28])
+            heatmap_yhat2.move_to([0.958,0,0])
+            heatmap_yhat2.set_opacity(0.5)
+            heatmaps.add(heatmap_yhat2)
 
-        heatmaps=Group()
-        heatmap_yhat3=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_3.png')
-        heatmap_yhat3.scale([0.29, 0.28, 0.28])
-        heatmap_yhat3.move_to([0.96,0,0])
-        heatmap_yhat3.set_opacity(0.5)
-        heatmaps.add(heatmap_yhat3)
+            heatmap_yhat4=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_4.png')
+            heatmap_yhat4.scale([0.28, 0.283, 0.28])
+            heatmap_yhat4.move_to([0.958,0,0])
+            heatmap_yhat4.set_opacity(0.5)
+            heatmaps.add(heatmap_yhat4)
 
-        heatmap_yhat1=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_1.png')
-        heatmap_yhat1.scale([0.29, 0.28, 0.28])
-        heatmap_yhat1.move_to([0.96,0,0])
-        heatmap_yhat1.set_opacity(0.5)
-        heatmaps.add(heatmap_yhat1)
+            heatmaps.rotate(90*DEGREES, [1, 0, 0])
 
-        heatmap_yhat2=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_2.png')
-        heatmap_yhat2.scale([0.29, 0.28, 0.28])
-        heatmap_yhat2.move_to([0.96,0,0])
-        heatmap_yhat2.set_opacity(0.5)
-        heatmaps.add(heatmap_yhat2)
+            # canvas_x, canvas_y=latlong_to_canvas(xs[i][0], xs[i][1])
+            canvas_x, canvas_y=latlong_to_canvas(xs[i][0], 
+                                                xs[i][1],
+                                                label=ys[i], 
+                                                min_long=min_long, 
+                                                max_long=max_long, 
+                                                min_lat=min_lat, 
+                                                max_lat=max_lat, 
+                                                berlin_adjust=[0,0,0])
 
-        heatmap_yhat4=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_4.png')
-        heatmap_yhat4.scale([0.29, 0.28, 0.28])
-        heatmap_yhat4.move_to([0.96,0,0])
-        heatmap_yhat4.set_opacity(0.5)
-        heatmaps.add(heatmap_yhat4)
+            training_point=Dot([canvas_x, 0, canvas_y], radius=0.012)
+            if ys[i]==0.0: training_point.set_color('#00FFFF')
+            elif ys[i]==1.0: training_point.set_color(YELLOW)
+            elif ys[i]==2.0: training_point.set_color(GREEN)   
+            elif ys[i]==3.0: training_point.set_color('#FF00FF')   
+            training_point.rotate(90*DEGREES, [1, 0, 0])
 
-        heatmaps.rotate(90*DEGREES, [1, 0, 0])
+            step_label=Text("Step=")  
+            step_label.set_color(CHILL_BROWN)
+            step_label.scale(0.12).rotate(90*DEGREES, [1, 0, 0])
+            step_label.move_to([1.3, 0, -0.85])
 
-        canvas_x, canvas_y=latlong_to_canvas(xs[i][0], xs[i][1])
-        training_point=Dot([canvas_x, 0, canvas_y], radius=0.012)
-        if ys[i]==0.0: training_point.set_color('#00FFFF')
-        elif ys[i]==1.0: training_point.set_color(YELLOW)
-        elif ys[i]==2.0: training_point.set_color(GREEN)   
-        elif ys[i]==3.0: training_point.set_color('#FF00FF')   
-        training_point.rotate(90*DEGREES, [1, 0, 0])
+            step_count=Text(str(i).zfill(3))
+            step_count.set_color(CHILL_BROWN)
+            step_count.scale(0.12).rotate(90*DEGREES, [1, 0, 0])
+            step_count.move_to([1.43, 0, -0.85])
 
-        step_label=Text("Step=")  
-        step_label.set_color(CHILL_BROWN)
-        step_label.scale(0.12).rotate(90*DEGREES, [1, 0, 0])
-        step_label.move_to([1.3, 0, -0.85])
+            self.add(plane_1, plane_2, plane_3, plane_4)
+            self.add(nums)
+            self.add(step_label,step_count) 
+            self.add(heatmaps)
+            self.add(training_point)
+            self.add(map_tick_overlays_2)
 
-        step_count=Text(str(i).zfill(3))
-        step_count.set_color(CHILL_BROWN)
-        step_count.scale(0.12).rotate(90*DEGREES, [1, 0, 0])
-        step_count.move_to([1.43, 0, -0.85])
+            self.wait(0.1)
 
-        self.add(plane_1, plane_2, plane_3, plane_4)
-        self.add(nums)
-        self.add(step_label,step_count) 
-        self.add(heatmaps)
-        self.add(training_point)
 
         self.wait()
 
-        #Alright fancy 3d scene time, let's to! First let me manually remove everything that I'm going to fade out. 
-        self.remove(nums)
-        self.remove(net_background)
-        self.remove(heatmaps)
-        self.remove(training_point)
-        self.remove(step_label,step_count) 
-
-        # Ok, now for the animation -> probalby makes sense to scale and move the 3d axes at the same time? 
-        # If that's funky I can try a camera move
+        #Fancy 3d bring togeteher time!
         ap1=Group(axes_1, plane_1)
         ap2=Group(axes_2, plane_2)
         ap3=Group(axes_3, plane_3)
         ap4=Group(axes_4, plane_4)
 
-        # ap1.move_to([0,0,0])
-        # ap1.scale(5.5)
+        self.play(FadeOut(nums), FadeOut(net_background), FadeOut(heatmaps), 
+            FadeOut(training_point), FadeOut(step_label), FadeOut(step_count),
+            FadeOut(map_tick_overlays_2))
 
-        # europe_map.rotate(-90*DEGREES, [1,0,0])
-        # europe_map.move_to([-0.05,-0.05,0.00])
-
-        self.wait()
-        self.play(ap1.animate.scale(5.5).move_to([0,0,0]).set_opacity(0.4),
-                    ap2.animate.scale(5.5).move_to([0,0,0]).set_opacity(0.4),
-                    ap3.animate.scale(5.5).move_to([0,0,0]).set_opacity(0.4),
-                    ap4.animate.scale(5.5).move_to([0,0,0]).set_opacity(0.4),
+        # self.wait()
+        self.play(ap1.animate.scale(4.5).move_to([0,0,0]).set_opacity(0.4),
+                    ap2.animate.scale(4.5).move_to([0,0,0]).set_opacity(0.4),
+                    ap3.animate.scale(4.5).move_to([0,0,0]).set_opacity(0.4),
+                    ap4.animate.scale(4.5).move_to([0,0,0]).set_opacity(0.4),
                     europe_map.animate.rotate(-90*DEGREES, [1,0,0]).move_to([-0.05,-0.05,0.00]),
-                    self.frame.animate.reorient(22, 35, 0, (0.04, -0.02, -0.04), 1.98),
+                    # self.frame.animate.reorient(22, 35, 0, (0.04, -0.02, -0.04), 1.98),
+                    self.frame.animate.reorient(-56, 53, 0, (-0.15, -0.1, -0.16), 1.41),
                     run_time=7.0
             )
-        self.remove(axes_2, axes_3, axes_4)
-        self.wait()
+        self.remove(axes_1, axes_2, axes_3, axes_4)
+        self.wait() #Hold on Paris view
 
-        ## Ok this took some noodling, but the goemetry of the planes now matches the heatmap!
-        ## I need to tweak spacing etc once i swap in the map, and do a nice pan, an dmaybe
-        ## highlight one plane at a time with opacities, but proof of concept looks good!
-
-
+        #Now move to madrid view
+        self.play(self.frame.animate.reorient(-1, 30, 0, (-0.08, -0.02, -0.11), 1.56), run_time=4)
         self.wait()
 
 
@@ -728,7 +746,7 @@ class p48_49(InteractiveScene):
 
 
 
-        self.wait()
+        self.wait(20)
         self.embed()
 
 

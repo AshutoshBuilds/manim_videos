@@ -1225,13 +1225,64 @@ class p46b(InteractiveScene):
         self.add(overlays_2[1:])
         self.wait()
         
+        #Labels are a bit innacurate here, gotta decide if I want to fix or not worry about it
+        # Does seem like I should just nudge Madrid to the right a bit? Shouldn't be that bad...
+
         # Ok, now I need to run training from this zoomed in spot, and then go back to the beginning I think and 
         # go to 3d! 
         # I want to include step count here for sure. 
+        step_label=Text("Step=")  
+        step_label.set_color(CHILL_BROWN)
+        step_label.scale(0.04)
+        step_label.move_to([-0.58, -0.25, 0])
 
+        step_count=Text(str(i).zfill(3))
+        step_count.set_color(CHILL_BROWN)
+        step_count.scale(0.04)
+        step_count.next_to(step_label, RIGHT, buff=0.003)
+        self.play(FadeIn(step_label), FadeIn(step_count))
+
+        for i in range(1, len(xs)):
+            if i>0:
+                self.remove(line_1, arrow_tip_1)
+                self.remove(line_2, arrow_tip_2)
+                self.remove(line_3, arrow_tip_3)
+                self.remove(step_label,step_count)
+
+            nums=get_numbers_b(i, xs, weights, logits, yhats)
+        
+            def line_function_1(x): return weights[i,0] * x + weights[i,3]
+            line_1 = axes_1.get_graph(line_function_1, color='#00FFFF', x_range=[-12, 12])
+            arrow_tip_1 = get_arrow_tip(line_1, color='#00FFFF', scale=0.1)
+
+            def line_function_2(x): return weights[i,1] * x + weights[i,4]
+            line_2 = axes_2.get_graph(line_function_2, color=YELLOW, x_range=[-12, 12])
+            arrow_tip_2 = get_arrow_tip(line_2, color=YELLOW, scale=0.1)
+
+            def line_function_3(x): return weights[i,2] * x + weights[i,5]
+            line_3 = axes_3.get_graph(line_function_3, color=GREEN, x_range=[-12, 12])
+            arrow_tip_3 = get_arrow_tip(line_3, color=GREEN, scale=0.1)
+
+            heatmaps.add(heatmap_yhat2)
+            
+            step_label=Text("Step=")  
+            step_label.set_color(CHILL_BROWN)
+            step_label.scale(0.04)
+            step_label.move_to([-0.58, -0.25, 0])
+
+            step_count=Text(str(i).zfill(3))
+            step_count.set_color(CHILL_BROWN)
+            step_count.scale(0.04)
+            step_count.next_to(step_label, RIGHT, buff=0.003)
+
+            self.add(step_label,step_count) 
+            self.add(line_1, arrow_tip_1)
+            self.add(line_2, arrow_tip_2)
+            self.add(line_3, arrow_tip_3)
+            self.wait(0.1)
         
 
-        
+        self.wait()
 
 
 

@@ -12,7 +12,7 @@ GREEN='#00a14b'
 
 svg_path='/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backprop2/graphics/to_manim'
 data_path='/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backprop2/hackin'
-heatmap_path='/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backprop2/graphics/to_manim/may_27_2'
+heatmap_path='/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backprop2/graphics/to_manim/jun_6_1'
 
 # map_min_x=0.38
 # map_max_x=1.54
@@ -145,10 +145,15 @@ def get_numbers(i, xs, weights, logits, yhats):
 
 
 def latlong_to_canvas(lat, long, 
+                      label=None,
                       map_min_x=0.38, map_max_x=1.54,
                       map_min_y=-0.56, map_max_y=0.56,
                       min_long=-7.0, max_long=18.0,
-                      min_lat=36.0, max_lat=56.0):
+                      min_lat=36.0, max_lat=56.0,
+                      paris_adjust=[0,0,0],
+                      madrid_adjust=[0,0,0],
+                      berlin_adjust=[-0.03, 0.06, 0], 
+                      barcelona_adjust=[0,0,0]):
     """
     Convert latitude/longitude coordinates to canvas x,y coordinates.
     
@@ -172,7 +177,17 @@ def latlong_to_canvas(lat, long,
     # Map to canvas coordinates
     x = map_min_x + long_normalized * (map_max_x - map_min_x)
     y = map_min_y + lat_normalized * (map_max_y - map_min_y)
-    
+
+    if label is not None:
+        if label==0: 
+            x=x+madrid_adjust[0]; y=y+madrid_adjust[1]
+        if label==1: 
+            x=x+paris_adjust[0]; y=y+paris_adjust[1]
+        if label==2: 
+            x=x+berlin_adjust[0]; y=y+berlin_adjust[1]
+        if label==3: 
+            x=x+barcelona_adjust[0]; y=y+barcelona_adjust[1]
+
     return x, y
 
 
@@ -533,7 +548,12 @@ def create_matching_plane_and_surface(line, curve, y_extension=0.5, color='#00FF
 class p44(InteractiveScene):
     def construct(self):
 
-        data=np.load(data_path+'/cities_1d_2.npy')
+        min_long=-9.8
+        max_long=17.2
+        min_lat=36.15 
+        max_lat=54.7 
+
+        data=np.load(data_path+'/cities_1d_5.npy')
         xs=data[:,:2]
         ys=data[:,2]
         weights=data[:,3:9]
@@ -543,25 +563,90 @@ class p44(InteractiveScene):
 
 
         net_background=SVGMobject(svg_path+'/p44_background_1.svg')
+        
+        i=0
+        nums=get_numbers(i, xs, weights, logits, yhats)
+        grad_regions=get_grad_regions(i, ys, yhats, grads)
+        heatmaps=Group()
+        heatmap_yhat3=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_3.png')
+        heatmap_yhat3.scale([0.29, 0.28, 0.28])
+        heatmap_yhat3.move_to([0.96,0,0])
+        heatmap_yhat3.set_opacity(0.5)
+        heatmaps.add(heatmap_yhat3)
 
-        self.add(net_background)
-        # self.frame.reorient(0, 0, 0, (-0.07, -0.02, 0.0), 1.91)
-        self.frame.reorient(0, 0, 0, (-0.22, -0.03, 0.0), 1.74)
-    
-        self.frame.reorient(0, 0, 0, (-0.03, -0.02, 0.0), 1.88)
+        heatmap_yhat1=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_1.png')
+        heatmap_yhat1.scale([0.29, 0.28, 0.28])
+        heatmap_yhat1.move_to([0.96,0,0])
+        heatmap_yhat1.set_opacity(0.5)
+        heatmaps.add(heatmap_yhat1)
+
+        heatmap_yhat2=ImageMobject(heatmap_path +'/'+str(i)+'_yhat_2.png')
+        heatmap_yhat2.scale([0.29, 0.28, 0.28])
+        heatmap_yhat2.move_to([0.96,0,0])
+        heatmap_yhat2.set_opacity(0.5)
+        heatmaps.add(heatmap_yhat2)
+
+        canvas_x, canvas_y=latlong_to_canvas(xs[i][0], xs[i][1], label=ys[i], min_long=min_long, 
+                                             max_long=max_long, min_lat=min_lat, max_lat=max_lat, berlin_adjust=[-0.01, 0.02, 0])
+        training_point=Dot([canvas_x, canvas_y, 0], radius=0.012)
+        if ys[i]==0.0: training_point.set_color('#00FFFF')
+        elif ys[i]==1.0: training_point.set_color(YELLOW)
+        elif ys[i]==2.0: training_point.set_color(GREEN)   
+
+        self.frame.reorient(0, 0, 0, (-0.61, 0.01, 0.0), 1.50)
+        self.add(net_background, nums)
+        self.wait()
+
+
+        self.play(FadeIn(grad_regions))
+
+        # I want to have gradients grow in, but need to keep moving - I can add an arrow in editing pointing to a lart/small grad
+        # Hmm actualy I maybe just shrink and grow one and then add labels there?
+        self.wait()
+        self.play(grad_regions[0].animate.scale([1,0.1,1]), run_time=1.5)
+        self.wait()
+        self.play(grad_regions[0].animate.scale([1,10,1]), run_time=1.5)
+        self.wait()
+
+        # for g in grad_regions: g.scale([1, 0.02, 1])
+        # self.add(grad_regions)
+        # self.play(*[g.animate.scale([1,50,1]) for g in grad_regions], run_time=2)
+        # self.wait()        
+
         europe_map=ImageMobject(svg_path +'/map_cropped_one.png')
         europe_map.scale(0.28)
         europe_map.move_to([0.96,0,0])
-        self.add(europe_map)
 
+        self.play(FadeIn(europe_map), self.frame.animate.reorient(0, 0, 0, (-0.04, 0.01, 0.0), 1.94), run_time=2)
 
-        for i in range(len(xs)):
+        self.wait()
+        self.add(training_point)
+        self.wait()
+
+        box=SurroundingRectangle(training_point, color=YELLOW, buff=0.025)
+        self.play(ShowCreation(box))
+        self.wait()
+        self.play(FadeOut(box))
+
+        self.wait()
+        self.play(FadeIn(heatmap_yhat1))
+
+        self.wait()
+        self.play(FadeIn(heatmap_yhat2))
+
+        self.wait()
+        self.play(FadeIn(heatmap_yhat3))
+        self.wait() 
+
+        step_label=None
+        for i in range(1, len(xs)):
             if i>0:
                 self.remove(nums)
                 self.remove(grad_regions)
                 self.remove(heatmaps)
                 self.remove(training_point) 
-                self.remove(step_label,step_count)  
+                if step_label is not None: 
+                    self.remove(step_label,step_count)  
                 # self.wait(0.1)       
 
             nums=get_numbers(i, xs, weights, logits, yhats)
@@ -601,7 +686,9 @@ class p44(InteractiveScene):
             # top_right=Dot([1.54, 0.56, 0], radius=0.007)
             # self.add(top_right)
 
-            canvas_x, canvas_y=latlong_to_canvas(xs[i][0], xs[i][1])
+            canvas_x, canvas_y=latlong_to_canvas(xs[i][0], xs[i][1], label=ys[i], min_long=min_long, 
+                                             max_long=max_long, min_lat=min_lat, max_lat=max_lat, berlin_adjust=[-0.01, 0.02, 0], 
+                                             paris_adjust=[-0.003, 0.00, 0], madrid_adjust=[-0.003, 0.00, 0])
             training_point=Dot([canvas_x, canvas_y, 0], radius=0.012)
             if ys[i]==0.0: training_point.set_color('#00FFFF')
             elif ys[i]==1.0: training_point.set_color(YELLOW)

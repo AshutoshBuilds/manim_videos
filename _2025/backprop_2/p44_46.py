@@ -617,7 +617,12 @@ class p44(InteractiveScene):
         europe_map.scale(0.28)
         europe_map.move_to([0.96,0,0])
 
-        self.play(FadeIn(europe_map), self.frame.animate.reorient(0, 0, 0, (-0.04, 0.01, 0.0), 1.94), run_time=2)
+        map_tick_overlays=SVGMobject(svg_path+'/map_tick_overlays_1.svg')[1:]
+        map_tick_overlays.scale([0.965, 0.96, 0.965])
+        map_tick_overlays.shift([-0.077, 0.0185, 0])
+        self.wait()
+
+        self.play(FadeIn(europe_map), FadeIn(map_tick_overlays), self.frame.animate.reorient(0, 0, 0, (-0.04, 0.01, 0.0), 1.94), run_time=2)
 
         self.wait()
         self.add(training_point)
@@ -628,15 +633,20 @@ class p44(InteractiveScene):
         self.wait()
         self.play(FadeOut(box))
 
-        self.wait()
-        self.play(FadeIn(heatmap_yhat1))
+        self.add(heatmaps)
+        heatmaps.set_opacity(0.0)
+        self.remove(map_tick_overlays); self.add(map_tick_overlays)
 
         self.wait()
-        self.play(FadeIn(heatmap_yhat2))
+        self.play(heatmap_yhat1.animate.set_opacity(0.5))
 
         self.wait()
-        self.play(FadeIn(heatmap_yhat3))
+        self.play(heatmap_yhat2.animate.set_opacity(0.5))
+
+        self.wait()
+        self.play(heatmap_yhat3.animate.set_opacity(0.5))
         self.wait() 
+        
 
         step_label=Text("Step=")  
         step_label.set_color(CHILL_BROWN)
@@ -1227,6 +1237,7 @@ class p46b(InteractiveScene):
         
         #Labels are a bit innacurate here, gotta decide if I want to fix or not worry about it
         # Does seem like I should just nudge Madrid to the right a bit? Shouldn't be that bad...
+        # I could actually maybe even nudge it in manim...
 
         # Ok, now I need to run training from this zoomed in spot, and then go back to the beginning I think and 
         # go to 3d! 

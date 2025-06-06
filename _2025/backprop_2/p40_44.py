@@ -318,13 +318,22 @@ class p40_44(InteractiveScene):
         #Jump to end and then reconstruct here. Actually let me sort out my fade outs real quick first. 
         # Ok so i probably want to make vectors including brackets in manim, and bring in other stuff from illustraotr
         p43_blocks=VGroup()
-        for p in sorted(glob.glob(svg_path+'/p43/*.svg')):
+        for p in sorted(glob.glob(svg_path+'/p_43/*.svg')):
             p43_blocks.add(SVGMobject(p)[1:])    
-        p43_blocks.move_to([-0.01, 0.13, 0])
+        p43_blocks.move_to([-0.3,-0.25,0])
+        p43_blocks.scale(0.7)
 
+        params_vec = Tex(r"\begin{bmatrix} m_1 \\ m_2 \\ m_3 \\ b_1 \\ b_2 \\ b_3 \end{bmatrix}")
+        grads_vec = Tex(r"\begin{bmatrix} \partial L / \partial m_1 \\ \partial L / \partial m_2 \\ \partial L / \partial m_3 \\ \partial L / \partial b_1 \\ \partial L / \partial b_2 \\ \partial L / \partial b_3 \\ \end{bmatrix}")
 
+        
+        params_vec.scale(0.17)
+        params_vec.move_to([-0.88, 0, 0])
+        params_vec_2=params_vec.copy()
+        params_vec_2.move_to([0.32, 0, 0])
 
-
+        grads_vec.scale(0.17)
+        grads_vec.move_to([-0.24, 0, 0])
 
         self.play(FadeOut(net_background),
                   FadeOut(nums[0]),
@@ -342,25 +351,49 @@ class p40_44(InteractiveScene):
                   FadeOut(grad_1_val),
                   FadeOut(grad_2_val),
             )
-
+        self.play(ReplacementTransform(m1_label, params_vec[8:10]),
+                  ReplacementTransform(m2_label, params_vec[10:12]),
+                  ReplacementTransform(m3_label, params_vec[12:14]),
+                  ReplacementTransform(b1_label, params_vec[14:16]),
+                  ReplacementTransform(b2_label, params_vec[16:18]),
+                  ReplacementTransform(b3_label, params_vec[18:20]),
+                  self.frame.animate.reorient(0, 0, 0, (0.11, -0.01, 0.0), 1.61),
+                  run_time=2
+            )
+        self.add(params_vec)
+        self.add(p43_blocks[0])
         self.wait()
 
-
-        #I think rearrange param vector first, then fade out all the grad math. 
-
-
-
-
         self.play(FadeOut(grad_1[6:]),
-                  FadeOut(grad_2[6:]),
-                  FadeOut(grad_3[6:]),
-                  FadeOut(grad_4[6:]),
-                  FadeOut(grad_5[6:]),
-                  FadeOut(grad_6[6:]))
+              FadeOut(grad_2[6:]),
+              FadeOut(grad_3[6:]),
+              FadeOut(grad_4[6:]),
+              FadeOut(grad_5[6:]),
+              FadeOut(grad_6[6:]),
+              ReplacementTransform(grad_1[:6], grads_vec[8:14]),
+              ReplacementTransform(grad_2[:6], grads_vec[14:20]),
+              ReplacementTransform(grad_3[:6], grads_vec[20:26]),
+              ReplacementTransform(grad_4[:6], grads_vec[26:32]),
+              ReplacementTransform(grad_5[:6], grads_vec[32:38]),
+              ReplacementTransform(grad_6[:6], grads_vec[38:44]),
+              self.frame.animate.reorient(0, 0, 0, (-0.24, -0.08, 0.0), 1.61),
+              run_time=2
+              ) 
+
+        self.play(FadeIn(grads_vec[:8]),
+                 FadeIn(grads_vec[44:]), 
+                 FadeIn(p43_blocks[1]), 
+                 FadeIn(p43_blocks[3]),
+                 FadeIn(p43_blocks[4]),
+                 FadeIn(params_vec_2)
+            )  
+        self.wait()
+        self.play(FadeIn(p43_blocks[2]))
 
 
 
-        self.add(p42_blocks)
+
+        self.wait()
         
 
 

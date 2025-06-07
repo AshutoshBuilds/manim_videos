@@ -488,7 +488,7 @@ class P51(InteractiveScene):
             start_x=-4.0
             # for layer_count, layer_num in enumerate([0, 1, 2, 3, 12, 13, 14, 15]):
             # for layer_count, layer_num in enumerate([0, 1, 2, 3, 4, 5, 10, 11, 12, 13, 14, 15]):
-            for layer_count, layer_num in enumerate([0, 1, 2, 3, 12, 13, 14, 15]):
+            for layer_count, layer_num in enumerate([0, 1, 2, 11, 12, 13, 14, 15]):
 
                 #Kinda clunky interface but meh
                 neuron_fills=[snapshot['blocks.'+str(layer_num)+'.hook_resid_mid'],
@@ -673,15 +673,16 @@ class P51(InteractiveScene):
                     wu_connections_grad.add(line)
 
             all_backward_passes.append(VGroup(we_connections_grad, *all_grads, wu_connections_grad))
-            all_forward_passes.append(VGroup(input_layer[:-1], *all_activations, output_layer[:-1])) #Leaving out input output text for now. 
-            # all_forward_passes.append(VGroup(input_layer, *all_activations, output_layer))
+            # all_forward_passes.append(VGroup(input_layer[:-1], *all_activations, output_layer[:-1])) #Leaving out input output text for now. 
+            all_forward_passes.append(VGroup(input_layer, *all_activations, output_layer))
 
         ## -- end big ole loop
         self.wait()
 
         # self.frame.reorient(0, 0, 0, (2.04, -0.57, 0.0), 8.63)
         # self.frame.reorient(0, 0, 0, (1.99, -0.04, 0.0), 8.32)
-        self.frame.reorient(0, 0, 0, (2.06, -0.06, 0.0), 9.36)
+        # self.frame.reorient(0, 0, 0, (2.06, -0.06, 0.0), 9.36)
+        self.frame.reorient(0, 0, 0, (2.05, -0.07, 0.0), 9.16)
         self.add(random_background_stuff)
         self.add(we_connections, all_weights, wu_connections)
 
@@ -702,8 +703,49 @@ class P51(InteractiveScene):
 
         self.wait()
 
-        all_forward_passes[0].set_opacity(1.0)
+        #Show some forward prop:
+        for i in range(9):
+            all_forward_passes[0][i].set_opacity(1.0)
+            self.wait(0.1)
+        self.wait()
 
+        #Fade out half of model and go 3d, then residual stream animates out!
+        # self.remove(random_background_stuff[8:])
+        # self.remove(wu_connections)
+        # self.remove(all_weights[11:])
+        # self.remove(all_activations_empty[16:])
+        # self.remove(output_layer_empty)
+        # self.frame.reorient(43, 52, 0, (2.85, -0.15, -0.84), 9.16)
+
+        self.play(FadeOut(random_background_stuff[8:]), FadeOut(wu_connections), FadeOut(all_weights[11:]), 
+                  FadeOut(all_activations_empty[16:]), FadeOut(all_activations_empty[16:]), FadeOut(output_layer_empty), 
+                  self.frame.animate.reorient(43, 52, 0, (2.85, -0.15, -0.84), 9.16), run_time=5)
+
+        matrix_entries = [
+            ["0.09", "-0.25", "0.43", "\\ldots", "-0.17", "0.27", "-0.10"],
+            ["-0.18", "0.15", "-0.42", "\\ldots", "0.33", "-0.07", "0.18"],
+            ["0.28", "-0.04", "0.19", "\\ldots", "-0.31", "0.06", "-0.15"],
+            ["-0.12", "0.37", "-0.29", "\\ldots", "0.14", "-0.23", "0.41"],
+            ["0.35", "-0.08", "0.52", "\\ldots", "-0.19", "0.11", "-0.36"]
+        ]
+
+        residual_stream = Matrix(matrix_entries)
+
+
+        residual_stream.scale(0.5)
+        residual_stream.rotate(90*DEGREES, [1,0,0])
+        residual_stream.rotate(90*DEGREES, [0,0,1])
+        residual_stream.move_to([1.8, 0.2, -1.4])
+
+        # len( all_forward_passes[0][8][2]) 
+        self.wait()
+        self.play(ReplacementTransform(all_forward_passes[0][8][2].copy(), residual_stream[6::-1]),
+                  ReplacementTransform(all_forward_passes[0][8][2].copy(), residual_stream[13:6:-1]),
+                  ReplacementTransform(all_forward_passes[0][8][2].copy(), residual_stream[20:13:-1]),
+                  ReplacementTransform(all_forward_passes[0][8][2].copy(), residual_stream[27:20:-1]),
+                  ReplacementTransform(all_forward_passes[0][8][2], residual_stream[34:27:-1])
+                  )
+        self.add(residual_stream)
         self.wait()
 
 
@@ -720,7 +762,7 @@ class P51(InteractiveScene):
 
 
 
-
+        self.frame.reorient(44, 63, 0, (4.09, -0.37, -1.87), 8.85)
 
 
 
@@ -729,3 +771,4 @@ class P51(InteractiveScene):
 
         self.wait(20)
         self.embed()
+

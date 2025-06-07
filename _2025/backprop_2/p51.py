@@ -822,12 +822,37 @@ class P51(InteractiveScene):
             ["0.35", "-0.08", "0.52", "\\ldots", "-0.19", "0.11", "-0.36"]
         ]
         results_matrix = Matrix(matrix_entries_2)
-        results_matrix.rotate(52 * DEGREES, axis=OUT)    # theta rotation
+
+        #Ok last little thing I want here is little colored city labels next to each row. 
+        ##ok i was thinking do labels in manim, but I think Illustrator is the way to go! 3d sucks for this!
+        #Ok illustrator is going to be hard actually due to camera moves. What if i add the labels before moving this puppy and move 
+        #them as a group??
+        paris_label=MarkupText('PARIS', font_size=36, font='myriad-pro', weight='semi-bold').set_color(YELLOW)
+        paris_label_2=paris_label.copy()
+        berlin_label=MarkupText('BERLIN', font_size=36, font='myriad-pro', weight='semi-bold').set_color(GREEN)
+        berlin_label_2=berlin_label.copy()
+        madrid_label=MarkupText('MADRID', font_size=36, font='myriad-pro', weight='semi-bold').set_color("#00FFFF")
+        madrid_label_2=madrid_label.copy()
+        paris_label.move_to([-7.5, 2.1, 0])
+        paris_label_2.next_to(paris_label, DOWN, buff=0.57)
+        berlin_label.next_to(paris_label_2, DOWN, buff=0.57)
+        berlin_label_2.next_to(berlin_label, DOWN, buff=0.57)
+        madrid_label.next_to(berlin_label_2, DOWN, buff=0.57)
+        madrid_label_2.next_to(madrid_label, DOWN, buff=0.57)
+        results_and_labels=VGroup(results_matrix, paris_label, paris_label_2, berlin_label, berlin_label_2, madrid_label, madrid_label_2)
+
+        # self.add(results_matrix)
+        # self.frame.reorient(0, 0, 0, (-0.15, -0.17, 0.0), 10.08)
+        # self.add(results_and_labels)
+        # self.remove(results_and_labels)
+
+
+        results_and_labels.rotate(52 * DEGREES, axis=OUT)    # theta rotation
         local_right = np.array([np.cos(52 * DEGREES), np.sin(52 * DEGREES), 0])
-        results_matrix.rotate(57 * DEGREES, axis=local_right)
-        results_matrix.scale(0.3)
-        results_matrix.move_to([8.9, -3, 0])
-        # self.add(results_matrix) #ok cool I can build this up using replacement transform, and add labels. 
+        results_and_labels.rotate(57 * DEGREES, axis=local_right)
+        results_and_labels.scale(0.3)
+        results_and_labels.move_to([8.9, -3, 0])
+        # self.add(results_and_labels) #ok cool I can build this up using replacement transform, and add labels. 
 
         # self.remove(results_matrix)
         # Alright now I need 6 wikitext examples.
@@ -905,25 +930,25 @@ class P51(InteractiveScene):
             all_forward_passes[0][8][2].set_opacity(0.0) #Kinda random cleanup i have to do I guess. 
 
             self.play(ReplacementTransform(residual_stream_matrics[(i+1)%len(residual_stream_matrics)][28:35].copy(), results_matrix[i*7:(i+1)*7]))
+            self.add(results_and_labels[i+1])
             self.wait()
             for j in range(1, 9):
                 all_forward_passes[i%len(all_forward_passes)][j].set_opacity(0.0)
 
         self.add(results_matrix); self.remove(t)
 
+        #Ok so let's do a nice side by side with this matrix and map coordinate -> maybe move back to plane/2d deal?
 
-        # #Ok last little thing I want here is little colored city labels next to each row. 
-        # ok i was thinking do labels in manim, but I think Illustrator is the way to go! 3d sucks for this!
-        # paris_label=MarkupText('PARIS', font_size=143, font='myriad-pro', weight='semi-bold').set_color(YELLOW)
-        # paris_label.rotate(52 * DEGREES, axis=OUT)    # theta rotation
-        # local_right = np.array([np.cos(52 * DEGREES), np.sin(52 * DEGREES), 0])
-        # paris_label.rotate(57 * DEGREES, axis=local_right)
-        # paris_label.move_to([7.5, -5, 0.95])
-        # self.add(paris_label)
-        # self.remove(paris_label)
+        self.play(FadeOut(box), FadeOut(residual_stream_matrics[0]), FadeOut(random_background_stuff[:8]), 
+                  FadeOut(we_connections), FadeOut(all_weights[:11]), FadeOut(input_layer_empty), FadeOut(all_activations_empty[:16]), 
+                  self.frame.animate.reorient(52, 57, 0, (5.8, 1.76, -3.51), 10.46))
+        self.wait()
+        #Ok, let's do the comparison to map coordinates in illustrator, I think that will be quicker/easier. 
 
-
-
+        # Ok ok ok so final thing here is going to be mapping each row to a scatter point on the cool plot!!
+        # Oh yeah and then adding some text to that plot, right. That might be a pretty reasonable thing to do in illustrator
+        # Ok, so next i need to finalize the umap plot in matplotlib, export to svg, and import into manim! Option to clean it up 
+        # in illustrator if i need to. 
 
 
 

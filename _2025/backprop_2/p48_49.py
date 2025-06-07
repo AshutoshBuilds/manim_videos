@@ -623,10 +623,10 @@ class p48_49(InteractiveScene):
                 if heatmaps is not None:
                     self.remove(heatmaps)
                     # in terminal: ulimit -n 8192
-                    heatmap_yhat1.close()
-                    heatmap_yhat2.close()
-                    heatmap_yhat3.close()
-                    heatmap_yhat4.close()
+                    heatmap_yhat1.image.close()
+                    heatmap_yhat2.image.close()
+                    heatmap_yhat3.image.close()
+                    heatmap_yhat4.image.close()
                     del heatmap_yhat1
                     del heatmap_yhat2
                     del heatmap_yhat3

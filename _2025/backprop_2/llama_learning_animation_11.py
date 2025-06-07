@@ -279,7 +279,7 @@ def get_attention_layer(attn_patterns):
             if i>num_attention_pattern_slots//2: offset=0.15
             else: offset=-0.15 
             # matrix = np.random.rand(6, 6)
-            attn_pattern = AttentionPattern(matrix=attn_patterns[attn_pattern_count], square_size=0.07, stroke_width=0.5)
+            attn_pattern = AttentionPattern(matrix=attn_patterns[attn_pattern_count], square_size=0.08, stroke_width=0.5) #square_size=0.07
             attn_pattern.move_to([0, num_attention_pattern_slots*attention_pattern_spacing/2+offset - attention_pattern_spacing*(i+0.5), 0])
             attention_patterns.add(attn_pattern)
 
@@ -453,7 +453,7 @@ def get_output_layer(snapshot, empty=False):
     return output_layer
 
 
-class LlamaLearningElevenB(InteractiveScene):
+class LlamaLearningElevenC(InteractiveScene):
     def construct(self):
         '''
         Getting close! Next hurdle is to bring in different examples. 
@@ -474,7 +474,7 @@ class LlamaLearningElevenB(InteractiveScene):
 
         # random_seeds=[25, 26, 27, 28, 29, 30, 31, 32, 33, 34] #For ordering input neurons
         random_seeds=[25, 25, 25, 25, 25, 25, 25, 25, 25, 25]
-        for snapshot_count, snapshot_index in enumerate([0, 1, 2, 3, 4, 5, 6]):
+        for snapshot_count, snapshot_index in enumerate([0]): #, 1, 2, 3, 4, 5, 6]):
             snapshot=snapshots[snapshot_index]
 
             all_weights=VGroup()
@@ -489,7 +489,9 @@ class LlamaLearningElevenB(InteractiveScene):
             start_x=-4.0
             # for layer_count, layer_num in enumerate([0, 1, 2, 3, 12, 13, 14, 15]):
             # for layer_count, layer_num in enumerate([0, 1, 2, 3, 4, 5, 10, 11, 12, 13, 14, 15]):
-            for layer_count, layer_num in enumerate([0, 1, 2, 3, 12, 13, 14, 15]):
+            # for layer_count, layer_num in enumerate([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]):
+            # for layer_count, layer_num in enumerate([0, 1, 2, 3, 4, 5, 6, 7, 14, 15]):
+            for layer_count, layer_num in enumerate([0, 1, 6, 7, 8, 9, 14, 15]):
 
                 #Kinda clunky interface but meh
                 neuron_fills=[snapshot['blocks.'+str(layer_num)+'.hook_resid_mid'],
@@ -508,8 +510,8 @@ class LlamaLearningElevenB(InteractiveScene):
                 attn_patterns=[]
                 wos=[]; wqs=[]
                 wosg=[]; wqsg=[]
-                for i in range(0, 30, 3): #Just take every thrid pattern for now. 
-                    attn_patterns.append(all_attn_patterns[0][i][1:,1:]) #Ignore BOS token
+                for i in range(1, 31, 3): #Just take every thrid pattern for now. ### for i in range(0, 30, 3):
+                    attn_patterns.append(all_attn_patterns[0][i][1:-1,1:-1]) #Ignore BOS token and final "answer" token
                     wos.append(wO_full[i, 0])
                     wqs.append(wq_full[i, :, 0])
                     wosg.append(wO_full_grad[i, 0])
@@ -534,7 +536,7 @@ class LlamaLearningElevenB(InteractiveScene):
                 all_activations.add(mlp[2:-1]) #Try as a single block, might actually animate better?
                 random_background_stuff.add(mlp[-1])
 
-                attn_empty=get_attention_layer([np.zeros_like(all_attn_patterns[0][0][1:,1:]) for i in range(len(attn_patterns))])
+                attn_empty=get_attention_layer([np.zeros_like(all_attn_patterns[0][0][1:-1,1:-1]) for i in range(len(attn_patterns))])
                 attn_empty.move_to([start_x+layer_count*1.6, 0, 0]) 
                 all_activations_empty.add(attn_empty[0])
 
@@ -583,7 +585,7 @@ class LlamaLearningElevenB(InteractiveScene):
             # Ok right and I need to bring two matrices together here -> hmm. 
             
             all_embeddings=[]; all_embeddings_grad=[]; prompt_token_embeddings=[]; prompt_token_embeddings_grad=[]
-            for i in range(0, 30, 3):
+            for i in range(1, 31, 3):
                 all_embeddings.append(snapshot['embed.W_E'][0, :num_input_neurons, i])
                 all_embeddings_grad.append(snapshot['embed.W_E.grad'][0, :num_input_neurons, i])
                 prompt_token_embeddings.append(snapshot['prompt.embed.W_E'][:, 0, i])

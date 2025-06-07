@@ -730,12 +730,13 @@ class P51(InteractiveScene):
         ]
 
         residual_stream = Matrix(matrix_entries)
+        box=SurroundingRectangle(residual_stream[28:35], buff=0.25).set_color(YELLOW)
+        matrix_and_box=VGroup(residual_stream, box)
 
-
-        residual_stream.scale(0.5)
-        residual_stream.rotate(90*DEGREES, [1,0,0])
-        residual_stream.rotate(90*DEGREES, [0,0,1])
-        residual_stream.move_to([1.8, 0.2, -1.4])
+        matrix_and_box.scale(0.5)
+        matrix_and_box.rotate(90*DEGREES, [1,0,0])
+        matrix_and_box.rotate(90*DEGREES, [0,0,1])
+        matrix_and_box.move_to([1.8, 0.2, -1.4])
 
         # len( all_forward_passes[0][8][2]) 
         self.wait()
@@ -743,12 +744,43 @@ class P51(InteractiveScene):
                   ReplacementTransform(all_forward_passes[0][8][2].copy(), residual_stream[13:6:-1]),
                   ReplacementTransform(all_forward_passes[0][8][2].copy(), residual_stream[20:13:-1]),
                   ReplacementTransform(all_forward_passes[0][8][2].copy(), residual_stream[27:20:-1]),
-                  ReplacementTransform(all_forward_passes[0][8][2], residual_stream[34:27:-1])
+                  ReplacementTransform(all_forward_passes[0][8][2], residual_stream[35:28:-1])
                   )
         self.add(residual_stream)
         self.wait()
 
+        #Now can I have a box around the final row??
+        self.play(ShowCreation(box))
+        self.wait()
 
+
+        # Ok now setup for big data passing through animation - not sure how much of this I want to do in manim vs not. 
+        # I think first thing will be to zoom out to make room for everything, fade out input text. 
+        # I think I can "preload" other patterns basically that I can flip through here. 
+        self.play(FadeOut(box), FadeOut(forward_pass[0]), 
+                  self.frame.animate.reorient(52, 57, 0, (2.16, -1.28, -1.97), 11.31), run_time=4)
+        self.wait()
+
+
+        matrix_entries_2 = [
+            ["0.23", "-0.41", "0.67", "\\ldots", "-0.32", "0.58", "-0.14"],
+            ["-0.29", "0.35", "-0.12", "\\ldots", "0.46", "-0.21", "0.73"],
+            ["0.51", "-0.16", "0.38", "\\ldots", "-0.64", "0.19", "-0.42"],
+            ["-0.07", "0.62", "-0.33", "\\ldots", "0.25", "-0.48", "0.31"],
+            ["0.44", "-0.59", "0.17", "\\ldots", "-0.26", "0.39", "-0.65"],
+            ["-0.53", "0.28", "-0.71", "\\ldots", "0.15", "-0.37", "0.49"]
+        ]
+
+        results_matrix = Matrix(matrix_entries_2)
+        results_matrix.rotate(52 * DEGREES, axis=OUT)    # theta rotation
+        local_right = np.array([np.cos(52 * DEGREES), np.sin(52 * DEGREES), 0])
+        results_matrix.rotate(57 * DEGREES, axis=local_right)
+        results_matrix.scale(0.3)
+        results_matrix.move_to([8.9, -3, 0])
+        self.add(results_matrix)
+
+
+        self.remove(results_matrix)
 
 
 

@@ -850,6 +850,17 @@ class LlamaLearningElevenC(InteractiveScene):
 
         # Play the animation
         self.play(time_tracker.animate.set_value(total_time), run_time=total_time)
+        self.wait()
+
+        #Ok now zoom in on that one pattern!
+        self.play(self.frame.animate.reorient(0, 0, 0, (0.8, -1.89, 0.0), 1.00), run_time=7)
+        self.wait()
+
+        self.play(self.frame.animate.reorient(0, 0, 0, (2.06, -0.06, 0.0), 9.36), run_time=7)
+        self.wait()
+
+
+
         
         # # Clean up updaters
         # for obj, updater in all_updaters:

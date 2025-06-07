@@ -537,7 +537,10 @@ class p48_49(InteractiveScene):
         max_long=16.5
         min_lat=38.6
         max_lat=53.5  
-        # i=2
+
+        ## - test/algigment
+
+        # i=4
         # canvas_x, canvas_y=latlong_to_canvas(xs[i][0], 
         #                                     xs[i][1],
         #                                     label=ys[i], 
@@ -545,6 +548,7 @@ class p48_49(InteractiveScene):
         #                                     max_long=max_long, 
         #                                     min_lat=min_lat, 
         #                                     max_lat=max_lat, 
+        #                                     paris_adjust=[0,-0.015, 0],
         #                                     berlin_adjust=[0,0,0])
         # training_point=Dot([canvas_x, 0, canvas_y], radius=0.012)
         # if ys[i]==0.0: training_point.set_color('#00FFFF')
@@ -555,6 +559,8 @@ class p48_49(InteractiveScene):
 
         # self.add(training_point)
         # self.remove(training_point)
+
+        ## -- end test / alignment
 
         map_tick_overlays_2=SVGMobject(svg_path+'/map_tick_overlays_2.svg')[1:]
         map_tick_overlays_2.rotate(90*DEGREES, [1, 0, 0])

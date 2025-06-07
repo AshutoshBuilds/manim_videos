@@ -853,24 +853,54 @@ class P51(InteractiveScene):
             t1.move_to([5.0, -7.5, 0], aligned_edge=LEFT)
             texts.add(t1)
 
-        self.wait()
+        
+        # Debergsing
+        # i=0
+        # self.remove(residual_stream_matrics[i])
+        # self.add(residual_stream_matrics[(i+1)%len(residual_stream_matrics)])
+        # self.play(ReplacementTransform(residual_stream_matrics[(i+1)%len(residual_stream_matrics)][28:35].copy(), results_matrix[i*7:(i+1)*7]))
+        # i=0
+        # t=texts[i]
+        # if i>0: self.remove(texts[i-1])
+        # self.add(t)
+        # self.wait()
+        # self.play(ReplacementTransform(t.copy(), forward_pass[0][0][::-1])) 
+        # for j in range(1, 9):
+        #     all_forward_passes[i%len(all_forward_passes)][j].set_opacity(1.0)
+        #     self.wait(0.1)
+        # self.remove(residual_stream_matrics[i]); self.add(residual_stream_matrics[(i+1)%len(residual_stream_matrics)])
 
+        # self.remove(residual_stream_matrics[i+1]);
+        # self.add(residual_stream_matrics[i])
+        # self.remove(residual_stream_matrics[i])
+        # all_forward_passes[0][8][2].set_opacity(0.0)
+
+        # self.play(ReplacementTransform(residual_stream_matrics[(i+1)%len(residual_stream_matrics)][28:35].copy(), results_matrix[i*7:(i+1)*7]))
+        # self.wait()
+        # for j in range(1, 9):
+        #     all_forward_passes[i%len(all_forward_passes)][j].set_opacity(0.0)
+
+        self.wait()
         for i, t in enumerate(texts):
             if i>0: self.remove(texts[i-1])
             self.add(t)
             self.wait()
             self.play(ReplacementTransform(t.copy(), forward_pass[0][0][::-1])) 
-            for j in range(1, 9):
+            for j in range(1, 8):
                 all_forward_passes[i%len(all_forward_passes)][j].set_opacity(1.0)
                 self.wait(0.1)
-            #I think just a quick flip to a new matrix?
+            all_forward_passes[i%len(all_forward_passes)][8].set_opacity(1.0) #Bring last step out here so it happens w/ matrix change
+
             self.remove(residual_stream_matrics[i]); self.add(residual_stream_matrics[(i+1)%len(residual_stream_matrics)])
+            all_forward_passes[0][8][2].set_opacity(0.0) #Kinda random cleanup i have to do I guess. 
+
             self.play(ReplacementTransform(residual_stream_matrics[(i+1)%len(residual_stream_matrics)][28:35].copy(), results_matrix[i*7:(i+1)*7]))
             self.wait()
             for j in range(1, 9):
-                all_forward_passes[i%len(all_forward_passes)][j].set_opacity(1.0)
+                all_forward_passes[i%len(all_forward_passes)][j].set_opacity(0.0)
 
-        self.add(results_matrix)
+        self.add(results_matrix); self.remove(t)
+
 
         # #Ok last little thing I want here is little colored city labels next to each row. 
         # ok i was thinking do labels in manim, but I think Illustrator is the way to go! 3d sucks for this!

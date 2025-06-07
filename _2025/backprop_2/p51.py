@@ -842,7 +842,7 @@ class P51(InteractiveScene):
 
         #Madrid
         t5_string="... Agassi's US Open finish, along \n with his Masters Series victories in \n Key Biscayne, Rome and ..."
-        t6_string="... Within a few days after Canovas \n del Castillo took power as Premier, \n the new king, proclaimed on 29 December \n 1874, arrived at ..."
+        t6_string="... Within a few days after Canovas \n del Castillo took power as Premier, \n the new king, proclaimed on 29 \n December 1874, arrived at ..."
 
         texts=VGroup()
         for t in [t1_string, t2_string, t3_string, t4_string, t5_string, t6_string]:
@@ -861,8 +861,8 @@ class P51(InteractiveScene):
         texts[5].move_to([5.0, -7.5, 0.6], aligned_edge=LEFT)
 
         
-        self.add(texts[3])
-        self.remove(texts[3])
+        self.add(texts[5])
+        self.remove(texts[5])
 
         # Debergsing
         # i=0

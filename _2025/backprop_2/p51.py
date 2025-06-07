@@ -473,7 +473,7 @@ class P51(InteractiveScene):
         all_forward_passes=[]
 
         random_seeds=[25, 26, 27, 28, 29, 30, 31, 32, 33, 34] #For ordering input neurons
-        for snapshot_count, snapshot_index in enumerate([0]):
+        for snapshot_count, snapshot_index in enumerate([0, 1, 2]):
             snapshot=snapshots[snapshot_index]
 
             all_weights=VGroup()
@@ -721,16 +721,51 @@ class P51(InteractiveScene):
                   FadeOut(all_activations_empty[16:]), FadeOut(all_activations_empty[16:]), FadeOut(output_layer_empty), 
                   self.frame.animate.reorient(43, 52, 0, (2.85, -0.15, -0.84), 9.16), run_time=5)
 
-        matrix_entries = [
+        residual_stream_matrix_entries_1 = [
             ["0.09", "-0.25", "0.43", "\\ldots", "-0.17", "0.27", "-0.10"],
             ["-0.18", "0.15", "-0.42", "\\ldots", "0.33", "-0.07", "0.18"],
             ["0.28", "-0.04", "0.19", "\\ldots", "-0.31", "0.06", "-0.15"],
             ["-0.12", "0.37", "-0.29", "\\ldots", "0.14", "-0.23", "0.41"],
             ["0.35", "-0.08", "0.52", "\\ldots", "-0.19", "0.11", "-0.36"]
         ]
+        residual_stream_matrix_entries_2 = [
+            ["-0.18", "0.72", "-0.35", "\\ldots", "0.41", "-0.56", "0.29"],
+            ["0.63", "-0.24", "0.47", "\\ldots", "-0.38", "0.15", "-0.69"],
+            ["-0.52", "0.31", "-0.74", "\\ldots", "0.26", "-0.43", "0.68"],
+            ["0.19", "-0.61", "0.36", "\\ldots", "-0.57", "0.42", "-0.28"],
+            ["-0.45", "0.58", "-0.21", "\\ldots", "0.34", "-0.67", "0.53"]
+        ]
+        residual_stream_matrix_entries_3 = [
+            ["0.84", "-0.13", "0.56", "\\ldots", "-0.39", "0.27", "-0.61"],
+            ["-0.76", "0.48", "-0.32", "\\ldots", "0.55", "-0.18", "0.43"],
+            ["0.29", "-0.64", "0.77", "\\ldots", "-0.41", "0.16", "-0.52"],
+            ["-0.35", "0.59", "-0.24", "\\ldots", "0.68", "-0.46", "0.33"],
+            ["0.72", "-0.28", "0.45", "\\ldots", "-0.57", "0.38", "-0.66"]
+        ]
+        residual_stream_matrix_entries_4 = [
+            ["-0.47", "0.26", "-0.68", "\\ldots", "0.35", "-0.54", "0.41"],
+            ["0.59", "-0.33", "0.18", "\\ldots", "-0.62", "0.29", "-0.45"],
+            ["-0.71", "0.44", "-0.27", "\\ldots", "0.48", "-0.36", "0.63"],
+            ["0.23", "-0.56", "0.74", "\\ldots", "-0.31", "0.67", "-0.52"],
+            ["-0.38", "0.65", "-0.19", "\\ldots", "0.42", "-0.58", "0.34"]
+        ]
+        residual_stream_matrix_entries_5 = [
+            ["0.32", "-0.67", "0.44", "\\ldots", "-0.25", "0.59", "-0.37"],
+            ["-0.48", "0.23", "-0.71", "\\ldots", "0.36", "-0.54", "0.68"],
+            ["0.61", "-0.29", "0.15", "\\ldots", "-0.46", "0.73", "-0.34"],
+            ["-0.57", "0.41", "-0.63", "\\ldots", "0.28", "-0.49", "0.52"],
+            ["0.74", "-0.16", "0.39", "\\ldots", "-0.65", "0.33", "-0.58"]
+        ]
+        residual_stream_matrix_entries_6 = [
+            ["-0.63", "0.38", "-0.51", "\\ldots", "0.47", "-0.29", "0.64"],
+            ["0.26", "-0.72", "0.45", "\\ldots", "-0.34", "0.58", "-0.43"],
+            ["-0.49", "0.67", "-0.23", "\\ldots", "0.31", "-0.65", "0.52"],
+            ["0.74", "-0.18", "0.36", "\\ldots", "-0.59", "0.42", "-0.68"],
+            ["-0.37", "0.53", "-0.66", "\\ldots", "0.28", "-0.44", "0.71"]
+        ]
 
-        residual_stream = Matrix(matrix_entries)
-        box=SurroundingRectangle(residual_stream[28:35], buff=0.25).set_color(YELLOW)
+        residual_stream = Matrix(residual_stream_matrix_entries_1)
+        box=SurroundingRectangle(residual_stream[28:35], buff=0.25).set_color(YELLOW).set_stroke(width=3)
         matrix_and_box=VGroup(residual_stream, box)
 
         matrix_and_box.scale(0.5)
@@ -738,13 +773,26 @@ class P51(InteractiveScene):
         matrix_and_box.rotate(90*DEGREES, [0,0,1])
         matrix_and_box.move_to([1.8, 0.2, -1.4])
 
+        #Pretty sure this could be a one liner - eh
+        residual_stream_matrics=VGroup()
+        residual_stream_matrics.add(residual_stream)
+        for r in [residual_stream_matrix_entries_2, residual_stream_matrix_entries_3, residual_stream_matrix_entries_4, 
+                    residual_stream_matrix_entries_5, residual_stream_matrix_entries_6]:
+            rm=Matrix(r)
+            rm.scale(0.5)
+            rm.rotate(90*DEGREES, [1,0,0])
+            rm.rotate(90*DEGREES, [0,0,1])
+            rm.move_to([1.8, 0.2, -1.4])
+            residual_stream_matrics.add(rm)
+
+
         # len( all_forward_passes[0][8][2]) 
         self.wait()
         self.play(ReplacementTransform(all_forward_passes[0][8][2].copy(), residual_stream[6::-1]),
                   ReplacementTransform(all_forward_passes[0][8][2].copy(), residual_stream[13:6:-1]),
                   ReplacementTransform(all_forward_passes[0][8][2].copy(), residual_stream[20:13:-1]),
                   ReplacementTransform(all_forward_passes[0][8][2].copy(), residual_stream[27:20:-1]),
-                  ReplacementTransform(all_forward_passes[0][8][2], residual_stream[35:28:-1])
+                  ReplacementTransform(all_forward_passes[0][8][2], residual_stream[34:27:-1])
                   )
         self.add(residual_stream)
         self.wait()
@@ -757,34 +805,36 @@ class P51(InteractiveScene):
         # Ok now setup for big data passing through animation - not sure how much of this I want to do in manim vs not. 
         # I think first thing will be to zoom out to make room for everything, fade out input text. 
         # I think I can "preload" other patterns basically that I can flip through here. 
-        self.play(FadeOut(box), FadeOut(forward_pass[:9]), 
-                  self.frame.animate.reorient(52, 57, 0, (2.16, -1.28, -1.97), 11.31), run_time=4)
+        self.play(
+                 # FadeOut(box), ## Actually keep box?
+                   all_forward_passes[0][:9].animate.set_opacity(0.0), 
+                  self.frame.animate.reorient(52, 57, 0, (2.16, -1.28, -1.97), 11.31), run_time=4
+                  )
         self.wait()
 
 
         matrix_entries_2 = [
-            ["0.23", "-0.41", "0.67", "\\ldots", "-0.32", "0.58", "-0.14"],
-            ["-0.29", "0.35", "-0.12", "\\ldots", "0.46", "-0.21", "0.73"],
-            ["0.51", "-0.16", "0.38", "\\ldots", "-0.64", "0.19", "-0.42"],
-            ["-0.07", "0.62", "-0.33", "\\ldots", "0.25", "-0.48", "0.31"],
-            ["0.44", "-0.59", "0.17", "\\ldots", "-0.26", "0.39", "-0.65"],
-            ["-0.53", "0.28", "-0.71", "\\ldots", "0.15", "-0.37", "0.49"]
+            ["-0.45", "0.58", "-0.21", "\\ldots", "0.34", "-0.67", "0.53"],
+            ["0.72", "-0.28", "0.45", "\\ldots", "-0.57", "0.38", "-0.66"],
+            ["-0.38", "0.65", "-0.19", "\\ldots", "0.42", "-0.58", "0.34"],
+            ["0.74", "-0.16", "0.39", "\\ldots", "-0.65", "0.33", "-0.58"],
+            ["-0.37", "0.53", "-0.66", "\\ldots", "0.28", "-0.44", "0.71"],
+            ["0.35", "-0.08", "0.52", "\\ldots", "-0.19", "0.11", "-0.36"]
         ]
-
         results_matrix = Matrix(matrix_entries_2)
         results_matrix.rotate(52 * DEGREES, axis=OUT)    # theta rotation
         local_right = np.array([np.cos(52 * DEGREES), np.sin(52 * DEGREES), 0])
         results_matrix.rotate(57 * DEGREES, axis=local_right)
         results_matrix.scale(0.3)
         results_matrix.move_to([8.9, -3, 0])
-        self.add(results_matrix) #ok cool I can build this up using replacement transform, and add labels. 
+        # self.add(results_matrix) #ok cool I can build this up using replacement transform, and add labels. 
 
         # self.remove(results_matrix)
         # Alright now I need 6 wikitext examples.
 
         #Paris
         t1_string="...It ended on September 3, 1783 \n when Britain accepted American \n independence in the Treaty of ..."
-        t2_string="...Gershwin did not particularly  \n like Walter Damrosch's interpretation \n at the world premiere of An American in ..."
+        t2_string="...Gershwin did not particularly like \n Walter Damrosch's interpretation at the \n world premiere of An American in ..."
         
         #Berlin
         t3_string="...As Schopenhauer was preparing \n to escape from ..."
@@ -794,28 +844,44 @@ class P51(InteractiveScene):
         t5_string="...Agassi's US Open finish, along \n with his Masters Series victories in \n Key Biscayne, Rome and ..."
         t6_string="...Within a few days after Canovas \n del Castillo took power as Premier, \n the new king, proclaimed on 29 December \n 1874, arrived at ..."
 
+        texts=VGroup()
+        for t in [t1_string, t2_string, t3_string, t4_string, t5_string, t6_string]:
+            t1=MarkupText(t, font_size=22, alignment='left')
+            t1.rotate(52 * DEGREES, axis=OUT)    # theta rotation
+            local_right = np.array([np.cos(52 * DEGREES), np.sin(52 * DEGREES), 0])
+            t1.rotate(57 * DEGREES, axis=local_right)
+            t1.move_to([5.0, -7.5, 0], aligned_edge=LEFT)
+            texts.add(t1)
+
         self.wait()
 
+        for i, t in enumerate(texts):
+            if i>0: self.remove(texts[i-1])
+            self.add(t)
+            self.wait()
+            self.play(ReplacementTransform(t.copy(), forward_pass[0][0][::-1])) 
+            for j in range(1, 9):
+                all_forward_passes[i%len(all_forward_passes)][j].set_opacity(1.0)
+                self.wait(0.1)
+            #I think just a quick flip to a new matrix?
+            self.remove(residual_stream_matrics[i]); self.add(residual_stream_matrics[(i+1)%len(residual_stream_matrics)])
+            self.play(ReplacementTransform(residual_stream_matrics[(i+1)%len(residual_stream_matrics)][28:35].copy(), results_matrix[i*7:(i+1)*7]))
+            self.wait()
+            for j in range(1, 9):
+                all_forward_passes[i%len(all_forward_passes)][j].set_opacity(1.0)
 
-        t1=MarkupText(t1_string, font_size=24, alignment='left')
-        t1.rotate(52 * DEGREES, axis=OUT)    # theta rotation
-        local_right = np.array([np.cos(52 * DEGREES), np.sin(52 * DEGREES), 0])
-        t1.rotate(57 * DEGREES, axis=local_right)
+        self.add(results_matrix)
 
-        t1.move_to([5.0, -7.5, 0])
-        self.add(t1)
-        # self.remove(t1)
-        self.wait()
+        # #Ok last little thing I want here is little colored city labels next to each row. 
+        # ok i was thinking do labels in manim, but I think Illustrator is the way to go! 3d sucks for this!
+        # paris_label=MarkupText('PARIS', font_size=143, font='myriad-pro', weight='semi-bold').set_color(YELLOW)
+        # paris_label.rotate(52 * DEGREES, axis=OUT)    # theta rotation
+        # local_right = np.array([np.cos(52 * DEGREES), np.sin(52 * DEGREES), 0])
+        # paris_label.rotate(57 * DEGREES, axis=local_right)
+        # paris_label.move_to([7.5, -5, 0.95])
+        # self.add(paris_label)
+        # self.remove(paris_label)
 
-        #Ok dont have the setup quite there - but let me go ahead and work on the data flow here. 
-        self.play(ReplacementTransform(t1.copy(), forward_pass[0][0][::-1])) 
-
-        #Ok that works pretty well I think - now i step through a preloaded forward pass?
-
-
-
-
-        # self.frame.reorient(44, 63, 0, (4.09, -0.37, -1.87), 8.85)
 
 
 

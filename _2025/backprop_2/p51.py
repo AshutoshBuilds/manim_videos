@@ -757,7 +757,7 @@ class P51(InteractiveScene):
         # Ok now setup for big data passing through animation - not sure how much of this I want to do in manim vs not. 
         # I think first thing will be to zoom out to make room for everything, fade out input text. 
         # I think I can "preload" other patterns basically that I can flip through here. 
-        self.play(FadeOut(box), FadeOut(forward_pass[0]), 
+        self.play(FadeOut(box), FadeOut(forward_pass[:9]), 
                   self.frame.animate.reorient(52, 57, 0, (2.16, -1.28, -1.97), 11.31), run_time=4)
         self.wait()
 
@@ -777,24 +777,45 @@ class P51(InteractiveScene):
         results_matrix.rotate(57 * DEGREES, axis=local_right)
         results_matrix.scale(0.3)
         results_matrix.move_to([8.9, -3, 0])
-        self.add(results_matrix)
+        self.add(results_matrix) #ok cool I can build this up using replacement transform, and add labels. 
+
+        # self.remove(results_matrix)
+        # Alright now I need 6 wikitext examples.
+
+        #Paris
+        t1_string="...It ended on September 3, 1783 \n when Britain accepted American \n independence in the Treaty of ..."
+        t2_string="...Gershwin did not particularly  \n like Walter Damrosch's interpretation \n at the world premiere of An American in ..."
+        
+        #Berlin
+        t3_string="...As Schopenhauer was preparing \n to escape from ..."
+        t4_string="...The Berolina statue had already \n been removed in 1944 and probably melted \n down for use in arms production. \n During the Battle of ..."
+
+        #Madrid
+        t5_string="...Agassi's US Open finish, along \n with his Masters Series victories in \n Key Biscayne, Rome and ..."
+        t6_string="...Within a few days after Canovas \n del Castillo took power as Premier, \n the new king, proclaimed on 29 December \n 1874, arrived at ..."
+
+        self.wait()
 
 
-        self.remove(results_matrix)
+        t1=MarkupText(t1_string, font_size=24, alignment='left')
+        t1.rotate(52 * DEGREES, axis=OUT)    # theta rotation
+        local_right = np.array([np.cos(52 * DEGREES), np.sin(52 * DEGREES), 0])
+        t1.rotate(57 * DEGREES, axis=local_right)
+
+        t1.move_to([5.0, -7.5, 0])
+        self.add(t1)
+        # self.remove(t1)
+        self.wait()
+
+        #Ok dont have the setup quite there - but let me go ahead and work on the data flow here. 
+        self.play(ReplacementTransform(t1.copy(), forward_pass[0][0][::-1])) 
+
+        #Ok that works pretty well I think - now i step through a preloaded forward pass?
 
 
 
 
-
-
-
-
-
-
-
-
-
-        self.frame.reorient(44, 63, 0, (4.09, -0.37, -1.87), 8.85)
+        # self.frame.reorient(44, 63, 0, (4.09, -0.37, -1.87), 8.85)
 
 
 

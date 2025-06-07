@@ -453,7 +453,7 @@ def get_output_layer(snapshot, empty=False):
     return output_layer
 
 
-class LlamaLearningTwelveA(InteractiveScene):
+class LlamaLearningTwelveB(InteractiveScene):
     def construct(self):
         '''
         Getting close! Next hurdle is to bring in different examples. 
@@ -472,9 +472,9 @@ class LlamaLearningTwelveA(InteractiveScene):
         all_backward_passes=[]
         all_forward_passes=[]
 
-        # random_seeds=[25, 26, 27, 28, 29, 30, 31, 32, 33, 34] #For ordering input neurons
-        random_seeds=[25, 25, 25, 25, 25, 25, 25, 25, 25, 25]
-        for snapshot_count, snapshot_index in enumerate([0, 1, 2, 3, 4, 5, 6]):
+        random_seeds=[25, 26, 27, 28, 29, 30, 31, 32, 33, 34] #For ordering input neurons
+        # random_seeds=[25, 25, 25, 25, 25, 25, 25, 25, 25, 25]
+        for snapshot_count, snapshot_index in enumerate([7, 8, 9, 10, 11, 12, 13]):
             snapshot=snapshots[snapshot_index]
 
             all_weights=VGroup()
@@ -851,19 +851,6 @@ class LlamaLearningTwelveA(InteractiveScene):
         # Play the animation
         self.play(time_tracker.animate.set_value(total_time), run_time=total_time)
         self.wait()
-
-        #Paris
-        t1="...It ended on September 3, 1783 when Britain accepted American independence in the Treaty of"
-        t2="...Gershwin did not particularly like Walter Damrosch's interpretation at the world premiere of An American in"
-        
-        #Berlin
-        t3="...As Schopenhauer was preparing to escape from"
-        t4="...The Berolina statue had already been removed in 1944 and probably melted down for use in arms production. During the Battle of"
-
-        #Madrid
-        t5="...The match was the last of Sampras's career. Agassi's US Open finish, along with his Masters Series victories in Key Biscayne, Rome and"
-        t6="...Within a few days after Canovas del Castillo took power as Premier, the new king, proclaimed on 29 December 1874, arrived at"
-
 
         #Ok now zoom in on that one pattern!
         # self.play(self.frame.animate.reorient(0, 0, 0, (0.8, -1.89, 0.0), 1.00), run_time=7)

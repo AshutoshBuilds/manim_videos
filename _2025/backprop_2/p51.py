@@ -833,16 +833,16 @@ class P51(InteractiveScene):
         # Alright now I need 6 wikitext examples.
 
         #Paris
-        t1_string="...It ended on September 3, 1783 \n when Britain accepted American \n independence in the Treaty of ..."
-        t2_string="...Gershwin did not particularly like \n Walter Damrosch's interpretation at the \n world premiere of An American in ..."
+        t1_string="... It ended on September 3, 1783 \n when Britain accepted American \n independence in the Treaty of ..."
+        t2_string="... Gershwin did not particularly like \n Walter Damrosch's interpretation at \n the world premiere of An American in ..."
         
         #Berlin
-        t3_string="...As Schopenhauer was preparing \n to escape from ..."
-        t4_string="...The Berolina statue had already \n been removed in 1944 and probably melted \n down for use in arms production. \n During the Battle of ..."
+        t3_string="... As Schopenhauer was preparing \n to escape from ..."
+        t4_string="... The Berolina statue had already been \n removed in 1944 and probably melted \n down for use in arms production. During \n the Battle of ..."
 
         #Madrid
-        t5_string="...Agassi's US Open finish, along \n with his Masters Series victories in \n Key Biscayne, Rome and ..."
-        t6_string="...Within a few days after Canovas \n del Castillo took power as Premier, \n the new king, proclaimed on 29 December \n 1874, arrived at ..."
+        t5_string="... Agassi's US Open finish, along \n with his Masters Series victories in \n Key Biscayne, Rome and ..."
+        t6_string="... Within a few days after Canovas \n del Castillo took power as Premier, \n the new king, proclaimed on 29 December \n 1874, arrived at ..."
 
         texts=VGroup()
         for t in [t1_string, t2_string, t3_string, t4_string, t5_string, t6_string]:
@@ -850,10 +850,20 @@ class P51(InteractiveScene):
             t1.rotate(52 * DEGREES, axis=OUT)    # theta rotation
             local_right = np.array([np.cos(52 * DEGREES), np.sin(52 * DEGREES), 0])
             t1.rotate(57 * DEGREES, axis=local_right)
-            t1.move_to([5.0, -7.5, 0], aligned_edge=LEFT)
             texts.add(t1)
 
+        #Position tuning
+        texts[0].move_to([5.0, -7.5, 0.6], aligned_edge=LEFT)
+        texts[1].move_to([5.0, -7.5, 0.6], aligned_edge=LEFT)
+        texts[2].move_to([5.0, -7.5, 0.6], aligned_edge=LEFT)
+        texts[3].move_to([5.0, -7.5, 0.6], aligned_edge=LEFT)
+        texts[4].move_to([5.0, -7.5, 0.6], aligned_edge=LEFT)
+        texts[5].move_to([5.0, -7.5, 0.6], aligned_edge=LEFT)
+
         
+        self.add(texts[3])
+        self.remove(texts[3])
+
         # Debergsing
         # i=0
         # self.remove(residual_stream_matrics[i])

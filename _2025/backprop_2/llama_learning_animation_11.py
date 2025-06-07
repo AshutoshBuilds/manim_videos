@@ -453,7 +453,7 @@ def get_output_layer(snapshot, empty=False):
     return output_layer
 
 
-class LlamaLearningEleven(InteractiveScene):
+class LlamaLearningElevenB(InteractiveScene):
     def construct(self):
         '''
         Getting close! Next hurdle is to bring in different examples. 
@@ -472,8 +472,9 @@ class LlamaLearningEleven(InteractiveScene):
         all_backward_passes=[]
         all_forward_passes=[]
 
-        random_seeds=[25, 26, 27, 28, 29, 30, 31, 32, 33, 34] #For ordering input neurons
-        for snapshot_count, snapshot_index in enumerate([0, 7, 11, 12, 13, 14, 15]):
+        # random_seeds=[25, 26, 27, 28, 29, 30, 31, 32, 33, 34] #For ordering input neurons
+        random_seeds=[25, 25, 25, 25, 25, 25, 25, 25, 25, 25]
+        for snapshot_count, snapshot_index in enumerate([0, 1, 2, 3, 4, 5, 6]):
             snapshot=snapshots[snapshot_index]
 
             all_weights=VGroup()

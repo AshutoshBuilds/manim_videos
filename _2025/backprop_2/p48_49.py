@@ -615,7 +615,7 @@ class p48_49(InteractiveScene):
         step_label=None
         heatmaps=None
         training_point=None
-        for i in range(1, 250): #Runs out of RAM! #len(xs)): #TO DO -> change starting time to 1, 495 to go fast
+        for i in range(1, len(xs)): #Runs out of RAM! #len(xs)): #TO DO -> change starting time to 1, 495 to go fast - ok i think i fixed
             if i>0:
                 self.remove(nums)
                 self.remove(plane_1, plane_2, plane_3, plane_4)
@@ -740,14 +740,17 @@ class p48_49(InteractiveScene):
                     ap4.animate.scale(4.5).move_to([0,0,0]).set_opacity(0.4),
                     europe_map.animate.rotate(-90*DEGREES, [1,0,0]).move_to([-0.05,-0.05,0.00]),
                     # self.frame.animate.reorient(22, 35, 0, (0.04, -0.02, -0.04), 1.98),
-                    self.frame.animate.reorient(-56, 53, 0, (-0.15, -0.1, -0.16), 1.41),
+                    # self.frame.animate.reorient(-56, 53, 0, (-0.15, -0.1, -0.16), 1.41),
+                    self.frame.animate.reorient(-35, 47, 0, (-0.14, -0.14, -0.18), 1.44),
                     run_time=7.0
             )
         self.remove(axes_1, axes_2, axes_3, axes_4)
         self.wait() #Hold on Paris view
 
         #Now move to madrid view
-        self.play(self.frame.animate.reorient(-1, 30, 0, (-0.08, -0.02, -0.11), 1.56), run_time=4)
+        # self.play(self.frame.animate.reorient(-1, 30, 0, (-0.08, -0.02, -0.11), 1.56), run_time=4)
+        self.play(self.frame.animate.reorient(12, 47, 0, (-0.1, -0.11, -0.15), 1.42), run_time=4)
+        
         self.wait()
 
 

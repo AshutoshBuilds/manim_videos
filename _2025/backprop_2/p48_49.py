@@ -698,6 +698,7 @@ class p48_49(InteractiveScene):
                                                 max_long=max_long, 
                                                 min_lat=min_lat, 
                                                 max_lat=max_lat, 
+                                                paris_adjust=[0,-0.015, 0],
                                                 berlin_adjust=[0,0,0])
 
             training_point=Dot([canvas_x, 0, canvas_y], radius=0.012)

@@ -14,6 +14,8 @@ YELLOW='#ffd35a'
 BLUE='#65c8d0'
 GREEN='#00a14b'
 
+svg_path='/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backprop2/graphics/to_manim'
+
 # Helper function to get edge points between two circles
 def get_edge_points(circle1, circle2, neuron_radius):
     # Get direction vector from circle1 to circle2
@@ -840,6 +842,7 @@ class P51(InteractiveScene):
         madrid_label.next_to(berlin_label_2, DOWN, buff=0.57)
         madrid_label_2.next_to(madrid_label, DOWN, buff=0.57)
         results_and_labels=VGroup(results_matrix, paris_label, paris_label_2, berlin_label, berlin_label_2, madrid_label, madrid_label_2)
+        # results_and_labels_co[u]
 
         # self.add(results_matrix)
         # self.frame.reorient(0, 0, 0, (-0.15, -0.17, 0.0), 10.08)
@@ -871,7 +874,7 @@ class P51(InteractiveScene):
 
         texts=VGroup()
         for t in [t1_string, t2_string, t3_string, t4_string, t5_string, t6_string]:
-            t1=MarkupText(t, font_size=22, alignment='left')
+            t1=MarkupText(t, font_size=18, alignment='left')
             t1.rotate(52 * DEGREES, axis=OUT)    # theta rotation
             local_right = np.array([np.cos(52 * DEGREES), np.sin(52 * DEGREES), 0])
             t1.rotate(57 * DEGREES, axis=local_right)
@@ -886,8 +889,8 @@ class P51(InteractiveScene):
         texts[5].move_to([5.0, -7.5, 0.6], aligned_edge=LEFT)
 
         
-        self.add(texts[5])
-        self.remove(texts[5])
+        # self.add(texts[5])
+        # self.remove(texts[5])
 
         # Debergsing
         # i=0
@@ -949,6 +952,55 @@ class P51(InteractiveScene):
         # Oh yeah and then adding some text to that plot, right. That might be a pretty reasonable thing to do in illustrator
         # Ok, so next i need to finalize the umap plot in matplotlib, export to svg, and import into manim! Option to clean it up 
         # in illustrator if i need to. 
+
+        # Hmm feels like i need to get back to flat here?
+        #Ok there's going to be annoying jump here i"ll have to handle in premiere
+        results_and_labels.rotate(-57 * DEGREES, axis=local_right)
+        local_right = np.array([np.cos(52 * DEGREES), np.sin(52 * DEGREES), 0])
+        results_and_labels.rotate(-52 * DEGREES, axis=OUT)    # theta rotation
+        results_and_labels.move_to(ORIGIN)
+        self.frame.reorient(0, 0, 0, (2.22, -0.01, 0.0), 5.55)
+
+
+        plot_axes=SVGMobject(svg_path+'/p51/p51-03.svg')[1:]
+        scatter_pts=SVGMobject(svg_path+'/p51/p51-04.svg')[1:]
+        plot_labels=SVGMobject(svg_path+'/p51/p51-05.svg')[1:]
+        all_plot_elements=VGroup(plot_axes, scatter_pts, plot_labels)
+        all_plot_elements.scale(2.5)
+
+        scatter_pts.set_opacity(1.0) #Eh?
+
+        all_plot_elements.move_to([4.8, 0, 0])
+
+        self.play(FadeIn(plot_axes), FadeIn(plot_labels))
+        self.wait()
+
+        self.play(ReplacementTransform(results_matrix[:7],scatter_pts[68]),
+                  ReplacementTransform(results_matrix[7:14],scatter_pts[151]),
+                  ReplacementTransform(results_matrix[14:21],scatter_pts[650]),
+                  ReplacementTransform(results_matrix[21:28],scatter_pts[700]),
+                  ReplacementTransform(results_matrix[28:35],scatter_pts[400]),
+                  ReplacementTransform(results_matrix[35:42],scatter_pts[450]),
+                  FadeOut(results_matrix[42:]), 
+                  FadeOut(results_and_labels[1:]),
+                  self.frame.animate.reorient(0, 0, 0, (4.56, -0.02, 0.0), 4.10),
+                   run_time=5)
+
+        excluded = {68, 151, 650, 700, 400, 450}
+        # numbers = [i for i in range(750) if i not in excluded]
+        remaining_points=VGroup(*[scatter_pts[i] for i in range(750) if i not in excluded])
+
+        self.play(FadeIn(remaining_points), run_time=2) #I think all in one move fade other stuff and move camera.
+        self.wait()
+
+        #Ok now just labels right? yeah and I think we do those in premiere!
+
+
+
+
+
+
+
 
 
 

@@ -86,18 +86,11 @@ class LinearPlane(Surface):
 class p50_sketch(InteractiveScene):
     def construct(self):
 
-        baarle_map=ImageMobject(svg_path +'/map_exports_square.00_00_21_24.Still001.png')
+        baarle_map=ImageMobject(svg_path +'/map_exports.00_01_07_25.Still005.png')
         # baarle_map.rotate(90*DEGREES, [1,0,0])
 
         baarle_map.scale(0.25)
         # baarle_map.move_to([0.96,0,0])
-
-        self.add(baarle_map)
-        # self.frame.reorient(0, 90, 0, (0.02, -0.01, 0.0), 4.74)
-        self.wait()
-
-        # Ok I think pan down and planes and axis fade in, right?
-
 
 
         axes_1 = ThreeDAxes(
@@ -127,14 +120,22 @@ class p50_sketch(InteractiveScene):
         plane_2.set_opacity(0.4)
         plane_2.set_color(YELLOW)
 
-        self.add(axes_1, plane_1, plane_2)
 
-        self.frame.reorient(-29, 53, 0, (0.04, 0.06, 0.09), 2.05)
-        self.wait(0)
+        self.frame.reorient(0, 0, 0, (0.02, -0.01, 0.0), 1.23)
+        self.add(baarle_map)
+        self.wait()
+
+        self.play(self.frame.animate.reorient(-29, 53, 0, (0.04, 0.06, 0.09), 2.05), 
+                 FadeIn(axes_1), FadeIn(plane_1), FadeIn(plane_2), run_time=5)
+
+        # self.add(axes_1, plane_1, plane_2)
+        # self.frame.reorient(-29, 53, 0, (0.04, 0.06, 0.09), 2.05)
+        self.wait()
 
         #ok static looks good, now I want to pan around while smootly changing the LinearPlane's parameters. 
         num_total_steps=128
-        start_orientation = [-33, 58, 0, (-0.1, 0.01, 0.05), 1.83]
+        # start_orientation = [-33, 58, 0, (-0.1, 0.01, 0.05), 1.83]
+        start_orientation = [-29, 53, 0, (0.04, 0.06, 0.09), 1.23]
         end_orientation = [33, 59, 0, (-0.1, 0.01, 0.05), 1.83]
         interp_orientations=manual_camera_interpolation(start_orientation, end_orientation, num_steps=num_total_steps)
 

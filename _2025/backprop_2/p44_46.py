@@ -1060,7 +1060,7 @@ class p46a(InteractiveScene):
         self.embed()
 
 
-class p46b(InteractiveScene):
+class p46b_v2(InteractiveScene):
     def construct(self):
         '''
         Ok starting with p45, I'll work on animating to shared p46 plot, and then start hacking on 3d. 
@@ -1456,7 +1456,7 @@ class p46b(InteractiveScene):
                   ReplacementTransform(line_2, softmax_curve_2), 
                   Transform(matching_plane_3, matching_surface_3), 
                   ReplacementTransform(line_3, softmax_curve_3), 
-                  run_time=3)  
+                  run_time=6)  
         matching_plane_3.shift([0,0,-0.0001]) #Removes a visual artifact 
         self.wait()
 

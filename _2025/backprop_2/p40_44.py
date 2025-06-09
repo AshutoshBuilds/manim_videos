@@ -135,7 +135,7 @@ def get_numbers_3(x, w, logits, yhats):
     return numbers
 
 
-class p40_44(InteractiveScene):
+class p40_44_v2(InteractiveScene):
     def construct(self):
         '''
         
@@ -218,7 +218,7 @@ class p40_44(InteractiveScene):
         self.play(Write(grad_1[6:-5]),
                   Write(grad_3[6:-5]),
                   Write(grad_4[6:-5]),
-                  Write(grad_5[6:-7]),
+                  Write(grad_5[6:-6]),
                   Write(grad_6[6:-5]),
              )
         self.wait()

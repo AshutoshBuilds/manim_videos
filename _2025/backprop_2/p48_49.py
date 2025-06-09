@@ -385,7 +385,7 @@ class LinearPlane(Surface):
 
 
 
-class p48_49(InteractiveScene):
+class p48_49_v2(InteractiveScene):
     def construct(self):
         '''
         Ok now let's try to everything is Psuedo3d, so I can do the "bring everything together in 3D and pan around" deal 
@@ -621,7 +621,7 @@ class p48_49(InteractiveScene):
         step_label=None
         heatmaps=None
         training_point=None
-        for i in range(1, 240): #len(xs)): #Runs out of RAM! #len(xs)): #TO DO -> change starting time to 1, 495 to go fast - ok i think i fixed
+        for i in range(235, 240): #len(xs)): #Runs out of RAM! #len(xs)): #TO DO -> change starting time to 1, 495 to go fast - ok i think i fixed
             if i>0:
                 self.remove(nums)
                 self.remove(plane_1, plane_2, plane_3, plane_4)
@@ -644,7 +644,7 @@ class p48_49(InteractiveScene):
                 self.remove(map_tick_overlays_2)
 
 
-            nums=get_dem_numbers(i, xs, weights, logits, yhats)
+            nums=get_dem_numbers_3d(i, xs, weights, logits, yhats)
             nums.rotate(90*DEGREES, [1, 0, 0])
             
             plane_1=LinearPlane(axes_1, weights[i,1], weights[i,0], weights[i,8], vertical_viz_scale=vertical_viz_scale)
@@ -760,7 +760,15 @@ class p48_49(InteractiveScene):
         
         self.wait()
 
+        #Fade back to overhead would help with transition, let's see here...
 
+        self.play(plane_1.animate.set_opacity(0.0),
+                  plane_2.animate.set_opacity(0.0),
+                  plane_3.animate.set_opacity(0.0),
+                  plane_4.animate.set_opacity(0.0),
+                  self.frame.animate.reorient(0, 0, 0, (-0.08, -0.05, -0.15), 1.37),
+                  run_time=5.0)
+        self.wait()
 
 
 

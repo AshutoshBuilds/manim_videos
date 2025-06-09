@@ -135,7 +135,7 @@ def get_numbers_3(x, w, logits, yhats):
     return numbers
 
 
-class p32_40(InteractiveScene):
+class p32_40_v2(InteractiveScene):
     def construct(self):
         '''
         

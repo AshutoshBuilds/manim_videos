@@ -133,7 +133,7 @@ def get_numbers_2(x, w, logits, yhats):
 
 
 
-class p22_24(InteractiveScene):
+class p22_24v4(InteractiveScene):
     def construct(self):
         '''
         
@@ -247,12 +247,18 @@ class p22_24(InteractiveScene):
 
         self.play(ShowCreation(layers[3]))
 
-        m2_label=net_background[42:44].copy()
+        # self.remove(net_background[41])
+
+        m2_label=net_background[41:43].copy()
         loss_label=layers[1][:4].copy()
         self.add(m2_label, loss_label)
 
         self.play(loss_label.animate.scale(0.75).move_to([0.7, 0.05, 0]), run_time=1.0)
-        self.play(m2_label.animate.scale(1.2).move_to([1.48, -0.67, 0]), run_time=4.0)
+
+        box = SurroundingRectangle(nums[2], color=YELLOW, buff=0.025)
+        self.play(ShowCreation(box))
+        
+        self.play(m2_label.animate.scale(1.5).move_to([1.48, -0.67, 0]), run_time=4.0)
 
         self.wait()
 
@@ -264,8 +270,8 @@ class p22_24(InteractiveScene):
 
         self.wait()
 
-        box = SurroundingRectangle(nums[2], color=YELLOW, buff=0.025)
-        self.play(ShowCreation(box))
+        # box = SurroundingRectangle(nums[2], color=YELLOW, buff=0.025)
+        # self.play(ShowCreation(box))
         tm2 = Tex(format_number(0.1, total_chars=6)).set_color(YELLOW)
         tm2.scale(0.15)
         tm2.move_to([-1.155, 0.015+0.23, 0])
@@ -306,12 +312,13 @@ class p22_24(InteractiveScene):
         net=VGroup(net_background, nums)
         plot_to_move=VGroup(layers[2:5], m2_label, loss_label)
 
+        # net.move_to([-0.14,0.018,0])
         self.wait()
         self.remove(box); nums[-6:].set_color(CHILL_BROWN); nums[0].set_color(CHILL_BROWN)
         self.play(FadeOut(layers[0:2]), FadeOut(layers[5:7]),
                   FadeOut(loss_copy_2), FadeOut(m1), FadeOut(m0), FadeOut(loss_copy), 
                   FadeOut(loss_new), FadeOut(loss), FadeOut(yhat2_new), 
-                  net.animate.scale(0.78).move_to([0.38,0.018,0]),
+                  net.animate.scale(0.78).move_to([-0.14,0.018,0]),
                   plot_to_move.animate.scale(0.58).move_to([-0.68, 0.645, 0]),
                   self.frame.animate.reorient(0, 0, 0, (-0.05, -0.02, 0.0), 2.00),
                   run_time=3.0)
@@ -327,9 +334,14 @@ class p22_24(InteractiveScene):
         # self.add(m2_plot_copy)
         # to_fade=VGroup(layers[8][:-21], layers[7], layers[9], net)
 
-        self.play(FadeOut(layers[8][:-21]), FadeOut(layers[7]), FadeOut(layers[9]), FadeOut(net))
-        self.play(m2_plot.animate.scale(2.2).move_to([-0.19,-0.015,0]), run_time=1.5)
-        self.add(layers[10])
+        self.play(FadeOut(layers[8][:-21]), FadeOut(layers[7]), FadeOut(layers[9]), FadeOut(net), 
+                  m2_plot.animate.scale(2.2).move_to([-0.19,-0.015,0]), run_time=8)
+        self.play(Write(layers[10]))
+
+
+        # self.play(FadeOut(layers[8][:-21]), FadeOut(layers[7]), FadeOut(layers[9]), FadeOut(net))
+        # self.play(m2_plot.animate.scale(2.2).move_to([-0.19,-0.015,0]), run_time=1.5)
+        # self.add(layers[10])
         self.wait()
 
         # self.add(layers[9])
@@ -400,5 +412,5 @@ class p22_24(InteractiveScene):
 
 
 
-        self.wait()
+        self.wait(20)
         self.embed()

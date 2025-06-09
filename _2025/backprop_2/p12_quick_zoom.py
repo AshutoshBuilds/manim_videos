@@ -453,7 +453,7 @@ def get_output_layer(snapshot, empty=False):
     return output_layer
 
 
-class LlamaLearningTwelveD(InteractiveScene):
+class P12(InteractiveScene):
     def construct(self):
         '''
         Getting close! Next hurdle is to bring in different examples. 
@@ -474,7 +474,7 @@ class LlamaLearningTwelveD(InteractiveScene):
 
         # random_seeds=[25, 26, 27, 28, 29, 30, 31, 32, 33, 34] #For ordering input neurons
         random_seeds=[25, 25, 25, 25, 25, 25, 25, 25, 25, 25]
-        for snapshot_count, snapshot_index in enumerate([2,1,0,3,4]):
+        for snapshot_count, snapshot_index in enumerate([0]):
             snapshot=snapshots[snapshot_index]
 
             all_weights=VGroup()
@@ -705,152 +705,160 @@ class LlamaLearningTwelveD(InteractiveScene):
 
         self.wait()
 
-        # all_forward_passes[0].set_opacity(1.0)
+        all_forward_passes[0].set_opacity(1.0)
         # all_forward_passes[1].set_opacity(1.0)
         # all_forward_passes[2].set_opacity(1.0)
         # all_forward_passes[0].set_opacity(0.0)
         # all_forward_passes[1].set_opacity(0.0)
         # all_forward_passes[2].set_opacity(0.0)
 
-        # all_backward_passes[0].set_opacity(1.0)
+        all_backward_passes[0].set_opacity(1.0)
         # all_backward_passes[1].set_opacity(1.0)
         # all_backward_passes[0].set_opacity(0.0)
         # all_backward_passes[1].set_opacity(0.0)
 
+        self.wait()
+
+        self.play(self.frame.animate.reorient(0, 0, 0, (5.21, 2.98, 0.0), 1.27), run_time=5.0)
+        self.wait()
+
+
+
+
         #Ok nothing has broken so far lol. 
 
-        def create_multi_snapshot_animation(self, all_forward_passes, all_backward_passes, 
-                                           individual_time=1.0, lag_ratio=0.5, 
-                                           start_opacity=0.0, end_opacity=1.0,
-                                           fade_out_time=1.0, pause_between_snapshots=0.5):
-            """
-            Animates multiple snapshots with forward and backward passes.
-            Each snapshot fades in, plays, then fades out before the next one starts.
+        # def create_multi_snapshot_animation(self, all_forward_passes, all_backward_passes, 
+        #                                    individual_time=1.0, lag_ratio=0.5, 
+        #                                    start_opacity=0.0, end_opacity=1.0,
+        #                                    fade_out_time=1.0, pause_between_snapshots=0.5):
+        #     """
+        #     Animates multiple snapshots with forward and backward passes.
+        #     Each snapshot fades in, plays, then fades out before the next one starts.
             
-            Args:
-                self: The scene object
-                all_forward_passes: List of forward pass VGroups for each snapshot
-                all_backward_passes: List of backward pass VGroups for each snapshot
-                individual_time: Time for each object to fully animate
-                lag_ratio: Overlap ratio between consecutive objects
-                start_opacity: Starting opacity for fade-in
-                end_opacity: Maximum opacity
-                fade_out_time: Time to fade out each snapshot
-                pause_between_snapshots: Pause time between snapshots
-            """
+        #     Args:
+        #         self: The scene object
+        #         all_forward_passes: List of forward pass VGroups for each snapshot
+        #         all_backward_passes: List of backward pass VGroups for each snapshot
+        #         individual_time: Time for each object to fully animate
+        #         lag_ratio: Overlap ratio between consecutive objects
+        #         start_opacity: Starting opacity for fade-in
+        #         end_opacity: Maximum opacity
+        #         fade_out_time: Time to fade out each snapshot
+        #         pause_between_snapshots: Pause time between snapshots
+        #     """
             
-            def create_snapshot_animation(forward_pass, backward_pass, time_offset=0, is_final=False):
-                """Creates animation for a single snapshot"""
-                objects = list(forward_pass) + list(backward_pass[::-1])
-                num_objects = len(objects)
+        #     def create_snapshot_animation(forward_pass, backward_pass, time_offset=0, is_final=False):
+        #         """Creates animation for a single snapshot"""
+        #         objects = list(forward_pass) + list(backward_pass[::-1])
+        #         num_objects = len(objects)
                 
-                if num_objects == 0:
-                    return None, 0
+        #         if num_objects == 0:
+        #             return None, 0
                 
-                lag_time = lag_ratio * individual_time
-                animation_time = individual_time + (num_objects - 1) * lag_time
+        #         lag_time = lag_ratio * individual_time
+        #         animation_time = individual_time + (num_objects - 1) * lag_time
                 
-                def update_opacity(obj, dt, index, start_time):
-                    current_time = time_tracker.get_value()
+        #         def update_opacity(obj, dt, index, start_time):
+        #             current_time = time_tracker.get_value()
                     
-                    # Check if we're in the animation phase for this snapshot
-                    if current_time < start_time:
-                        obj.set_opacity(start_opacity)
-                        return
+        #             # Check if we're in the animation phase for this snapshot
+        #             if current_time < start_time:
+        #                 obj.set_opacity(start_opacity)
+        #                 return
                     
-                    snapshot_time = current_time - start_time
+        #             snapshot_time = current_time - start_time
                     
-                    # Fade in phase
-                    obj_start_time = index * lag_time
-                    obj_end_time = obj_start_time + individual_time
+        #             # Fade in phase
+        #             obj_start_time = index * lag_time
+        #             obj_end_time = obj_start_time + individual_time
                     
-                    if snapshot_time < obj_start_time:
-                        obj.set_opacity(start_opacity)
-                    elif snapshot_time <= obj_end_time:
-                        progress = (snapshot_time - obj_start_time) / individual_time
-                        opacity = start_opacity + (end_opacity - start_opacity) * progress
-                        obj.set_opacity(opacity)
-                    elif snapshot_time <= animation_time:
-                        obj.set_opacity(end_opacity)
-                    # Fade out phase (skip for final snapshot)
-                    elif not is_final and snapshot_time <= animation_time + fade_out_time:
-                        fade_progress = (snapshot_time - animation_time) / fade_out_time
-                        opacity = end_opacity * (1 - fade_progress)
-                        obj.set_opacity(opacity)
-                    elif not is_final:
-                        obj.set_opacity(0)
-                    else:
-                        # Keep final snapshot visible
-                        obj.set_opacity(end_opacity)
+        #             if snapshot_time < obj_start_time:
+        #                 obj.set_opacity(start_opacity)
+        #             elif snapshot_time <= obj_end_time:
+        #                 progress = (snapshot_time - obj_start_time) / individual_time
+        #                 opacity = start_opacity + (end_opacity - start_opacity) * progress
+        #                 obj.set_opacity(opacity)
+        #             elif snapshot_time <= animation_time:
+        #                 obj.set_opacity(end_opacity)
+        #             # Fade out phase (skip for final snapshot)
+        #             elif not is_final and snapshot_time <= animation_time + fade_out_time:
+        #                 fade_progress = (snapshot_time - animation_time) / fade_out_time
+        #                 opacity = end_opacity * (1 - fade_progress)
+        #                 obj.set_opacity(opacity)
+        #             elif not is_final:
+        #                 obj.set_opacity(0)
+        #             else:
+        #                 # Keep final snapshot visible
+        #                 obj.set_opacity(end_opacity)
                 
-                return objects, animation_time, update_opacity
+        #         return objects, animation_time, update_opacity
             
-            # Calculate total animation time
-            total_time = 0
-            snapshot_data = []
+        #     # Calculate total animation time
+        #     total_time = 0
+        #     snapshot_data = []
             
-            for i, (forward, backward) in enumerate(zip(all_forward_passes, all_backward_passes)):
-                is_final = (i == len(all_forward_passes) - 1)
-                objects, anim_time, updater_func = create_snapshot_animation(forward, backward, total_time, is_final)
+        #     for i, (forward, backward) in enumerate(zip(all_forward_passes, all_backward_passes)):
+        #         is_final = (i == len(all_forward_passes) - 1)
+        #         objects, anim_time, updater_func = create_snapshot_animation(forward, backward, total_time, is_final)
                 
-                if objects:
-                    snapshot_data.append({
-                        'objects': objects,
-                        'start_time': total_time,
-                        'animation_time': anim_time,
-                        'updater_func': updater_func,
-                        'is_final': is_final
-                    })
+        #         if objects:
+        #             snapshot_data.append({
+        #                 'objects': objects,
+        #                 'start_time': total_time,
+        #                 'animation_time': anim_time,
+        #                 'updater_func': updater_func,
+        #                 'is_final': is_final
+        #             })
                     
-                    # Don't add fade_out_time or pause for the final snapshot
-                    if not is_final:
-                        total_time += anim_time + fade_out_time + pause_between_snapshots
-                    else:
-                        total_time += anim_time
+        #             # Don't add fade_out_time or pause for the final snapshot
+        #             if not is_final:
+        #                 total_time += anim_time + fade_out_time + pause_between_snapshots
+        #             else:
+        #                 total_time += anim_time
             
-            # Remove the final pause
-            total_time -= pause_between_snapshots
+        #     # Remove the final pause
+        #     total_time -= pause_between_snapshots
             
-            # Create the main time tracker
-            time_tracker = ValueTracker(0)
+        #     # Create the main time tracker
+        #     time_tracker = ValueTracker(0)
             
-            # Add updaters to all objects
-            all_updaters = []
-            for snapshot in snapshot_data:
-                for idx, obj in enumerate(snapshot['objects']):
-                    updater = lambda o, dt, i=idx, start=snapshot['start_time'], func=snapshot['updater_func']: func(o, dt, i, start)
-                    obj.add_updater(updater)
-                    all_updaters.append((obj, updater))
+        #     # Add updaters to all objects
+        #     all_updaters = []
+        #     for snapshot in snapshot_data:
+        #         for idx, obj in enumerate(snapshot['objects']):
+        #             updater = lambda o, dt, i=idx, start=snapshot['start_time'], func=snapshot['updater_func']: func(o, dt, i, start)
+        #             obj.add_updater(updater)
+        #             all_updaters.append((obj, updater))
             
-            # Play the animation
-            # self.play(time_tracker.animate.set_value(total_time), run_time=total_time)
+        #     # Play the animation
+        #     # self.play(time_tracker.animate.set_value(total_time), run_time=total_time)
             
-            # # Clean up updaters
-            # for obj, updater in all_updaters:
-            #     obj.remove_updater(updater)
+        #     # # Clean up updaters
+        #     # for obj, updater in all_updaters:
+        #     #     obj.remove_updater(updater)
             
-            # # Ensure non-final objects are at 0 opacity and final objects stay visible
-            # for snapshot in snapshot_data:
-            #     for obj in snapshot['objects']:
-            #         if snapshot['is_final']:
-            #             obj.set_opacity(end_opacity)
-            #         else:
-            #             obj.set_opacity(0)
+        #     # # Ensure non-final objects are at 0 opacity and final objects stay visible
+        #     # for snapshot in snapshot_data:
+        #     #     for obj in snapshot['objects']:
+        #     #         if snapshot['is_final']:
+        #     #             obj.set_opacity(end_opacity)
+        #     #         else:
+        #     #             obj.set_opacity(0)
 
        
 
-            return time_tracker, total_time
+        #     return time_tracker, total_time
 
-        time_tracker, total_time = create_multi_snapshot_animation(self, all_forward_passes, all_backward_passes, 
-                                                   individual_time=1.0, lag_ratio=0.5, 
-                                                   start_opacity=0.0, end_opacity=1.0,
-                                                   fade_out_time=7.0, pause_between_snapshots=0.5)
+        # time_tracker, total_time = create_multi_snapshot_animation(self, all_forward_passes, all_backward_passes, 
+        #                                            individual_time=1.0, lag_ratio=0.5, 
+        #                                            start_opacity=0.0, end_opacity=1.0,
+        #                                            fade_out_time=7.0, pause_between_snapshots=0.5)
 
-        self.wait()
+        # self.wait()
 
-        # Play the animation
-        self.play(time_tracker.animate.set_value(total_time), run_time=total_time)
-        self.wait()
+        # # Play the animation
+        # self.play(time_tracker.animate.set_value(total_time), run_time=total_time)
+        # self.wait()
 
         #Ok now zoom in on that one pattern!
         # self.play(self.frame.animate.reorient(0, 0, 0, (0.8, -1.89, 0.0), 1.00), run_time=7)

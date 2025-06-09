@@ -135,7 +135,7 @@ class p50_sketch(InteractiveScene):
         #ok static looks good, now I want to pan around while smootly changing the LinearPlane's parameters. 
         num_total_steps=128
         # start_orientation = [-33, 58, 0, (-0.1, 0.01, 0.05), 1.83]
-        start_orientation = [-29, 53, 0, (0.04, 0.06, 0.09), 1.23]
+        start_orientation = [-29, 53, 0, (0.04, 0.06, 0.09), 2.05]
         end_orientation = [33, 59, 0, (-0.1, 0.01, 0.05), 1.83]
         interp_orientations=manual_camera_interpolation(start_orientation, end_orientation, num_steps=num_total_steps)
 

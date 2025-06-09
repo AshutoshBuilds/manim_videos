@@ -214,18 +214,33 @@ class p22_24(InteractiveScene):
         yhat2_before.move_to([1.5, 0.01, 0]).set_color(RED)
         self.wait()
 
-        #Ok first 40 look pretty good!
-        self.play(ReplacementTransform(transition_background[:40].copy(), net_background[:40]))
+        self.play(ReplacementTransform(transition_background[:39], net_background[:39]),
+                ReplacementTransform(transition_background[39:45], net_background[47:53]),
+                ReplacementTransform(nums_before, nums),
+                ReplacementTransform(transition_background[45:], layers[1]),
+                ReplacementTransform(loss_before, loss),
+                ReplacementTransform(yhat2_before, yhat2), 
+                run_time=5.0)
+        self.add(net_background); self.add(layers[0])
+        self.wait()
 
-        self.remove(transition_background[45:]) #Ok this is the equation - dope. 
+        # self.play(ReplacementTransform(transition_background[39:45].copy(), net_background[47:53]))
 
+        #Ok first 40 look pretty good! 
+        # self.play(ReplacementTransform(transition_background[:39], net_background[:39]))
+        # self.play(ReplacementTransform(nums_before, nums))
+        # self.play(ReplacementTransform(transition_background[45:], layers[1]))
+        # self.play(ReplacementTransform(loss_before, loss))
+        # self.play(ReplacementTransform(yhat2_before, yhat2))
+        # self.add(net_background); self.add(layers[0])
 
-        self.add(net_background)
-        self.add(nums)
-        self.add(layers[0]) #Arrow 
-        self.add(layers[1]) #Loss equation
-        self.add(yhat2)
-        self.add(loss)
+        # self.remove(transition_background[45:]) #Ok this is the equation - dope. 
+        # self.add(net_background)
+        # self.add(nums)
+        # self.add(layers[0]) #Arrow 
+        # self.add(layers[1]) #Loss equation
+        # self.add(yhat2)
+        # self.add(loss)
 
 
         self.wait()

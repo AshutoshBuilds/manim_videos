@@ -455,7 +455,7 @@ def get_output_layer(snapshot, empty=False):
     return output_layer
 
 
-class P51(InteractiveScene):
+class P51v2(InteractiveScene):
     def construct(self):
         '''
         Getting close! Next hurdle is to bring in different examples. 
@@ -944,7 +944,7 @@ class P51(InteractiveScene):
 
         self.play(FadeOut(box), FadeOut(residual_stream_matrics[0]), FadeOut(random_background_stuff[:8]), 
                   FadeOut(we_connections), FadeOut(all_weights[:11]), FadeOut(input_layer_empty), FadeOut(all_activations_empty[:16]), 
-                  self.frame.animate.reorient(52, 57, 0, (5.8, 1.76, -3.51), 10.46))
+                  self.frame.animate.reorient(52, 57, 0, (5.8, 1.76, -3.51), 10.46), run_time=5.0)
         self.wait()
         #Ok, let's do the comparison to map coordinates in illustrator, I think that will be quicker/easier. 
 
@@ -995,6 +995,9 @@ class P51(InteractiveScene):
 
         #Ok now just labels right? yeah and I think we do those in premiere!
 
+        #Drop labels & legend,for illustrator overlay
+        self.play(FadeOut(plot_labels), run_time=2)
+        self.wait()
 
 
 

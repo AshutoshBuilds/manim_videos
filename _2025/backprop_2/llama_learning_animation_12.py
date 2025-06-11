@@ -453,7 +453,7 @@ def get_output_layer(snapshot, empty=False):
     return output_layer
 
 
-class LlamaLearningTwelveD(InteractiveScene):
+class LlamaLearningTwelveF(InteractiveScene):
     def construct(self):
         '''
         Getting close! Next hurdle is to bring in different examples. 
@@ -474,7 +474,7 @@ class LlamaLearningTwelveD(InteractiveScene):
 
         # random_seeds=[25, 26, 27, 28, 29, 30, 31, 32, 33, 34] #For ordering input neurons
         random_seeds=[25, 25, 25, 25, 25, 25, 25, 25, 25, 25]
-        for snapshot_count, snapshot_index in enumerate([2,1,0,3,4]):
+        for snapshot_count, snapshot_index in enumerate([0,0,0]):
             snapshot=snapshots[snapshot_index]
 
             all_weights=VGroup()
@@ -705,7 +705,13 @@ class LlamaLearningTwelveD(InteractiveScene):
 
         self.wait()
 
-        # all_forward_passes[0].set_opacity(1.0)
+        all_forward_passes[1].set_opacity(1.0)
+        self.wait(1.0)
+        all_backward_passes[1].set_opacity(1.0)
+        self.wait(1.0)
+        all_forward_passes[1].set_opacity(0.0)
+        all_backward_passes[1].set_opacity(0)
+        self.wait()
         # all_forward_passes[1].set_opacity(1.0)
         # all_forward_passes[2].set_opacity(1.0)
         # all_forward_passes[0].set_opacity(0.0)
@@ -841,10 +847,12 @@ class LlamaLearningTwelveD(InteractiveScene):
 
             return time_tracker, total_time
 
+        #Forward and backward pass
         time_tracker, total_time = create_multi_snapshot_animation(self, all_forward_passes, all_backward_passes, 
                                                    individual_time=1.0, lag_ratio=0.5, 
                                                    start_opacity=0.0, end_opacity=1.0,
                                                    fade_out_time=7.0, pause_between_snapshots=0.5)
+
 
         self.wait()
 

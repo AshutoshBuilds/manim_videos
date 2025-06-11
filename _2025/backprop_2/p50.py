@@ -83,7 +83,7 @@ class LinearPlane(Surface):
 
 
 
-class p50_sketch(InteractiveScene):
+class p50(InteractiveScene):
     def construct(self):
 
         baarle_map=ImageMobject(svg_path +'/map_exports.00_01_07_25.Still005.png')
@@ -121,11 +121,13 @@ class p50_sketch(InteractiveScene):
         plane_2.set_color(YELLOW)
 
 
-        self.frame.reorient(0, 0, 0, (0.02, -0.01, 0.0), 1.23)
+        # self.frame.reorient(0, 0, 0, (0.02, -0.01, 0.0), 1.23)
+        # self.frame.reorient(0, 0, 0, (-0.08, -0.05, -0.15), 1.37)
+        self.frame.reorient(0, 0, 0, (-0.06, -0.0, -0.15), 1.23)
         self.add(baarle_map)
         self.wait()
 
-        self.play(self.frame.animate.reorient(-29, 53, 0, (0.04, 0.06, 0.09), 2.05), 
+        self.play(self.frame.animate.reorient(-34, 52, 0, (-0.04, -0.01, -0.05), 1.58), 
                  FadeIn(axes_1), FadeIn(plane_1), FadeIn(plane_2), run_time=5)
 
         # self.add(axes_1, plane_1, plane_2)
@@ -133,10 +135,10 @@ class p50_sketch(InteractiveScene):
         self.wait()
 
         #ok static looks good, now I want to pan around while smootly changing the LinearPlane's parameters. 
-        num_total_steps=128
+        num_total_steps=320
         # start_orientation = [-33, 58, 0, (-0.1, 0.01, 0.05), 1.83]
-        start_orientation = [-29, 53, 0, (0.04, 0.06, 0.09), 2.05]
-        end_orientation = [33, 59, 0, (-0.1, 0.01, 0.05), 1.83]
+        start_orientation = [-34, 52, 0, (-0.04, -0.01, -0.05), 1.58]
+        end_orientation = [27, 48, 0, (-0.04, -0.01, -0.05), 1.58]
         interp_orientations=manual_camera_interpolation(start_orientation, end_orientation, num_steps=num_total_steps)
 
         m11s=np.linspace(0.5, 0.8, num_total_steps)

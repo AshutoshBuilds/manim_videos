@@ -621,7 +621,7 @@ class p48_49_v2(InteractiveScene):
         step_label=None
         heatmaps=None
         training_point=None
-        for i in range(235, 240): #len(xs)): #Runs out of RAM! #len(xs)): #TO DO -> change starting time to 1, 495 to go fast - ok i think i fixed
+        for i in range(1, 240): #len(xs)): #Runs out of RAM! #len(xs)): #TO DO -> change starting time to 1, 495 to go fast - ok i think i fixed
             if i>0:
                 self.remove(nums)
                 self.remove(plane_1, plane_2, plane_3, plane_4)
@@ -645,7 +645,7 @@ class p48_49_v2(InteractiveScene):
 
 
             nums=get_dem_numbers_3d(i, xs, weights, logits, yhats)
-            nums.rotate(90*DEGREES, [1, 0, 0])
+            # nums.rotate(90*DEGREES, [1, 0, 0])
             
             plane_1=LinearPlane(axes_1, weights[i,1], weights[i,0], weights[i,8], vertical_viz_scale=vertical_viz_scale)
             plane_1.set_opacity(0.6)

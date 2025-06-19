@@ -3,7 +3,6 @@ import glob
 
 CHILL_BROWN='#948979'
 YELLOW='#ffd35a'
-YELLOW_FADE='#7f6a2d'
 BLUE='#65c8d0'
 GREEN='#00a14b'
 CHILL_GREEN='#6c946f'
@@ -13,8 +12,6 @@ from torch.utils.data import DataLoader
 from smalldiffusion import (
     ScheduleLogLinear, samples, Swissroll, ModelMixin
 )
-
-from typing import Callable
 
 def manual_camera_interpolation(start_orientation, end_orientation, num_steps):
     """
@@ -58,111 +55,6 @@ def manual_camera_interpolation(start_orientation, end_orientation, num_steps):
         result.append(interpolated)
     
     return result
-
-
-class CustomTracedPath(VMobject):
-    """
-    A custom traced path that supports:
-    - Reverse playback with segment removal
-    - Variable opacity based on distance from end
-    - Manual control over path segments
-    """
-    def __init__(
-        self,
-        traced_point_func,
-        stroke_width=2.0,
-        stroke_color=YELLOW,
-        opacity_range=(0.1, 0.8),  # (min_opacity, max_opacity)
-        fade_length=20,  # Number of segments to fade over
-        **kwargs
-    ):
-        super().__init__(**kwargs)
-        self.traced_point_func = traced_point_func
-        self.stroke_width = stroke_width
-        self.stroke_color = stroke_color
-        self.opacity_range = opacity_range
-        self.fade_length = fade_length
-        
-        # Store path segments as individual VMobjects
-        self.segments = VGroup()
-        self.traced_points = []
-        self.is_tracing = True
-        
-        # Add updater for forward tracing
-        self.add_updater(lambda m, dt: m.update_path(dt))
-    
-    def update_path(self, dt=0):
-        """Update path during forward animation"""
-        if not self.is_tracing or dt == 0:
-            return
-            
-        point = self.traced_point_func()
-        self.traced_points.append(point.copy())
-        
-        if len(self.traced_points) >= 2:
-            # Create a new segment
-            segment = Line(
-                self.traced_points[-2], 
-                self.traced_points[-1],
-                stroke_width=self.stroke_width,
-                stroke_color=self.stroke_color
-            )
-            
-            # Apply opacity gradient
-            self.segments.add(segment)
-            self.update_segment_opacities()
-            self.add(segment)
-    
-    def update_segment_opacities(self):
-        """Update opacity of all segments based on their position"""
-        n_segments = len(self.segments)
-        if n_segments == 0:
-            return
-            
-        min_op, max_op = self.opacity_range
-        
-        for i, segment in enumerate(self.segments):
-            if i >= n_segments - self.fade_length:
-                # Calculate fade based on distance from end
-                fade_progress = (i - (n_segments - self.fade_length)) / self.fade_length
-                opacity = min_op + (max_op - min_op) * fade_progress
-            else:
-                opacity = min_op
-            segment.set_opacity(opacity)
-    
-    def remove_last_segment(self):
-        """Remove the last segment (for reverse playback)
-        Kinda hacky but just run 2x to fix bug
-        """
-        if len(self.segments) > 0:
-            last_segment = self.segments[-1]
-            self.segments.remove(last_segment)
-            self.remove(last_segment)
-            if len(self.traced_points) > 0:
-                self.traced_points.pop()
-            self.update_segment_opacities()
-
-        if len(self.segments) > 0:
-            last_segment = self.segments[-1]
-            self.segments.remove(last_segment)
-            self.remove(last_segment)
-            if len(self.traced_points) > 0:
-                self.traced_points.pop()
-
-            self.update_segment_opacities()
-    
-    def stop_tracing(self):
-        """Stop the automatic tracing updater"""
-        self.is_tracing = False
-    
-    def start_tracing(self):
-        """Resume automatic tracing"""
-        self.is_tracing = True
-    
-    def get_num_segments(self):
-        """Get the current number of segments"""
-        return len(self.segments)
-
 
 class p40_51_sketch(InteractiveScene):
     def construct(self):
@@ -224,9 +116,8 @@ class p40_51_sketch(InteractiveScene):
 
         self.wait()
 
-        traced_path = CustomTracedPath(dot_to_move.get_center, stroke_color=YELLOW, stroke_width=2, 
-                                      opacity_range=(0.1, 0.8), fade_length=15)
-        # traced_path.set_opacity(0.5)
+        traced_path = TracedPath(dot_to_move.get_center, stroke_color=YELLOW, stroke_width=2)
+        traced_path.set_opacity(0.5)
         traced_path.set_fill(opacity=0)
         self.add(traced_path)
         self.add(dot_to_move)
@@ -267,7 +158,7 @@ class p40_51_sketch(InteractiveScene):
         self.wait()
         
         dot_history=VGroup()
-        dot_history.add(dot_to_move.copy().scale(0.22).set_color(YELLOW_FADE))
+        dot_history.add(dot_to_move.copy().scale(0.25))
         self.add(dot_history[-1])
         self.play(dot_to_move.animate.move_to(axes.c2p(*random_walk_shifted[0])), run_time=1.0)
 
@@ -275,20 +166,11 @@ class p40_51_sketch(InteractiveScene):
         self.wait()
 
         for i in range(100):
-            dot_history.add(dot_to_move.copy().scale(0.22).set_color(YELLOW_FADE))
+            dot_history.add(dot_to_move.copy().scale(0.25))
             self.add(dot_history[-1])
-            self.play(dot_to_move.animate.move_to(axes.c2p(*random_walk_shifted[i])), run_time=0.1, rate_func=linear)
+            self.play(dot_to_move.animate.move_to(axes.c2p(*random_walk_shifted[i])), run_time=0.2, rate_func=linear)
 
         self.wait()
-
-
-        # traced_path.remove_last_segment()
-        # self.remove(dot_history)
-        # self.remove(dot_to_move)
-        # self.remove(traved_path)
-
-
-
 
         # Now zoom out and run all paths -> maybe while zoooming out. 
         # I think looking at variable path opacity (highest closes to end point) will be worth looking at for 
@@ -304,7 +186,7 @@ class p40_51_sketch(InteractiveScene):
         np.random.seed(2)
         for i in range(100):
             rw=0.07*np.random.randn(100,2) #I might want to manually make the first step larger/more obvious.
-            rw[0]=np.array([0,0]) #make be the starting point
+            # rw[0]=np.array([0.2, 0.12]) #make first step go up and to the right
             # rw[-1]=np.array([0.08, -0.02])
             rw=np.cumsum(rw,axis=0) 
             rw=np.hstack((rw, np.zeros((len(rw), 1))))
@@ -315,22 +197,11 @@ class p40_51_sketch(InteractiveScene):
         # bringing stuff back together phase
 
         traced_paths=VGroup()
-        for idx, d in enumerate(dots): 
-            # tp = TracedPath(d.get_center, stroke_color=YELLOW, stroke_width=2)
-            if idx != 75:  # Skip the already traced dot
-                tp = CustomTracedPath(
-                        d.get_center, 
-                        stroke_color=YELLOW, 
-                        stroke_width=2,
-                        opacity_range=(0.1, 0.5),
-                        fade_length=10
-                    )
-                traced_path.set_fill(opacity=0)
-                traced_paths.add(tp)
-                # tp.set_opacity(0.2)
-                # tp.set_fill(opacity=0)
-                # traced_path.add(tp)
-        self.add(traced_paths)
+        for d in dots: 
+            tp = TracedPath(d.get_center, stroke_color=YELLOW, stroke_width=2)
+            tp.set_opacity(0.2)
+            tp.set_fill(opacity=0)
+            traced_path.add(tp)
 
         remaining_indices=np.concatenate((np.arange(75), np.arange(76,len(batch))))    
 
@@ -346,37 +217,49 @@ class p40_51_sketch(InteractiveScene):
                      self.frame.animate.reorient(*interp_orientations[step]), 
                      run_time=0.1, rate_func=linear)
 
-            #Kinda hacky but just try removing these after first step for now - that first path is distracting for big animation
-            self.remove(dot_history)
-            self.remove(dot_to_move)
-            self.remove(traced_path)
-            self.remove(dots[75])
+
+        #So there are 3 nice to haves here that I think I'll skip for now, can do if i have time
+        # 1. little dots between steps
+        # 2. Variable opacity traces
+        # 
+        # Eh actually it kinda looks like i need to replace tracedpaths, probably a good job for claude. 
+        # Let me try to figure out the camear zoom first. 
+
 
         self.wait()
 
-
-        
-        for tp in traced_paths: tp.stop_tracing()
-
         #Now play random walk backwards and zoom back in! Don't forget to remove traced paths as we go backwards
-        for step in range(99, -1, -1):
-            self.play(*[dots[i].animate.move_to(axes.c2p(*random_walks[i][step])) for i in remaining_indices], 
-                     self.frame.animate.reorient(*interp_orientations[step]), 
-                     run_time=0.1, rate_func=linear)
-            for tp in traced_paths:
-                tp.remove_last_segment()
-                if step==99: tp.remove_last_segment() #Bug patch
-        self.add(dots[75])
 
 
 
-
-        seelf.wait()
-
-
-
-        # Need to decide what to do with that last path. 
 
 
         self.wait(20)
         self.embed()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

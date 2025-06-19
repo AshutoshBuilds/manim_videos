@@ -166,6 +166,67 @@ class CustomTracedPath(VMobject):
         return len(self.segments)
 
 
+def create_noisy_arrow_animation(self, start_point, end_point, target_point, num_steps=100, noise_level=0.1, overshoot_factor=0.3):
+    """
+    Creates a sequence of arrow end positions that converge from end_point to target_point
+    with parameterizable noise and overshoot past the target direction.
+    """
+    
+    # Calculate initial and target directions
+    initial_direction = np.array(end_point) - np.array(start_point)
+    target_direction = np.array(target_point) - np.array(start_point)
+    
+    # Calculate the constant length
+    arrow_length = np.linalg.norm(initial_direction)
+    
+    # Calculate angles
+    initial_angle = np.arctan2(initial_direction[1], initial_direction[0])
+    target_angle = np.arctan2(target_direction[1], target_direction[0])
+    
+    # Handle angle wrapping (choose the shorter path)
+    angle_diff = target_angle - initial_angle
+    if angle_diff > np.pi:
+        angle_diff -= 2 * np.pi
+    elif angle_diff < -np.pi:
+        angle_diff += 2 * np.pi
+    
+    # Create interpolation parameter
+    t_values = np.linspace(0, 1, num_steps)
+    
+    # Generate noise that decreases over time
+    np.random.seed(42)
+    noise_decay = np.exp(-3 * t_values)
+    angle_noise = noise_level * noise_decay * np.random.randn(num_steps)
+    
+    # Generate overshoot in angle space - this will make it swing past the target angle
+    overshoot_frequency = 1.5
+    overshoot_decay = np.exp(-2 * t_values)
+    overshoot_oscillation = overshoot_factor * overshoot_decay * np.sin(overshoot_frequency * np.pi * t_values)
+    
+    # The key: let the angle interpolation overshoot past the target
+    t_effective = t_values + overshoot_oscillation
+    # Ensure final angle is exactly the target
+    t_effective[-1] = 1.0
+    
+    arrow_positions = []
+    
+    for i, t_eff in enumerate(t_effective):
+        # Interpolate angle - this is where the overshoot happens
+        current_angle = initial_angle + t_eff * angle_diff
+        
+        # Add angular noise (but not on final step)
+        if i < len(t_effective) - 1:
+            current_angle += angle_noise[i]
+        
+        # Convert back to cartesian coordinates
+        end_x = np.array(start_point)[0] + arrow_length * np.cos(current_angle)
+        end_y = np.array(start_point)[1] + arrow_length * np.sin(current_angle)
+        
+        arrow_positions.append([end_x, end_y, 0])
+    
+    return arrow_positions
+
+
 class p47b(InteractiveScene):
     def construct(self):
         '''
@@ -286,11 +347,27 @@ class p47b(InteractiveScene):
         # First let me figure out how I wanto to move the brown arrow
         # It needs to feel noisy, but not too noisy, and coverge to exactly the x0 direction, and length needs
         # to stay the same. And i need 100 steps. Let's ask my buddy Claude. 
+        noise_level = 0.06  # Adjust this parameter to control noise amount
+        overshoot_factor = 0.4  # Adjust this to control how much overshoot occurs
+        arrow_end_positions = create_noisy_arrow_animation(
+            self, 
+            start_point=dot_to_move.get_center()[:2],  # x100 position (2D)
+            end_point=dot_history[-1].get_center()[:2],  # x99 position (2D) 
+            target_point=dots[i].get_center()[:2],  # x0 position (2D)
+            num_steps=100,
+            noise_level=noise_level,
+            overshoot_factor=overshoot_factor
+        )
 
 
-
-
-
+        self.wait()
+        for end_pos in arrow_end_positions:
+            arrow_x100_to_x99.put_start_and_end_on(
+                dot_to_move.get_center(),
+                end_pos
+                # np.concatenate((end_pos, [0]))
+            )
+            self.wait(0.05)  # 5 seconds total for 100 steps
 
 
 

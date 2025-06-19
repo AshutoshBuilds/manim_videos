@@ -13,6 +13,49 @@ from smalldiffusion import (
     ScheduleLogLinear, samples, Swissroll, ModelMixin
 )
 
+def manual_camera_interpolation(start_orientation, end_orientation, num_steps):
+    """
+    Linearly interpolate between two camera orientations.
+    
+    Parameters:
+    - start_orientation: List containing camera parameters with a tuple at index 3
+    - end_orientation: List containing camera parameters with a tuple at index 3
+    - num_steps: Number of interpolation steps (including start and end)
+    
+    Returns:
+    - List of interpolated orientations
+    """
+    result = []
+    
+    for step in range(num_steps):
+        # Calculate interpolation factor (0 to 1)
+        t = step / (num_steps - 1) if num_steps > 1 else 0
+        
+        # Create a new orientation for this step
+        interpolated = []
+        
+        for i in range(len(start_orientation)):
+            if i == 3:  # Handle the tuple at position 3
+                start_tuple = start_orientation[i]
+                end_tuple = end_orientation[i]
+                
+                # Interpolate each element of the tuple
+                interpolated_tuple = tuple(
+                    start_tuple[j] + t * (end_tuple[j] - start_tuple[j])
+                    for j in range(len(start_tuple))
+                )
+                
+                interpolated.append(interpolated_tuple)
+            else:  # Handle regular numeric values
+                start_val = start_orientation[i]
+                end_val = end_orientation[i]
+                interpolated_val = start_val + t * (end_val - start_val)
+                interpolated.append(interpolated_val)
+        
+        result.append(interpolated)
+    
+    return result
+
 class p40_51_sketch(InteractiveScene):
     def construct(self):
 
@@ -102,7 +145,8 @@ class p40_51_sketch(InteractiveScene):
 
         np.random.seed(485) #485 is nice, 4 is maybe best so far, #52 is ok
         random_walk=0.07*np.random.randn(100,2) #I might want to manually make the first step larger/more obvious.
-        random_walk[0]=np.array([0.3, 0.18]) #make first step go up and to the right
+        random_walk[0]=np.array([0.2, 0.12]) #make first step go up and to the right
+        random_walk[-1]=np.array([0.08, -0.02])
         random_walk=np.cumsum(random_walk,axis=0) 
         print(random_walk[0])
 
@@ -128,14 +172,65 @@ class p40_51_sketch(InteractiveScene):
 
         self.wait()
 
-        #Now zoom out and run all paths -> maybe while zoooming out. 
+        # Now zoom out and run all paths -> maybe while zoooming out. 
+        # I think looking at variable path opacity (highest closes to end point) will be worth looking at for 
+        # the batch option. 
+
+        #Ok so I want to fadd in rest of point and center my plot. Then diffuse everybody!!
+        self.play(self.frame.animate.reorient(0, 0, 0, (-0.07, 0.01, 0.0), 7.59), 
+                        dots.animate.set_opacity(1.0), 
+                        run_time=3.0)
+        self.wait()
+
+        random_walks=[]
+        np.random.seed(2)
+        for i in range(100):
+            rw=0.07*np.random.randn(100,2) #I might want to manually make the first step larger/more obvious.
+            # rw[0]=np.array([0.2, 0.12]) #make first step go up and to the right
+            # rw[-1]=np.array([0.08, -0.02])
+            rw=np.cumsum(rw,axis=0) 
+            rw=np.hstack((rw, np.zeros((len(rw), 1))))
+            rw_shifted=rw+np.array([batch[i][0], batch[i][1], 0])
+            random_walks.append(rw_shifted)
+
+        # maybe we actually totally lost the spiral for this animation? That might make for a more dramatic
+        # bringing stuff back together phase
+
+        traced_paths=VGroup()
+        for d in dots: 
+            tp = TracedPath(d.get_center, stroke_color=YELLOW, stroke_width=2)
+            tp.set_opacity(0.2)
+            tp.set_fill(opacity=0)
+            traced_path.add(tp)
+
+        remaining_indices=np.concatenate((np.arange(75), np.arange(76,len(batch))))    
 
 
+        start_orientation=[0, 0, 0, (-0.07, 0.01, 0.0), 7.59]
+        end_orientation=[0, 0, 0, (0.23, -0.24, 0.0), 14.98]
+        interp_orientations=manual_camera_interpolation(start_orientation, end_orientation, num_steps=100)
+
+        self.wait()
+        remaining_indices=np.concatenate((np.arange(75), np.arange(76,len(batch))))
+        for step in range(100):
+            self.play(*[dots[i].animate.move_to(axes.c2p(*random_walks[i][step])) for i in remaining_indices], 
+                     self.frame.animate.reorient(*interp_orientations[step]), 
+                     run_time=0.1, rate_func=linear)
 
 
+        #So there are 3 nice to haves here that I think I'll skip for now, can do if i have time
+        # 1. little dots between steps
+        # 2. Variable opacity traces
+        # 
+        # Eh actually it kinda looks like i need to replace tracedpaths, probably a good job for claude. 
+        # Let me try to figure out the camear zoom first. 
 
 
         self.wait()
+
+        #Now play random walk backwards and zoom back in! Don't forget to remove traced paths as we go backwards
+
+
 
 
 

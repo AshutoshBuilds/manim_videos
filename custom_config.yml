@@ -1,7 +1,7 @@
 directories:
   mirror_module_path: False
   removed_mirror_prefix: "/Users/stephen/Stephencwelch Dropbox/Stephen Welch"
-  base: "/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backprop2/animation"
+  base: "/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/manim_exports"
   subdirs:
     raster_images: "images/raster"
     vector_images: "images/vector"

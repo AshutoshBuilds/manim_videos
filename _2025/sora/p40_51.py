@@ -166,7 +166,132 @@ class CustomTracedPath(VMobject):
         return len(self.segments)
 
 
-class p44_48(InteractiveScene):
+class p47b(InteractiveScene):
+    def construct(self):
+        '''
+        Alright need to pick up where i left off on p44_47, and get ready for another crazy particle fly by lol
+        This is a little nuts - but I do think it conveys the point nicely. 
+        '''
+
+        batch_size=2130
+        dataset = Swissroll(np.pi/2, 5*np.pi, 100)
+        loader = DataLoader(dataset, batch_size=batch_size)
+        batch=next(iter(loader)).numpy()
+
+        axes = Axes(
+            x_range=[-1.2, 1.2, 0.5],
+            y_range=[-1.2, 1.2, 0.5],
+            height=7,
+            width=7,
+            axis_config={
+                "color": CHILL_BROWN, 
+                "stroke_width": 2,
+                "include_tip": True,
+                "include_ticks": True,
+                "tick_size": 0.06,
+                "tip_config": {"color": CHILL_BROWN, "length": 0.15, "width": 0.15}
+            }
+        )
+
+        dots = VGroup()
+        for point in batch:
+            # Map the point coordinates to the axes
+            screen_point = axes.c2p(point[0], point[1])
+            dot = Dot(screen_point, radius=0.04)
+            # dot.set_color(YELLOW)
+            dots.add(dot)
+        dots.set_color(YELLOW)
+        dots.set_opacity(0.3)
+
+        i=75
+        dot_to_move=dots[i].copy()
+        traced_path = CustomTracedPath(dot_to_move.get_center, stroke_color=YELLOW, stroke_width=3.5, 
+                                      opacity_range=(0.25, 0.9), fade_length=15)
+        # traced_path.set_opacity(0.5)
+        traced_path.set_fill(opacity=0)
+
+
+        np.random.seed(485) #485 is nice, 4 is maybe best so far, #52 is ok
+        random_walk=0.07*np.random.randn(100,2) #I might want to manually make the first step larger/more obvious.
+        random_walk[0]=np.array([0.2, 0.12]) #make first step go up and to the right
+        # random_walk[-1]=np.array([0.15, -0.04])
+        random_walk[-1]=np.array([0.19, -0.05])
+        random_walk=np.cumsum(random_walk,axis=0) 
+
+        random_walk=np.hstack((random_walk, np.zeros((len(random_walk), 1))))
+        random_walk_shifted=random_walk+np.array([batch[i][0], batch[i][1], 0])
+        
+        dot_history=VGroup()
+        dot_history.add(dot_to_move.copy().scale(0.4).set_color(YELLOW))
+        # self.play(dot_to_move.animate.move_to(axes.c2p(*random_walk_shifted[0])), run_time=1.0)
+        # dot_to_move.move_to(axes.c2p(*random_walk_shifted[1]))
+        traced_path.update_path(0.1)
+
+        for j in range(100):
+            dot_history.add(dot_to_move.copy().scale(0.4).set_color(YELLOW))
+            dot_to_move.move_to(axes.c2p(*random_walk_shifted[j]))
+            traced_path.update_path(0.1)
+            # self.play(dot_to_move.animate.move_to(axes.c2p(*random_walk_shifted[i])), run_time=0.1, rate_func=linear)
+        traced_path.stop_tracing()
+
+        dot_to_move.set_opacity(1.0)
+        self.frame.reorient(0, 0, 0, (3.58, 2.57, 0.0), 2.69)
+        self.add(axes, dots, traced_path, dot_to_move)
+        self.wait()
+
+
+        #Ok let me try to get all the big elements in here
+        x100=Tex('x_{100}', font_size=24).set_color(YELLOW)
+        x100.next_to(dot_to_move, 0.1*UP+0.01*RIGHT)
+
+        x99=Tex('x_{99}', font_size=24).set_color(CHILL_BROWN)
+        x99.next_to(dot_history[-1], 0.1*UP+0.01*RIGHT)
+        dot99=Dot(dot_history[-1].get_center(), radius=0.04)
+        dot99.set_color(CHILL_BROWN)
+
+        x0=Tex('x_{0}', font_size=24).set_color('#00FFFF')
+        x0.next_to(dots[i], 0.2*UP)
+        dots[i].set_color('#00FFFF').set_opacity(1.0)
+
+        arrow_x100_to_x0 = Arrow(
+            start=dot_to_move.get_center(),
+            end=dots[i].get_center(),
+            thickness=1,
+            tip_width_ratio=5, 
+            buff=0.03  # Small buffer so arrow doesn't overlap the dots
+        )
+        arrow_x100_to_x0.set_color('#00FFFF')
+        arrow_x100_to_x0.set_opacity(0.6)
+
+        arrow_x100_to_x99 = Arrow(
+            start=dot_to_move.get_center(),
+            end=dot_history[-1].get_center(),
+            thickness=1.5,
+            tip_width_ratio=5, 
+            buff=0.04  # Small buffer so arrow doesn't overlap the dots
+        )
+        arrow_x100_to_x99.set_color(CHILL_BROWN)
+        # arrow_x100_to_x99.set_opacity(0.6)
+
+
+        self.add(x100, x99, dot99, x0, arrow_x100_to_x0, arrow_x100_to_x99)
+
+
+
+
+
+
+
+
+        self.wait(20)
+        self.embed()
+
+
+
+
+
+
+class p44_47(InteractiveScene):
     def construct(self):
         '''
         Ok going to try a "clean break" here on the full spiral!
@@ -334,7 +459,9 @@ class p44_48(InteractiveScene):
         
         for tp in traced_paths: tp.stop_tracing()
 
-        self.play(FadeOut(dots_to_move), traced_paths)
+        self.remove(dots_to_move, traced_paths)
+        # self.play(FadeOut(dots_to_move), FadeOut(traced_paths), FadeOut(r))
+        self.play(FadeOut(r))
         self.wait()
 
         #Zoom back in

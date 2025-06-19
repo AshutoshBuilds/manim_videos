@@ -242,7 +242,7 @@ class p47b(InteractiveScene):
 
         #Ok let me try to get all the big elements in here
         x100=Tex('x_{100}', font_size=24).set_color(YELLOW)
-        x100.next_to(dot_to_move, 0.1*UP+0.01*RIGHT)
+        x100.next_to(dot_to_move, 0.07*UP+0.001*RIGHT)
 
         x99=Tex('x_{99}', font_size=24).set_color(CHILL_BROWN)
         x99.next_to(dot_history[-1], 0.1*UP+0.01*RIGHT)
@@ -258,7 +258,7 @@ class p47b(InteractiveScene):
             end=dots[i].get_center(),
             thickness=1,
             tip_width_ratio=5, 
-            buff=0.03  # Small buffer so arrow doesn't overlap the dots
+            buff=0.025  # Small buffer so arrow doesn't overlap the dots
         )
         arrow_x100_to_x0.set_color('#00FFFF')
         arrow_x100_to_x0.set_opacity(0.6)
@@ -275,6 +275,17 @@ class p47b(InteractiveScene):
 
 
         self.add(x100, x99, dot99, x0, arrow_x100_to_x0, arrow_x100_to_x99)
+        self.wait()
+
+        # Alright probably need to tweak how I'm adding stuff etc -> but let's get to the main event though
+        # So probably lost the labels and yellow path? Yeah maybe like this:
+        self.remove(x99, traced_path)
+        self.wait()
+
+        # Ok so i gotta send a bunch of particles, I can probably just use the same exact animation
+        # First let me figure out how I wanto to move the brown arrow
+        # It needs to feel noisy, but not too noisy, and coverge to exactly the x0 direction, and length needs
+        # to stay the same. And i need 100 steps. Let's ask my buddy Claude. 
 
 
 

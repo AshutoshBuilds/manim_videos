@@ -140,7 +140,7 @@ class CustomTracedPath(VMobject):
             self.remove(last_segment)
             if len(self.traced_points) > 0:
                 self.traced_points.pop()
-            self.update_segment_opacities()
+            # self.update_segment_opacities()
 
         if len(self.segments) > 0:
             last_segment = self.segments[-1]
@@ -149,7 +149,7 @@ class CustomTracedPath(VMobject):
             if len(self.traced_points) > 0:
                 self.traced_points.pop()
 
-            self.update_segment_opacities()
+        self.update_segment_opacities()
     
     def stop_tracing(self):
         """Stop the automatic tracing updater"""
@@ -164,8 +164,100 @@ class CustomTracedPath(VMobject):
         return len(self.segments)
 
 
-class p40_51_sketch(InteractiveScene):
+class p44_48(InteractiveScene):
     def construct(self):
+        '''
+        Ok going to try a "clean break" here on the full spiral!
+        '''
+
+        batch_size=2130
+        dataset = Swissroll(np.pi/2, 5*np.pi, 100)
+        loader = DataLoader(dataset, batch_size=batch_size)
+        batch=next(iter(loader)).numpy()
+
+        axes = Axes(
+            x_range=[-1.2, 1.2, 0.5],
+            y_range=[-1.2, 1.2, 0.5],
+            height=7,
+            width=7,
+            axis_config={
+                "color": CHILL_BROWN, 
+                "stroke_width": 2,
+                "include_tip": True,
+                "include_ticks": True,
+                "tick_size": 0.06,
+                "tip_config": {"color": CHILL_BROWN, "length": 0.15, "width": 0.15}
+            }
+        )
+
+        dots = VGroup()
+        for point in batch:
+            # Map the point coordinates to the axes
+            screen_point = axes.c2p(point[0], point[1])
+            dot = Dot(screen_point, radius=0.04)
+            # dot.set_color(YELLOW)
+            dots.add(dot)
+        dots.set_color(YELLOW)
+
+        i=75
+        dot_to_move=dots[i].copy()
+        traced_path = CustomTracedPath(dot_to_move.get_center, stroke_color=YELLOW, stroke_width=2, 
+                                      opacity_range=(0.1, 0.8), fade_length=15)
+        # traced_path.set_opacity(0.5)
+        traced_path.set_fill(opacity=0)
+
+
+        np.random.seed(485) #485 is nice, 4 is maybe best so far, #52 is ok
+        random_walk=0.07*np.random.randn(100,2) #I might want to manually make the first step larger/more obvious.
+        random_walk[0]=np.array([0.2, 0.12]) #make first step go up and to the right
+        random_walk[-1]=np.array([0.08, -0.02])
+        random_walk=np.cumsum(random_walk,axis=0) 
+
+        random_walk=np.hstack((random_walk, np.zeros((len(random_walk), 1))))
+        random_walk_shifted=random_walk+np.array([batch[i][0], batch[i][1], 0])
+        
+        dot_history=VGroup()
+        dot_history.add(dot_to_move.copy().scale(0.22).set_color(YELLOW_FADE))
+        # self.play(dot_to_move.animate.move_to(axes.c2p(*random_walk_shifted[0])), run_time=1.0)
+        # dot_to_move.move_to(axes.c2p(*random_walk_shifted[1]))
+        traced_path.update_path(0.1)
+
+        for i in range(100):
+            dot_history.add(dot_to_move.copy().scale(0.22).set_color(YELLOW_FADE))
+            dot_to_move.move_to(axes.c2p(*random_walk_shifted[i]))
+            traced_path.update_path(0.1)
+            # self.play(dot_to_move.animate.move_to(axes.c2p(*random_walk_shifted[i])), run_time=0.1, rate_func=linear)
+
+
+        self.frame.reorient(0, 0, 0, (-0.07, 0.01, 0.0), 7.59)
+        self.add(axes, dots)
+        # self.add(traced_path)
+        # self.add(dot_to_move)
+        # self.add(dot_history)
+        self.wait()
+
+        #P45, zoom in and fade in walk
+        self.play(FadeIn(traced_path), 
+                  FadeIn(dot_to_move), 
+                  # FadeIn(dot_history)
+                  )
+
+
+
+
+
+
+        self.wait(20)
+        self.embed()
+
+
+
+
+class p40_44(InteractiveScene):
+    def construct(self):
+        '''
+        May want to adopt an actual noise schedule here so we don't that big snap at the end - we'll see. 
+        '''
 
         batch_size=2130
         dataset = Swissroll(np.pi/2, 5*np.pi, 100)
@@ -369,13 +461,11 @@ class p40_51_sketch(InteractiveScene):
         self.add(dots[75])
 
 
-
-
-        seelf.wait()
+        self.wait()
 
 
 
-        # Need to decide what to do with that last path. 
+        # Ok ending cleanly on the simple spiral is probably nice here, I can start a new scene - this will help with cleanup etc.  
 
 
         self.wait(20)

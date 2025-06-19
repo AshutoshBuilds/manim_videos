@@ -8,6 +8,7 @@ BLUE='#65c8d0'
 GREEN='#00a14b'
 CHILL_GREEN='#6c946f'
 CHILL_BLUE='#3d5c6f'
+FRESH_TAN='#dfd0b9'
 
 from torch.utils.data import DataLoader
 from smalldiffusion import (
@@ -15,6 +16,7 @@ from smalldiffusion import (
 )
 
 from typing import Callable
+from tqdm import tqdm
 
 def manual_camera_interpolation(start_orientation, end_orientation, num_steps):
     """
@@ -210,7 +212,8 @@ class p44_48(InteractiveScene):
         np.random.seed(485) #485 is nice, 4 is maybe best so far, #52 is ok
         random_walk=0.07*np.random.randn(100,2) #I might want to manually make the first step larger/more obvious.
         random_walk[0]=np.array([0.2, 0.12]) #make first step go up and to the right
-        random_walk[-1]=np.array([0.15, -0.04])
+        # random_walk[-1]=np.array([0.15, -0.04])
+        random_walk[-1]=np.array([0.19, -0.05])
         random_walk=np.cumsum(random_walk,axis=0) 
 
         random_walk=np.hstack((random_walk, np.zeros((len(random_walk), 1))))
@@ -248,10 +251,95 @@ class p44_48(InteractiveScene):
 
 
         self.wait()
-        self.play(self.frame.animate.reorient(0, 0, 0, (3.69, 2.4, 0.0), 3.07),
-                 dots.animate.set_opacity(0.1), run_time=3.0)
+        self.play(self.frame.animate.reorient(0, 0, 0, (3.58, 2.57, 0.0), 2.69),
+                 dots.animate.set_opacity(0.3), run_time=3.0)
+        self.wait()
+
+        # Ok so p45 will probably be all illustrator/premiere overlay 
+        # From here then, I need to send a bunch of diffusion paths out
+        # I'm hoping that it will be apparent visually that things are moving more left to right than the other way 
+        # But i don't know yet
+        # I might want to do a bit of a zoom out here -> we'll see. 
+        # Could also draw a box around the neighborhood, or search for ways to accentuate the motion or somethhing - not sure 
+        # yet. Let me try the naive approach and see how it feels. 
+        # Hmm yeah this one is taking some noodling -> I do kinda think that drawing the neighborhood box might be good. 
 
 
+        #Ok looks like I need to filter on paths that go through this neighborhood
+        random_walks=[]
+        np.random.seed(2)
+        for j in tqdm(range(int(2e6))):
+            rw=0.07*np.random.randn(100,2)
+            rw[0]=np.array([0,0]) #make be the starting point
+            # rw[-1]=np.array([0.08, -0.02])
+            rw=np.cumsum(rw,axis=0) 
+            rw=np.hstack((rw, np.zeros((len(rw), 1))))
+            rw_shifted=rw+np.array([batch[j%len(batch)][0], batch[j%len(batch)][1], 0])
+            # if rw_shifted[-1][0]>1.7 and rw_shifted[-1][0]<2.2 and rw_shifted[-1][1]>1.1 and rw_shifted[-1][1]<1.4:
+            if rw_shifted[-1][0]>2.1 and rw_shifted[-1][1]>1.4:
+                random_walks.append(rw_shifted)
+
+        print(len(random_walks))
+        # random_walks=random_walks[:100]
+        print(len(random_walks))
+
+        dots_to_move = VGroup()
+        for j in range(len(random_walks)):
+            # Map the point coordinates to the axes
+            screen_point = axes.c2p(batch[j%len(batch)][0], batch[j%len(batch)][1])
+            dot = Dot(screen_point, radius=0.04)
+            # dot.set_color(YELLOW)
+            dots_to_move.add(dot)
+        dots_to_move.set_color(FRESH_TAN)
+        dots_to_move.set_opacity(0.3)
+
+
+        traced_paths=VGroup()
+        for idx, d in enumerate(dots_to_move): 
+            # tp = TracedPath(d.get_center, stroke_color=YELLOW, stroke_width=2)
+            if idx != 75:  # Skip the already traced dot
+                tp = CustomTracedPath(
+                        d.get_center, 
+                        stroke_color=FRESH_TAN, 
+                        stroke_width=2,
+                        opacity_range=(0.02, 0.5),
+                        fade_length=10
+                    )
+                traced_path.set_fill(opacity=0)
+                traced_paths.add(tp)
+        self.add(traced_paths)
+
+
+        remaining_indices=np.concatenate((np.arange(75), np.arange(76,len(batch))))    
+        start_orientation=[0, 0, 0, (3.58, 2.57, 0.0), 2.69]
+        end_orientation=[0, 0, 0, (4.86, 2.65, 0.0), 3.06]
+        interp_orientations=manual_camera_interpolation(start_orientation, end_orientation, num_steps=100)
+        remaining_indices=np.concatenate((np.arange(75), np.arange(76,len(batch))))
+
+        
+        self.wait()
+        self.play(self.frame.animate.reorient(0, 0, 0, (2.74, 1.72, 0.0), 3.99))
+
+        r=RoundedRectangle(1.5, 1.0, 0.05)
+        r.set_stroke(color='#00FFFF', width=2)
+        r.move_to(dot_to_move)
+        self.add(r)
+
+        self.wait()
+        for step in range(100):
+            self.play(*[dots_to_move[i].animate.move_to(axes.c2p(*random_walks[i][step])) for i in range(len(random_walks))], 
+                     # self.frame.animate.reorient(*interp_orientations[step]), 
+                     run_time=0.1, rate_func=linear)
+        self.wait()
+        
+        for tp in traced_paths: tp.stop_tracing()
+
+        self.play(FadeOut(dots_to_move), traced_paths)
+        self.wait()
+
+        #Zoom back in
+        self.play(self.frame.animate.reorient(0, 0, 0, (3.58, 2.57, 0.0), 2.69), run_time=3)
+        self.wait()
 
 
         self.wait(20)
@@ -458,6 +546,8 @@ class p40_44(InteractiveScene):
         for tp in traced_paths: tp.stop_tracing()
 
         #Now play random walk backwards and zoom back in! Don't forget to remove traced paths as we go backwards
+        #Reverse process works in interactive mode but not when rendering
+        # I'll ask claude later or just play the other clip backwards. 
         for step in range(99, -1, -1):
             self.play(*[dots[i].animate.move_to(axes.c2p(*random_walks[i][step])) for i in remaining_indices], 
                      self.frame.animate.reorient(*interp_orientations[step]), 
@@ -465,6 +555,7 @@ class p40_44(InteractiveScene):
             for tp in traced_paths:
                 tp.remove_last_segment()
                 if step==99: tp.remove_last_segment() #Bug patch
+            self.wait(0.1) #Hmm maybe adding a wait here will help???
         self.add(dots[75])
 
 
@@ -477,3 +568,7 @@ class p40_44(InteractiveScene):
 
         self.wait(20)
         self.embed()
+
+
+
+

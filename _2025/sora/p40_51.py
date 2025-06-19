@@ -201,8 +201,8 @@ class p44_48(InteractiveScene):
 
         i=75
         dot_to_move=dots[i].copy()
-        traced_path = CustomTracedPath(dot_to_move.get_center, stroke_color=YELLOW, stroke_width=2, 
-                                      opacity_range=(0.1, 0.8), fade_length=15)
+        traced_path = CustomTracedPath(dot_to_move.get_center, stroke_color=YELLOW, stroke_width=3.5, 
+                                      opacity_range=(0.25, 0.9), fade_length=15)
         # traced_path.set_opacity(0.5)
         traced_path.set_fill(opacity=0)
 
@@ -210,20 +210,20 @@ class p44_48(InteractiveScene):
         np.random.seed(485) #485 is nice, 4 is maybe best so far, #52 is ok
         random_walk=0.07*np.random.randn(100,2) #I might want to manually make the first step larger/more obvious.
         random_walk[0]=np.array([0.2, 0.12]) #make first step go up and to the right
-        random_walk[-1]=np.array([0.08, -0.02])
+        random_walk[-1]=np.array([0.15, -0.04])
         random_walk=np.cumsum(random_walk,axis=0) 
 
         random_walk=np.hstack((random_walk, np.zeros((len(random_walk), 1))))
         random_walk_shifted=random_walk+np.array([batch[i][0], batch[i][1], 0])
         
         dot_history=VGroup()
-        dot_history.add(dot_to_move.copy().scale(0.22).set_color(YELLOW_FADE))
+        dot_history.add(dot_to_move.copy().scale(0.4).set_color(YELLOW))
         # self.play(dot_to_move.animate.move_to(axes.c2p(*random_walk_shifted[0])), run_time=1.0)
         # dot_to_move.move_to(axes.c2p(*random_walk_shifted[1]))
         traced_path.update_path(0.1)
 
         for i in range(100):
-            dot_history.add(dot_to_move.copy().scale(0.22).set_color(YELLOW_FADE))
+            dot_history.add(dot_to_move.copy().scale(0.4).set_color(YELLOW))
             dot_to_move.move_to(axes.c2p(*random_walk_shifted[i]))
             traced_path.update_path(0.1)
             # self.play(dot_to_move.animate.move_to(axes.c2p(*random_walk_shifted[i])), run_time=0.1, rate_func=linear)
@@ -236,6 +236,10 @@ class p44_48(InteractiveScene):
         # self.add(dot_history)
         self.wait()
 
+
+        traced_path.stop_tracing()
+
+
         #P45, zoom in and fade in walk
         self.play(FadeIn(traced_path), 
                   FadeIn(dot_to_move), 
@@ -243,6 +247,9 @@ class p44_48(InteractiveScene):
                   )
 
 
+        self.wait()
+        self.play(self.frame.animate.reorient(0, 0, 0, (3.69, 2.4, 0.0), 3.07),
+                 dots.animate.set_opacity(0.1), run_time=3.0)
 
 
 

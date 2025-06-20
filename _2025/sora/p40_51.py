@@ -455,7 +455,7 @@ class p48_51(InteractiveScene):
             time_tracker=time_tracker,
             func=vector_function_with_tracker,
             coordinate_system=extended_axes,
-            density=3.0, #hacking here with Grant - more density???
+            density=4.0, #hacking here with Grant - more density??? let's try 4 (was 3) can dial back if I need to.
             stroke_width=2,
             stroke_opacity=0.7, #0.7,
             tip_width_ratio=4,
@@ -785,8 +785,8 @@ class p48_51(InteractiveScene):
 
 
         time_tracker.set_value(0)
-        vector_field.set_color(CHILL_BROWN) #Can't decde on color!
-        # vector_field.set_color('#FFFFFF')
+        # vector_field.set_color(CHILL_BROWN) #Can't decde on color!
+        vector_field.set_color('#FFFFFF')
         # self.play(FadeIn(vector_field))
         self.wait()
         # self.play(time_tracker.animate.set_value(8.0), run_time=10.0)
@@ -820,6 +820,7 @@ class p48_51(InteractiveScene):
             run_time=10.0, 
             rate_func=linear
         )
+        self.wait()
 
 
 

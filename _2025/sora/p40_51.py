@@ -481,19 +481,44 @@ class p48_51(InteractiveScene):
             func=vector_function_with_tracker,
             coordinate_system=extended_axes,
             density=3.0,
-            stroke_width=3,
-            stroke_opacity=0.7,
+            stroke_width=2,
+            stroke_opacity=0.7, #0.7,
             tip_width_ratio=4,
             tip_len_to_width=0.01,
             max_vect_len_to_step_size=0.7,
             color=CHILL_BROWN
         )
-
-
-        self.frame.reorient(0, 0, 0, (-0.06, 0.09, 0.0), 8.31)
-        self.play(FadeIn(vector_field), run_time=2.0)
         self.wait()
 
+        # Ok so I need a smooth transition from arrow_x100_to_x99 to the nearest vector in teh vector field
+        # Would like to simultanesouly do the camera move, progressively bring in vector field - radiating out
+        # from arrow_x100_to_x99 would be dope, and i need to do like a replacement transform between 
+        # arrow_x100_to_x99 and the nearest vector in the field. 
+
+
+        # self.play(ShowCreation(vector_field), 
+        #          arrow_x100_to_x99.animate.rotate(-14*DEGREES).shift([0.17, -0.07, 0]).scale([0.6, 1.2, 1]).set_opacity(0.8),
+        #          self.frame.animate.reorient(0, 0, 0, (-0.06, 0.09, 0.0), 8.31), 
+        #          run_time=6.0)
+
+        #ok i think fading in teh vector field is probably th emove. 
+        self.play(FadeIn(vector_field), 
+                 dots.animate.set_opacity(0.75),
+                 arrow_x100_to_x99.animate.rotate(-14*DEGREES).shift([0.17, -0.07, 0]).scale([0.6, 1.2, 1]).set_opacity(0.5),
+                 self.frame.animate.reorient(0, 0, 0, (-0.21, 0.02, 0.0), 8.08), 
+                 run_time=6.0)
+        self.remove(arrow_x100_to_x99)
+        self.wait()
+
+        # self.frame.reorient(0, 0, 0, (-0.06, 0.09, 0.0), 8.31)
+        # self.play(FadeIn(vector_field), run_time=2.0)
+        # self.wait()
+        # arrow_x100_to_x99.rotate(-14*DEGREES).shift([0.17, -0.07, 0]).scale([0.6, 1.2, 1]).set_opacity(0.8)
+        # arrow_x100_to_x99.shift([0.15, -0.08, 0])
+        # arrow_x100_to_x99.scale([0.6, 1.2, 1])
+        # arrow_x100_to_x99.set_opacity(0.8)
+
+        # arrow_x100_to_x99.rotate(-2*DEGREES)
 
         self.play(time_tracker.animate.set_value(8.0), run_time=8.0)
         self.play(time_tracker.animate.set_value(0.0), run_time=4.0)

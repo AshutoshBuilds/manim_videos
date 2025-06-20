@@ -582,15 +582,90 @@ class p48_51(InteractiveScene):
         # Ok let me back track and fix that, then will return here. 
         self.play(FadeOut(vector_field))
 
+        # Ok i spent like 30-40 minutes trying to make backwards diffusion work 
+        # in export mode, no luck. 
+        # I think I can just do it in post? Let me think through it here. 
+        self.wait()
+        editor_warning=MarkupText('Reverse in Post!')
+        self.add(editor_warning)
+        self.wait()
+        self.remove(editor_warning)
+        self.wait()
+
+        self.remove(dots_to_move, traced_paths)
+
+        #Jump cut to step 1, will play back smoothly in post. 
+        dots_to_move_2 = VGroup()
+        for point in batch:
+            # Map the point coordinates to the axes
+            screen_point = axes.c2p(point[0], point[1])
+            dot = Dot(screen_point, radius=0.04)
+            # dot.set_color(YELLOW)
+            dots_to_move_2.add(dot)
+        dots_to_move_2.set_color(YELLOW)
+        dots_to_move_2.set_opacity(1.0)
+
+        traced_paths_2=VGroup()
+        for idx, d in enumerate(dots_to_move_2): 
+            tp = CustomTracedPath(
+                    d.get_center, 
+                    stroke_color=YELLOW, 
+                    stroke_width=2,
+                    opacity_range=(0.1, 0.5),
+                    fade_length=10
+                )
+            traced_path.set_fill(opacity=0)
+            traced_paths_2.add(tp)
+        self.add(traced_paths_2)
 
 
+        self.remove(step_count)
+        step_count=MarkupText(str(2), font_size=35)
+        step_count.set_color(CHILL_BROWN)
+        step_count.move_to([-6.8, -3.3, 0])
+        self.add(step_count)
 
+        self.add(dots_to_move_2)
+        dots.set_opacity(0.3)
+        for step in range(2):
+            self.play(*[dots_to_move_2[i].animate.move_to(axes.c2p(*random_walks[i][step])) for i in range(len(dots_to_move_2))], 
+                     run_time=0.1, rate_func=linear)
+        self.wait()
 
+        time_tracker.set_value(8.0)
+        self.play(FadeIn(vector_field), dots_to_move_2.animate.set_opacity(0.3))
 
-        self.play(time_tracker.animate.set_value(8.0), run_time=8.0)
-        self.play(time_tracker.animate.set_value(0.0), run_time=4.0)
+        # self.play(time_tracker.animate.set_value(8.0), run_time=8.0)
+        # self.play(time_tracker.animate.set_value(0.0), run_time=4.0)
 
         self.wait()
+
+        # Ok great, this gets us to the end of p49. 
+        # Alright so in 50, we want to fade stuff out I think and zoom back in on a single path. 
+        # Then I think it's illustrator overlays and a finally a new scene for p51. 
+
+
+        #Roll all these into big unified move
+        self.play(FadeOut(vector_field),
+                  FadeOut(dots_to_move_2),
+                  FadeOut(traced_paths_2),
+                  FadeOut(step_count),
+                  FadeOut(step_label),
+                  FadeIn(traced_path),
+                  FadeIn(dot_to_move),
+                  self.frame.animate.reorient(0, 0, 0, (3.58, 2.57, 0.0), 2.69),
+                  run_time=5.0
+                  )
+        self.wait()
+
+        # self.add(traced_path)
+        # self.add(dot_to_move)
+
+
+        # self.frame.reorient(0, 0, 0, (3.58, 2.57, 0.0), 2.69)
+        # self.add(axes, dots, traced_path, dot_to_move)
+        # self.add(x100,  x0, arrow_x100_to_x0, arrow_x100_to_x99)
+        # self.wait()
 
 
 
@@ -1180,7 +1255,7 @@ class p40_44(InteractiveScene):
 
         self.wait()
         remaining_indices=np.concatenate((np.arange(75), np.arange(76,len(batch))))
-        for step in range(10): #100
+        for step in range(100): #100
             self.play(*[dots[i].animate.move_to(axes.c2p(*random_walks[i][step])) for i in remaining_indices], 
                      self.frame.animate.reorient(*interp_orientations[step]), 
                      run_time=0.1, rate_func=linear)
@@ -1206,7 +1281,7 @@ class p40_44(InteractiveScene):
         #Reverse process works in interactive mode but not when rendering
         # I'll ask claude later or just play the other clip backwards. 
         self.wait()
-        for j, step in enumerate(range(9, -1, -1)): #99
+        for j, step in enumerate(range(99, -1, -1)): #99
             self.play(*[dots[i].animate.move_to(axes.c2p(*random_walks[i][step])) for i in remaining_indices], 
                      self.frame.animate.reorient(*interp_orientations[step]), 
                      run_time=0.1, rate_func=linear)

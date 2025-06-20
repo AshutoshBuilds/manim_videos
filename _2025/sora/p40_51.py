@@ -227,6 +227,137 @@ def create_noisy_arrow_animation(self, start_point, end_point, target_point, num
     return arrow_positions
 
 
+
+
+
+class p48_51(InteractiveScene):
+    def construct(self):
+        '''
+        Ok ok ok need to do a direct transition from p47b after fading out all the traces etc -> then bring
+        in the full vector field - I think this is going to be dope!
+        '''
+        batch_size=2130
+        dataset = Swissroll(np.pi/2, 5*np.pi, 100)
+        loader = DataLoader(dataset, batch_size=batch_size)
+        batch=next(iter(loader)).numpy()
+
+        axes = Axes(
+            x_range=[-1.2, 1.2, 0.5],
+            y_range=[-1.2, 1.2, 0.5],
+            height=7,
+            width=7,
+            axis_config={
+                "color": CHILL_BROWN, 
+                "stroke_width": 2,
+                "include_tip": True,
+                "include_ticks": True,
+                "tick_size": 0.06,
+                "tip_config": {"color": CHILL_BROWN, "length": 0.15, "width": 0.15}
+            }
+        )
+
+        dots = VGroup()
+        for point in batch:
+            # Map the point coordinates to the axes
+            screen_point = axes.c2p(point[0], point[1])
+            dot = Dot(screen_point, radius=0.04)
+            # dot.set_color(YELLOW)
+            dots.add(dot)
+        dots.set_color(YELLOW)
+        dots.set_opacity(0.3)
+
+        i=75
+        dot_to_move=dots[i].copy()
+        traced_path = CustomTracedPath(dot_to_move.get_center, stroke_color=YELLOW, stroke_width=3.5, 
+                                      opacity_range=(0.25, 0.9), fade_length=15)
+        # traced_path.set_opacity(0.5)
+        traced_path.set_fill(opacity=0)
+
+
+        np.random.seed(485) #485 is nice, 4 is maybe best so far, #52 is ok
+        random_walk=0.07*np.random.randn(100,2) #I might want to manually make the first step larger/more obvious.
+        random_walk[0]=np.array([0.2, 0.12]) #make first step go up and to the right
+        # random_walk[-1]=np.array([0.15, -0.04])
+        random_walk[-1]=np.array([0.19, -0.05])
+        random_walk=np.cumsum(random_walk,axis=0) 
+
+        random_walk=np.hstack((random_walk, np.zeros((len(random_walk), 1))))
+        random_walk_shifted=random_walk+np.array([batch[i][0], batch[i][1], 0])
+        
+        dot_history=VGroup()
+        dot_history.add(dot_to_move.copy().scale(0.4).set_color(YELLOW))
+        # self.play(dot_to_move.animate.move_to(axes.c2p(*random_walk_shifted[0])), run_time=1.0)
+        # dot_to_move.move_to(axes.c2p(*random_walk_shifted[1]))
+        traced_path.update_path(0.1)
+
+        for j in range(100):
+            dot_history.add(dot_to_move.copy().scale(0.4).set_color(YELLOW))
+            dot_to_move.move_to(axes.c2p(*random_walk_shifted[j]))
+            traced_path.update_path(0.1)
+            # self.play(dot_to_move.animate.move_to(axes.c2p(*random_walk_shifted[i])), run_time=0.1, rate_func=linear)
+        traced_path.stop_tracing()
+
+        dot_to_move.set_opacity(1.0)
+
+        #Ok let me try to get all the big elements in here
+        x100=Tex('x_{100}', font_size=24).set_color(YELLOW)
+        x100.next_to(dot_to_move, 0.07*UP+0.001*RIGHT)
+
+        x0=Tex('x_{0}', font_size=24).set_color('#00FFFF')
+        x0.next_to(dots[i], 0.2*UP)
+        dots[i].set_color('#00FFFF').set_opacity(1.0)
+
+        arrow_x100_to_x0 = Arrow(
+            start=dot_to_move.get_center(),
+            end=dots[i].get_center(),
+            thickness=1,
+            tip_width_ratio=5, 
+            buff=0.025  # Small buffer so arrow doesn't overlap the dots
+        )
+        arrow_x100_to_x0.set_color('#00FFFF')
+        arrow_x100_to_x0.set_opacity(0.6)
+
+        
+
+        arrow_x100_to_x99 = Arrow(
+            start=dot_to_move.get_center(),
+            end=[4.739921625933185, 2.8708813273028455, 0], #Just pul in from previous paragraph, kinda hacky but meh. ,
+            thickness=1.5,
+            tip_width_ratio=5, 
+            buff=0.04  # Small buffer so arrow doesn't overlap the dots
+        )
+        arrow_x100_to_x99.set_color(CHILL_BROWN)
+        # arrow_x100_to_x99.set_opacity(0.6)
+
+
+        self.frame.reorient(0, 0, 0, (3.58, 2.57, 0.0), 2.69)
+        self.add(axes, dots, traced_path, dot_to_move)
+        self.add(x100,  x0, arrow_x100_to_x0, arrow_x100_to_x99)
+        self.wait()
+
+        # Ok so the continuity to think/worry about here is the brown arrow! Now I'm a bit worried about it's angle - hmm 
+        # Let's see how it shakes out. 
+        # I think first it's Fading everythig except that data and brown line (maybe scale of brown arrow changes)
+        # I might beg able to get away with some updates to the brown arrows angle on a zoom out as I add stuff, we'll see. 
+
+        self.play(FadeOut(traced_path), FadeOut(dot_to_move), FadeOut(x100), FadeOut(x0), FadeOut(arrow_x100_to_x0), 
+                 dots.animate.set_opacity(1.0).set_color(YELLOW), run_time=1.5)
+
+        # Ok ok ok so I now in need some vector fields. These come from trained models. Do I want to import the model 
+        # and sample from it here? Or do I want to exprot the vector fields? 
+        # I think it would be nice to fuck with the density etc in manim, so maybe we get a little aggressive and 
+        # try to import the full model? 
+        # Lets see here....
+
+        
+
+
+        self.wait(20)
+        self.embed()
+
+
+
+
 class p47b(InteractiveScene):
     def construct(self):
         '''
@@ -388,7 +519,7 @@ class p47b(InteractiveScene):
                 random_walks.append(rw_shifted)
 
         print(len(random_walks))
-        random_walks=random_walks[:100] #Comment out to do all the points.
+        # random_walks=random_walks[:100] #Comment out to do all the points.
         print(len(random_walks))
 
         dots_to_move = VGroup()
@@ -425,7 +556,9 @@ class p47b(InteractiveScene):
             if step>start_delay:
                 arrow_index=np.clip(step-start_delay, 0, len(arrow_end_positions)-1)
                 arrow_x100_to_x99.put_start_and_end_on(dot_to_move.get_center(), arrow_end_positions[arrow_index])
+        self.wait()
 
+        self.remove(dots_to_move, traced_paths, dot99) #Might be nice to do a fade out
 
         self.wait(20)
         self.embed()

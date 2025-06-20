@@ -584,6 +584,9 @@ class p48_51(InteractiveScene):
 
 
 
+
+
+
         self.play(time_tracker.animate.set_value(8.0), run_time=8.0)
         self.play(time_tracker.animate.set_value(0.0), run_time=4.0)
 
@@ -1133,8 +1136,12 @@ class p40_44(InteractiveScene):
 
         random_walks=[]
         np.random.seed(2)
+        schedule2 = ScheduleLogLinear(N=100, sigma_min=0.02, sigma_max=0.09) 
+        sigmas100=schedule2.sample_sigmas(99)
+        sigmas100=(sigmas100.numpy()[::-1]).reshape(-1,1)
         for i in range(100):
-            rw=0.07*np.random.randn(100,2) #I might want to manually make the first step larger/more obvious.
+            # rw=0.07*np.random.randn(100,2) #Uniform steps
+            rw=sigmas100*np.random.randn(100,2) #Real noise schedule(scaled down)
             rw[0]=np.array([0,0]) #make be the starting point
             # rw[-1]=np.array([0.08, -0.02])
             rw=np.cumsum(rw,axis=0) 
@@ -1167,12 +1174,13 @@ class p40_44(InteractiveScene):
 
 
         start_orientation=[0, 0, 0, (-0.07, 0.01, 0.0), 7.59]
-        end_orientation=[0, 0, 0, (0.23, -0.24, 0.0), 14.98]
+        # end_orientation=[0, 0, 0, (0.23, -0.24, 0.0), 14.98]
+        end_orientation=[0, 0, 0, (0.29, -0.21, 0.0), 12.94]
         interp_orientations=manual_camera_interpolation(start_orientation, end_orientation, num_steps=100)
 
         self.wait()
         remaining_indices=np.concatenate((np.arange(75), np.arange(76,len(batch))))
-        for step in range(100):
+        for step in range(10): #100
             self.play(*[dots[i].animate.move_to(axes.c2p(*random_walks[i][step])) for i in remaining_indices], 
                      self.frame.animate.reorient(*interp_orientations[step]), 
                      run_time=0.1, rate_func=linear)
@@ -1184,22 +1192,28 @@ class p40_44(InteractiveScene):
             self.remove(dots[75])
 
         self.wait()
-
-
         
         for tp in traced_paths: tp.stop_tracing()
+
+
+
+        # for tp in traced_paths: tp.remove_last_segment()
+
+        # traced_paths[0].segments
+
 
         #Now play random walk backwards and zoom back in! Don't forget to remove traced paths as we go backwards
         #Reverse process works in interactive mode but not when rendering
         # I'll ask claude later or just play the other clip backwards. 
-        for step in range(99, -1, -1):
+        self.wait()
+        for j, step in enumerate(range(9, -1, -1)): #99
             self.play(*[dots[i].animate.move_to(axes.c2p(*random_walks[i][step])) for i in remaining_indices], 
                      self.frame.animate.reorient(*interp_orientations[step]), 
                      run_time=0.1, rate_func=linear)
             for tp in traced_paths:
                 tp.remove_last_segment()
-                if step==99: tp.remove_last_segment() #Bug patch
-            self.wait(0.1) #Hmm maybe adding a wait here will help???
+                if j==0: tp.remove_last_segment() #Bug patch
+            # self.wait(0.01) #Hmm maybe adding a wait here will help???
         self.add(dots[75])
 
 
@@ -1215,542 +1229,548 @@ class p40_44(InteractiveScene):
 
 
 
-class p48_51_deprecated_2(InteractiveScene):
-    def construct(self):
-        '''
-        Ok ok ok need to do a direct transition from p47b after fading out all the traces etc -> then bring
-        in the full vector field - I think this is going to be dope!
-        '''
-        batch_size=2130
-        dataset = Swissroll(np.pi/2, 5*np.pi, 100)
-        loader = DataLoader(dataset, batch_size=batch_size)
-        batch=next(iter(loader)).numpy()
-
-        axes = Axes(
-            x_range=[-1.2, 1.2, 0.5],
-            y_range=[-1.2, 1.2, 0.5],
-            height=7,
-            width=7,
-            axis_config={
-                "color": CHILL_BROWN, 
-                "stroke_width": 2,
-                "include_tip": True,
-                "include_ticks": True,
-                "tick_size": 0.06,
-                "tip_config": {"color": CHILL_BROWN, "length": 0.15, "width": 0.15}
-            }
-        )
-
-        # Create extended axes with SAME center point and proportional scaling
-        extended_axes = Axes(
-            x_range=[-2.0, 2.0, 0.5],    # Extended range
-            y_range=[-2.0, 2.0, 0.5],    # Extended range
-            height=7 * (4.0/2.4),        # Scale height proportionally: original_height * (new_range/old_range)
-            width=7 * (4.0/2.4),         # Scale width proportionally: original_width * (new_range/old_range)
-            axis_config={"stroke_width": 0}  # Make invisible
-        )
-
-        # Move extended axes to same position as original axes
-        extended_axes.move_to(axes.get_center())
 
 
-        dots = VGroup()
-        for point in batch:
-            # Map the point coordinates to the axes
-            screen_point = axes.c2p(point[0], point[1])
-            dot = Dot(screen_point, radius=0.04)
-            # dot.set_color(YELLOW)
-            dots.add(dot)
-        dots.set_color(YELLOW)
-        dots.set_opacity(0.3)
-
-        i=75
-        dot_to_move=dots[i].copy()
-        traced_path = CustomTracedPath(dot_to_move.get_center, stroke_color=YELLOW, stroke_width=3.5, 
-                                      opacity_range=(0.25, 0.9), fade_length=15)
-        # traced_path.set_opacity(0.5)
-        traced_path.set_fill(opacity=0)
 
 
-        np.random.seed(485) #485 is nice, 4 is maybe best so far, #52 is ok
-        random_walk=0.07*np.random.randn(100,2) #I might want to manually make the first step larger/more obvious.
-        random_walk[0]=np.array([0.2, 0.12]) #make first step go up and to the right
-        # random_walk[-1]=np.array([0.15, -0.04])
-        random_walk[-1]=np.array([0.19, -0.05])
-        random_walk=np.cumsum(random_walk,axis=0) 
 
-        random_walk=np.hstack((random_walk, np.zeros((len(random_walk), 1))))
-        random_walk_shifted=random_walk+np.array([batch[i][0], batch[i][1], 0])
+
+# class p48_51_deprecated_2(InteractiveScene):
+#     def construct(self):
+#         '''
+#         Ok ok ok need to do a direct transition from p47b after fading out all the traces etc -> then bring
+#         in the full vector field - I think this is going to be dope!
+#         '''
+#         batch_size=2130
+#         dataset = Swissroll(np.pi/2, 5*np.pi, 100)
+#         loader = DataLoader(dataset, batch_size=batch_size)
+#         batch=next(iter(loader)).numpy()
+
+#         axes = Axes(
+#             x_range=[-1.2, 1.2, 0.5],
+#             y_range=[-1.2, 1.2, 0.5],
+#             height=7,
+#             width=7,
+#             axis_config={
+#                 "color": CHILL_BROWN, 
+#                 "stroke_width": 2,
+#                 "include_tip": True,
+#                 "include_ticks": True,
+#                 "tick_size": 0.06,
+#                 "tip_config": {"color": CHILL_BROWN, "length": 0.15, "width": 0.15}
+#             }
+#         )
+
+#         # Create extended axes with SAME center point and proportional scaling
+#         extended_axes = Axes(
+#             x_range=[-2.0, 2.0, 0.5],    # Extended range
+#             y_range=[-2.0, 2.0, 0.5],    # Extended range
+#             height=7 * (4.0/2.4),        # Scale height proportionally: original_height * (new_range/old_range)
+#             width=7 * (4.0/2.4),         # Scale width proportionally: original_width * (new_range/old_range)
+#             axis_config={"stroke_width": 0}  # Make invisible
+#         )
+
+#         # Move extended axes to same position as original axes
+#         extended_axes.move_to(axes.get_center())
+
+
+#         dots = VGroup()
+#         for point in batch:
+#             # Map the point coordinates to the axes
+#             screen_point = axes.c2p(point[0], point[1])
+#             dot = Dot(screen_point, radius=0.04)
+#             # dot.set_color(YELLOW)
+#             dots.add(dot)
+#         dots.set_color(YELLOW)
+#         dots.set_opacity(0.3)
+
+#         i=75
+#         dot_to_move=dots[i].copy()
+#         traced_path = CustomTracedPath(dot_to_move.get_center, stroke_color=YELLOW, stroke_width=3.5, 
+#                                       opacity_range=(0.25, 0.9), fade_length=15)
+#         # traced_path.set_opacity(0.5)
+#         traced_path.set_fill(opacity=0)
+
+
+#         np.random.seed(485) #485 is nice, 4 is maybe best so far, #52 is ok
+#         random_walk=0.07*np.random.randn(100,2) #I might want to manually make the first step larger/more obvious.
+#         random_walk[0]=np.array([0.2, 0.12]) #make first step go up and to the right
+#         # random_walk[-1]=np.array([0.15, -0.04])
+#         random_walk[-1]=np.array([0.19, -0.05])
+#         random_walk=np.cumsum(random_walk,axis=0) 
+
+#         random_walk=np.hstack((random_walk, np.zeros((len(random_walk), 1))))
+#         random_walk_shifted=random_walk+np.array([batch[i][0], batch[i][1], 0])
         
-        dot_history=VGroup()
-        dot_history.add(dot_to_move.copy().scale(0.4).set_color(YELLOW))
-        # self.play(dot_to_move.animate.move_to(axes.c2p(*random_walk_shifted[0])), run_time=1.0)
-        # dot_to_move.move_to(axes.c2p(*random_walk_shifted[1]))
-        traced_path.update_path(0.1)
+#         dot_history=VGroup()
+#         dot_history.add(dot_to_move.copy().scale(0.4).set_color(YELLOW))
+#         # self.play(dot_to_move.animate.move_to(axes.c2p(*random_walk_shifted[0])), run_time=1.0)
+#         # dot_to_move.move_to(axes.c2p(*random_walk_shifted[1]))
+#         traced_path.update_path(0.1)
 
-        for j in range(100):
-            dot_history.add(dot_to_move.copy().scale(0.4).set_color(YELLOW))
-            dot_to_move.move_to(axes.c2p(*random_walk_shifted[j]))
-            traced_path.update_path(0.1)
-            # self.play(dot_to_move.animate.move_to(axes.c2p(*random_walk_shifted[i])), run_time=0.1, rate_func=linear)
-        traced_path.stop_tracing()
+#         for j in range(100):
+#             dot_history.add(dot_to_move.copy().scale(0.4).set_color(YELLOW))
+#             dot_to_move.move_to(axes.c2p(*random_walk_shifted[j]))
+#             traced_path.update_path(0.1)
+#             # self.play(dot_to_move.animate.move_to(axes.c2p(*random_walk_shifted[i])), run_time=0.1, rate_func=linear)
+#         traced_path.stop_tracing()
 
-        dot_to_move.set_opacity(1.0)
+#         dot_to_move.set_opacity(1.0)
 
-        #Ok let me try to get all the big elements in here
-        x100=Tex('x_{100}', font_size=24).set_color(YELLOW)
-        x100.next_to(dot_to_move, 0.07*UP+0.001*RIGHT)
+#         #Ok let me try to get all the big elements in here
+#         x100=Tex('x_{100}', font_size=24).set_color(YELLOW)
+#         x100.next_to(dot_to_move, 0.07*UP+0.001*RIGHT)
 
-        x0=Tex('x_{0}', font_size=24).set_color('#00FFFF')
-        x0.next_to(dots[i], 0.2*UP)
-        dots[i].set_color('#00FFFF').set_opacity(1.0)
+#         x0=Tex('x_{0}', font_size=24).set_color('#00FFFF')
+#         x0.next_to(dots[i], 0.2*UP)
+#         dots[i].set_color('#00FFFF').set_opacity(1.0)
 
-        arrow_x100_to_x0 = Arrow(
-            start=dot_to_move.get_center(),
-            end=dots[i].get_center(),
-            thickness=1,
-            tip_width_ratio=5, 
-            buff=0.025  # Small buffer so arrow doesn't overlap the dots
-        )
-        arrow_x100_to_x0.set_color('#00FFFF')
-        arrow_x100_to_x0.set_opacity(0.6)
-
-
-        arrow_x100_to_x99 = Arrow(
-            start=dot_to_move.get_center(),
-            end=[4.739921625933185, 2.8708813273028455, 0], #Just pul in from previous paragraph, kinda hacky but meh. ,
-            thickness=1.5,
-            tip_width_ratio=5, 
-            buff=0.04  # Small buffer so arrow doesn't overlap the dots
-        )
-        arrow_x100_to_x99.set_color(CHILL_BROWN)
-        # arrow_x100_to_x99.set_opacity(0.6)
+#         arrow_x100_to_x0 = Arrow(
+#             start=dot_to_move.get_center(),
+#             end=dots[i].get_center(),
+#             thickness=1,
+#             tip_width_ratio=5, 
+#             buff=0.025  # Small buffer so arrow doesn't overlap the dots
+#         )
+#         arrow_x100_to_x0.set_color('#00FFFF')
+#         arrow_x100_to_x0.set_opacity(0.6)
 
 
-        self.frame.reorient(0, 0, 0, (3.58, 2.57, 0.0), 2.69)
-        self.add(axes, dots, traced_path, dot_to_move)
-        self.add(x100,  x0, arrow_x100_to_x0, arrow_x100_to_x99)
-        self.wait()
-
-        # Ok so the continuity to think/worry about here is the brown arrow! Now I'm a bit worried about it's angle - hmm 
-        # Let's see how it shakes out. 
-        # I think first it's Fading everythig except that data and brown line (maybe scale of brown arrow changes)
-        # I might beg able to get away with some updates to the brown arrows angle on a zoom out as I add stuff, we'll see. 
-
-        self.play(FadeOut(traced_path), FadeOut(dot_to_move), FadeOut(x100), FadeOut(x0), FadeOut(arrow_x100_to_x0), 
-                 dots.animate.set_opacity(1.0).set_color(YELLOW), run_time=1.5)
-
-        # Ok ok ok so I now in need some vector fields. These come from trained models. Do I want to import the model 
-        # and sample from it here? Or do I want to exprot the vector fields? 
-        # I think it would be nice to fuck with the density etc in manim, so maybe we get a little aggressive and 
-        # try to import the full model? 
-        # Lets see here....
-        # Hmm kinda unclear if this is going to work on mac/CPU -> i guess it's worth a try? Pretty sure I can't train w/o cuda. 
-
-        model=torch.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/jun_20_1.pt')
-
-        schedule = ScheduleLogLinear(N=256, sigma_min=0.01, sigma_max=10) #N=200
-        bound=2.0 #Need to match extended axes bro
-        num_heatmap_steps=30
-        grid=[]
-        for i, x in enumerate(np.linspace(-bound, bound, num_heatmap_steps)):
-            for j, y in enumerate(np.linspace(-bound, bound, num_heatmap_steps)):
-                grid.append([x,y])
-        grid=torch.tensor(grid).float()
-
-        gam=1
-        mu=0.01 #0.5 is DDPM
-        cfg_scale=0.0
-        cond=None
-        sigmas=schedule.sample_sigmas(256)
-        xt_history=[]
-        heatmaps=[]
-        eps=None
-
-        with torch.no_grad():
-            model.eval();
-            xt=torch.randn((batch_size,) + model.input_dims)*sigmas[0] #Scaling by sigma here matters a lot - why is that???
-
-            for i, (sig, sig_prev) in enumerate(pairwise(sigmas)):
-                eps_prev, eps = eps, model.predict_eps_cfg(xt, sig.to(xt), cond, cfg_scale)
-                # eps_av = eps * gam + eps_prev * (1-gam)  if i > 0 else eps
-                sig_p = (sig_prev/sig**mu)**(1/(1-mu)) # sig_prev == sig**mu sig_p**(1-mu)
-                eta = (sig_prev**2 - sig_p**2).sqrt()
-                xt = xt - (sig - sig_p) * eps + eta * model.rand_input(xt.shape[0]).to(xt)
-                xt_history.append(xt.numpy())
-                heatmaps.append(model.forward(grid, sig, cond=None))
-
-        xt_history=np.array(xt_history)
-        self.wait()
-
-        # Ok nice glad i tried this! Seems like I can sample right in manim - that's great. 
-        # Ok now let's draw some arrows, and then try to figure out how to bring thme in as a nice continuous
-        # extension of the single arrow I have. 
-        final_vectors = heatmaps[-1].detach().numpy()  # Shape should be (num_heatmap_steps^2, 2)
-
-        sigma_index=-1
-        def vector_function_direct(coords_array):
-            # print(coords_array.shape)
-            res=model.forward(torch.tensor(coords_array).float(), sigmas[sigma_index], cond=None)
-            return -res.detach().numpy()
+#         arrow_x100_to_x99 = Arrow(
+#             start=dot_to_move.get_center(),
+#             end=[4.739921625933185, 2.8708813273028455, 0], #Just pul in from previous paragraph, kinda hacky but meh. ,
+#             thickness=1.5,
+#             tip_width_ratio=5, 
+#             buff=0.04  # Small buffer so arrow doesn't overlap the dots
+#         )
+#         arrow_x100_to_x99.set_color(CHILL_BROWN)
+#         # arrow_x100_to_x99.set_opacity(0.6)
 
 
-        #This is a great idea, should definitely try
-        def animate_vector_field_radially():
-            # Get brown arrow position in coordinate system
-            brown_pos = axes.p2c(arrow_x100_to_x99.get_start())
+#         self.frame.reorient(0, 0, 0, (3.58, 2.57, 0.0), 2.69)
+#         self.add(axes, dots, traced_path, dot_to_move)
+#         self.add(x100,  x0, arrow_x100_to_x0, arrow_x100_to_x99)
+#         self.wait()
+
+#         # Ok so the continuity to think/worry about here is the brown arrow! Now I'm a bit worried about it's angle - hmm 
+#         # Let's see how it shakes out. 
+#         # I think first it's Fading everythig except that data and brown line (maybe scale of brown arrow changes)
+#         # I might beg able to get away with some updates to the brown arrows angle on a zoom out as I add stuff, we'll see. 
+
+#         self.play(FadeOut(traced_path), FadeOut(dot_to_move), FadeOut(x100), FadeOut(x0), FadeOut(arrow_x100_to_x0), 
+#                  dots.animate.set_opacity(1.0).set_color(YELLOW), run_time=1.5)
+
+#         # Ok ok ok so I now in need some vector fields. These come from trained models. Do I want to import the model 
+#         # and sample from it here? Or do I want to exprot the vector fields? 
+#         # I think it would be nice to fuck with the density etc in manim, so maybe we get a little aggressive and 
+#         # try to import the full model? 
+#         # Lets see here....
+#         # Hmm kinda unclear if this is going to work on mac/CPU -> i guess it's worth a try? Pretty sure I can't train w/o cuda. 
+
+#         model=torch.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/jun_20_1.pt')
+
+#         schedule = ScheduleLogLinear(N=256, sigma_min=0.01, sigma_max=10) #N=200
+#         bound=2.0 #Need to match extended axes bro
+#         num_heatmap_steps=30
+#         grid=[]
+#         for i, x in enumerate(np.linspace(-bound, bound, num_heatmap_steps)):
+#             for j, y in enumerate(np.linspace(-bound, bound, num_heatmap_steps)):
+#                 grid.append([x,y])
+#         grid=torch.tensor(grid).float()
+
+#         gam=1
+#         mu=0.01 #0.5 is DDPM
+#         cfg_scale=0.0
+#         cond=None
+#         sigmas=schedule.sample_sigmas(256)
+#         xt_history=[]
+#         heatmaps=[]
+#         eps=None
+
+#         with torch.no_grad():
+#             model.eval();
+#             xt=torch.randn((batch_size,) + model.input_dims)*sigmas[0] #Scaling by sigma here matters a lot - why is that???
+
+#             for i, (sig, sig_prev) in enumerate(pairwise(sigmas)):
+#                 eps_prev, eps = eps, model.predict_eps_cfg(xt, sig.to(xt), cond, cfg_scale)
+#                 # eps_av = eps * gam + eps_prev * (1-gam)  if i > 0 else eps
+#                 sig_p = (sig_prev/sig**mu)**(1/(1-mu)) # sig_prev == sig**mu sig_p**(1-mu)
+#                 eta = (sig_prev**2 - sig_p**2).sqrt()
+#                 xt = xt - (sig - sig_p) * eps + eta * model.rand_input(xt.shape[0]).to(xt)
+#                 xt_history.append(xt.numpy())
+#                 heatmaps.append(model.forward(grid, sig, cond=None))
+
+#         xt_history=np.array(xt_history)
+#         self.wait()
+
+#         # Ok nice glad i tried this! Seems like I can sample right in manim - that's great. 
+#         # Ok now let's draw some arrows, and then try to figure out how to bring thme in as a nice continuous
+#         # extension of the single arrow I have. 
+#         final_vectors = heatmaps[-1].detach().numpy()  # Shape should be (num_heatmap_steps^2, 2)
+
+#         sigma_index=-1
+#         def vector_function_direct(coords_array):
+#             # print(coords_array.shape)
+#             res=model.forward(torch.tensor(coords_array).float(), sigmas[sigma_index], cond=None)
+#             return -res.detach().numpy()
+
+
+#         #This is a great idea, should definitely try
+#         def animate_vector_field_radially():
+#             # Get brown arrow position in coordinate system
+#             brown_pos = axes.p2c(arrow_x100_to_x99.get_start())
             
-            # Group vectors by distance from brown arrow
-            vector_groups = {}
-            for vector_mob in vector_field.submobjects:
-                if hasattr(vector_mob, 'get_center'):
-                    vec_pos = axes.p2c(vector_mob.get_center())
-                    distance = np.linalg.norm(np.array(vec_pos[:2]) - np.array(brown_pos[:2]))
-                    dist_key = int(distance * 10)  # Group by distance intervals
-                    if dist_key not in vector_groups:
-                        vector_groups[dist_key] = []
-                    vector_groups[dist_key].append(vector_mob)
+#             # Group vectors by distance from brown arrow
+#             vector_groups = {}
+#             for vector_mob in vector_field.submobjects:
+#                 if hasattr(vector_mob, 'get_center'):
+#                     vec_pos = axes.p2c(vector_mob.get_center())
+#                     distance = np.linalg.norm(np.array(vec_pos[:2]) - np.array(brown_pos[:2]))
+#                     dist_key = int(distance * 10)  # Group by distance intervals
+#                     if dist_key not in vector_groups:
+#                         vector_groups[dist_key] = []
+#                     vector_groups[dist_key].append(vector_mob)
             
-            # Animate groups in order of distance
-            for dist_key in sorted(vector_groups.keys()):
-                group = VGroup(*vector_groups[dist_key])
-                self.play(FadeIn(group), run_time=0.2)
+#             # Animate groups in order of distance
+#             for dist_key in sorted(vector_groups.keys()):
+#                 group = VGroup(*vector_groups[dist_key])
+#                 self.play(FadeIn(group), run_time=0.2)
             
-            return vector_field
+#             return vector_field
 
 
 
-        # Create the VectorField - note that it needs your axes as the coordinate_system
-        vector_field = VectorField(
-            func=vector_function_direct, #vector_function,  # or vector_function_interpolated for smoother results
-            coordinate_system=extended_axes,  # This is your existing axes object
-            density=3.0,  # Controls spacing between vectors (higher = more dense)
-            stroke_width=3,
-            stroke_opacity=0.7,
-            tip_width_ratio=4,
-            tip_len_to_width=0.01,
-            max_vect_len_to_step_size=0.7,  # Controls maximum vector length
-            # color_map_name="viridis",  # Color map for magnitude-based coloring
-            color=CHILL_BROWN
-        )
+#         # Create the VectorField - note that it needs your axes as the coordinate_system
+#         vector_field = VectorField(
+#             func=vector_function_direct, #vector_function,  # or vector_function_interpolated for smoother results
+#             coordinate_system=extended_axes,  # This is your existing axes object
+#             density=3.0,  # Controls spacing between vectors (higher = more dense)
+#             stroke_width=3,
+#             stroke_opacity=0.7,
+#             tip_width_ratio=4,
+#             tip_len_to_width=0.01,
+#             max_vect_len_to_step_size=0.7,  # Controls maximum vector length
+#             # color_map_name="viridis",  # Color map for magnitude-based coloring
+#             color=CHILL_BROWN
+#         )
 
-        self.frame.reorient(0, 0, 0, (-0.06, 0.09, 0.0), 8.31)
-        self.play(FadeIn(vector_field), run_time=2.0)
-        self.wait()
-
-
-        # individual_arrows=extract_individual_arrows(vector_field)
-        # Ok so we still need to figure out a smooth transition between the single individual vector and the vector field
-        # If I can extract a single vector from the field I could do a replacement transform as I roll in rest of vectors and zoom 
-        # out. Before I do that though, let me make sure the time varying version of the vector field looks good. 
-        # I need to increment sigma_index from 0 to 255 and redraw the field each time. Claude?
-        # Ok so there's some cool time varying stuff I could do -> let me try the super simple loop appraoch first though 
-        # Just need to validate I get the fun/interesting temporal behavior when animating this way. 
-        # Hmm maybe not actually?
-
-        self.remove(vector_field)
+#         self.frame.reorient(0, 0, 0, (-0.06, 0.09, 0.0), 8.31)
+#         self.play(FadeIn(vector_field), run_time=2.0)
+#         self.wait()
 
 
-        time_tracker = ValueTracker(0.0)  # Start at time 0
+#         # individual_arrows=extract_individual_arrows(vector_field)
+#         # Ok so we still need to figure out a smooth transition between the single individual vector and the vector field
+#         # If I can extract a single vector from the field I could do a replacement transform as I roll in rest of vectors and zoom 
+#         # out. Before I do that though, let me make sure the time varying version of the vector field looks good. 
+#         # I need to increment sigma_index from 0 to 255 and redraw the field each time. Claude?
+#         # Ok so there's some cool time varying stuff I could do -> let me try the super simple loop appraoch first though 
+#         # Just need to validate I get the fun/interesting temporal behavior when animating this way. 
+#         # Hmm maybe not actually?
 
-        def vector_function_with_tracker(coords_array):
-            """Vector function that uses the ValueTracker for time"""
-            current_time = time_tracker.get_value()
-            max_time = 8.0  # Map time 0-8 to sigma indices 0-255
-            sigma_idx = int(np.clip(current_time * 255 / max_time, 0, 255))
+#         self.remove(vector_field)
+
+
+#         time_tracker = ValueTracker(0.0)  # Start at time 0
+
+#         def vector_function_with_tracker(coords_array):
+#             """Vector function that uses the ValueTracker for time"""
+#             current_time = time_tracker.get_value()
+#             max_time = 8.0  # Map time 0-8 to sigma indices 0-255
+#             sigma_idx = int(np.clip(current_time * 255 / max_time, 0, 255))
             
-            try:
-                res = model.forward(torch.tensor(coords_array).float(), sigmas[sigma_idx], cond=None)
-                return -res.detach().numpy()
-            except:
-                return np.zeros((len(coords_array), 2))
+#             try:
+#                 res = model.forward(torch.tensor(coords_array).float(), sigmas[sigma_idx], cond=None)
+#                 return -res.detach().numpy()
+#             except:
+#                 return np.zeros((len(coords_array), 2))
 
-        # Create a custom VectorField that updates based on the tracker
-        class TrackerControlledVectorField(VectorField):
-            def __init__(self, time_tracker, **kwargs):
-                self.time_tracker = time_tracker
-                super().__init__(**kwargs)
+#         # Create a custom VectorField that updates based on the tracker
+#         class TrackerControlledVectorField(VectorField):
+#             def __init__(self, time_tracker, **kwargs):
+#                 self.time_tracker = time_tracker
+#                 super().__init__(**kwargs)
                 
-                # Add updater that triggers when tracker changes
-                self.add_updater(self.update_from_tracker)
+#                 # Add updater that triggers when tracker changes
+#                 self.add_updater(self.update_from_tracker)
             
-            def update_from_tracker(self, mob, dt):
-                """Update vectors when tracker value changes"""
-                # Only update if tracker value has changed significantly
-                current_time = self.time_tracker.get_value()
-                if not hasattr(self, '_last_time') or abs(current_time - self._last_time) > 0.01:
-                    self._last_time = current_time
-                    self.update_vectors()  # Redraw vectors with new time
+#             def update_from_tracker(self, mob, dt):
+#                 """Update vectors when tracker value changes"""
+#                 # Only update if tracker value has changed significantly
+#                 current_time = self.time_tracker.get_value()
+#                 if not hasattr(self, '_last_time') or abs(current_time - self._last_time) > 0.01:
+#                     self._last_time = current_time
+#                     self.update_vectors()  # Redraw vectors with new time
 
-        # Create the tracker-controlled vector field
-        vector_field = TrackerControlledVectorField(
-            time_tracker=time_tracker,
-            func=vector_function_with_tracker,
-            coordinate_system=extended_axes,
-            density=3.0,
-            stroke_width=3,
-            stroke_opacity=0.7,
-            tip_width_ratio=4,
-            tip_len_to_width=0.01,
-            max_vect_len_to_step_size=0.7,
-            color=CHILL_BROWN
-        )
+#         # Create the tracker-controlled vector field
+#         vector_field = TrackerControlledVectorField(
+#             time_tracker=time_tracker,
+#             func=vector_function_with_tracker,
+#             coordinate_system=extended_axes,
+#             density=3.0,
+#             stroke_width=3,
+#             stroke_opacity=0.7,
+#             tip_width_ratio=4,
+#             tip_len_to_width=0.01,
+#             max_vect_len_to_step_size=0.7,
+#             color=CHILL_BROWN
+#         )
 
-        self.add(vector_field)
+#         self.add(vector_field)
 
-        self.play(time_tracker.animate.set_value(8.0), run_time=6.0)
-        self.play(time_tracker.animate.set_value(0.0), run_time=4.0)
+#         self.play(time_tracker.animate.set_value(8.0), run_time=6.0)
+#         self.play(time_tracker.animate.set_value(0.0), run_time=4.0)
 
-        self.wait()
-
-
+#         self.wait()
 
 
-        self.wait(20)
-        self.embed()
 
 
-class p48_51_deprecated(InteractiveScene):
-    def construct(self):
-        '''
-        Ok ok ok need to do a direct transition from p47b after fading out all the traces etc -> then bring
-        in the full vector field - I think this is going to be dope!
-        '''
-        batch_size=2130
-        dataset = Swissroll(np.pi/2, 5*np.pi, 100)
-        loader = DataLoader(dataset, batch_size=batch_size)
-        batch=next(iter(loader)).numpy()
-
-        axes = Axes(
-            x_range=[-1.2, 1.2, 0.5],
-            y_range=[-1.2, 1.2, 0.5],
-            height=7,
-            width=7,
-            axis_config={
-                "color": CHILL_BROWN, 
-                "stroke_width": 2,
-                "include_tip": True,
-                "include_ticks": True,
-                "tick_size": 0.06,
-                "tip_config": {"color": CHILL_BROWN, "length": 0.15, "width": 0.15}
-            }
-        )
-
-        dots = VGroup()
-        for point in batch:
-            # Map the point coordinates to the axes
-            screen_point = axes.c2p(point[0], point[1])
-            dot = Dot(screen_point, radius=0.04)
-            # dot.set_color(YELLOW)
-            dots.add(dot)
-        dots.set_color(YELLOW)
-        dots.set_opacity(0.3)
-
-        i=75
-        dot_to_move=dots[i].copy()
-        traced_path = CustomTracedPath(dot_to_move.get_center, stroke_color=YELLOW, stroke_width=3.5, 
-                                      opacity_range=(0.25, 0.9), fade_length=15)
-        # traced_path.set_opacity(0.5)
-        traced_path.set_fill(opacity=0)
+#         self.wait(20)
+#         self.embed()
 
 
-        np.random.seed(485) #485 is nice, 4 is maybe best so far, #52 is ok
-        random_walk=0.07*np.random.randn(100,2) #I might want to manually make the first step larger/more obvious.
-        random_walk[0]=np.array([0.2, 0.12]) #make first step go up and to the right
-        # random_walk[-1]=np.array([0.15, -0.04])
-        random_walk[-1]=np.array([0.19, -0.05])
-        random_walk=np.cumsum(random_walk,axis=0) 
+# class p48_51_deprecated(InteractiveScene):
+#     def construct(self):
+#         '''
+#         Ok ok ok need to do a direct transition from p47b after fading out all the traces etc -> then bring
+#         in the full vector field - I think this is going to be dope!
+#         '''
+#         batch_size=2130
+#         dataset = Swissroll(np.pi/2, 5*np.pi, 100)
+#         loader = DataLoader(dataset, batch_size=batch_size)
+#         batch=next(iter(loader)).numpy()
 
-        random_walk=np.hstack((random_walk, np.zeros((len(random_walk), 1))))
-        random_walk_shifted=random_walk+np.array([batch[i][0], batch[i][1], 0])
+#         axes = Axes(
+#             x_range=[-1.2, 1.2, 0.5],
+#             y_range=[-1.2, 1.2, 0.5],
+#             height=7,
+#             width=7,
+#             axis_config={
+#                 "color": CHILL_BROWN, 
+#                 "stroke_width": 2,
+#                 "include_tip": True,
+#                 "include_ticks": True,
+#                 "tick_size": 0.06,
+#                 "tip_config": {"color": CHILL_BROWN, "length": 0.15, "width": 0.15}
+#             }
+#         )
+
+#         dots = VGroup()
+#         for point in batch:
+#             # Map the point coordinates to the axes
+#             screen_point = axes.c2p(point[0], point[1])
+#             dot = Dot(screen_point, radius=0.04)
+#             # dot.set_color(YELLOW)
+#             dots.add(dot)
+#         dots.set_color(YELLOW)
+#         dots.set_opacity(0.3)
+
+#         i=75
+#         dot_to_move=dots[i].copy()
+#         traced_path = CustomTracedPath(dot_to_move.get_center, stroke_color=YELLOW, stroke_width=3.5, 
+#                                       opacity_range=(0.25, 0.9), fade_length=15)
+#         # traced_path.set_opacity(0.5)
+#         traced_path.set_fill(opacity=0)
+
+
+#         np.random.seed(485) #485 is nice, 4 is maybe best so far, #52 is ok
+#         random_walk=0.07*np.random.randn(100,2) #I might want to manually make the first step larger/more obvious.
+#         random_walk[0]=np.array([0.2, 0.12]) #make first step go up and to the right
+#         # random_walk[-1]=np.array([0.15, -0.04])
+#         random_walk[-1]=np.array([0.19, -0.05])
+#         random_walk=np.cumsum(random_walk,axis=0) 
+
+#         random_walk=np.hstack((random_walk, np.zeros((len(random_walk), 1))))
+#         random_walk_shifted=random_walk+np.array([batch[i][0], batch[i][1], 0])
         
-        dot_history=VGroup()
-        dot_history.add(dot_to_move.copy().scale(0.4).set_color(YELLOW))
-        # self.play(dot_to_move.animate.move_to(axes.c2p(*random_walk_shifted[0])), run_time=1.0)
-        # dot_to_move.move_to(axes.c2p(*random_walk_shifted[1]))
-        traced_path.update_path(0.1)
+#         dot_history=VGroup()
+#         dot_history.add(dot_to_move.copy().scale(0.4).set_color(YELLOW))
+#         # self.play(dot_to_move.animate.move_to(axes.c2p(*random_walk_shifted[0])), run_time=1.0)
+#         # dot_to_move.move_to(axes.c2p(*random_walk_shifted[1]))
+#         traced_path.update_path(0.1)
 
-        for j in range(100):
-            dot_history.add(dot_to_move.copy().scale(0.4).set_color(YELLOW))
-            dot_to_move.move_to(axes.c2p(*random_walk_shifted[j]))
-            traced_path.update_path(0.1)
-            # self.play(dot_to_move.animate.move_to(axes.c2p(*random_walk_shifted[i])), run_time=0.1, rate_func=linear)
-        traced_path.stop_tracing()
+#         for j in range(100):
+#             dot_history.add(dot_to_move.copy().scale(0.4).set_color(YELLOW))
+#             dot_to_move.move_to(axes.c2p(*random_walk_shifted[j]))
+#             traced_path.update_path(0.1)
+#             # self.play(dot_to_move.animate.move_to(axes.c2p(*random_walk_shifted[i])), run_time=0.1, rate_func=linear)
+#         traced_path.stop_tracing()
 
-        dot_to_move.set_opacity(1.0)
+#         dot_to_move.set_opacity(1.0)
 
-        #Ok let me try to get all the big elements in here
-        x100=Tex('x_{100}', font_size=24).set_color(YELLOW)
-        x100.next_to(dot_to_move, 0.07*UP+0.001*RIGHT)
+#         #Ok let me try to get all the big elements in here
+#         x100=Tex('x_{100}', font_size=24).set_color(YELLOW)
+#         x100.next_to(dot_to_move, 0.07*UP+0.001*RIGHT)
 
-        x0=Tex('x_{0}', font_size=24).set_color('#00FFFF')
-        x0.next_to(dots[i], 0.2*UP)
-        dots[i].set_color('#00FFFF').set_opacity(1.0)
+#         x0=Tex('x_{0}', font_size=24).set_color('#00FFFF')
+#         x0.next_to(dots[i], 0.2*UP)
+#         dots[i].set_color('#00FFFF').set_opacity(1.0)
 
-        arrow_x100_to_x0 = Arrow(
-            start=dot_to_move.get_center(),
-            end=dots[i].get_center(),
-            thickness=1,
-            tip_width_ratio=5, 
-            buff=0.025  # Small buffer so arrow doesn't overlap the dots
-        )
-        arrow_x100_to_x0.set_color('#00FFFF')
-        arrow_x100_to_x0.set_opacity(0.6)
-
-
-        arrow_x100_to_x99 = Arrow(
-            start=dot_to_move.get_center(),
-            end=[4.739921625933185, 2.8708813273028455, 0], #Just pul in from previous paragraph, kinda hacky but meh. ,
-            thickness=1.5,
-            tip_width_ratio=5, 
-            buff=0.04  # Small buffer so arrow doesn't overlap the dots
-        )
-        arrow_x100_to_x99.set_color(CHILL_BROWN)
-        # arrow_x100_to_x99.set_opacity(0.6)
+#         arrow_x100_to_x0 = Arrow(
+#             start=dot_to_move.get_center(),
+#             end=dots[i].get_center(),
+#             thickness=1,
+#             tip_width_ratio=5, 
+#             buff=0.025  # Small buffer so arrow doesn't overlap the dots
+#         )
+#         arrow_x100_to_x0.set_color('#00FFFF')
+#         arrow_x100_to_x0.set_opacity(0.6)
 
 
-        self.frame.reorient(0, 0, 0, (3.58, 2.57, 0.0), 2.69)
-        self.add(axes, dots, traced_path, dot_to_move)
-        self.add(x100,  x0, arrow_x100_to_x0, arrow_x100_to_x99)
-        self.wait()
-
-        # Ok so the continuity to think/worry about here is the brown arrow! Now I'm a bit worried about it's angle - hmm 
-        # Let's see how it shakes out. 
-        # I think first it's Fading everythig except that data and brown line (maybe scale of brown arrow changes)
-        # I might beg able to get away with some updates to the brown arrows angle on a zoom out as I add stuff, we'll see. 
-
-        self.play(FadeOut(traced_path), FadeOut(dot_to_move), FadeOut(x100), FadeOut(x0), FadeOut(arrow_x100_to_x0), 
-                 dots.animate.set_opacity(1.0).set_color(YELLOW), run_time=1.5)
-
-        # Ok ok ok so I now in need some vector fields. These come from trained models. Do I want to import the model 
-        # and sample from it here? Or do I want to exprot the vector fields? 
-        # I think it would be nice to fuck with the density etc in manim, so maybe we get a little aggressive and 
-        # try to import the full model? 
-        # Lets see here....
-        # Hmm kinda unclear if this is going to work on mac/CPU -> i guess it's worth a try? Pretty sure I can't train w/o cuda. 
-
-        model=torch.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/jun_20_1.pt')
-
-        schedule = ScheduleLogLinear(N=256, sigma_min=0.01, sigma_max=10) #N=200
-        bound=1.5
-        num_heatmap_steps=30
-        grid=[]
-        for i, x in enumerate(np.linspace(-bound, bound, num_heatmap_steps)):
-            for j, y in enumerate(np.linspace(-bound, bound, num_heatmap_steps)):
-                grid.append([x,y])
-        grid=torch.tensor(grid).float()
-
-        gam=1
-        mu=0.01 #0.5 is DDPM
-        cfg_scale=0.0
-        cond=None
-        sigmas=schedule.sample_sigmas(256)
-        xt_history=[]
-        heatmaps=[]
-        eps=None
-
-        with torch.no_grad():
-            model.eval();
-            xt=torch.randn((batch_size,) + model.input_dims)*sigmas[0] #Scaling by sigma here matters a lot - why is that???
-
-            for i, (sig, sig_prev) in enumerate(pairwise(sigmas)):
-                eps_prev, eps = eps, model.predict_eps_cfg(xt, sig.to(xt), cond, cfg_scale)
-                # eps_av = eps * gam + eps_prev * (1-gam)  if i > 0 else eps
-                sig_p = (sig_prev/sig**mu)**(1/(1-mu)) # sig_prev == sig**mu sig_p**(1-mu)
-                eta = (sig_prev**2 - sig_p**2).sqrt()
-                xt = xt - (sig - sig_p) * eps + eta * model.rand_input(xt.shape[0]).to(xt)
-                xt_history.append(xt.numpy())
-                heatmaps.append(model.forward(grid, sig, cond=None))
-
-        xt_history=np.array(xt_history)
-        self.wait()
-
-        # Ok nice glad i tried this! Seems like I can sample right in manim - that's great. 
-        # Ok now let's draw some arrows, and then try to figure out how to bring thme in as a nice continuous
-        # extension of the single arrow I have. 
-        final_vectors = heatmaps[-1].detach().numpy()  # Shape should be (num_heatmap_steps^2, 2)
-
-        sigma_index=-1
-        def vector_function_direct(coords_array):
-            print(coords_array.shape)
-            res=model.forward(torch.tensor(coords_array).float(), sigmas[sigma_index], cond=None)
-            return -res.detach().numpy()
+#         arrow_x100_to_x99 = Arrow(
+#             start=dot_to_move.get_center(),
+#             end=[4.739921625933185, 2.8708813273028455, 0], #Just pul in from previous paragraph, kinda hacky but meh. ,
+#             thickness=1.5,
+#             tip_width_ratio=5, 
+#             buff=0.04  # Small buffer so arrow doesn't overlap the dots
+#         )
+#         arrow_x100_to_x99.set_color(CHILL_BROWN)
+#         # arrow_x100_to_x99.set_opacity(0.6)
 
 
-        # Create interpolation function for the vector field
-        def vector_function(coords_array):
-            """
-            Function that takes an array of coordinates and returns corresponding vectors
-            coords_array: shape (N, 2) or (N, 3) - array of [x, y] or [x, y, z] coordinates
-            Returns: array of shape (N, 2) with [vx, vy] vectors (z component handled automatically)
-            """
-            result = np.zeros((len(coords_array), 2))
+#         self.frame.reorient(0, 0, 0, (3.58, 2.57, 0.0), 2.69)
+#         self.add(axes, dots, traced_path, dot_to_move)
+#         self.add(x100,  x0, arrow_x100_to_x0, arrow_x100_to_x99)
+#         self.wait()
+
+#         # Ok so the continuity to think/worry about here is the brown arrow! Now I'm a bit worried about it's angle - hmm 
+#         # Let's see how it shakes out. 
+#         # I think first it's Fading everythig except that data and brown line (maybe scale of brown arrow changes)
+#         # I might beg able to get away with some updates to the brown arrows angle on a zoom out as I add stuff, we'll see. 
+
+#         self.play(FadeOut(traced_path), FadeOut(dot_to_move), FadeOut(x100), FadeOut(x0), FadeOut(arrow_x100_to_x0), 
+#                  dots.animate.set_opacity(1.0).set_color(YELLOW), run_time=1.5)
+
+#         # Ok ok ok so I now in need some vector fields. These come from trained models. Do I want to import the model 
+#         # and sample from it here? Or do I want to exprot the vector fields? 
+#         # I think it would be nice to fuck with the density etc in manim, so maybe we get a little aggressive and 
+#         # try to import the full model? 
+#         # Lets see here....
+#         # Hmm kinda unclear if this is going to work on mac/CPU -> i guess it's worth a try? Pretty sure I can't train w/o cuda. 
+
+#         model=torch.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/jun_20_1.pt')
+
+#         schedule = ScheduleLogLinear(N=256, sigma_min=0.01, sigma_max=10) #N=200
+#         bound=1.5
+#         num_heatmap_steps=30
+#         grid=[]
+#         for i, x in enumerate(np.linspace(-bound, bound, num_heatmap_steps)):
+#             for j, y in enumerate(np.linspace(-bound, bound, num_heatmap_steps)):
+#                 grid.append([x,y])
+#         grid=torch.tensor(grid).float()
+
+#         gam=1
+#         mu=0.01 #0.5 is DDPM
+#         cfg_scale=0.0
+#         cond=None
+#         sigmas=schedule.sample_sigmas(256)
+#         xt_history=[]
+#         heatmaps=[]
+#         eps=None
+
+#         with torch.no_grad():
+#             model.eval();
+#             xt=torch.randn((batch_size,) + model.input_dims)*sigmas[0] #Scaling by sigma here matters a lot - why is that???
+
+#             for i, (sig, sig_prev) in enumerate(pairwise(sigmas)):
+#                 eps_prev, eps = eps, model.predict_eps_cfg(xt, sig.to(xt), cond, cfg_scale)
+#                 # eps_av = eps * gam + eps_prev * (1-gam)  if i > 0 else eps
+#                 sig_p = (sig_prev/sig**mu)**(1/(1-mu)) # sig_prev == sig**mu sig_p**(1-mu)
+#                 eta = (sig_prev**2 - sig_p**2).sqrt()
+#                 xt = xt - (sig - sig_p) * eps + eta * model.rand_input(xt.shape[0]).to(xt)
+#                 xt_history.append(xt.numpy())
+#                 heatmaps.append(model.forward(grid, sig, cond=None))
+
+#         xt_history=np.array(xt_history)
+#         self.wait()
+
+#         # Ok nice glad i tried this! Seems like I can sample right in manim - that's great. 
+#         # Ok now let's draw some arrows, and then try to figure out how to bring thme in as a nice continuous
+#         # extension of the single arrow I have. 
+#         final_vectors = heatmaps[-1].detach().numpy()  # Shape should be (num_heatmap_steps^2, 2)
+
+#         sigma_index=-1
+#         def vector_function_direct(coords_array):
+#             print(coords_array.shape)
+#             res=model.forward(torch.tensor(coords_array).float(), sigmas[sigma_index], cond=None)
+#             return -res.detach().numpy()
+
+
+#         # Create interpolation function for the vector field
+#         def vector_function(coords_array):
+#             """
+#             Function that takes an array of coordinates and returns corresponding vectors
+#             coords_array: shape (N, 2) or (N, 3) - array of [x, y] or [x, y, z] coordinates
+#             Returns: array of shape (N, 2) with [vx, vy] vectors (z component handled automatically)
+#             """
+#             result = np.zeros((len(coords_array), 2))
             
-            for i, coord in enumerate(coords_array):
-                x, y = coord[0], coord[1]  # Take only x, y coordinates
+#             for i, coord in enumerate(coords_array):
+#                 x, y = coord[0], coord[1]  # Take only x, y coordinates
                 
-                # Find the closest grid point to interpolate from
-                distances = np.linalg.norm(grid.numpy() - np.array([x, y]), axis=1)
-                closest_idx = np.argmin(distances)
+#                 # Find the closest grid point to interpolate from
+#                 distances = np.linalg.norm(grid.numpy() - np.array([x, y]), axis=1)
+#                 closest_idx = np.argmin(distances)
                 
-                # Get the vector at the closest grid point
-                vector = final_vectors[closest_idx]
-                result[i] = vector
+#                 # Get the vector at the closest grid point
+#                 vector = final_vectors[closest_idx]
+#                 result[i] = vector
             
-            return -result #Reverse direction
+#             return -result #Reverse direction
 
 
-        #This is a great idea, should definitely try
-        def animate_vector_field_radially():
-            # Get brown arrow position in coordinate system
-            brown_pos = axes.p2c(arrow_x100_to_x99.get_start())
+#         #This is a great idea, should definitely try
+#         def animate_vector_field_radially():
+#             # Get brown arrow position in coordinate system
+#             brown_pos = axes.p2c(arrow_x100_to_x99.get_start())
             
-            # Group vectors by distance from brown arrow
-            vector_groups = {}
-            for vector_mob in vector_field.submobjects:
-                if hasattr(vector_mob, 'get_center'):
-                    vec_pos = axes.p2c(vector_mob.get_center())
-                    distance = np.linalg.norm(np.array(vec_pos[:2]) - np.array(brown_pos[:2]))
-                    dist_key = int(distance * 10)  # Group by distance intervals
-                    if dist_key not in vector_groups:
-                        vector_groups[dist_key] = []
-                    vector_groups[dist_key].append(vector_mob)
+#             # Group vectors by distance from brown arrow
+#             vector_groups = {}
+#             for vector_mob in vector_field.submobjects:
+#                 if hasattr(vector_mob, 'get_center'):
+#                     vec_pos = axes.p2c(vector_mob.get_center())
+#                     distance = np.linalg.norm(np.array(vec_pos[:2]) - np.array(brown_pos[:2]))
+#                     dist_key = int(distance * 10)  # Group by distance intervals
+#                     if dist_key not in vector_groups:
+#                         vector_groups[dist_key] = []
+#                     vector_groups[dist_key].append(vector_mob)
             
-            # Animate groups in order of distance
-            for dist_key in sorted(vector_groups.keys()):
-                group = VGroup(*vector_groups[dist_key])
-                self.play(FadeIn(group), run_time=0.2)
+#             # Animate groups in order of distance
+#             for dist_key in sorted(vector_groups.keys()):
+#                 group = VGroup(*vector_groups[dist_key])
+#                 self.play(FadeIn(group), run_time=0.2)
             
-            return vector_field
+#             return vector_field
 
 
 
-        # Create the VectorField - note that it needs your axes as the coordinate_system
-        vector_field = VectorField(
-            func=vector_function_direct, #vector_function,  # or vector_function_interpolated for smoother results
-            coordinate_system=axes,  # This is your existing axes object
-            density=4.0,  # Controls spacing between vectors (higher = more dense)
-            stroke_width=3,
-            stroke_opacity=0.7,
-            tip_width_ratio=4,
-            tip_len_to_width=0.01,
-            max_vect_len_to_step_size=0.7,  # Controls maximum vector length
-            # color_map_name="viridis",  # Color map for magnitude-based coloring
-            color=CHILL_BROWN
-        )
+#         # Create the VectorField - note that it needs your axes as the coordinate_system
+#         vector_field = VectorField(
+#             func=vector_function_direct, #vector_function,  # or vector_function_interpolated for smoother results
+#             coordinate_system=axes,  # This is your existing axes object
+#             density=4.0,  # Controls spacing between vectors (higher = more dense)
+#             stroke_width=3,
+#             stroke_opacity=0.7,
+#             tip_width_ratio=4,
+#             tip_len_to_width=0.01,
+#             max_vect_len_to_step_size=0.7,  # Controls maximum vector length
+#             # color_map_name="viridis",  # Color map for magnitude-based coloring
+#             color=CHILL_BROWN
+#         )
 
-        self.frame.reorient(0, 0, 0, (-0.06, 0.09, 0.0), 8.31)
-        self.play(FadeIn(vector_field), run_time=2.0)
-        self.wait()
-
-
-        self.wait()
+#         self.frame.reorient(0, 0, 0, (-0.06, 0.09, 0.0), 8.31)
+#         self.play(FadeIn(vector_field), run_time=2.0)
+#         self.wait()
 
 
+#         self.wait()
 
 
-        self.wait(20)
-        self.embed()
+
+
+#         self.wait(20)
+#         self.embed()
 
 
 

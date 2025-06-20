@@ -12,7 +12,7 @@ FRESH_TAN='#dfd0b9'
 
 from torch.utils.data import DataLoader
 from smalldiffusion import (
-    ScheduleLogLinear, samples, Swissroll, ModelMixin
+    ScheduleLogLinear, samples, Swissroll, ModelMixin, ScheduleDDPM
 )
 
 from typing import Callable
@@ -409,31 +409,6 @@ class p48_51(InteractiveScene):
             res=model.forward(torch.tensor(coords_array).float(), sigmas[sigma_index], cond=None)
             return -res.detach().numpy()
 
-
-        #This is a great idea, should definitely try
-        def animate_vector_field_radially():
-            # Get brown arrow position in coordinate system
-            brown_pos = axes.p2c(arrow_x100_to_x99.get_start())
-            
-            # Group vectors by distance from brown arrow
-            vector_groups = {}
-            for vector_mob in vector_field.submobjects:
-                if hasattr(vector_mob, 'get_center'):
-                    vec_pos = axes.p2c(vector_mob.get_center())
-                    distance = np.linalg.norm(np.array(vec_pos[:2]) - np.array(brown_pos[:2]))
-                    dist_key = int(distance * 10)  # Group by distance intervals
-                    if dist_key not in vector_groups:
-                        vector_groups[dist_key] = []
-                    vector_groups[dist_key].append(vector_mob)
-            
-            # Animate groups in order of distance
-            for dist_key in sorted(vector_groups.keys()):
-                group = VGroup(*vector_groups[dist_key])
-                self.play(FadeIn(group), run_time=0.2)
-            
-            return vector_field
-
-
         # individual_arrows=extract_individual_arrows(vector_field)
         # Ok so we still need to figure out a smooth transition between the single individual vector and the vector field
         # If I can extract a single vector from the field I could do a replacement transform as I roll in rest of vectors and zoom 
@@ -519,6 +494,95 @@ class p48_51(InteractiveScene):
         # arrow_x100_to_x99.set_opacity(0.8)
 
         # arrow_x100_to_x99.rotate(-2*DEGREES)
+
+        # Ok that transition looks nice! Now I need to make things even crazier and run the forward diffusion process
+        # for 100 steps (I think it makes sense to have a step counter at the bottom right?)
+        # Probably completele fade out vectors while I play forward diffusion, then bring back in??
+        # self.wait()
+
+        dots_to_move = VGroup()
+        for point in batch:
+            # Map the point coordinates to the axes
+            screen_point = axes.c2p(point[0], point[1])
+            dot = Dot(screen_point, radius=0.04)
+            # dot.set_color(YELLOW)
+            dots_to_move.add(dot)
+        dots_to_move.set_color(YELLOW)
+        dots_to_move.set_opacity(1.0)
+
+        random_walks=[]
+        np.random.seed(2)
+        schedule2 = ScheduleLogLinear(N=100, sigma_min=0.02, sigma_max=0.09) #Different schedule for viz?
+        # schedule2 = ScheduleDDPM(N=100, beta_start=0.02, beta_end=0.25) #Different schedule for viz?
+        sigmas100=schedule2.sample_sigmas(99)
+        sigmas100=(sigmas100.numpy()[::-1]).reshape(-1,1)
+        for i in range(100):
+            # rw=0.07*np.random.randn(100,2) #Uniform steps
+            rw=sigmas100*np.random.randn(100,2) #Real noise schedule(scaled down)
+            rw[0]=np.array([0,0]) #make be the starting point
+            # rw[-1]=np.array([0.08, -0.02])
+            rw=np.cumsum(rw,axis=0) 
+            rw=np.hstack((rw, np.zeros((len(rw), 1))))
+            rw_shifted=rw+np.array([batch[i][0], batch[i][1], 0])
+            random_walks.append(rw_shifted)
+
+        traced_paths=VGroup()
+        for idx, d in enumerate(dots_to_move): 
+            tp = CustomTracedPath(
+                    d.get_center, 
+                    stroke_color=YELLOW, 
+                    stroke_width=2,
+                    opacity_range=(0.1, 0.5),
+                    fade_length=10
+                )
+            traced_path.set_fill(opacity=0)
+            traced_paths.add(tp)
+        self.add(traced_paths)
+
+        step_count=MarkupText(str(1), font_size=35)
+        step_count.set_color(CHILL_BROWN)
+        step_count.move_to([-6.8, -3.3, 0])
+
+        step_label=MarkupText("STEP", font_size=18, font='myriad-pro')  
+        step_label.set_color(CHILL_BROWN).set_opacity(0.7)
+        step_label.next_to(step_count, DOWN, buff=0.1)
+
+
+        self.wait()
+        self.play(FadeOut(vector_field), FadeIn(step_label), FadeIn(step_count))
+
+
+        self.wait()
+        self.add(dots_to_move)
+        dots.set_opacity(0.3)
+        for step in range(100):
+            self.play(*[dots_to_move[i].animate.move_to(axes.c2p(*random_walks[i][step])) for i in range(len(dots_to_move))], 
+                     run_time=0.1, rate_func=linear)
+            self.remove(step_count)
+            step_count=MarkupText(str(step+1), font_size=35)
+            step_count.set_color(CHILL_BROWN)
+            step_count.move_to([-6.8, -3.3, 0])
+            self.add(step_count)
+
+        self.wait()
+        
+        for tp in traced_paths: tp.stop_tracing()
+
+        #Ok now fade back in Vector field (at t=100)
+        vector_field.set_color('#FFFFFF')
+        self.play(FadeIn(vector_field),
+                  dots_to_move.animate.set_opacity(0.3))
+        self.wait()
+
+        # Ok ok ok ok now fade back out vector field, reverse diffusion, and add t=0 vector field!
+        # Gotta count down steps as I play backwards too. 
+        # Hmm before I go further here - this is probably a good time to go back and figure out 
+        # why I can't render paths backwards. 
+        # Might try adding a real noise schedule to earlier paths too
+        # Ok let me back track and fix that, then will return here. 
+        self.play(FadeOut(vector_field))
+
+
 
         self.play(time_tracker.animate.set_value(8.0), run_time=8.0)
         self.play(time_tracker.animate.set_value(0.0), run_time=4.0)

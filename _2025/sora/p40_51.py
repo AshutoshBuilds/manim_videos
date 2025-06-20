@@ -455,7 +455,7 @@ class p48_51(InteractiveScene):
             time_tracker=time_tracker,
             func=vector_function_with_tracker,
             coordinate_system=extended_axes,
-            density=3.0,
+            density=3.0, #hacking here with Grant - more density???
             stroke_width=2,
             stroke_opacity=0.7, #0.7,
             tip_width_ratio=4,
@@ -574,6 +574,13 @@ class p48_51(InteractiveScene):
                   dots_to_move.animate.set_opacity(0.3))
         self.wait()
 
+
+
+        self.play(time_tracker.animate.set_value(8.0), run_time=6.0)
+
+
+
+
         # Ok ok ok ok now fade back out vector field, reverse diffusion, and add t=0 vector field!
         # Gotta count down steps as I play backwards too. 
         # Hmm before I go further here - this is probably a good time to go back and figure out 
@@ -689,7 +696,15 @@ class p48_51(InteractiveScene):
         eq_2.set_color('#00FFFF')
         eq_2.move_to(eq_1, aligned_edge=LEFT)
         self.wait()
-        self.play(eq_1[-1].animate.move_to([4.2, 2.2, 0], run_time=1.4)
+
+        # self.add(eq_2)
+
+        # eq_1[-1].move_to([4.03, 2.2, 0])
+        self.play(eq_1[-1].animate.move_to([4.03, 2.2, 0]), run_time=1.4)
+        self.add(eq_2) #I think just adding might be cleaner
+        # self.play(FadeIn(eq_2))
+        self.remove(eq_1)
+        self.wait()
         #Now fade in , t???
 
 

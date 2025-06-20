@@ -5,7 +5,7 @@ CHILL_BROWN='#948979'
 YELLOW='#ffd35a'
 YELLOW_FADE='#7f6a2d'
 BLUE='#65c8d0'
-GREEN='#00a14b'
+GREEN='#00a14b' 
 CHILL_GREEN='#6c946f'
 CHILL_BLUE='#3d5c6f'
 FRESH_TAN='#dfd0b9'
@@ -575,12 +575,6 @@ class p48_51(InteractiveScene):
         self.wait()
 
 
-
-        self.play(time_tracker.animate.set_value(8.0), run_time=6.0)
-
-
-
-
         # Ok ok ok ok now fade back out vector field, reverse diffusion, and add t=0 vector field!
         # Gotta count down steps as I play backwards too. 
         # Hmm before I go further here - this is probably a good time to go back and figure out 
@@ -706,10 +700,17 @@ class p48_51(InteractiveScene):
         self.remove(eq_1)
         self.wait()
         #Now fade in , t???
+        eq_3=Tex("f(x_{100}, t=1.0)", font_size=24)
+        eq_3.set_color('#00FFFF')
+        eq_3.move_to(eq_1, aligned_edge=LEFT)
+        self.wait()
 
-
-        self.remove(eq_1, eq_2)
-
+        # eq_2[-1].move_to([4.65, 2.2, 0])
+        self.play(eq_2[-1].animate.move_to([4.65, 2.2, 0]), run_time=1.4)
+        self.add(eq_3)
+        self.remove(eq_2)
+        self.wait()
+        #Ok now I want little arrows pointing from x99, and then maybe one from like x3?
 
         arrow_x99_to_x0 = Arrow(
             start=traced_path.traced_points[-2],
@@ -719,30 +720,106 @@ class p48_51(InteractiveScene):
             buff=0.025  # Small buffer so arrow doesn't overlap the dots
         )
         arrow_x99_to_x0.set_color('#FF00FF')
-        arrow_x99_to_x0.set_opacity(0.6)
-
+        arrow_x99_to_x0.set_opacity(1.0)
         dot99=Dot(traced_path.traced_points[-2], radius=0.04)
         dot99.set_color("#FF00FF")
 
+        eq_4=Tex("f(x_{99}, t=0.99)", font_size=20)
+        eq_4.set_color('#FF00FF')
+        eq_4.move_to([3.1, 2.9, 0])
+        # self.add(eq_4)
 
+        self.wait()
+        self.play(FadeIn(arrow_x99_to_x0), FadeIn(dot99), FadeIn(eq_4))
+        self.wait()
+
+
+
+        arrow_x3_to_x0 = Arrow(
+            start=traced_path.traced_points[2],
+            end=dots[75].get_center(),
+            thickness=1,
+            tip_width_ratio=5, 
+            buff=0.025  # Small buffer so arrow doesn't overlap the dots
+        )
+        arrow_x3_to_x0.set_color(GREEN)
+        arrow_x3_to_x0.set_opacity(1.0)
+        dot3=Dot(traced_path.traced_points[2], radius=0.04)
+        dot3.set_color(GREEN)
+
+        eq_5=Tex("f(x_{2}, t=0.02)", font_size=20)
+        eq_5.set_color(GREEN)
+        eq_5.move_to([1.93, 2.45, 0])
+        # self.add(eq_4)
+
+        self.wait()
+        self.play(FadeIn(arrow_x3_to_x0), FadeIn(dot3), FadeIn(eq_5))
+        self.wait()
 
         
-        self.add(arrow_x99_to_x0)
-        self.add(dot99)
+        # self.add(arrow_x99_to_x0, )
+        # self.add(dot99)
+        # self.remove(arrow_x99_to_x0, dot99, eq_4)
+
+        # Alright lets keep rollin here I guess? 
+        # Fade basically all of this new stuff out, zoom back to center view, and run vector field animation
+
+        self.play(FadeOut(arrow_x3_to_x0),
+                  FadeOut(eq_5),
+                  FadeOut(eq_4),
+                  FadeOut(eq_3),
+                  FadeOut(arrow_x99_to_x0),
+                  FadeOut(arrow_x100_to_x0),
+                  FadeOut(traced_path),
+                  FadeOut(dot_to_move),
+                  FadeOut(x100),
+                  FadeOut(dot3),
+                  FadeOut(dot99),
+                  FadeOut(dot_to_move),
+                  dots[75].animate.set_color(YELLOW).set_opacity(0.3),
+                  FadeOut(x0),
+                  self.frame.animate.reorient(0, 0, 0, (-0.21, 0.02, 0.0), 8.08),
+                  run_time=4.0)
+        self.wait()
 
 
-        self.remove(arrow_x99_to_x0, dot99)
 
+        time_tracker.set_value(0)
+        vector_field.set_color(CHILL_BROWN) #Can't decde on color!
+        # vector_field.set_color('#FFFFFF')
+        # self.play(FadeIn(vector_field))
+        self.wait()
+        # self.play(time_tracker.animate.set_value(8.0), run_time=10.0)
 
-        arrow_x100_to_x99 = Arrow(
-            start=dot_to_move.get_center(),
-            end=[4.739921625933185, 2.8708813273028455, 0], #Just pul in from previous paragraph, kinda hacky but meh. ,
-            thickness=1.5,
-            tip_width_ratio=5, 
-            buff=0.04  # Small buffer so arrow doesn't overlap the dots
+        # Ok so now i need to figure out how to upate a t="" little counter in the lower left corner like I did before. 
+        # I need to incrementally move t from 1.0 down to 0.0 as the animation above runs. Claude can you help?
+        time_value = ValueTracker(1.0)  # Start at t=1.0
+        time_display = DecimalNumber(
+            1.0,
+            num_decimal_places=2,
+            font_size=35,
+            color=CHILL_BROWN
         )
-        arrow_x100_to_x99.set_color(CHILL_BROWN)
+        time_display.move_to([-6.3, -3.3, 0])  # Same position as your step counter
 
+        time_label = MarkupText("t =", font_size=35)
+        time_label.set_color(CHILL_BROWN)
+        time_label.next_to(time_display, LEFT, buff=0.15)
+
+        # Add updater to keep the display synchronized with the tracker
+        time_display.add_updater(lambda m: m.set_value(time_value.get_value()))
+
+        # Replace your final animation section with this:
+        time_tracker.set_value(0)
+        self.play(FadeIn(vector_field), FadeIn(time_label), FadeIn(time_display))
+        self.wait()
+        # Animate both the vector field time progression AND the display counter
+        self.play(
+            time_tracker.animate.set_value(8.0),  # Your existing vector field animation
+            time_value.animate.set_value(0.0),    # Time counter goes from 1.0 to 0.0
+            run_time=10.0, 
+            rate_func=linear
+        )
 
 
 

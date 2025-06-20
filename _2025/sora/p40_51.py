@@ -660,18 +660,82 @@ class p48_51(InteractiveScene):
 
         # self.add(traced_path)
         # self.add(dot_to_move)
-
-
         # self.frame.reorient(0, 0, 0, (3.58, 2.57, 0.0), 2.69)
         # self.add(axes, dots, traced_path, dot_to_move)
         # self.add(x100,  x0, arrow_x100_to_x0, arrow_x100_to_x99)
         # self.wait()
 
 
+        x100=Tex('x_{100}', font_size=24).set_color(YELLOW)
+        x100.next_to(dot_to_move, 0.07*UP+0.001*RIGHT)
+
+        x0=Tex('x_{0}', font_size=24).set_color('#00FFFF')
+        x0.next_to(dots[75], 0.2*UP)
+
+        #Probably do a big fade in here
+        arrow_x100_to_x0.set_opacity(1.0)
+        self.add(arrow_x100_to_x0)
+        dots[75].set_color('#00FFFF').set_opacity(1.0)
+        self.add(x100, x0)
+        self.wait()
+
+
+        eq_1=Tex("f(x_{100})", font_size=24)
+        eq_1.set_color('#00FFFF')
+        eq_1.move_to([3.5, 2.2, 0])
+        self.add(eq_1)
+
+        eq_2=Tex("f(x_{100}, t)", font_size=24)
+        eq_2.set_color('#00FFFF')
+        eq_2.move_to(eq_1, aligned_edge=LEFT)
+        self.wait()
+        self.play(eq_1[-1].animate.move_to([4.2, 2.2, 0], run_time=1.4)
+        #Now fade in , t???
+
+
+        self.remove(eq_1, eq_2)
+
+
+        arrow_x99_to_x0 = Arrow(
+            start=traced_path.traced_points[-2],
+            end=dots[75].get_center(),
+            thickness=1,
+            tip_width_ratio=5, 
+            buff=0.025  # Small buffer so arrow doesn't overlap the dots
+        )
+        arrow_x99_to_x0.set_color('#FF00FF')
+        arrow_x99_to_x0.set_opacity(0.6)
+
+        dot99=Dot(traced_path.traced_points[-2], radius=0.04)
+        dot99.set_color("#FF00FF")
+
+
+
+        
+        self.add(arrow_x99_to_x0)
+        self.add(dot99)
+
+
+        self.remove(arrow_x99_to_x0, dot99)
+
+
+        arrow_x100_to_x99 = Arrow(
+            start=dot_to_move.get_center(),
+            end=[4.739921625933185, 2.8708813273028455, 0], #Just pul in from previous paragraph, kinda hacky but meh. ,
+            thickness=1.5,
+            tip_width_ratio=5, 
+            buff=0.04  # Small buffer so arrow doesn't overlap the dots
+        )
+        arrow_x100_to_x99.set_color(CHILL_BROWN)
+
+
 
 
         self.wait(20)
         self.embed()
+
+
+
 
 
 

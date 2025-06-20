@@ -232,7 +232,7 @@ def create_noisy_arrow_animation(self, start_point, end_point, target_point, num
 
 
 
-class p48_51(InteractiveScene):
+class p48_51_deprecated(InteractiveScene):
     def construct(self):
         '''
         Ok ok ok need to do a direct transition from p47b after fading out all the traces etc -> then bring
@@ -385,10 +385,90 @@ class p48_51(InteractiveScene):
                 heatmaps.append(model.forward(grid, sig, cond=None))
 
         xt_history=np.array(xt_history)
+        self.wait()
 
         # Ok nice glad i tried this! Seems like I can sample right in manim - that's great. 
         # Ok now let's draw some arrows, and then try to figure out how to bring thme in as a nice continuous
         # extension of the single arrow I have. 
+        final_vectors = heatmaps[-1].detach().numpy()  # Shape should be (num_heatmap_steps^2, 2)
+
+        sigma_index=-1
+        def vector_function_direct(coords_array):
+            print(coords_array.shape)
+            res=model.forward(torch.tensor(coords_array).float(), sigmas[sigma_index], cond=None)
+            return -res.detach().numpy()
+
+
+        # Create interpolation function for the vector field
+        def vector_function(coords_array):
+            """
+            Function that takes an array of coordinates and returns corresponding vectors
+            coords_array: shape (N, 2) or (N, 3) - array of [x, y] or [x, y, z] coordinates
+            Returns: array of shape (N, 2) with [vx, vy] vectors (z component handled automatically)
+            """
+            result = np.zeros((len(coords_array), 2))
+            
+            for i, coord in enumerate(coords_array):
+                x, y = coord[0], coord[1]  # Take only x, y coordinates
+                
+                # Find the closest grid point to interpolate from
+                distances = np.linalg.norm(grid.numpy() - np.array([x, y]), axis=1)
+                closest_idx = np.argmin(distances)
+                
+                # Get the vector at the closest grid point
+                vector = final_vectors[closest_idx]
+                result[i] = vector
+            
+            return -result #Reverse direction
+
+
+        #This is a great idea, should definitely try
+        def animate_vector_field_radially():
+            # Get brown arrow position in coordinate system
+            brown_pos = axes.p2c(arrow_x100_to_x99.get_start())
+            
+            # Group vectors by distance from brown arrow
+            vector_groups = {}
+            for vector_mob in vector_field.submobjects:
+                if hasattr(vector_mob, 'get_center'):
+                    vec_pos = axes.p2c(vector_mob.get_center())
+                    distance = np.linalg.norm(np.array(vec_pos[:2]) - np.array(brown_pos[:2]))
+                    dist_key = int(distance * 10)  # Group by distance intervals
+                    if dist_key not in vector_groups:
+                        vector_groups[dist_key] = []
+                    vector_groups[dist_key].append(vector_mob)
+            
+            # Animate groups in order of distance
+            for dist_key in sorted(vector_groups.keys()):
+                group = VGroup(*vector_groups[dist_key])
+                self.play(FadeIn(group), run_time=0.2)
+            
+            return vector_field
+
+
+
+        # Create the VectorField - note that it needs your axes as the coordinate_system
+        vector_field = VectorField(
+            func=vector_function_direct, #vector_function,  # or vector_function_interpolated for smoother results
+            coordinate_system=axes,  # This is your existing axes object
+            density=4.0,  # Controls spacing between vectors (higher = more dense)
+            stroke_width=3,
+            stroke_opacity=0.7,
+            tip_width_ratio=4,
+            tip_len_to_width=0.01,
+            max_vect_len_to_step_size=0.7,  # Controls maximum vector length
+            # color_map_name="viridis",  # Color map for magnitude-based coloring
+            color=CHILL_BROWN
+        )
+
+        self.frame.reorient(0, 0, 0, (-0.06, 0.09, 0.0), 8.31)
+        self.play(FadeIn(vector_field), run_time=2.0)
+        self.wait()
+
+
+        self.wait()
+
+
 
 
         self.wait(20)

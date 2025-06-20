@@ -17,6 +17,8 @@ from smalldiffusion import (
 
 from typing import Callable
 from tqdm import tqdm
+import torch
+from itertools import pairwise
 
 def manual_camera_interpolation(start_orientation, end_orientation, num_steps):
     """
@@ -317,7 +319,6 @@ class p48_51(InteractiveScene):
         arrow_x100_to_x0.set_color('#00FFFF')
         arrow_x100_to_x0.set_opacity(0.6)
 
-        
 
         arrow_x100_to_x99 = Arrow(
             start=dot_to_move.get_center(),
@@ -348,8 +349,46 @@ class p48_51(InteractiveScene):
         # I think it would be nice to fuck with the density etc in manim, so maybe we get a little aggressive and 
         # try to import the full model? 
         # Lets see here....
+        # Hmm kinda unclear if this is going to work on mac/CPU -> i guess it's worth a try? Pretty sure I can't train w/o cuda. 
 
-        
+        model=torch.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/jun_20_1.pt')
+
+        schedule = ScheduleLogLinear(N=256, sigma_min=0.01, sigma_max=10) #N=200
+        bound=1.5
+        num_heatmap_steps=30
+        grid=[]
+        for i, x in enumerate(np.linspace(-bound, bound, num_heatmap_steps)):
+            for j, y in enumerate(np.linspace(-bound, bound, num_heatmap_steps)):
+                grid.append([x,y])
+        grid=torch.tensor(grid).float()
+
+        gam=1
+        mu=0.01 #0.5 is DDPM
+        cfg_scale=0.0
+        cond=None
+        sigmas=schedule.sample_sigmas(256)
+        xt_history=[]
+        heatmaps=[]
+        eps=None
+
+        with torch.no_grad():
+            model.eval();
+            xt=torch.randn((batch_size,) + model.input_dims)*sigmas[0] #Scaling by sigma here matters a lot - why is that???
+
+            for i, (sig, sig_prev) in enumerate(pairwise(sigmas)):
+                eps_prev, eps = eps, model.predict_eps_cfg(xt, sig.to(xt), cond, cfg_scale)
+                # eps_av = eps * gam + eps_prev * (1-gam)  if i > 0 else eps
+                sig_p = (sig_prev/sig**mu)**(1/(1-mu)) # sig_prev == sig**mu sig_p**(1-mu)
+                eta = (sig_prev**2 - sig_p**2).sqrt()
+                xt = xt - (sig - sig_p) * eps + eta * model.rand_input(xt.shape[0]).to(xt)
+                xt_history.append(xt.numpy())
+                heatmaps.append(model.forward(grid, sig, cond=None))
+
+        xt_history=np.array(xt_history)
+
+        # Ok nice glad i tried this! Seems like I can sample right in manim - that's great. 
+        # Ok now let's draw some arrows, and then try to figure out how to bring thme in as a nice continuous
+        # extension of the single arrow I have. 
 
 
         self.wait(20)

@@ -199,7 +199,7 @@ def create_noisy_arrow_animation(self, start_point, end_point, target_point, num
     angle_noise = noise_level * noise_decay * np.random.randn(num_steps)
     
     # Generate overshoot in angle space - this will make it swing past the target angle
-    overshoot_frequency = 1.5
+    overshoot_frequency = 3.0
     overshoot_decay = np.exp(-2 * t_values)
     overshoot_oscillation = overshoot_factor * overshoot_decay * np.sin(overshoot_frequency * np.pi * t_values)
     
@@ -348,34 +348,87 @@ class p47b(InteractiveScene):
         # It needs to feel noisy, but not too noisy, and coverge to exactly the x0 direction, and length needs
         # to stay the same. And i need 100 steps. Let's ask my buddy Claude. 
         noise_level = 0.06  # Adjust this parameter to control noise amount
-        overshoot_factor = 0.4  # Adjust this to control how much overshoot occurs
+        overshoot_factor = 2.0  # Adjust this to control how much overshoot occurs
+        start_delay=20
+        early_end=10
         arrow_end_positions = create_noisy_arrow_animation(
             self, 
             start_point=dot_to_move.get_center()[:2],  # x100 position (2D)
             end_point=dot_history[-1].get_center()[:2],  # x99 position (2D) 
             target_point=dots[i].get_center()[:2],  # x0 position (2D)
-            num_steps=100,
+            num_steps=100-start_delay-early_end,
             noise_level=noise_level,
             overshoot_factor=overshoot_factor
         )
 
 
-        self.wait()
-        for end_pos in arrow_end_positions:
-            arrow_x100_to_x99.put_start_and_end_on(
-                dot_to_move.get_center(),
-                end_pos
-                # np.concatenate((end_pos, [0]))
-            )
-            self.wait(0.05)  # 5 seconds total for 100 steps
+        # self.wait()
+        # for end_pos in arrow_end_positions:
+        #     arrow_x100_to_x99.put_start_and_end_on(
+        #         dot_to_move.get_center(),
+        #         end_pos
+        #         # np.concatenate((end_pos, [0]))
+        #     )
+        #     self.wait(0.05)  # 5 seconds total for 100 steps
 
+        #Ok that works! Now I need this motion to happen while all the points fly by! Let's try the same points as last time. 
+
+
+        random_walks=[]
+        np.random.seed(2)
+        for j in tqdm(range(int(2e6))):
+            rw=0.07*np.random.randn(100,2)
+            rw[0]=np.array([0,0]) #make be the starting point
+            # rw[-1]=np.array([0.08, -0.02])
+            rw=np.cumsum(rw,axis=0) 
+            rw=np.hstack((rw, np.zeros((len(rw), 1))))
+            rw_shifted=rw+np.array([batch[j%len(batch)][0], batch[j%len(batch)][1], 0])
+            # if rw_shifted[-1][0]>1.7 and rw_shifted[-1][0]<2.2 and rw_shifted[-1][1]>1.1 and rw_shifted[-1][1]<1.4:
+            if rw_shifted[-1][0]>2.1 and rw_shifted[-1][1]>1.4:
+                random_walks.append(rw_shifted)
+
+        print(len(random_walks))
+        random_walks=random_walks[:100] #Comment out to do all the points.
+        print(len(random_walks))
+
+        dots_to_move = VGroup()
+        for j in range(len(random_walks)):
+            # Map the point coordinates to the axes
+            screen_point = axes.c2p(batch[j%len(batch)][0], batch[j%len(batch)][1])
+            dot = Dot(screen_point, radius=0.04)
+            # dot.set_color(YELLOW)
+            dots_to_move.add(dot)
+        dots_to_move.set_color(FRESH_TAN)
+        dots_to_move.set_opacity(0.2)
+
+
+        traced_paths=VGroup()
+        for idx, d in enumerate(dots_to_move): 
+            # tp = TracedPath(d.get_center, stroke_color=YELLOW, stroke_width=2)
+            if idx != 75:  # Skip the already traced dot
+                tp = CustomTracedPath(
+                        d.get_center, 
+                        stroke_color=FRESH_TAN, 
+                        stroke_width=2,
+                        opacity_range=(0.01, 0.35),
+                        fade_length=10
+                    )
+                traced_path.set_fill(opacity=0)
+                traced_paths.add(tp)
+        self.add(traced_paths)
+
+        self.wait()
+        for step in range(100):
+            self.play(*[dots_to_move[i].animate.move_to(axes.c2p(*random_walks[i][step])) for i in range(len(random_walks))], 
+                     # self.frame.animate.reorient(*interp_orientations[step]), 
+                     run_time=0.1, rate_func=linear)
+            if step>start_delay:
+                arrow_index=np.clip(step-start_delay, 0, len(arrow_end_positions)-1)
+                arrow_x100_to_x99.put_start_and_end_on(dot_to_move.get_center(), arrow_end_positions[arrow_index])
 
 
         self.wait(20)
         self.embed()
-
-
-
 
 
 

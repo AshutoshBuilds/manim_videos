@@ -177,7 +177,7 @@ class p53(InteractiveScene):
 
         model=torch.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/jun_20_1.pt')
 
-        schedule = ScheduleLogLinear(N=256, sigma_min=0.01, sigma_max=10) #N=200
+        schedule = ScheduleLogLinear(N=64, sigma_min=0.01, sigma_max=1) #N=200
         bound=2.0 #Need to match extended axes bro
         num_heatmap_steps=30
         grid=[]
@@ -190,7 +190,7 @@ class p53(InteractiveScene):
         mu=0.5 #0.5 is DDPM
         cfg_scale=0.0
         cond=None
-        sigmas=schedule.sample_sigmas(256)
+        sigmas=schedule.sample_sigmas(64)
         xt_history=[]
         history_pre_noise=[]
         heatmaps=[]
@@ -265,13 +265,44 @@ class p53(InteractiveScene):
         self.wait()
 
         # Ok so I'll need to noodle with a few different starting points - and am tempted ot start not quite at point 100, ya know?
-
-        path_index=0
-        dot_to_move=Dot(np.concatenate((xt_history[0, path_index, :], [0])), radius=0.04)
+        #Ok yeah so I need to find path I like...
+        path_index=9
+        dot_to_move=Dot(axes.c2p(*np.concatenate((xt_history[-1, path_index, :], [0]))), radius=0.04)
+        dot_to_move.set_color(WHITE)
         self.add(dot_to_move)
 
+        path_segments=VGroup()
+        for k in range(64):
+            segment1 = Line(
+                axes.c2p(*[xt_history[k, path_index, 0], xt_history[k, path_index, 1]]), 
+                axes.c2p(*[history_pre_noise[k, path_index, 0], history_pre_noise[k, path_index, 1]]),
+                stroke_width=1.5,
+                stroke_color=YELLOW
+            )
+            segment2 = Line(
+                axes.c2p(*[history_pre_noise[k, path_index, 0], history_pre_noise[k, path_index, 1]]), 
+                axes.c2p(*[xt_history[k+1, path_index, 0], xt_history[k+1, path_index, 1]]),
+                stroke_width=1.5,
+                stroke_color=WHITE
+            )
+            path_segments.add(segment1)
+            path_segments.add(segment2)
+        self.add(path_segments)
 
 
+        self.remove(path_segments, dot_to_move)
+
+        # plt.plot([xt_history[k, j, 0], history_pre_noise[k, j, 0]], [xt_history[k, j, 1], history_pre_noise[k, j, 1]], 'm')
+        # plt.plot([history_pre_noise[k, j, 0], xt_history[k+1, j, 0]], [history_pre_noise[k, j, 1], xt_history[k+1, j, 1]], 'c')
+
+
+
+        # Ok, I think that lowering sigma max for this example defintely makes sense!
+        # However I'm not really landing nicely on the spiral! And I want to
+        # I think in need to back to jupyter notebook for a bit and tune - mayb revisit Chenyangs original config
+        # I want to say he only did 20 steps?!
+        # Ok I'm going to back to writing for the weekend I think
+        # Made pretty good progress here - will pick back up on tuning spiral DDPM when I'm back on animation - let's go!
 
 
 

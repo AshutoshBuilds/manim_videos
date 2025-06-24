@@ -271,6 +271,15 @@ class p53(InteractiveScene):
         dot_to_move.set_color(WHITE)
         self.add(dot_to_move)
 
+        #Look at all dot real quick to get a sanity check on sprial fit
+        for path_index in range(512):
+            dot_to_move=Dot(axes.c2p(*np.concatenate((xt_history[-1, path_index, :], [0]))), radius=0.04)
+            dot_to_move.set_color(WHITE)
+            self.add(dot_to_move)       
+
+        #Ok fit seems pretty good, but maybe like it could be better?
+        #Let me compare to jupyter notebook.  
+
         path_segments=VGroup()
         for k in range(64):
             segment1 = Line(

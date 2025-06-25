@@ -472,8 +472,96 @@ class p57_58(InteractiveScene):
         self.play(FadeIn(x100), FadeIn(x99), FadeIn(dot99))
         self.wait()
 
+        a1=Arrow(dot_history[-1].get_center(),
+                 dot_to_move.get_center(),
+                 thickness = 2.0,
+                 tip_width_ratio= 5, 
+                 buff=0.03)
+        a1.set_color(YELLOW)
+
         #Turn path to chiil brown when I do the reversal??
+        # I think I want an arrow on that last step here?
+
+        eq_1=Tex("p(x_{100} | x_{99}) = \mathcal{N} (0, \sigma^2)", font_size=22)
+        eq_1.set_color('#FFFFFF')
+        eq_1[2:6].set_color(YELLOW)
+        eq_1[7:10].set_color(CHILL_BROWN)
+        eq_1.move_to([5.2, 3.65, 0])
+        self.add(eq_1, a1)
         
+
+        eq_2=Tex("p(x_{99} | x_{100}) = \mathcal{N} (\mu, \sigma^2)", font_size=22)
+        eq_2.set_color('#FFFFFF')
+        eq_2[2:5].set_color(CHILL_BROWN)
+        eq_2[6:10].set_color(YELLOW)
+        eq_2[14].set_color('#00FFFF')
+        eq_2.move_to([5.2, 2.3, 0])       
+
+        pre_point_coords=dot_to_move.get_center()-np.array([0.6, 0.18, 0])
+        a2=Arrow(dot_to_move.get_center(),
+                 pre_point_coords,
+                 thickness = 2.0,
+                 tip_width_ratio= 5, 
+                 buff=0.035)
+        a2.set_color('#00FFFF')
+
+        self.wait()
+        self.play(ReplacementTransform(a1, a2), 
+                  traced_path.animate.set_color(CHILL_BROWN).set_opacity(0.2), 
+                  x99.animate.set_opacity(0.5), 
+                  dot99.animate.set_opacity(0.25))
+        self.wait()
+
+        self.play(ReplacementTransform(eq_1[:2].copy(), eq_2[:2]), 
+                  ReplacementTransform(eq_1[2:6].copy(), eq_2[6:10]),
+                  ReplacementTransform(eq_1[7:10].copy(), eq_2[2:5]),
+                  ReplacementTransform(eq_1[6].copy(), eq_2[5]),
+                  ReplacementTransform(eq_1[10:].copy(), eq_2[10:]),
+                  run_time=4)
+        # Ok now add in little overlay from illustrator here
+        # And I think i know how i want to finish the scent
+        # Totally remove forward path, add in next (random) step of reverse path
+        # And I think add labels -> mu and a zero mean normal to the two steps/arrows
+        # From there maybe one more set of illustrator label
+        # I don' think it makes sense to play the full reverse path here. 
+
+        dot2=Dot(pre_point_coords, radius=0.04)
+        dot2.set_color('#00FFFF')
+        a3=Arrow(pre_point_coords,
+                 pre_point_coords+np.array([-0.7, 0.24, 0]),
+                 thickness = 2.0,
+                 tip_width_ratio= 5, 
+                 buff=0.035)
+        a3.set_color('#777777')
+
+        self.wait()
+        self.play(FadeOut(traced_path), FadeOut(x99), FadeOut(dot99))
+        self.add(a3, dot2)
+        self.wait()
+
+        # mu_label=Tex('\mu', font_size=22)
+        # mu_label.set_color('#00FFFF')
+        # mu_label.next_to(a2, DOWN, buff=0.1)
+        mu_label=eq_2[14].copy()
+
+        self.play(mu_label.animate.move_to(a2.get_center()+0.16*DOWN+0.05*RIGHT), run_time=2.0)
+        self.wait()
+
+        eq_3=Tex("\mathcal{N} (0, \sigma^2)", font_size=18)
+        eq_3.set_color('#777777')
+        eq_3.move_to(a3.get_center()+0.22*DOWN+0.2*LEFT)
+
+        self.play(ReplacementTransform(eq_2[12:].copy(), eq_3), run_time=2.0)
+        self.wait()
+
+        self.play(FadeOut(eq_1), FadeOut(eq_1), FadeOut(eq_2), FadeOut(eq_3), 
+                  FadeOut(a2), FadeOut(a3), FadeOut(dot2), FadeOut(dot_to_move),
+                  FadeOut(mu_label), FadeOut(x100))
+
+        #Now fade in vector field while we zoom out!
+
+        self.play(FadeIn(vector_field), self.frame.animate.reorient(0, 0, 0, (0.00, 0.00, 0.0), 8.0), run_time=4.0)
+        self.wait(0)
 
 
 

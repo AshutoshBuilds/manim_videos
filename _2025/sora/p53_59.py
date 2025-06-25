@@ -196,6 +196,7 @@ class p53(InteractiveScene):
         history_pre_noise=[]
         heatmaps=[]
         eps=None
+        torch.manual_seed(2)
 
         with torch.no_grad():
             model.eval();
@@ -301,7 +302,7 @@ class p53(InteractiveScene):
 
         # Ok so I'll need to noodle with a few different starting points - and am tempted ot start not quite at point 100, ya know?
         #Ok yeah so I need to find path I like...
-        path_index=1 #path 1 is not too shabby
+        path_index=3 #3 is my fav so far. path 1 is not too shabby, could work. doesn't land quite on the spiral. 
         dot_to_move=Dot(axes.c2p(*np.concatenate((xt_history[-1, path_index, :], [0]))), radius=0.04)
         dot_to_move.set_color(WHITE)
         self.add(dot_to_move)
@@ -319,16 +320,18 @@ class p53(InteractiveScene):
                 axes.c2p(*[xt_history[k+1, path_index, 0], xt_history[k+1, path_index, 1]]),
                 stroke_width=2.0,
                 stroke_color=WHITE, 
-                opacity=0.7
             )
+            segment2.set_opacity(0.5)
+            segment1.set_opacity(0.9)
             path_segments.add(segment1)
             path_segments.add(segment2)
         self.add(path_segments)
 
+        self.add(vector_field)
 
         self.remove(path_segments, dot_to_move)
 
-        self.add(vector_field)
+        
 
         #Look at all dot real quick to get a sanity check on sprial fit
         # for path_index in range(512):

@@ -435,8 +435,11 @@ class p48_51(InteractiveScene):
 
         # Create a custom VectorField that updates based on the tracker
         class TrackerControlledVectorField(VectorField):
-            def __init__(self, time_tracker, **kwargs):
+            def __init__(self, time_tracker, max_radius=2.0, min_opacity=0.1, max_opacity=0.7, **kwargs):
                 self.time_tracker = time_tracker
+                self.max_radius = max_radius  # Maximum radius for opacity calculation
+                self.min_opacity = min_opacity  # Minimum opacity at max radius
+                self.max_opacity = max_opacity  # Maximum opacity at origin
                 super().__init__(**kwargs)
                 
                 # Add updater that triggers when tracker changes
@@ -449,15 +452,48 @@ class p48_51(InteractiveScene):
                 if not hasattr(self, '_last_time') or abs(current_time - self._last_time) > 0.01:
                     self._last_time = current_time
                     self.update_vectors()  # Redraw vectors with new time
+                    self.apply_radial_opacity()  # Apply opacity falloff after updating
+            
+            def apply_radial_opacity(self):
+                """Apply radial opacity falloff from origin"""
+                # Get the stroke opacities array (this creates it if it doesn't exist)
+                opacities = self.get_stroke_opacities()
+                
+                # In ManimGL VectorField, each vector is represented by 8 points
+                # Points 0,2,4,6 are the key points of each vector, with point 0 being the base
+                n_vectors = len(self.sample_points)
+                
+                for i in range(n_vectors):
+                    # Get the base point of this vector (every 8th point starting from 0)
+                    base_point = self.sample_points[i]
+                    
+                    # Calculate distance from origin (assuming origin is at [0,0,0])
+                    distance = np.linalg.norm(base_point[:2])  # Only use x,y components
+                    
+                    # Calculate opacity based on distance
+                    # Linear falloff: opacity decreases linearly with distance
+                    opacity_factor = max(0, 1 - distance / self.max_radius)
+                    final_opacity = self.min_opacity + (self.max_opacity - self.min_opacity) * opacity_factor
+                    
+                    # Apply the opacity to all 8 points of this vector (except the last one)
+                    start_idx = i * 8
+                    end_idx = min(start_idx + 8, len(opacities))
+                    opacities[start_idx:end_idx] = final_opacity
+                
+                # Make sure the data is marked as changed
+                self.note_changed_data()
+
 
         # Create the tracker-controlled vector field
         vector_field = TrackerControlledVectorField(
             time_tracker=time_tracker,
             func=vector_function_with_tracker,
             coordinate_system=extended_axes,
-            density=4.0, #hacking here with Grant - more density??? let's try 4 (was 3) can dial back if I need to.
+            density=3.0,
             stroke_width=2,
-            stroke_opacity=0.7, #0.7,
+            max_radius=6.0,      # Vectors fade to min_opacity at this distance
+            min_opacity=0.15,     # Minimum opacity at max_radius
+            max_opacity=0.8,     # Maximum opacity at origin
             tip_width_ratio=4,
             tip_len_to_width=0.01,
             max_vect_len_to_step_size=0.7,

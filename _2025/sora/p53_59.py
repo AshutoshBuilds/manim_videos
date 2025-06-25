@@ -223,7 +223,7 @@ class p53(InteractiveScene):
             """Vector function that uses the ValueTracker for time"""
             current_time = time_tracker.get_value()
             max_time = 8.0  # Map time 0-8 to sigma indices 0-255
-            sigma_idx = int(np.clip(current_time * 255 / max_time, 0, 255))
+            sigma_idx = int(np.clip(current_time * 63 / max_time, 0, 63)) #Needs to be N-1
             
             try:
                 res = model.forward(torch.tensor(coords_array).float(), sigmas[sigma_idx], cond=None)
@@ -296,7 +296,7 @@ class p53(InteractiveScene):
             max_vect_len_to_step_size=0.7,
             color=CHILL_BROWN
         )
-                
+        
 
         # Ok so I'll need to noodle with a few different starting points - and am tempted ot start not quite at point 100, ya know?
         #Ok yeah so I need to find path I like...
@@ -315,13 +315,15 @@ class p53(InteractiveScene):
             segment2 = Line(
                 axes.c2p(*[history_pre_noise[k, path_index, 0], history_pre_noise[k, path_index, 1]]), 
                 axes.c2p(*[xt_history[k+1, path_index, 0], xt_history[k+1, path_index, 1]]),
-                stroke_width=2.0,
+                stroke_width=4.0,
                 stroke_color=WHITE, 
             )
-            segment2.set_opacity(0.5)
+            segment2.set_opacity(0.4)
             segment1.set_opacity(0.9)
             path_segments.add(segment1)
             path_segments.add(segment2)
+        self.add(path_segments) #Add now for layering. 
+        path_segments.set_opacity(0.0)
 
 
         self.frame.reorient(0, 0, 0, (0.00, 0.00, 0.0), 8.25)
@@ -358,35 +360,66 @@ class p53(InteractiveScene):
         self.wait()
 
         #Arrow here or cool variable opacity trail thin here? 
-        a1=Arrow(axes.c2p(*[xt_history[0, path_index, 0], xt_history[0, path_index, 1]]), 
-                 axes.c2p(*[history_pre_noise[0, path_index, 0], history_pre_noise[0, path_index, 1]]),
-                 thickness=3.5,
-                 tip_width_ratio=5)
+        # a1=Arrow(axes.c2p(*[xt_history[0, path_index, 0], xt_history[0, path_index, 1]]), 
+        #          axes.c2p(*[history_pre_noise[0, path_index, 0], history_pre_noise[0, path_index, 1]]),
+        #          thickness=3.5,
+        #          tip_width_ratio=5)
 
-
-        self.play(FadeOut(dot_coords),
-                  dot_to_move.animate.move_to(axes.c2p(*[history_pre_noise[0, path_index, 0], 
+        self.remove(dot_coords)
+        self.play(dot_to_move.animate.move_to(axes.c2p(*[history_pre_noise[0, path_index, 0], 
                                                          history_pre_noise[0, path_index, 1]])),
+                  ShowCreation(path_segments[0]),
+                  path_segments[0].animate.set_opacity(0.8),
                   run_time=2.0)
-        self.add(a1)
-        sel.wait()
+        self.wait()
 
+        self.play(dot_to_move.animate.move_to(axes.c2p(*[xt_history[1, path_index, 0], 
+                                                         xt_history[1, path_index, 1]])),
+                  ShowCreation(path_segments[1]),
+                  path_segments[1].animate.set_opacity(0.5),
+                  run_time=2.0)
+        self.wait()
 
+        # self.play(time_tracker.animate.set_value(8.0*(1.0/64.0)), run_time=0.5) #This move is really small, maybe roll it in and actually mention it a little later?
 
+        #Might be nice to lower opacity on older segements as we go? We'll see. 
+        for k in range(1, 64):
+            self.play(dot_to_move.animate.move_to(axes.c2p(*[history_pre_noise[k, path_index, 0], 
+                                                             history_pre_noise[k, path_index, 1]])),
+                      ShowCreation(path_segments[2*k]),
+                      path_segments[2*k].animate.set_opacity(0.8),
+                      run_time=0.4)
+            self.wait(0.1)
 
-        self.remove(a1)
+            self.play(dot_to_move.animate.move_to(axes.c2p(*[xt_history[k+1, path_index, 0], 
+                                                             xt_history[k+1, path_index, 1]])),
+                      ShowCreation(path_segments[2*k+1]),
+                      path_segments[2*k+1].animate.set_opacity(0.5),
+                      run_time=0.4)
+            # self.wait(0.1)   
+            self.play(time_tracker.animate.set_value(8.0*(k/64.0)), run_time=0.1)
+               
 
-        self.remove(dot_to_move)
+        self.wait()
 
-        # self.add(axes, dots)
+        ## ok ok ok ok now zoom out, reset, add a bunch of particles and animate them all!
+        ## Everthing in yellow or just to do rainbow hue vibes?
+        ## Maybe try rainbow/hue first?
+        ## Would be cool it we "landed on" the right colowheel arrangement on the spiral
+
+        self.play(FadeOut(path_segments), FadeOut(dot_to_move), 
+                  FadeOut(vector_field), 
+                  self.frame.animate.reorient(0, 0, 0, (0.0, 0.0, 0.0), 10), 
+                  run_time=4.0)
         self.wait()
 
 
-        # self.add(path_segments)
-        self.add(vector_field)
 
-        self.remove(path_segments, dot_to_move)
 
+
+
+        #Don't forget to update vector field as we go! Might want to add a little line in the script about this.
+        #Done!
         
 
         #Look at all dot real quick to get a sanity check on sprial fit

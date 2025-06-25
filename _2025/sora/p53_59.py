@@ -297,22 +297,19 @@ class p53(InteractiveScene):
             color=CHILL_BROWN
         )
                 
-        self.add(axes, dots)
-        self.wait()
 
         # Ok so I'll need to noodle with a few different starting points - and am tempted ot start not quite at point 100, ya know?
         #Ok yeah so I need to find path I like...
-        path_index=3 #3 is my fav so far. path 1 is not too shabby, could work. doesn't land quite on the spiral. 
-        dot_to_move=Dot(axes.c2p(*np.concatenate((xt_history[-1, path_index, :], [0]))), radius=0.04)
+        path_index=25 #Ok I think i like 25? 3 is my fav so far. path 1 is not too shabby, could work. doesn't land quite on the spiral. 
+        dot_to_move=Dot(axes.c2p(*np.concatenate((xt_history[0, path_index, :], [0]))), radius=0.06)
         dot_to_move.set_color(WHITE)
-        self.add(dot_to_move)
 
         path_segments=VGroup()
         for k in range(64):
             segment1 = Line(
                 axes.c2p(*[xt_history[k, path_index, 0], xt_history[k, path_index, 1]]), 
                 axes.c2p(*[history_pre_noise[k, path_index, 0], history_pre_noise[k, path_index, 1]]),
-                stroke_width=3.0,
+                stroke_width=4.0,
                 stroke_color=YELLOW
             )
             segment2 = Line(
@@ -325,8 +322,67 @@ class p53(InteractiveScene):
             segment1.set_opacity(0.9)
             path_segments.add(segment1)
             path_segments.add(segment2)
-        self.add(path_segments)
 
+
+        self.frame.reorient(0, 0, 0, (0.00, 0.00, 0.0), 8.25)
+        self.add(axes)
+        self.wait()
+        self.play(ShowCreation(dots),
+                  self.frame.animate.reorient(0, 0, 0, (0.00, 0.00, 0.0), 8.0), 
+                  run_time=3.0)
+        self.wait()
+
+        self.play(self.frame.animate.reorient(0, 0, 0, (-1.54, 2.65, 0.0), 6.16),
+                  run_time=3.0,
+                  )
+        self.add(dot_to_move)
+        self.wait()
+
+        a0=Arrow(dot_to_move.get_center(), 
+                 dot_to_move.get_center()+np.array([2.5, -3.2, 0]), 
+                 thickness=3.5,
+                 tip_width_ratio=5)
+        a0.set_color(YELLOW)
+        self.play(FadeIn(a0))
+        self.wait()
+        self.play(FadeOut(a0))
+        self.wait()
+
+        dot_coords=Tex("("+str(round(xt_history[0, path_index, 0], 1))+', '+str(round(xt_history[0, path_index, 1], 1))+")",
+                      font_size=32)
+        dot_coords.next_to(dot_to_move, DOWN, buff=0.15)
+        self.play(Write(dot_coords))
+        self.wait()
+
+        self.play(FadeIn(vector_field))
+        self.wait()
+
+        #Arrow here or cool variable opacity trail thin here? 
+        a1=Arrow(axes.c2p(*[xt_history[0, path_index, 0], xt_history[0, path_index, 1]]), 
+                 axes.c2p(*[history_pre_noise[0, path_index, 0], history_pre_noise[0, path_index, 1]]),
+                 thickness=3.5,
+                 tip_width_ratio=5)
+
+
+        self.play(FadeOut(dot_coords),
+                  dot_to_move.animate.move_to(axes.c2p(*[history_pre_noise[0, path_index, 0], 
+                                                         history_pre_noise[0, path_index, 1]])),
+                  run_time=2.0)
+        self.add(a1)
+        sel.wait()
+
+
+
+
+        self.remove(a1)
+
+        self.remove(dot_to_move)
+
+        # self.add(axes, dots)
+        self.wait()
+
+
+        # self.add(path_segments)
         self.add(vector_field)
 
         self.remove(path_segments, dot_to_move)

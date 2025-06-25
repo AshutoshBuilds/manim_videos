@@ -20,6 +20,32 @@ from tqdm import tqdm
 import torch
 from itertools import pairwise
 
+def get_color_wheel_colors(n_colors, saturation=1.0, value=1.0, start_hue=0.0):
+    """
+    Generate N evenly spaced colors from the color wheel.
+    
+    Args:
+        n_colors: Number of colors to generate
+        saturation: Color saturation (0.0 to 1.0)
+        value: Color brightness/value (0.0 to 1.0) 
+        start_hue: Starting hue position (0.0 to 1.0)
+    
+    Returns:
+        List of Manim-compatible hex color strings
+    """
+    import colorsys
+    colors = []
+    for i in range(n_colors):
+        hue = (start_hue + i / n_colors) % 1.0
+        rgb = colorsys.hsv_to_rgb(hue, saturation, value)
+        hex_color = "#{:02x}{:02x}{:02x}".format(
+            int(rgb[0] * 255),
+            int(rgb[1] * 255),
+            int(rgb[2] * 255)
+        )
+        colors.append(hex_color)
+    return colors
+
 class CustomTracedPath(VMobject):
     """
     A custom traced path that supports:
@@ -150,6 +176,7 @@ class p53(InteractiveScene):
                 "tip_config": {"color": CHILL_BROWN, "length": 0.15, "width": 0.15}
             }
         )
+        axes.set_opacity(0.8)
 
         # Create extended axes with SAME center point and proportional scaling
         extended_axes = Axes(
@@ -405,7 +432,8 @@ class p53(InteractiveScene):
         ## ok ok ok ok now zoom out, reset, add a bunch of particles and animate them all!
         ## Everthing in yellow or just to do rainbow hue vibes?
         ## Maybe try rainbow/hue first?
-        ## Would be cool it we "landed on" the right colowheel arrangement on the spiral
+        ## Would be cool it we "landed on" the right colowheel arrangement on the spiral - I think that would
+        ## be kinda tricky to code though actually - let me get into it and well see. 
 
         self.play(FadeOut(path_segments), FadeOut(dot_to_move), 
                   FadeOut(vector_field), 
@@ -414,9 +442,156 @@ class p53(InteractiveScene):
         self.wait()
 
 
+        #50/50 if i like saturated colowheel colors, let's see how it feels in aggregate!
+        num_dots=256 #Start small for testing and crank for final animation. 
+        colors=get_color_wheel_colors(num_dots)
+        all_path_segments=VGroup()
+        all_dots_to_move=VGroup()
+
+        for path_index in range(num_dots): 
+            dot_to_move=Dot(axes.c2p(*np.concatenate((xt_history[0, path_index, :], [0]))), radius=0.06)
+            dot_to_move.set_color(colors[path_index])
+            all_dots_to_move.add(dot_to_move)
+
+            path_segments=VGroup()
+            for k in range(64):
+                segment1 = Line(
+                    axes.c2p(*[xt_history[k, path_index, 0], xt_history[k, path_index, 1]]), 
+                    axes.c2p(*[history_pre_noise[k, path_index, 0], history_pre_noise[k, path_index, 1]]),
+                    stroke_width=3.0,
+                    stroke_color=colors[path_index]
+                )
+                segment2 = Line(
+                    axes.c2p(*[history_pre_noise[k, path_index, 0], history_pre_noise[k, path_index, 1]]), 
+                    axes.c2p(*[xt_history[k+1, path_index, 0], xt_history[k+1, path_index, 1]]),
+                    stroke_width=3.0,
+                    stroke_color=WHITE, 
+                )
+                segment2.set_opacity(0.4)
+                segment1.set_opacity(0.9)
+                path_segments.add(segment1)
+                path_segments.add(segment2)
+            self.add(path_segments) #Add now for layering. 
+            path_segments.set_opacity(0.0)
+            all_path_segments.add(path_segments)
+
+        self.wait()
+
+        # self.add(all_dots_to_move)
+
+        self.play(FadeIn(all_dots_to_move))
+        self.wait()
+        # self.play(time_tracker.animate.set_value(0.0), run_time=0.1)
+        time_tracker.set_value(0.0)
+        self.play(FadeIn(vector_field))
+        self.wait()
+
+        history_length=20
+        for k in range(0,64):
+            self.play(*[all_dots_to_move[path_index].animate.move_to(axes.c2p(*[history_pre_noise[k, path_index, 0], 
+                                history_pre_noise[k, path_index, 1]])) for path_index in range(len(all_dots_to_move))], 
+                      *[ShowCreation(all_path_segments[path_index][2*k]) for path_index in range(len(all_dots_to_move))],
+                      *[all_path_segments[path_index][2*k].animate.set_opacity(0.7) for path_index in range(len(all_dots_to_move))],
+                      *[all_path_segments[path_index][2*k-history_length].animate.set_opacity(0.0) for path_index in range(len(all_dots_to_move))],
+                      run_time=0.4)
+
+            self.play(*[all_dots_to_move[path_index].animate.move_to(axes.c2p(*[xt_history[k+1, path_index, 0], 
+                                xt_history[k+1, path_index, 1]])) for path_index in range(len(all_dots_to_move))], 
+                      *[ShowCreation(all_path_segments[path_index][2*k+1]) for path_index in range(len(all_dots_to_move))],
+                      *[all_path_segments[path_index][2*k+1].animate.set_opacity(0.4) for path_index in range(len(all_dots_to_move))],
+                      *[all_path_segments[path_index][2*k+1-history_length].animate.set_opacity(0.0) for path_index in range(len(all_dots_to_move))],
+                      run_time=0.4)
+
+            self.play(time_tracker.animate.set_value(8.0*(k/64.0)), run_time=0.2)
+        self.wait()
+
+        self.play(FadeOut(all_path_segments))
+        self.wait()
+        self.play(FadeOut(all_dots_to_move))
+        self.wait()
+
+        self.play(time_tracker.animate.set_value(0.0), run_time=1.0)
+
+        #Ok might want to start a new scene here, but maybe this is fine?
+        #Now, I think that doing traced paths here is probably a good/nice idea visually. let me make that plan A.
+        xt_history=[]
+        heatmaps=[]
+        with torch.no_grad():
+            model.eval();
+            xt=torch.randn((batch_size,) + model.input_dims)*sigmas[0] 
+
+            for i, (sig, sig_prev) in enumerate(pairwise(sigmas)):
+                eps_prev, eps = eps, model.predict_eps_cfg(xt, sig.to(xt), cond, cfg_scale)
+                # eps_av = eps * gam + eps_prev * (1-gam)  if i > 0 else eps
+                sig_p = (sig_prev/sig**mu)**(1/(1-mu)) # sig_prev == sig**mu sig_p**(1-mu)
+                eta = (sig_prev**2 - sig_p**2).sqrt()
+                xt = xt - (sig - sig_p) * eps #+ eta * model.rand_input(xt.shape[0]).to(xt) #Straight remove adding random noise
+                xt_history.append(xt.numpy())
+                heatmaps.append(model.forward(grid, sig, cond=None))
+
+        xt_history=np.array(xt_history)
 
 
 
+        # num_dots=16 #Start small for testing and crank for final animation. 
+        colors=get_color_wheel_colors(num_dots)
+        all_traced_paths=VGroup()
+        all_dots_to_move=VGroup()
+        for path_index in range(num_dots): 
+            dot_to_move=Dot(axes.c2p(*np.concatenate((xt_history[0, path_index, :], [0]))), radius=0.06)
+            dot_to_move.set_color(colors[path_index])
+            all_dots_to_move.add(dot_to_move)
+
+            traced_path = CustomTracedPath(dot_to_move.get_center, stroke_color=colors[path_index], stroke_width=3.5, 
+                                          opacity_range=(0.1, 1.0), fade_length=15)
+            # traced_path.set_opacity(0.5)
+            # traced_path.set_fill(opacity=0)
+            all_traced_paths.add(traced_path)
+        self.add(all_traced_paths)
+
+        self.wait()
+
+        self.play(FadeIn(all_dots_to_move))
+        self.wait()
+
+        for k in range(64):
+            self.play(time_tracker.animate.set_value(8.0*(k/64.0)), 
+                      *[all_dots_to_move[path_index].animate.move_to(axes.c2p(*[xt_history[k, path_index, 0], 
+                                                                                xt_history[k, path_index, 1]])) for path_index in range(len(all_dots_to_move))],
+                     rate_func=linear, run_time=0.2)
+            # for traced_path in all_traced_paths:
+            #     traced_path.update_path(0.1) 
+
+            # self.play(time_tracker.animate.set_value(8.0*(k/64.0)), run_time=0.1)
+
+        self.wait()
+
+
+
+        # [traced_path.update_path(0.1) for traced_path in all_traced_paths]
+        # # all_traced_paths.set_opacity(1.0)
+
+        # traced_path.set_fill(opacity=1.0)
+
+
+        # all_traced_paths[0].update_path(0.1)
+
+
+        # for k in range(0, 64):
+        #     for path_index in range(num_dots): 
+        #         self.play(dot_to_move.animate.move_to(axes.c2p(*[history_pre_noise[k, path_index, 0], 
+        #                                                          history_pre_noise[k, path_index, 1]])),
+        #                   ShowCreation(path_segments[2*k]),
+        #                   path_segments[2*k].animate.set_opacity(0.8),
+        #                   run_time=0.4)
+
+        #         self.play(dot_to_move.animate.move_to(axes.c2p(*[xt_history[k+1, path_index, 0], 
+        #                                                          xt_history[k+1, path_index, 1]])),
+        #                   ShowCreation(path_segments[2*k+1]),
+        #                   path_segments[2*k+1].animate.set_opacity(0.5),
+        #                   run_time=0.4)
+
+        #     self.play(time_tracker.animate.set_value(8.0*(k/64.0)), run_time=0.1)
 
         #Don't forget to update vector field as we go! Might want to add a little line in the script about this.
         #Done!

@@ -19,7 +19,7 @@ from typing import Callable
 from tqdm import tqdm
 import torch
 from itertools import pairwise
-
+from torch.utils.data import Dataset
 
 def get_color_wheel_colors(n_colors, saturation=1.0, value=1.0, start_hue=0.0):
     """
@@ -201,21 +201,68 @@ class TrackerControlledVectorField(VectorField):
         self.note_changed_data()
 
 
-class p66(InteractiveScene):
+class MultiClassSwissroll(Dataset):
+    def __init__(self, tmin, tmax, N, num_classes=10, center=(0,0), scale=1.0):
+
+        self.num_classes = num_classes
+        
+        t = tmin + torch.linspace(0, 1, N) * tmax
+        center = torch.tensor(center).unsqueeze(0)
+        spiral_points = center + scale * torch.stack([t*torch.cos(t)/tmax, t*torch.sin(t)/tmax]).T
+        
+        # Assign classes based on position along the spiral
+        # Divide the parameter range into num_classes segments
+        class_boundaries = torch.linspace(tmin, tmax, num_classes + 1)
+        classes = torch.zeros(N, dtype=torch.long)
+        
+        for i in range(N):
+            # t[i] is already the actual parameter value we want to use for class assignment
+            t_val = t[i]
+            # Find which segment t_val falls into (0 to num_classes-1)
+            class_idx = min(int((t_val - tmin) / (tmax - tmin) * num_classes), num_classes - 1)
+            classes[i] = class_idx
+        
+        # Store data as list of (point, class) tuples
+        self.data = [(spiral_points[i], classes[i].item()) for i in range(N)]
+    
+    def __len__(self):
+        return len(self.data)
+    
+    def __getitem__(self, idx):
+        return self.data[idx]
+    
+    def get_class_colors(self):
+        """
+        Returns a list of colors evenly sampled from a colorwheel (HSV space).
+        """
+        import matplotlib.colors as mcolors
+        
+        # Generate evenly spaced hues around the color wheel
+        hues = np.linspace(0, 1, self.num_classes, endpoint=False)
+        colors = []
+        
+        for hue in hues:
+            # Convert HSV to RGB (saturation=1, value=1 for vibrant colors)
+            rgb = mcolors.hsv_to_rgb([hue, 1.0, 1.0])
+            colors.append(rgb)
+        
+        return colors
+
+
+class p78_85(InteractiveScene):
     def construct(self):
 
         '''
-        DDIM sampling on spiral dataset
-        I'm tempted here to run both "noiseless" DDPM and DDIM from here
-        I can make sure same starting points/scaling, and I think I actually want to be a 
-        bit more zoomed out for nice side-by-side
+        Phew - alright last big scene here - Classifier free guidance lets go!!!
 
         '''
 
-        batch_size=2130
-        dataset = Swissroll(np.pi/2, 5*np.pi, 100)
-        loader = DataLoader(dataset, batch_size=batch_size)
-        batch=next(iter(loader)).numpy()
+
+        dataset = MultiClassSwissroll(np.pi/2, 5*np.pi, 100, num_classes=3)
+        colors = dataset.get_class_colors()
+        loader = DataLoader(dataset, batch_size=len(dataset)*2, shuffle=True)
+        # x, labels = next(iter(loader))
+        # x=x.cpu().numpy()
 
         axes = Axes(
             x_range=[-1.2, 1.2, 0.5],
@@ -247,99 +294,53 @@ class p66(InteractiveScene):
 
 
         dots = VGroup()
-        for point in batch:
+        labels_array=[]
+        for point in dataset.data:
             # Map the point coordinates to the axes
-            screen_point = axes.c2p(point[0], point[1])
+            screen_point = axes.c2p(point[0][0], point[0][1])
             dot = Dot(screen_point, radius=0.04)
             # dot.set_color(YELLOW)
             dots.add(dot)
+            labels_array.append(point[1])
+        labels_array=np.array(labels_array)
         dots.set_color(YELLOW)
-        dots.set_opacity(0.3)
+        dots.set_opacity(0.5)
 
 
-        #Leaning towards exporting tracjectories from jupyter instead of running live here. 
-        xt_history=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/ddim_history_2.npy')
-        heatmaps=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/ddim_heatmaps_2.npy')
-        model=torch.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/jun_26_2.pt')
-        # model=torch.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/jun_24_1.pt')
 
-        time_tracker = ValueTracker(0.0)  # Start at time 0
-
-
-        schedule = ScheduleLogLinear(N=256, sigma_min=0.01, sigma_max=1) #N=200
-        sigmas=schedule.sample_sigmas(256)
-
-        def vector_function_with_tracker(coords_array):
-            """Vector function that uses the ValueTracker for time"""
-            current_time = time_tracker.get_value()
-            max_time = 8.0  # Map time 0-8 to sigma indices 0-255
-            sigma_idx = int(np.clip(current_time * 63 / max_time, 0, 63)) #Needs to be N-1
-            
-            try:
-                res = model.forward(torch.tensor(coords_array).float(), sigmas[sigma_idx], cond=None)
-                return -res.detach().numpy()
-            except:
-                return np.zeros((len(coords_array), 2))
-
-
-        # Create the tracker-controlled vector field
-        vector_field = TrackerControlledVectorField(
-            time_tracker=time_tracker,
-            func=vector_function_with_tracker,
-            coordinate_system=extended_axes,
-            density=3.0,
-            stroke_width=2,
-            max_radius=6.0,      # Vectors fade to min_opacity at this distance
-            min_opacity=0.15,     # Minimum opacity at max_radius
-            max_opacity=0.8,     # Maximum opacity at origin
-            tip_width_ratio=4,
-            tip_len_to_width=0.01,
-            max_vect_len_to_step_size=0.7,
-            color=CHILL_BROWN
-        )
-
-
+        self.add(axes)
         self.wait()
-        self.frame.reorient(0, 0, 0, (0, 0, 0.0), 8) 
-        self.add(axes, dots)
-
-        # self.add(vector_field)
-        # vector_field.set_opacity(1.0)
-
-
-        num_dots=256
-        colors=get_color_wheel_colors(num_dots)
-        all_traced_paths=VGroup()
-        all_dots_to_move=VGroup()
-        for path_index in range(num_dots): 
-            dot_to_move=Dot(axes.c2p(*np.concatenate((xt_history[0, path_index, :], [0]))), radius=0.06)
-            dot_to_move.set_color(colors[path_index])
-            all_dots_to_move.add(dot_to_move)
-
-            traced_path = CustomTracedPath(dot_to_move.get_center, stroke_color=colors[path_index], stroke_width=2.0, 
-                                          opacity_range=(0.25, 1.0), fade_length=15)
-            # traced_path.set_opacity(0.5)
-            # traced_path.set_fill(opacity=0)
-            all_traced_paths.add(traced_path)
-        self.add(all_traced_paths)
-
-        self.wait()
-        self.play(FadeIn(all_dots_to_move), FadeIn(vector_field))
-
+        self.play(ShowCreation(dots), run_time=0.5)
         self.wait()
 
-        for k in range(xt_history.shape[0]):
-            self.play(time_tracker.animate.set_value(8.0*(k/256.0)), 
-                      *[all_dots_to_move[path_index].animate.move_to(axes.c2p(*[xt_history[k, path_index, 0], 
-                                                                                xt_history[k, path_index, 1]])) for path_index in range(len(all_dots_to_move))],
-                     rate_func=linear, run_time=0.1)
-
+        for i, d in enumerate(dots):
+            if labels_array[i]==0: 
+                d.set_color('#00FFFF').set_opacity(0.9)
+                self.wait(0.1)
         self.wait()
 
+        for i, d in enumerate(dots):
+            if labels_array[i]==1: 
+                d.set_color('#FF00FF').set_opacity(0.9)
+                self.wait(0.1)
+        self.wait()
 
+        for i, d in enumerate(dots):
+            if labels_array[i]==2: 
+                d.set_opacity(0.9)
+                self.wait(0.1)
+        self.wait()
 
         self.wait(20)
         self.embed()
+
+
+
+
+
+
+
+
 
 
 

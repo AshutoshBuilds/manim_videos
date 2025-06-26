@@ -47,6 +47,49 @@ def get_color_wheel_colors(n_colors, saturation=1.0, value=1.0, start_hue=0.0):
         colors.append(hex_color)
     return colors
 
+def manual_camera_interpolation(start_orientation, end_orientation, num_steps):
+    """
+    Linearly interpolate between two camera orientations.
+    
+    Parameters:
+    - start_orientation: List containing camera parameters with a tuple at index 3
+    - end_orientation: List containing camera parameters with a tuple at index 3
+    - num_steps: Number of interpolation steps (including start and end)
+    
+    Returns:
+    - List of interpolated orientations
+    """
+    result = []
+    
+    for step in range(num_steps):
+        # Calculate interpolation factor (0 to 1)
+        t = step / (num_steps - 1) if num_steps > 1 else 0
+        
+        # Create a new orientation for this step
+        interpolated = []
+        
+        for i in range(len(start_orientation)):
+            if i == 3:  # Handle the tuple at position 3
+                start_tuple = start_orientation[i]
+                end_tuple = end_orientation[i]
+                
+                # Interpolate each element of the tuple
+                interpolated_tuple = tuple(
+                    start_tuple[j] + t * (end_tuple[j] - start_tuple[j])
+                    for j in range(len(start_tuple))
+                )
+                
+                interpolated.append(interpolated_tuple)
+            else:  # Handle regular numeric values
+                start_val = start_orientation[i]
+                end_val = end_orientation[i]
+                interpolated_val = start_val + t * (end_val - start_val)
+                interpolated.append(interpolated_val)
+        
+        result.append(interpolated)
+    
+    return result
+
 class CustomTracedPath(VMobject):
     """
     A custom traced path that supports:
@@ -330,6 +373,60 @@ class p78_85(InteractiveScene):
                 d.set_opacity(0.9)
                 self.wait(0.1)
         self.wait()
+
+        # Ok will overlay person/dog/cat images in illustrator
+        # Now on to p78 - there's a bunch of ways I could show conditioning, but 
+        # I think it makes sense to do something similiar to what I did before
+        # Like zoom in on Q1, show forward diffusion process, then indicate model training with 
+        # f(x, t), and them move parenthesis out to add an extra variable. 
+
+        i=75
+        dot_to_move=dots[i].copy()
+        traced_path = CustomTracedPath(dot_to_move.get_center, stroke_color=YELLOW, stroke_width=2.0, 
+                                      opacity_range=(0.25, 0.9), fade_length=15)
+        # traced_path.set_opacity(0.5)
+        traced_path.set_fill(opacity=0)
+
+
+        np.random.seed(485) #485 is nice, 4 is maybe best so far, #52 is ok
+        random_walk=0.07*np.random.randn(100,2) #I might want to manually make the first step larger/more obvious.
+        random_walk[0]=np.array([0.2, 0.12]) #make first step go up and to the right
+        # random_walk[-1]=np.array([0.15, -0.04])
+        random_walk[-1]=np.array([0.19, -0.05])
+        random_walk=np.cumsum(random_walk,axis=0) 
+
+        random_walk=np.hstack((random_walk, np.zeros((len(random_walk), 1))))
+        random_walk_shifted=random_walk+np.array([dataset.data[i][0][0], dataset.data[i][0][1], 0])
+        
+        dot_history=VGroup()
+        dot_history.add(dot_to_move.copy().scale(0.4).set_color(YELLOW))
+        # self.play(dot_to_move.animate.move_to(axes.c2p(*random_walk_shifted[0])), run_time=1.0)
+        # dot_to_move.move_to(axes.c2p(*random_walk_shifted[1]))
+        traced_path.update_path(0.1)
+
+
+        self.add(dot_to_move, traced_path)
+        dots[i].set_opacity(0.0) #Remove starting dot for now
+
+        start_orientation=[0, 0, 0, (0.00, 0.00, 0.0), 8.0]
+        # end_orientation=[0, 0, 0, (2.92, 1.65, 0.0), 4.19]
+        end_orientation=[0, 0, 0, (3.48, 1.88, 0.0), 4.26]
+        interp_orientations=manual_camera_interpolation(start_orientation, end_orientation, 100)
+
+        self.wait()
+        for j in range(100):
+            dot_history.add(dot_to_move.copy().scale(0.4).set_color(YELLOW))
+            dot_to_move.move_to(axes.c2p(*random_walk_shifted[j]))
+            traced_path.update_path(0.1)
+            self.frame.reorient(*interp_orientations[j])
+            self.wait(0.1)
+            # self.play(dot_to_move.animate.move_to(axes.c2p(*random_walk_shifted[i])), run_time=0.1, rate_func=linear)
+        traced_path.stop_tracing()
+
+
+
+
+
 
         self.wait(20)
         self.embed()

@@ -204,7 +204,14 @@ class TrackerControlledVectorField(VectorField):
 class p66(InteractiveScene):
     def construct(self):
 
-        #Smooth transition/pickup from spiral and axes in p56
+        '''
+        DDIM sampling on spiral dataset
+        I'm tempted here to run both "noiseless" DDPM and DDIM from here
+        I can make sure same starting points/scaling, and I think I actually want to be a 
+        bit more zoomed out for nice side-by-side
+
+        '''
+
         batch_size=2130
         dataset = Swissroll(np.pi/2, 5*np.pi, 100)
         loader = DataLoader(dataset, batch_size=batch_size)
@@ -251,7 +258,93 @@ class p66(InteractiveScene):
 
 
         #Leaning towards exporting tracjectories from jupyter instead of running live here. 
-        
+        xt_history=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/ddim_history_2.npy')
+        heatmaps=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/ddim_heatmaps_2.npy')
+        model=torch.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/jun_26_2.pt')
+
+        time_tracker = ValueTracker(0.0)  # Start at time 0
+
+        def vector_function_with_tracker(coords_array):
+            """Vector function that uses the ValueTracker for time"""
+            current_time = time_tracker.get_value()
+            max_time = 8.0  # Map time 0-8 to sigma indices 0-255
+            sigma_idx = int(np.clip(current_time * 63 / max_time, 0, 63)) #Needs to be N-1
+            
+            try:
+                res = model.forward(torch.tensor(coords_array).float(), sigmas[sigma_idx], cond=None)
+                return -res.detach().numpy()
+            except:
+                return np.zeros((len(coords_array), 2))
+
+
+        # Create the tracker-controlled vector field
+        vector_field = TrackerControlledVectorField(
+            time_tracker=time_tracker,
+            func=vector_function_with_tracker,
+            coordinate_system=extended_axes,
+            density=3.0,
+            stroke_width=2,
+            max_radius=6.0,      # Vectors fade to min_opacity at this distance
+            min_opacity=0.15,     # Minimum opacity at max_radius
+            max_opacity=0.8,     # Maximum opacity at origin
+            tip_width_ratio=4,
+            tip_len_to_width=0.01,
+            max_vect_len_to_step_size=0.7,
+            color=CHILL_BROWN
+        )
+
+
+        self.wait()
+        self.add(axes, dots)
+
+
+        num_dots=16
+        colors=get_color_wheel_colors(num_dots)
+        all_traced_paths=VGroup()
+        all_dots_to_move=VGroup()
+        for path_index in range(num_dots): 
+            dot_to_move=Dot(axes.c2p(*np.concatenate((xt_history[0, path_index, :], [0]))), radius=0.06)
+            dot_to_move.set_color(colors[path_index])
+            all_dots_to_move.add(dot_to_move)
+
+            traced_path = CustomTracedPath(dot_to_move.get_center, stroke_color=colors[path_index], stroke_width=3.5, 
+                                          opacity_range=(0.1, 1.0), fade_length=15)
+            # traced_path.set_opacity(0.5)
+            # traced_path.set_fill(opacity=0)
+            all_traced_paths.add(traced_path)
+        self.add(all_traced_paths)
+
+        self.wait()
+        self.play(FadeIn(all_dots_to_move), FadeIn(vector_field))
+        self.wait()
+
+        for k in range(xt_history.shape[0]):
+            self.play(time_tracker.animate.set_value(8.0*(k/64.0)), 
+                      *[all_dots_to_move[path_index].animate.move_to(axes.c2p(*[xt_history[k, path_index, 0], 
+                                                                                xt_history[k, path_index, 1]])) for path_index in range(len(all_dots_to_move))],
+                     rate_func=linear, run_time=0.1)
+
+        self.wait()
+
+
+
+        self.wait(20)
+        self.embed()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

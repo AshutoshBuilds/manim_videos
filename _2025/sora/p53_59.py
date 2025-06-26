@@ -304,7 +304,7 @@ class p57_58(InteractiveScene):
         #Forward Process I want to show the reversal of
         i=75
         dot_to_move=dots[i].copy()
-        traced_path = CustomTracedPath(dot_to_move.get_center, stroke_color=YELLOW, stroke_width=3.5, 
+        traced_path = CustomTracedPath(dot_to_move.get_center, stroke_color=YELLOW, stroke_width=2.0, 
                                       opacity_range=(0.25, 0.9), fade_length=15)
         # traced_path.set_opacity(0.5)
         traced_path.set_fill(opacity=0)
@@ -815,7 +815,7 @@ class p53_56(InteractiveScene):
 
 
         #50/50 if i like saturated colowheel colors, let's see how it feels in aggregate!
-        num_dots=16 #Start small for testing and crank for final animation. 
+        num_dots=256 #Start small for testing and crank for final animation. 
         colors=get_color_wheel_colors(num_dots)
         all_path_segments=VGroup()
         all_dots_to_move=VGroup()
@@ -925,7 +925,7 @@ class p53_56(InteractiveScene):
             dot_to_move.set_color(colors[path_index])
             all_dots_to_move.add(dot_to_move)
 
-            traced_path = CustomTracedPath(dot_to_move.get_center, stroke_color=colors[path_index], stroke_width=3.5, 
+            traced_path = CustomTracedPath(dot_to_move.get_center, stroke_color=colors[path_index], stroke_width=2.0, 
                                           opacity_range=(0.1, 1.0), fade_length=15)
             # traced_path.set_opacity(0.5)
             # traced_path.set_fill(opacity=0)

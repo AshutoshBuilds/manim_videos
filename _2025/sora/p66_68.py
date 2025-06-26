@@ -261,8 +261,13 @@ class p66(InteractiveScene):
         xt_history=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/ddim_history_2.npy')
         heatmaps=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/ddim_heatmaps_2.npy')
         model=torch.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/jun_26_2.pt')
+        # model=torch.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/jun_24_1.pt')
 
         time_tracker = ValueTracker(0.0)  # Start at time 0
+
+
+        schedule = ScheduleLogLinear(N=256, sigma_min=0.01, sigma_max=1) #N=200
+        sigmas=schedule.sample_sigmas(256)
 
         def vector_function_with_tracker(coords_array):
             """Vector function that uses the ValueTracker for time"""
@@ -295,10 +300,14 @@ class p66(InteractiveScene):
 
 
         self.wait()
+        self.frame.reorient(0, 0, 0, (0, 0, 0.0), 8) 
         self.add(axes, dots)
 
+        # self.add(vector_field)
+        # vector_field.set_opacity(1.0)
 
-        num_dots=16
+
+        num_dots=256
         colors=get_color_wheel_colors(num_dots)
         all_traced_paths=VGroup()
         all_dots_to_move=VGroup()
@@ -307,8 +316,8 @@ class p66(InteractiveScene):
             dot_to_move.set_color(colors[path_index])
             all_dots_to_move.add(dot_to_move)
 
-            traced_path = CustomTracedPath(dot_to_move.get_center, stroke_color=colors[path_index], stroke_width=3.5, 
-                                          opacity_range=(0.1, 1.0), fade_length=15)
+            traced_path = CustomTracedPath(dot_to_move.get_center, stroke_color=colors[path_index], stroke_width=2.0, 
+                                          opacity_range=(0.25, 1.0), fade_length=15)
             # traced_path.set_opacity(0.5)
             # traced_path.set_fill(opacity=0)
             all_traced_paths.add(traced_path)
@@ -316,6 +325,7 @@ class p66(InteractiveScene):
 
         self.wait()
         self.play(FadeIn(all_dots_to_move), FadeIn(vector_field))
+
         self.wait()
 
         for k in range(xt_history.shape[0]):

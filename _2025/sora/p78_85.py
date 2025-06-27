@@ -825,13 +825,29 @@ class p78_85(InteractiveScene):
                                  buff=0.0)
         example_vec_gray.set_color('#777777')
 
-        green_vec_vals=1.75*(yellow_vec_vals-gray_vec_vals) #Fudging the guidance value a bit here. 
-        final_vec_green=Arrow(yellow_vec_start+gray_vec_vals, 
+        green_vec_vals=(yellow_vec_vals-gray_vec_vals) #Fudging the guidance value a bit here. 
+        example_vec_green=Arrow(yellow_vec_start+gray_vec_vals, 
                                  yellow_vec_start+gray_vec_vals+green_vec_vals,
                                  thickness = 0.8,
                                  tip_width_ratio= 5, 
                                  buff=0.0)
+        example_vec_green.set_color(GREEN)
+
+        green_vec_vals_final=1.8*(yellow_vec_vals-gray_vec_vals) #Fudging the guidance value a bit here. 
+        final_vec_green=Arrow(yellow_vec_start+gray_vec_vals, 
+                                 yellow_vec_start+gray_vec_vals+green_vec_vals_final,
+                                 thickness = 0.8,
+                                 tip_width_ratio= 5, 
+                                 buff=0.0)
         final_vec_green.set_color(GREEN)
+
+        # green_vec_vals_final_final_lol=1.8*(yellow_vec_vals-gray_vec_vals) #Fudging the guidance value a bit here. 
+        final_final_vec_green_lol=Arrow(yellow_vec_start, 
+                                 yellow_vec_start+gray_vec_vals+green_vec_vals_final,
+                                 thickness = 0.8,
+                                 tip_width_ratio= 5, 
+                                 buff=0.0)
+        final_final_vec_green_lol.set_color(GREEN)
 
 
         # self.add(example_vec_yellow, example_vec_gray, final_vec_green)
@@ -851,11 +867,77 @@ class p78_85(InteractiveScene):
         self.play(self.frame.animate.reorient(0, 0, 0, (1.41, 1.13, 0.0), 1.05), 
                   FadeOut(vector_field_u), 
                   FadeOut(vector_field),
-                  eq_5.scale(0.2).next_to(example_vec_yellow, RIGHT, buff=0.01),
+                  eq_5.animate.scale(0.16).next_to(example_vec_yellow, RIGHT, buff=0.015).set_color(YELLOW),
                   run_time=5.0)   
         self.wait()
 
 
+        eq_7=Tex("f(x, t)", font_size=48)
+        eq_7.set_color('#777777').scale(0.16)
+        eq_7.next_to(example_vec_gray, DOWN, buff=0.015)
+        self.play(FadeIn(eq_7))
+        self.wait()
+
+        eq_8=Tex("f(x, t, cat) - f(x,t)", font_size=48)
+        eq_8.set_color(GREEN).scale(0.16)
+        # eq_8[:len(eq_5)].set_color(YELLOW)
+        # eq_8[-len(eq_7):].set_color('#777777')
+        eq_5_copy=eq_5.copy()
+        eq_7_copy=eq_7.copy()
+        eq_8.next_to(eq_5, LEFT, buff=0.17).shift([0,0.02,0])
+
+        # self.add(eq_8)
+        # If we take our yellow conditioned vector..
+        self.play(ReplacementTransform(eq_5_copy, eq_8[:len(eq_5)]), run_time=2)
+        self.wait()
+        self.play(ReplacementTransform(eq_7_copy, eq_8[-len(eq_7):]), run_time=2)
+        self.add(eq_8); self.remove(eq_5_copy, eq_7_copy)
+        self.wait()
+
+        self.play(GrowArrow(example_vec_green))
+        self.wait()
+
+
+        eq_9=Tex(r"\alpha (f(x, t, cat) - f(x,t))", font_size=48)
+        eq_9.set_color(WHITE).scale(0.16)
+        eq_9[2:-1].set_color(GREEN)
+        eq_9.move_to(eq_8, aligned_edge=RIGHT).shift([0.05, 0.05, 0])
+        self.wait()
+
+        self.play(ReplacementTransform(example_vec_green, final_vec_green), 
+                  ReplacementTransform(eq_8, eq_9[2:-1]))
+        self.add(eq_9); self.remove(eq_8)
+        self.wait()
+
+        #"and replace our original conditioned yellow vector with a vector pointing in this new direction."
+        # Ok yeah so I think yellow and maybe green get lower opacity and we add in final final green vector
+        self.play(FadeIn(final_final_vec_green_lol), 
+                  final_vec_green.animate.set_opacity(0.1),
+                  example_vec_yellow.animate.set_opacity(0.1),
+                  eq_5.animate.set_opacity(0.1), 
+                  eq_9.animate.next_to(final_final_vec_green_lol, LEFT, buff=0.05, aligned_edge=RIGHT))
+        self.wait()
+
+
+
+
+
+        # Ok I think we do a quick Cats/not cats overlay in illustrator to remind folks that yellwow dots are cats. 
+        # Cool - done
+
+
+
+
+        # self.play(ApplyWave(cat_dots))
+        # self.play(cat_dots.animate.set_opacity(0.9))
+        # self.wait()
+        # self.play()
+
+
+
+
+
+        # self.remove(eq_8)
 
 
         # Paragraph 84

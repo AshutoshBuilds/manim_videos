@@ -1,44 +1,17 @@
 from manimlib import *
-from PIL import Image
 import numpy as np
-import math
+import pandas as pd
  
-COOL_GREEN = '#6c946f'
 CHILL_BROWN='#948979'
-COOL_YELLOW = '#ffd35a'
+YELLOW='#ffd35a'
+YELLOW_FADE='#7f6a2d'
+BLUE='#65c8d0'
+GREEN='#6e9671' 
+CHILL_GREEN='#6c946f'
+CHILL_BLUE='#3d5c6f'
+FRESH_TAN='#dfd0b9'
 
-'''
-import torch
-stephen_hat = Image.open('me_with_hat.jpeg')
-stephen_no_hat = Image.open('me_no_hat_cropped_1.jpeg')
 
-device = torch.device("cpu")
-model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32").to(device)
-processor = AutoProcessor.from_pretrained("openai/clip-vit-base-patch32")
-
-with torch.no_grad():
-    stephen_no_hat_inputs = processor(images=stephen_no_hat, return_tensors="pt").to(device)
-    stephen_hat_inputs = processor(images=stephen_hat, return_tensors="pt").to(device)
-
-    image_features_hat = model.get_image_features(**stephen_no_hat_inputs)
-    image_features_no_hat = model.get_image_features(**stephen_hat_inputs)
-
-    image_features_hat = F.normalize(image_features_hat, dim=-1)
-    image_features_no_hat = F.normalize(image_features_no_hat, dim=-1)
-    
-def compute_similarity(text):
-    with torch.no_grad():
-        text_inputs = processor(text=[text], return_tensors="pt").to(device)
-        text_features = model.get_text_features(**text_inputs)
-        text_features = F.normalize(text_features, dim=-1)
-
-        similarity_stephen_hat = (image_features_hat @ text_features.T).squeeze().item()
-        similarity_stephen_no_hat = (image_features_no_hat @ text_features.T).squeeze().item()  
-        
-        print(f"Text: '{text}'")
-        print(f"Cosine similarity with 'me_with_hat.jpeg': {similarity_stephen_hat:.4f}")
-        print(f"Cosine similarity with 'me_no_hat_cropped_1.jpeg': {similarity_stephen_no_hat:.4f}")
-'''
 
 def line_intersection(p1, p2, p3, p4):
     A = np.array([
@@ -56,14 +29,14 @@ def line_intersection(p1, p2, p3, p4):
 
 class P20(InteractiveScene):
     def construct(self):
-        stephen_no_hat = ImageMobject("me_no_hat_cropped_1.jpeg").scale(0.55)         
-        stephen_hat = ImageMobject("me_with_hat.jpeg").scale(0.55)
+        stephen_no_hat_p20 = ImageMobject("me_no_hat_cropped_1.jpeg").scale(0.55)         
+        stephen_hat_p20 = ImageMobject("me_with_hat.jpeg").scale(0.55)
 
-        Group(stephen_no_hat, stephen_hat).arrange(DOWN, buff=1).shift(LEFT * 5.5)
+        Group(stephen_no_hat_p20, stephen_hat_p20).arrange(DOWN, buff=1).shift(LEFT * 5.5)
         
         arrows = SVGMobject("p_20_21_to_manim-03.svg")[1:].scale(6)
-        top_left_arrow = arrows[0].next_to(stephen_no_hat, RIGHT)
-        bottom_left_arrow = arrows[1].next_to(stephen_hat, RIGHT)
+        top_left_arrow = arrows[0].next_to(stephen_no_hat_p20, RIGHT)
+        bottom_left_arrow = arrows[1].next_to(stephen_hat_p20, RIGHT)
         
         top_image_encoder_text = SVGMobject("top_image_encoder.svg")[3:].scale(5).next_to(top_left_arrow, RIGHT)
         bottom_image_encoder_text = SVGMobject("bottom_image_encoder.svg")[3:].scale(5).next_to(bottom_left_arrow, RIGHT)
@@ -96,11 +69,11 @@ class P20(InteractiveScene):
         top_right_arrow = arrows[2].next_to(top_image_encoder, RIGHT)
         bottom_right_arrow = arrows[3].next_to(bottom_image_encoder, RIGHT)
         
-        stephen_no_hat_equation = Tex(r"I_{man} = [-0.13\ -0.10\ \cdots\ -0.56]").set_color(COOL_GREEN).next_to(top_right_arrow, RIGHT).scale(0.9).shift(LEFT * 0.3)
+        stephen_no_hat_equation = Tex(r"I_{man} = [-0.13\ -0.10\ \cdots\ -0.56]").set_color(GREEN).next_to(top_right_arrow, RIGHT).scale(0.9).shift(LEFT * 0.3)
 
-        stephen_hat_equation = Tex(r"\hat{I}_{man} = [-0.13\ -0.10\ \cdots\ -0.56]").set_color(COOL_GREEN).next_to(bottom_right_arrow, RIGHT).scale(0.9).shift(LEFT * 0.3)
+        stephen_hat_equation = Tex(r"\hat{I}_{man} = [-0.13\ -0.10\ \cdots\ -0.56]").set_color(GREEN).next_to(bottom_right_arrow, RIGHT).scale(0.9).shift(LEFT * 0.3)
 
-        self.play(FadeIn(stephen_hat), FadeIn(stephen_no_hat))
+        self.play(FadeIn(stephen_hat_p20), FadeIn(stephen_no_hat_p20))
         self.play(GrowFromEdge(top_left_arrow, LEFT), GrowFromEdge(bottom_left_arrow, LEFT))
         self.play(ShowCreation(top_image_encoder), ShowCreation(bottom_image_encoder))
         self.play(GrowFromEdge(top_right_arrow, LEFT), GrowFromEdge(bottom_right_arrow, LEFT))
@@ -128,8 +101,8 @@ class P21(InteractiveScene):
         # Define the angle (in radians) to rotate the arrow up (e.g., 15 degrees)
 
         # Create the arrows
-        stephen_hat_arrow = WelchXAxis(x_min=0, x_max=2.25, axis_length_on_canvas=2.25, stroke_width=6).set_color(COOL_GREEN)
-        stephen_no_hat_arrow = WelchXAxis(x_min=0, x_max=2.25, axis_length_on_canvas=2.25, stroke_width=6).set_color(COOL_GREEN)
+        stephen_hat_arrow = WelchXAxis(x_min=0, x_max=2.25, axis_length_on_canvas=2.25, stroke_width=5).set_color(GREEN)
+        stephen_no_hat_arrow = WelchXAxis(x_min=0, x_max=2.25, axis_length_on_canvas=2.25, stroke_width=5).set_color(GREEN)
         
         
         
@@ -150,36 +123,178 @@ class P21(InteractiveScene):
         stephen_hat_arrow.rotate(65 * DEGREES, about_point=axes_intersection)
         stephen_no_hat_arrow.rotate(15 * DEGREES, about_point=axes_intersection)
         
-        stephen_delta_arrow_length = math.sqrt(
-            (stephen_hat_arrow.arrow.get_top()[0] - stephen_no_hat_arrow.arrow.get_right()[0]) ** 2 +
-            (stephen_hat_arrow.arrow.get_top()[1] - stephen_no_hat_arrow.arrow.get_right()[1]) ** 2
-                                               )
-        stephen_delta_arrow = WelchXAxis(
-            x_min=0, x_max=1, axis_length_on_canvas=stephen_delta_arrow_length, stroke_width=6
-        ).set_color(COOL_YELLOW)
+        stephen_delta_arrow_line = Line(stephen_hat_arrow.arrow.get_all_points()[0], stephen_no_hat_arrow.arrow.get_all_points()[0], stroke_width=5, color=YELLOW)
+        stephen_delta_arrow_arrow = SVGMobject("welch_arrow_tip_1.svg").scale(0.1).next_to(stephen_delta_arrow_line.get_end()).rotate(DEGREES * 310).set_color(YELLOW)
+        stephen_delta_arrow_arrow.shift(stephen_no_hat_arrow.arrow.get_all_points()[0] - stephen_delta_arrow_arrow.get_all_points()[0])
+        
+        stephen_hat_arrow_label = Tex(r"I_{man}").set_color(GREEN).next_to(stephen_hat_arrow.arrow, UP)
+        stephen_no_hat_arrow_label = Tex(r"\hat{I}_{man}").set_color(GREEN).next_to(stephen_no_hat_arrow.arrow, RIGHT)
+                
+        start = stephen_hat_arrow.arrow.get_all_points()[0]
+        end = stephen_no_hat_arrow.arrow.get_all_points()[0]
 
-        stephen_delta_arrow.ticks.set_opacity(0)
-        stephen_delta_arrow.labels.set_opacity(0)
+        # Vector from start to end
+        direction = end - start
+        length = np.linalg.norm(direction)
+
+        # Normalize and trim
+        trim_amount = 0.1  # Adjust this value as needed
+        new_end = end - (direction / length) * trim_amount
+
+        # Create the trimmed line
+        stephen_delta_arrow_line = Line(start, new_end, stroke_width=5, color=YELLOW)
         
-        stephen_hat_arrow_label = Tex(r"I_{man}").set_color(COOL_GREEN).next_to(stephen_hat_arrow.arrow, UP)
-        stephen_no_hat_arrow_label = Tex(r"\hat{I}_{man}").set_color(COOL_GREEN).next_to(stephen_no_hat_arrow.arrow, RIGHT)
+        stephen_delta_arrow = VGroup(stephen_delta_arrow_line, stephen_delta_arrow_arrow)
         
+        stephen_delta_arrow_label = Tex(r"\hat{I}_{man}-I_{man}").set_color(YELLOW).next_to(stephen_delta_arrow.get_center(), RIGHT).shift(UP * 0.25)
+
+        top_header_line = Line(stroke_width=2).set_width(5.5).set_color(CHILL_BROWN).shift(RIGHT * 3.25 + UP * 2.5)
+        
+        bottom_header_line = Line(stroke_width=2).set_width(5.5).set_color(CHILL_BROWN).shift(RIGHT * 3.25 + UP * 0.5)
+        bottom_header_title = Text('TOP MATCHES', font='Myriad Pro').next_to(bottom_header_line, UP, buff=0.1).set_color(CHILL_BROWN).scale(0.6)
+        
+        left_align = Line(top_header_line.get_center(), bottom_header_line.get_center(), stroke_width=2).shift(LEFT * 1.4).set_length(15)
+        right_align = Line(top_header_line.get_center(), bottom_header_line.get_center(), stroke_width=2).shift(RIGHT * 1.4).set_length(15)
+        
+
+        top_header_word_column = Text('WORD', font='Myriad Pro').set_color(CHILL_BROWN).scale(0.6).next_to(line_intersection(top_header_line.get_left(), top_header_line.get_right(), left_align.get_top(), left_align.get_bottom()), UP, buff=0.1)
+        top_header_cosine_similarity_column = Text('COSINE SIMILARITY', font='Myriad Pro').set_color(CHILL_BROWN).scale(0.6).next_to(line_intersection(top_header_line.get_left(), top_header_line.get_right(), right_align.get_top(), right_align.get_bottom()), UP, buff=0.1)
+        
+        df = pd.read_csv("cosine_similarities.csv")
+        
+        cosine_similarity = df[['text', 'similarity']].values.tolist()
+        np.random.shuffle(cosine_similarity)
+        
+        seen = []
+        ordered = seen.copy()
+        
+        gap = 0.8
+        max_width = 2.56
+        
+        start = Point().move_to(line_intersection(top_header_line.get_left(), top_header_line.get_right(), left_align.get_top(), left_align.get_bottom())).shift(DOWN* gap)
+
+        
+        points = []
+        for i in range(200):
+            point = Point()
+            point.move_to(line_intersection(bottom_header_line.get_left(), bottom_header_line.get_right(), left_align.get_top(), left_align.get_bottom())).shift(DOWN * (gap * (i+1)))
+
+            points.append(point)
+            
+        label_2 = Text("2.", font='Myriad Pro').set_color(CHILL_BROWN).move_to([bottom_header_line.get_x(), points[1].get_y(), 0])
+        label_3 = Text("3.", font='Myriad Pro').set_color(CHILL_BROWN).move_to([bottom_header_line.get_x(), points[2].get_y(), 0])
+        label_4 = Text("4.", font='Myriad Pro').set_color(CHILL_BROWN).move_to([bottom_header_line.get_x(), points[3].get_y(), 0])
+        label_5 = Text("5.", font='Myriad Pro').set_color(CHILL_BROWN).move_to([bottom_header_line.get_x(), points[4].get_y(), 0])
+        label_1 = Text("1.", font='Myriad Pro').set_color(CHILL_BROWN).move_to([bottom_header_line.get_x(), points[0].get_y(), 0])
+        labels = VGroup(label_1, label_2, label_3, label_4, label_5).shift(LEFT * 3)
+            
+        similarity_points = []
+        for i in range(200):
+            point = Point()
+            point.move_to(line_intersection(bottom_header_line.get_left(), bottom_header_line.get_right(), right_align.get_top(), right_align.get_bottom())).shift(DOWN * (gap * (i+1)))
+
+            similarity_points.append(point)
+
+
+        self.add(top_header_line)
+        self.add(top_header_word_column)
+        self.add(top_header_cosine_similarity_column)
+        self.add(bottom_header_line)
+        self.add(bottom_header_title)
+        self.add(labels)
+        self.add(top_header_line, bottom_header_line)
         self.add(axes)
         self.add(stephen_hat, stephen_no_hat)
         self.add(stephen_hat_arrow, stephen_no_hat_arrow)
-        self.add(stephen_hat_arrow_label, stephen_no_hat_arrow_label)
-        self.embed()
-    
-class P20_P21(InteractiveScene):
-    def construct(self):
-        stephen_no_hat = ImageMobject("me_no_hat_cropped_1.jpeg").scale(0.55)         
-        stephen_hat = ImageMobject("me_with_hat.jpeg").scale(0.55)
+        self.add(stephen_hat_arrow_label, stephen_no_hat_arrow_label, stephen_delta_arrow_label)
+        self.add(stephen_delta_arrow)
+        count = 0
+        seen = []
+        remove = False
+        last_pair = None
+        for pair in cosine_similarity:
+            count += 1
+            word, similarity = pair
 
-        Group(stephen_no_hat, stephen_hat).arrange(DOWN, buff=1).shift(LEFT * 5.5)
+            word_mobject = Text(word, font='Myriad Pro').set_color(FRESH_TAN).scale(0.9)
+            similarity_mobject = Tex(str(round(similarity, 3))).set_color(FRESH_TAN).scale(0.9).move_to([right_align.get_x(), start.get_y(), 0])
+            word_mobject.move_to(start.get_center())
+            
+            if remove:
+                self.remove(last_pair)
+                
+            last_pair = VGroup(word_mobject, similarity_mobject)
+            
+            if count < 6:
+                self.play(FadeIn(word_mobject))
+                self.play(ReplacementTransform(word_mobject.copy(), similarity_mobject))
+            else:
+                self.add(word_mobject, similarity_mobject)
+
+            seen.append([word_mobject, similarity_mobject])
+            ordered = sorted(seen, key=lambda x: float(x[1].get_tex()), reverse=True)
+            
+            top5_words = [w[0].text for w in ordered[:5]]
+            if word not in top5_words:
+                remove = True
+
+            for idx, (w, s) in enumerate(ordered[:5]):
+                target_word_point = points[idx].get_center()
+                target_sim_point = similarity_points[idx].get_center()
+                w.generate_target()
+                s.generate_target()
+                w.target.move_to(target_word_point)
+                s.target.move_to(target_sim_point)
+
+            # Move top 4 to their new spots
+            
+            
+            
+            # Move top 5 to their new spots (including the 5th)
+            # Remove the previous 5th spot if it exists (before moving)
+            if len(ordered) > 5:
+                w5, s5 = ordered[5]
+                self.remove(w5, s5)
+            self.play(
+                *[MoveToTarget(w) for w, s in ordered[:5]],
+                *[MoveToTarget(s) for w, s in ordered[:5]]
+            )
+
+            # Remove the previous 5th spot if it exists
+            
+
+            self.wait(0.2)
+
+
+
+            
+
+                
+            
+            
+        self.embed()
+        
+        
+
+class P20_21(InteractiveScene):
+    def construct(self):
+        stephen_no_hat_p20 = ImageMobject("me_no_hat_cropped_1.jpeg").scale(0.55)         
+        stephen_hat_p20 = ImageMobject("me_with_hat.jpeg").scale(0.55)
+
+        # Place both together on the left
+        Group(stephen_no_hat_p20, stephen_hat_p20).arrange(DOWN, buff=1).shift(LEFT * 5.5)
+
+        # Save the final position of the hat image
+        initial_point = Point([-5.5, -1.6,  0. ])
+
+        # Move hat image directly behind no-hat image and make it invisible
+        stephen_hat_p20.move_to(stephen_no_hat_p20.get_center()).set_opacity(0)
+        
+        
         
         arrows = SVGMobject("p_20_21_to_manim-03.svg")[1:].scale(6)
-        top_left_arrow = arrows[0].next_to(stephen_no_hat, RIGHT)
-        bottom_left_arrow = arrows[1].next_to(stephen_hat, RIGHT)
+        top_left_arrow = arrows[0].next_to(stephen_no_hat_p20, RIGHT)
+        bottom_left_arrow = arrows[1].move_to([top_left_arrow.get_x(), initial_point.get_y(), 0])
         
         top_image_encoder_text = SVGMobject("top_image_encoder.svg")[3:].scale(5).next_to(top_left_arrow, RIGHT)
         bottom_image_encoder_text = SVGMobject("bottom_image_encoder.svg")[3:].scale(5).next_to(bottom_left_arrow, RIGHT)
@@ -212,33 +327,215 @@ class P20_P21(InteractiveScene):
         top_right_arrow = arrows[2].next_to(top_image_encoder, RIGHT)
         bottom_right_arrow = arrows[3].next_to(bottom_image_encoder, RIGHT)
         
-        stephen_no_hat_equation = Tex(r"I_{man} = [-0.13\ -0.10\ \cdots\ -0.56]").set_color(COOL_GREEN).next_to(top_right_arrow, RIGHT).scale(0.9).shift(LEFT * 0.3)
+        stephen_no_hat_equation = Tex(r"I_{man} = [-0.13\ -0.10\ \cdots\ -0.56]").set_color(GREEN).next_to(top_right_arrow, RIGHT).scale(0.9).shift(LEFT * 0.3)
 
-        stephen_hat_equation = Tex(r"\hat{I}_{man} = [-0.13\ -0.10\ \cdots\ -0.56]").set_color(COOL_GREEN).next_to(bottom_right_arrow, RIGHT).scale(0.9).shift(LEFT * 0.3)
-
-        self.play(FadeIn(stephen_hat), FadeIn(stephen_no_hat))
-        self.play(DrawBorderThenFill(top_left_arrow), DrawBorderThenFill(bottom_left_arrow))
-        self.play(ShowCreation(top_image_encoder), ShowCreation(bottom_image_encoder))
-        self.play(DrawBorderThenFill(top_right_arrow), DrawBorderThenFill(bottom_right_arrow))
-        self.play(Write(stephen_no_hat_equation), Write(stephen_hat_equation))
+        stephen_hat_equation = Tex(r"\hat{I}_{man} = [-0.13\ -0.10\ \cdots\ -0.50]").set_color(GREEN).next_to(bottom_right_arrow, RIGHT).scale(0.9).shift(LEFT * 0.3)
         
-        self.embed()
-        
-        self.play(Uncreate(stephen_hat), Uncreate(stephen_no_hat),
-                  FadeOut(arrows),
-                  Uncreate())
-        
-        x_axis = WelchXAxis(-5, 5).move_to(ORIGIN)
-        y_axis = WelchYAxis(-5, 5).move_to(ORIGIN)
+        x_axis = WelchXAxis(0, 8).move_to(ORIGIN)
+        y_axis = WelchYAxis(0, 8).move_to(ORIGIN)
         x_axis.ticks.set_opacity(0)
         x_axis.labels.set_opacity(0)
         y_axis.ticks.set_opacity(0)
         y_axis.labels.set_opacity(0)
         
         axes = VGroup(x_axis, y_axis)
-        axes.shift(LEFT * 4)
+        axes.shift(LEFT * 4.5)
+        
+        stephen_no_hat = ImageMobject("me_no_hat_cropped_1.jpeg").scale(0.3)         
+        stephen_hat = ImageMobject("me_with_hat.jpeg").scale(0.3)
+        
+        stephen_hat.move_to((y_axis.get_center() + y_axis.get_top())/2).shift(LEFT * 0.6)
+        stephen_no_hat.move_to((x_axis.get_center() + x_axis.get_right())/2).shift(DOWN * 0.6)
+        
+        # Define the angle (in radians) to rotate the arrow up (e.g., 15 degrees)
+
+        # Create the arrows
+        stephen_hat_arrow = WelchXAxis(x_min=0, x_max=2.25, axis_length_on_canvas=2.25, stroke_width=5).set_color(GREEN)
+        stephen_no_hat_arrow = WelchXAxis(x_min=0, x_max=2.25, axis_length_on_canvas=2.25, stroke_width=5).set_color(GREEN)
         
         
+        
+        
+        stephen_hat_arrow.ticks.set_opacity(0)
+        stephen_hat_arrow.labels.set_opacity(0)
+        stephen_no_hat_arrow.ticks.set_opacity(0)
+        stephen_no_hat_arrow.labels.set_opacity(0)
+        
+        axes_intersection = line_intersection(
+            x_axis.get_axis_line().get_left(), x_axis.get_axis_line().get_right(),
+            y_axis.get_axis_line().get_bottom(), y_axis.get_axis_line().get_top()
+        )
+
+        stephen_hat_arrow.shift(axes_intersection - stephen_hat_arrow.get_axis_line().get_left())
+        stephen_no_hat_arrow.shift(axes_intersection - stephen_no_hat_arrow.get_axis_line().get_left())
+        
+        stephen_hat_arrow.rotate(65 * DEGREES, about_point=axes_intersection)
+        stephen_no_hat_arrow.rotate(15 * DEGREES, about_point=axes_intersection)
+        
+        stephen_delta_arrow_line = Line(stephen_hat_arrow.arrow.get_all_points()[0], stephen_no_hat_arrow.arrow.get_all_points()[0], stroke_width=5, color=YELLOW)
+        stephen_delta_arrow_arrow = SVGMobject("welch_arrow_tip_1.svg").scale(0.1).next_to(stephen_delta_arrow_line.get_end()).rotate(DEGREES * 310).set_color(YELLOW)
+        stephen_delta_arrow_arrow.shift(stephen_no_hat_arrow.arrow.get_all_points()[0] - stephen_delta_arrow_arrow.get_all_points()[0])
+        
+        stephen_hat_arrow_label = Tex(r"\hat{I}_{man}").set_color(GREEN).next_to(stephen_hat_arrow.arrow, UP)
+        stephen_no_hat_arrow_label = Tex(r"I_{man}").set_color(GREEN).next_to(stephen_no_hat_arrow.arrow, RIGHT)
+                
+        start = stephen_hat_arrow.arrow.get_all_points()[0]
+        end = stephen_no_hat_arrow.arrow.get_all_points()[0]
+
+        # Vector from start to end
+        direction = end - start
+        length = np.linalg.norm(direction)
+
+        # Normalize and trim
+        trim_amount = 0.1  # Adjust this value as needed
+        new_end = end - (direction / length) * trim_amount
+
+        # Create the trimmed line
+        stephen_delta_arrow_line = Line(start, new_end, stroke_width=5, color=YELLOW)
+        
+        stephen_delta_arrow = VGroup(stephen_delta_arrow_line, stephen_delta_arrow_arrow)
+        
+        stephen_delta_arrow_label = Tex(r"\hat{I}_{man}-I_{man}").set_color(YELLOW).next_to(stephen_delta_arrow.get_center(), RIGHT).shift(UP * 0.25)
+
+        top_header_line = Line(stroke_width=2).set_width(5.5).set_color(CHILL_BROWN).shift(RIGHT * 3.25 + UP * 2.5)
+        
+        bottom_header_line = Line(stroke_width=2).set_width(5.5).set_color(CHILL_BROWN).shift(RIGHT * 3.25 + UP * 0.5)
+        bottom_header_title = Text('TOP MATCHES', font='Myriad Pro').next_to(bottom_header_line, UP, buff=0.1).set_color(CHILL_BROWN).scale(0.6)
+        
+        left_align = Line(top_header_line.get_center(), bottom_header_line.get_center(), stroke_width=2).shift(LEFT * 1.4).set_length(15)
+        right_align = Line(top_header_line.get_center(), bottom_header_line.get_center(), stroke_width=2).shift(RIGHT * 1.4).set_length(15)
+        
+
+        top_header_word_column = Text('WORD', font='Myriad Pro').set_color(CHILL_BROWN).scale(0.6).next_to(line_intersection(top_header_line.get_left(), top_header_line.get_right(), left_align.get_top(), left_align.get_bottom()), UP, buff=0.1)
+        top_header_cosine_similarity_column = Text('COSINE SIMILARITY', font='Myriad Pro').set_color(CHILL_BROWN).scale(0.6).next_to(line_intersection(top_header_line.get_left(), top_header_line.get_right(), right_align.get_top(), right_align.get_bottom()), UP, buff=0.1)
+        
+        df = pd.read_csv("cosine_similarities.csv")
+        
+        cosine_similarity = df[['text', 'similarity']].values.tolist()
+        np.random.shuffle(cosine_similarity)
+        
+        seen = []
+        ordered = seen.copy()
+        
+        gap = 0.8
+        max_width = 2.56
+        
+        start = Point().move_to(line_intersection(top_header_line.get_left(), top_header_line.get_right(), left_align.get_top(), left_align.get_bottom())).shift(DOWN* gap)
+
+        
+        points = []
+        for i in range(200):
+            point = Point()
+            point.move_to(line_intersection(bottom_header_line.get_left(), bottom_header_line.get_right(), left_align.get_top(), left_align.get_bottom())).shift(DOWN * (gap * (i+1)))
+
+            points.append(point)
+            
+        label_2 = Text("2.", font='Myriad Pro').set_color(CHILL_BROWN).move_to([bottom_header_line.get_x(), points[1].get_y(), 0])
+        label_3 = Text("3.", font='Myriad Pro').set_color(CHILL_BROWN).move_to([bottom_header_line.get_x(), points[2].get_y(), 0])
+        label_4 = Text("4.", font='Myriad Pro').set_color(CHILL_BROWN).move_to([bottom_header_line.get_x(), points[3].get_y(), 0])
+        label_5 = Text("5.", font='Myriad Pro').set_color(CHILL_BROWN).move_to([bottom_header_line.get_x(), points[4].get_y(), 0])
+        label_1 = Text("1.", font='Myriad Pro').set_color(CHILL_BROWN).move_to([bottom_header_line.get_x(), points[0].get_y(), 0])
+        labels = VGroup(label_1, label_2, label_3, label_4, label_5).shift(LEFT * 3)
+            
+        similarity_points = []
+        for i in range(200):
+            point = Point()
+            point.move_to(line_intersection(bottom_header_line.get_left(), bottom_header_line.get_right(), right_align.get_top(), right_align.get_bottom())).shift(DOWN * (gap * (i+1)))
+
+            similarity_points.append(point)
+
+        self.add(stephen_hat_p20)
+        self.play(FadeIn(stephen_no_hat_p20))
+
+        self.wait()
+
+        self.play(
+            stephen_hat_p20.animate.move_to([-5.5, -1.6,  0. ]).set_opacity(1)
+        )
+
+        self.wait()
+        self.add(top_left_arrow, bottom_left_arrow, top_image_encoder, bottom_image_encoder)
+        self.wait()
+        self.add(top_right_arrow, bottom_right_arrow, stephen_no_hat_equation, stephen_hat_equation)
+        self.wait()
+        self.play(FadeOut(arrows), FadeOut(top_image_encoder), FadeOut(bottom_image_encoder))
+        self.wait()
+        self.play(FadeIn(axes), ReplacementTransform(stephen_hat_p20, stephen_hat), ReplacementTransform(stephen_hat_equation[0:5], stephen_hat_arrow_label), ReplacementTransform(stephen_hat_equation[6:], stephen_hat_arrow), FadeOut(stephen_hat_equation[5]), stephen_no_hat_p20.animate.shift(DOWN * 4 + LEFT * 0.3).set_opacity(0.5), run_time = 3)
+        self.wait()
+        self.play(ReplacementTransform(stephen_no_hat_p20, stephen_no_hat), FadeOut(stephen_no_hat_equation[4]), ReplacementTransform(stephen_no_hat_equation[0:4], stephen_no_hat_arrow_label), ReplacementTransform(stephen_no_hat_equation[5:], stephen_no_hat_arrow), run_time=3)
+
+        
+        self.wait()
+        self.play(FadeIn(stephen_delta_arrow))
+        self.wait()
+        self.play(Write(stephen_delta_arrow_label))
+        self.wait()
+        self.play(FadeIn(top_header_line), DrawBorderThenFill(top_header_word_column), DrawBorderThenFill(top_header_cosine_similarity_column))
+        self.wait()
+        self.play(ReplacementTransform(top_header_line.copy(), bottom_header_line), ReplacementTransform(VGroup(top_header_word_column.copy(), top_header_cosine_similarity_column.copy()), bottom_header_title)),
+        self.wait()
+        self.play(Write(labels))
+        self.wait()
+        
+        count = 0
+        seen = []
+        remove = False
+        last_pair = None
+        for pair in cosine_similarity:
+            count += 1
+            word, similarity = pair
+
+            word_mobject = Text(word, font='Myriad Pro').set_color(FRESH_TAN).scale(0.9)
+            similarity_mobject = Tex(str(round(similarity, 3))).set_color(FRESH_TAN).scale(0.9).move_to([right_align.get_x(), start.get_y(), 0])
+            word_mobject.move_to(start.get_center())
+            
+            if remove:
+                self.remove(last_pair)
+                
+            last_pair = VGroup(word_mobject, similarity_mobject)
+            
+            if count < 6:
+                self.play(FadeIn(word_mobject))
+                self.play(ReplacementTransform(word_mobject.copy(), similarity_mobject))
+            else:
+                self.add(word_mobject, similarity_mobject)
+
+            seen.append([word_mobject, similarity_mobject])
+            ordered = sorted(seen, key=lambda x: float(x[1].get_tex()), reverse=True)
+            
+            top5_words = [w[0].text for w in ordered[:5]]
+            if word not in top5_words:
+                remove = True
+
+            for idx, (w, s) in enumerate(ordered[:5]):
+                target_word_point = points[idx].get_center()
+                target_sim_point = similarity_points[idx].get_center()
+                w.generate_target()
+                s.generate_target()
+                w.target.move_to(target_word_point)
+                s.target.move_to(target_sim_point)
+
+            # Move top 4 to their new spots
+            
+            
+            
+            # Move top 5 to their new spots (including the 5th)
+            # Remove the previous 5th spot if it exists (before moving)
+            if len(ordered) > 5:
+                w5, s5 = ordered[5]
+                self.remove(w5, s5)
+            self.play(
+                *[MoveToTarget(w) for w, s in ordered[:5]],
+                *[MoveToTarget(s) for w, s in ordered[:5]]
+            )
+
+            # Remove the previous 5th spot if it exists
+            
+
+            self.wait(0.2)
+        
+
+
 def generate_nice_ticks(min_val, max_val, min_ticks=3, max_ticks=16, ignore=[0]):
     """
     Generate a list of nice-looking tick values between min_val and max_val,
@@ -324,7 +621,6 @@ def generate_nice_ticks(min_val, max_val, min_ticks=3, max_ticks=16, ignore=[0])
         return generate_nice_ticks(min_val, max_val, min_ticks, max_ticks, ignore)
     
     return ticks, float(axis_min), float(axis_max)
-
 class WelchXAxis(VGroup):
     def __init__(
         self,

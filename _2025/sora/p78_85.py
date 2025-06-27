@@ -382,6 +382,7 @@ class p78_85(InteractiveScene):
 
         i=75
         dot_to_move=dots[i].copy()
+        dot_to_move.set_opacity(1.0)
         traced_path = CustomTracedPath(dot_to_move.get_center, stroke_color=YELLOW, stroke_width=2.0, 
                                       opacity_range=(0.25, 0.9), fade_length=15)
         # traced_path.set_opacity(0.5)
@@ -422,7 +423,36 @@ class p78_85(InteractiveScene):
             self.wait(0.1)
             # self.play(dot_to_move.animate.move_to(axes.c2p(*random_walk_shifted[i])), run_time=0.1, rate_func=linear)
         traced_path.stop_tracing()
+        self.wait()
 
+        x100=Tex('x_{100}', font_size=24).set_color(YELLOW)
+        x100.next_to(dot_to_move, 0.07*UP+0.001*RIGHT)
+        self.add(x100)
+
+
+        pre_point_coords=dot_to_move.get_center()-np.array([0.76, 0.25, 0])
+        a2=Arrow(dot_to_move.get_center(),
+                 pre_point_coords,
+                 thickness = 2.0,
+                 tip_width_ratio= 5, 
+                 buff=0.035)
+        a2.set_color(FRESH_TAN)
+        # self.add(a2)
+
+        #Lower trace opacity while I bring in equation label
+
+
+        eq_2=Tex("f(x_{100}, t)", font_size=24)
+        eq_2.set_color(WHITE)
+        eq_2[2:7].set_color(YELLOW)
+        eq_2.move_to([5.3, 2.7, 0])
+
+        self.play(traced_path.animate.set_opacity(0.1),
+                  FadeIn(a2), FadeIn(eq_2))
+
+        self.wait()
+
+        #Ok now add in cat cless here and we're off to the races
 
 
 

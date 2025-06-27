@@ -20,6 +20,7 @@ from tqdm import tqdm
 import torch
 from itertools import pairwise
 from torch.utils.data import Dataset
+from functools import partial
 
 def get_color_wheel_colors(n_colors, saturation=1.0, value=1.0, start_hue=0.0):
     """
@@ -550,7 +551,7 @@ class p78_85(InteractiveScene):
         heatmaps=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/conditioned_heatmaps_3.npy')
 
 
-        num_dots_per_class=1 #Crank up for final viz
+        num_dots_per_class=96 #Crank up for final viz
         colors_by_class={2:YELLOW, 0: '#00FFFF', 1: '#FF00FF'}
 
         all_traced_paths=VGroup()
@@ -1117,6 +1118,219 @@ class p78_85(InteractiveScene):
         ## Hmm actually let me switch the order - realizing I really need to show the final/full thing in 
         ## one run per class - since the vector field changes. 
 
+        # time_tracker.set_value(0.0) Hmm this didn't get picked up in my last animation
+        # Well see what happens on export 
+
+        dog_dots=VGroup()
+        for i, d in enumerate(dots):
+            if labels_array[i]==1: 
+                dog_dots.add(d)
+
+        person_dots=VGroup()
+        for i, d in enumerate(dots):
+            if labels_array[i]==0: 
+                person_dots.add(d)
+
+        self.play(FadeOut(time_display), FadeOut(time_label), FadeOut(dot_to_move_4), FadeOut(dot_to_move_3),
+                  FadeOut(traced_path_4), FadeOut(traced_path_3), time_tracker.animate.set_value(1.0),
+                  cat_dots.animate.set_opacity(0.7),
+                  vector_field_g.animate.set_opacity_range(0.1, 0.8),
+                  dog_dots.animate.set_color('#FF00FF').set_opacity(0.7),
+                  person_dots.animate.set_color('#00FFFF').set_opacity(0.7),
+                  self.frame.animate.reorient(0, 0, 0, (0.06, -0.02, 0.0), 7.52), 
+                  run_time=6.0)
+        self.wait()
+
+        # t1=MarkupText("Classifier-", font='myriad-pro')
+        # t1.set_color(GREEN)
+        # t1.to_corner(UL, buff=0.5)
+
+        # t2=MarkupText("Free", font='myriad-pro')
+        # t2.set_color(GREEN)
+        # t2.next_to(t1, DOWN, buff=0.1, aligned_edge=LEFT)
+
+        # t3=MarkupText("Guidance", font='myriad-pro')
+        # t3.set_color(GREEN)
+        # t3.next_to(t2, DOWN, buff=0.1, aligned_edge=LEFT)
+
+        # self.play(Write(t1), Write(t2), Write(t3), run_time=1.5, lag_ratio=0.5)
+        # self.wait()
+        # self.remove(t1, t2, t3)
+        #Eh i hate this sytle, let me to the name overaly in illustroter. 
+
+
+        #ok now guide a set of cat points, then dog points, then peroson points
+        # self.remove(dot_to_move_3)
+
+        # Ok I'm feeling pretty strongly that we should totally lose the ground truth points
+        # before doing these reconstructions, there's too much going on!!
+
+        # Hmm ok question actually - do I want to do fresh exports (with lower sigmas)
+        # for these...
+        # Hmm you know a feel like a unified export with some gaurantees from the 
+        # the jupyter side that we'll have a nice spiral would be cood
+        # I can still use the same heatmap for continuity. 
+        # Ok let me go do that. 
+        
+
+        xt_history_2=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/conditioned_history_6.npy')
+        heatmaps_2=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/conditioned_heatmaps_6.npy')
+        heatmaps_u_2=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/conditioned_heatmaps_6u.npy')
+        heatmaps_c_2=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/conditioned_heatmaps_6c.npy')
+        model_2=torch.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/jun_27_2.pt', map_location=torch.device('cpu'))
+
+
+        def vector_function_heatmap_2(coords_array):
+            result = np.zeros((len(coords_array), 2))
+            
+            for i, coord in enumerate(coords_array):
+                x, y = coord[0], coord[1]  # Take only x, y coordinates
+                
+                current_time = time_tracker.get_value()
+                max_time = 8.0  # Map time 0-8 to sigma indices 0-255
+                sigma_idx = int(np.clip(current_time * 255 / max_time, 0, 255)) #Needs to be N-1
+                # Find the closest grid point to interpolate from
+                distances = np.linalg.norm(grid.numpy() - np.array([x, y]), axis=1)
+                closest_idx = np.argmin(distances)
+                
+                # Get the vector at the closest grid point
+                vector = heatmaps_c_2[2, sigma_idx, closest_idx, :] #I think this is the right class index
+                result[i] = vector
+            
+            return -result #Reverse direction
+
+
+        vector_field_2 = TrackerControlledVectorField(
+            time_tracker=time_tracker,
+            func=vector_function_heatmap_2,
+            coordinate_system=extended_axes,
+            density=4.0, #5 gives nice detail, but is maybe a little too much, especially to zoom in on soon? Ok I think i like 4.
+            stroke_width=2,
+            max_radius=5.5,      # Vectors fade to min_opacity at this distance
+            min_opacity=0.1,     # Minimum opacity at max_radius
+            max_opacity=0.8,     # Maximum opacity at origin
+            tip_width_ratio=4,
+            tip_len_to_width=0.01,
+            max_vect_len_to_step_size=0.7,
+            color=YELLOW
+        )
+
+        def vector_function_heatmap_u_2(coords_array):
+
+            result = np.zeros((len(coords_array), 2))
+            
+            for i, coord in enumerate(coords_array):
+                x, y = coord[0], coord[1]  # Take only x, y coordinates
+                
+                current_time = time_tracker.get_value()
+                max_time = 8.0  # Map time 0-8 to sigma indices 0-255
+                sigma_idx = int(np.clip(current_time * 255 / max_time, 0, 255)) #Needs to be N-1
+                # Find the closest grid point to interpolate from
+                distances = np.linalg.norm(grid.numpy() - np.array([x, y]), axis=1)
+                closest_idx = np.argmin(distances)
+                
+                # Get the vector at the closest grid point
+                vector = heatmaps_u_2[2, sigma_idx, closest_idx, :]
+                result[i] = vector
+            
+            return -result #Reverse direction
+
+        vector_field_u_2 = TrackerControlledVectorField(
+            time_tracker=time_tracker,
+            func=vector_function_heatmap_u_2,
+            coordinate_system=extended_axes,
+            density=4.0, #5 gives nice detail, but is maybe a little too much, especially to zoom in on soon? Ok I think i like 4.
+            stroke_width=2,
+            max_radius=5.5,      # Vectors fade to min_opacity at this distance
+            min_opacity=0.1,     # Minimum opacity at max_radius
+            max_opacity=0.8,     # Maximum opacity at origin
+            tip_width_ratio=4,
+            tip_len_to_width=0.01,
+            max_vect_len_to_step_size=0.7,
+            color='#777777'
+        )
+
+        def vector_function_heatmap_g_2(coords_array):
+            result = np.zeros((len(coords_array), 2))
+            
+            for i, coord in enumerate(coords_array):
+                x, y = coord[0], coord[1]  # Take only x, y coordinates
+                
+                current_time = time_tracker.get_value()
+                max_time = 8.0  # Map time 0-8 to sigma indices 0-255
+                sigma_idx = int(np.clip(current_time * 255 / max_time, 0, 255)) #Needs to be N-1
+                # Find the closest grid point to interpolate from
+                distances = np.linalg.norm(grid.numpy() - np.array([x, y]), axis=1)
+                closest_idx = np.argmin(distances)
+                
+                # Get the vector at the closest grid point
+                vector = heatmaps_2[2, sigma_idx, closest_idx, :] #cfg_scales=[0.0, 0.1, 0.5, 1.0, 2.0, 3.0, 5.0, 10.0]
+                result[i] = vector
+            
+            return -result #Reverse direction
+
+        vector_field_g_2 = TrackerControlledVectorField(
+            time_tracker=time_tracker,
+            func=vector_function_heatmap_g_2,
+            coordinate_system=extended_axes,
+            density=4.0, #5 gives nice detail, but is maybe a little too much, especially to zoom in on soon? Ok I think i like 4.
+            stroke_width=2,
+            max_radius=5.5,      # Vectors fade to min_opacity at this distance
+            min_opacity=0.1,     # Minimum opacity at max_radius
+            max_opacity=0.8,     # Maximum opacity at origin
+            tip_width_ratio=4,
+            tip_len_to_width=0.01,
+            max_vect_len_to_step_size=0.7,
+            color=GREEN
+        )
+
+
+        self.wait()
+
+
+        num_dots_per_class=8 #Crank up for final viz
+        colors_by_class={2:YELLOW, 0: '#00FFFF', 1: '#FF00FF'}
+
+        all_traced_paths_2=VGroup()
+        all_dots_to_move_2=VGroup()
+        for class_index in range(xt_history_2.shape[0]):
+            for path_index in range(num_dots_per_class): 
+                dot_to_move_2=Dot(axes.c2p(*np.concatenate((xt_history_2[class_index, 0, path_index, :], [0]))), radius=0.06)
+                dot_to_move_2.set_color(colors_by_class[class_index])
+                all_dots_to_move_2.add(dot_to_move_2)
+
+                traced_path_2 = CustomTracedPath(dot_to_move_2.get_center, stroke_color=colors_by_class[class_index], stroke_width=2.0, 
+                                              opacity_range=(0.0, 1.0), fade_length=12)
+                # traced_path_2.set_opacity(0.5)
+                # traced_path_2.set_fill(opacity=0)
+                all_traced_paths_2.add(traced_path_2)
+        self.add(all_traced_paths_2)
+        self.wait()
+
+        #Cross fading vector fields is a litle sketchy, hopefully it's fine. 
+        self.play(FadeOut(cat_dots), FadeOut(dog_dots), FadeOut(person_dots), 
+                  # FadeIn(all_dots_to_move_2[2*num_dots_per_class:]), #Just first class here 
+                  FadeOut(vector_field), FadeOut(vector_field_u), FadeOut(vector_field_g),
+                  FadeIn(vector_field_2), FadeIn(vector_field_u_2), FadeIn(vector_field_g_2),
+                  run_time=2)
+        self.wait()
+
+        #Ok pausing here and testing on new scene - getting really unwieldy. 
+
+        # class_index=2
+        # for k in range(xt_history_2.shape[1]):
+        #     #Clunky but meh
+        #     animations=[]
+        #     for j in range(num_dots_per_class): 
+        #         animations.append(all_dots_to_move_2[2*num_dots_per_class+j].animate.move_to(axes.c2p(*[xt_history_2[class_index, k, j, 0], 
+        #                                                                                                 xt_history_2[class_index, k, j, 1]])))
+        #     self.play(*animations, rate_func=linear, run_time=0.1)
+        #     time_tracker.animate.set_value(8.0*(k/256.0))
+        # self.wait()
+
+        # hmm man so close here, but this is really getting unweildy - and my traced paths are not showing up
+        # Hmm might need to consider a clean break to a new class? 
+        # I can at very least try that as a debug step. 
 
 
         self.wait(20)
@@ -1125,18 +1339,142 @@ class p78_85(InteractiveScene):
 
 
 
+class p85b(InteractiveScene):
+    def construct(self):
+
+        '''
+        Phew - alright last big scene here - Classifier free guidance lets go!!!
+
+        '''
+
+
+        dataset = MultiClassSwissroll(np.pi/2, 5*np.pi, 100, num_classes=3)
+        colors = dataset.get_class_colors()
+        loader = DataLoader(dataset, batch_size=len(dataset)*2, shuffle=True)
+        # x, labels = next(iter(loader))
+        # x=x.cpu().numpy()
+
+        axes = Axes(
+            x_range=[-1.2, 1.2, 0.5],
+            y_range=[-1.2, 1.2, 0.5],
+            height=7,
+            width=7,
+            axis_config={
+                "color": CHILL_BROWN, 
+                "stroke_width": 2,
+                "include_tip": True,
+                "include_ticks": True,
+                "tick_size": 0.06,
+                "tip_config": {"color": CHILL_BROWN, "length": 0.15, "width": 0.15}
+            }
+        )
+        axes.set_opacity(0.4)
+
+        # Create extended axes with SAME center point and proportional scaling
+        extended_axes = Axes(
+            x_range=[-2.0, 2.0, 0.5],    # Extended range
+            y_range=[-2.0, 2.0, 0.5],    # Extended range
+            height=7 * (4.0/2.4),        # Scale height proportionally: original_height * (new_range/old_range)
+            width=7 * (4.0/2.4),         # Scale width proportionally: original_width * (new_range/old_range)
+            axis_config={"stroke_width": 0}  # Make invisible
+        )
+
+        # Move extended axes to same position as original axes
+        extended_axes.move_to(axes.get_center())
+
+
+        dots = VGroup()
+        labels_array=[]
+        for point in dataset.data:
+            # Map the point coordinates to the axes
+            screen_point = axes.c2p(point[0][0], point[0][1])
+            dot = Dot(screen_point, radius=0.04)
+            # dot.set_color(YELLOW)
+            dots.add(dot)
+            labels_array.append(point[1])
+        labels_array=np.array(labels_array)
+        dots.set_color(YELLOW)
+        dots.set_opacity(0.5)
+
+        dog_dots=VGroup()
+        for i, d in enumerate(dots):
+            if labels_array[i]==1: 
+                dog_dots.add(d)
+
+        person_dots=VGroup()
+        for i, d in enumerate(dots):
+            if labels_array[i]==0: 
+                person_dots.add(d)
+
+        cat_dots=VGroup()
+        for i, d in enumerate(dots):
+            if labels_array[i]==2: 
+                cat_dots.add(d)
+
+
+        xt_history_2=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/conditioned_history_6.npy')
+        heatmaps_2=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/conditioned_heatmaps_6.npy')
+        heatmaps_u_2=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/conditioned_heatmaps_6u.npy')
+        heatmaps_c_2=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/conditioned_heatmaps_6c.npy')
+        model_2=torch.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/jun_27_2.pt', map_location=torch.device('cpu'))
+
+
+        bound=2.0
+        num_heatmap_steps=64
+        grid=[]
+        for i, x in enumerate(np.linspace(-bound, bound, num_heatmap_steps)):
+            for j, y in enumerate(np.linspace(-bound, bound, num_heatmap_steps)):
+                grid.append([x,y])
+        grid=torch.tensor(grid).float()
+
+        time_tracker = ValueTracker(0.0)  # Start at time 0
+        schedule = ScheduleLogLinear(N=256, sigma_min=0.01, sigma_max=10) #N=200
+        sigmas=schedule.sample_sigmas(256)
+
+        self.wait()
+
+
+        def vector_function_parent(coords_array, heatmap_array, class_index):
+            result = np.zeros((len(coords_array), 2))
+            
+            for i, coord in enumerate(coords_array):
+                x, y = coord[0], coord[1]  # Take only x, y coordinates
+                
+                current_time = time_tracker.get_value()
+                max_time = 8.0  # Map time 0-8 to sigma indices 0-255
+                sigma_idx = int(np.clip(current_time * 255 / max_time, 0, 255)) #Needs to be N-1
+                # Find the closest grid point to interpolate from
+                distances = np.linalg.norm(grid.numpy() - np.array([x, y]), axis=1)
+                closest_idx = np.argmin(distances)
+                
+                # Get the vector at the closest grid point
+                vector = heatmap_array[class_index, sigma_idx, closest_idx, :] #I think this is the right class index
+                result[i] = vector
+            return -result 
+
+
+        vector_field_cats_g = TrackerControlledVectorField(
+            time_tracker=time_tracker,
+            func=partial(vector_function_parent, heatmap_array=heatmaps_2, class_index=2),
+            coordinate_system=extended_axes, density=4.0, stroke_width=2, max_radius=5.5, min_opacity=0.1, max_opacity=0.8, 
+            tip_width_ratio=4, tip_len_to_width=0.01, max_vect_len_to_step_size=0.7, color=YELLOW)
+
+
+
+        
+        self.frame.reorient(0, 0, 0, (0.06, -0.02, 0.0), 7.52)
+        self.add(axes)
+        self.wait()
 
 
 
 
 
+        
 
 
-
-
-
-
-
+        self.wait(20)
+        self.embed()
 
 
 

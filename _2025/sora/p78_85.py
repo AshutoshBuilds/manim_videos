@@ -425,7 +425,7 @@ class p78_85(InteractiveScene):
         traced_path.stop_tracing()
         self.wait()
 
-        x100=Tex('x_{100}', font_size=24).set_color(YELLOW)
+        x100=Tex('x_{100}', font_size=24).set_color(WHITE)
         x100.next_to(dot_to_move, 0.07*UP+0.001*RIGHT)
         self.add(x100)
 
@@ -436,7 +436,7 @@ class p78_85(InteractiveScene):
                  thickness = 2.0,
                  tip_width_ratio= 5, 
                  buff=0.035)
-        a2.set_color(FRESH_TAN)
+        a2.set_color(WHITE)
         # self.add(a2)
 
         #Lower trace opacity while I bring in equation label
@@ -444,7 +444,7 @@ class p78_85(InteractiveScene):
 
         eq_2=Tex("f(x_{100}, t)", font_size=24)
         eq_2.set_color(WHITE)
-        eq_2[2:7].set_color(YELLOW)
+        # eq_2[2:7].set_color(YELLOW)
         eq_2.move_to([5.3, 2.7, 0])
 
         self.play(traced_path.animate.set_opacity(0.1),
@@ -453,6 +453,108 @@ class p78_85(InteractiveScene):
         self.wait()
 
         #Ok now add in cat cless here and we're off to the races
+        eq_3=Tex("f(x_{100}, t, cat)", font_size=24)
+        eq_3.set_color(WHITE)
+        # eq_3[2:7].set_color(YELLOW)
+        eq_3[-4:-1].set_color(YELLOW)
+        eq_3.move_to(eq_2, aligned_edge=LEFT)
+
+        self.play(ReplacementTransform(eq_2[-1], eq_3[-1]))
+        self.play(Write(eq_3[-5:-1]))
+        self.wait()
+
+        #Now zoom back out to full view. 
+        self.play(self.frame.animate.reorient(0,0,0,(0,0,0), 8), run_time=4)
+        self.wait()
+
+        # Hmmm hmm ok, so there isn's really a single vector field I can show - right?
+        # maybe I just leave out the vector field for now - and just show the paths of the points. 
+        xt_history=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/conditioned_history_3.npy')
+        heatmaps=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/conditioned_heatmaps_3.npy')
+
+
+        num_dots_per_class=48
+        colors_by_class={2:YELLOW, 0: '#00FFFF', 1: '#FF00FF'}
+
+        all_traced_paths=VGroup()
+        all_dots_to_move=VGroup()
+        for class_index in range(xt_history.shape[0]):
+            for path_index in range(num_dots_per_class): 
+                dot_to_move_2=Dot(axes.c2p(*np.concatenate((xt_history[class_index, 0, path_index, :], [0]))), radius=0.06)
+                dot_to_move_2.set_color(colors_by_class[class_index])
+                all_dots_to_move.add(dot_to_move_2)
+
+                traced_path_2 = CustomTracedPath(dot_to_move_2.get_center, stroke_color=colors_by_class[class_index], stroke_width=2.0, 
+                                              opacity_range=(0.0, 1.0), fade_length=12)
+                # traced_path_2.set_opacity(0.5)
+                # traced_path_2.set_fill(opacity=0)
+                all_traced_paths.add(traced_path_2)
+        self.add(all_traced_paths)
+        self.wait()
+
+        self.play(dots.animate.set_opacity(0.15), 
+                 FadeOut(traced_path),
+                 FadeOut(dot_to_move),
+                 FadeOut(a2), 
+                 FadeOut(x100), 
+                 eq_3.animate.set_opacity(0.0), 
+                 eq_2.animate.set_opacity(0.0),
+                 FadeIn(all_dots_to_move)
+                 )
+        self.wait()
+
+
+        for k in range(xt_history.shape[1]):
+            #Clunky but meh
+            animations=[]
+            path_index=0
+            for class_index in range(xt_history.shape[0]):
+                for j in range(num_dots_per_class): 
+                    animations.append(all_dots_to_move[path_index].animate.move_to(axes.c2p(*[xt_history[class_index, k, j, 0], 
+                                                                                              xt_history[class_index, k, j, 1]])))
+                    path_index+=1
+            self.play(*animations, rate_func=linear, run_time=0.1)
+        self.wait()
+
+
+        # colors=[]
+        # for j in labels_array:
+        #     if j==0: colors.append('#00FFF')
+        #     if j==1: colors.append('FF00FF')
+        #     if j==2: colors.append(YELLOW)
+
+
+        # num_dots=16
+        # colors=get_color_wheel_colors(num_dots)
+        # all_traced_paths=VGroup()
+        # all_dots_to_move=VGroup()
+        # for path_index in range(num_dots): 
+        #     dot_to_move=Dot(axes.c2p(*np.concatenate((xt_history[0, path_index, :], [0]))), radius=0.06)
+        #     dot_to_move.set_color(colors[path_index])
+        #     all_dots_to_move.add(dot_to_move)
+
+        #     traced_path = CustomTracedPath(dot_to_move.get_center, stroke_color=colors[path_index], stroke_width=2.0, 
+        #                                   opacity_range=(0.25, 1.0), fade_length=15)
+        #     # traced_path.set_opacity(0.5)
+        #     # traced_path.set_fill(opacity=0)
+        #     all_traced_paths.add(traced_path)
+        # self.add(all_traced_paths)
+
+        # self.wait()
+        # self.play(FadeIn(all_dots_to_move), FadeIn(vector_field))
+
+        # self.wait()
+
+        # for k in range(xt_history.shape[0]):
+        #     self.play(time_tracker.animate.set_value(8.0*(k/256.0)), 
+        #               *[all_dots_to_move[path_index].animate.move_to(axes.c2p(*[xt_history[k, path_index, 0], 
+        #                                                                         xt_history[k, path_index, 1]])) for path_index in range(len(all_dots_to_move))],
+        #              rate_func=linear, run_time=0.1)
+
+        self.wait()
+
+
+
 
 
 

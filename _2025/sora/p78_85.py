@@ -806,6 +806,54 @@ class p78_85(InteractiveScene):
         # expect/need in 84. 
         # Once I've confirmed that green arrows and path look good, then I'll come back to 83
 
+        # self.frame.reorient(0, 0, 0, (1.41, 1.13, 0.0), 1.05)
+
+        yellow_vec_start=np.array([1.46,1.095,0])
+        yellow_vec_vals=np.array([-0.01, 0.15, 0])
+        example_vec_yellow=Arrow(yellow_vec_start, 
+                                 yellow_vec_start+yellow_vec_vals,
+                                 thickness = 0.8,
+                                 tip_width_ratio= 5, 
+                                 buff=0.0)
+        example_vec_yellow.set_color(YELLOW)
+
+        gray_vec_vals=np.array([-0.12, 0.005, 0])
+        example_vec_gray=Arrow(yellow_vec_start, 
+                                 yellow_vec_start+gray_vec_vals,
+                                 thickness = 0.8,
+                                 tip_width_ratio= 5, 
+                                 buff=0.0)
+        example_vec_gray.set_color('#777777')
+
+        green_vec_vals=1.75*(yellow_vec_vals-gray_vec_vals) #Fudging the guidance value a bit here. 
+        final_vec_green=Arrow(yellow_vec_start+gray_vec_vals, 
+                                 yellow_vec_start+gray_vec_vals+green_vec_vals,
+                                 thickness = 0.8,
+                                 tip_width_ratio= 5, 
+                                 buff=0.0)
+        final_vec_green.set_color(GREEN)
+
+
+        # self.add(example_vec_yellow, example_vec_gray, final_vec_green)
+        #Ok I think this picture is pretty consistent. Sweet.
+        # self.remove(example_vec_yellow, example_vec_gray, final_vec_green)
+        self.wait()
+
+        #now can i fade in and replace smoothly?
+
+        # eq_5.scale(0.2)
+        # eq_5.next_to(example_vec_yellow, RIGHT, buff=0.01)
+
+        # self.add(example_vec_yellow, example_vec_gray) #Add before move? You barley notice
+        self.play(FadeOut(time_display), FadeOut(time_label), #FadeOut(eq_5), 
+                  FadeOut(eq_5_label),
+                  FadeIn(example_vec_yellow), FadeIn(example_vec_gray))
+        self.play(self.frame.animate.reorient(0, 0, 0, (1.41, 1.13, 0.0), 1.05), 
+                  FadeOut(vector_field_u), 
+                  FadeOut(vector_field),
+                  eq_5.scale(0.2).next_to(example_vec_yellow, RIGHT, buff=0.01),
+                  run_time=5.0)   
+        self.wait()
 
 
 
@@ -813,7 +861,7 @@ class p78_85(InteractiveScene):
         # Paragraph 84
         # Ok let me first sketch out green arrows and new path and make sure it makes sense. 
         # Ok yeah I think sketch looks fine -> dope!
-        self.play(FadeOut(time_display), FadeOut(time_label), FadeOut(eq_5), FadeOut(eq_5_label))
+        
         self.wait()
 
         def vector_function_heatmap_g(coords_array):

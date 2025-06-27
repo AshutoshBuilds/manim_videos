@@ -469,11 +469,12 @@ class p78_85(InteractiveScene):
 
         # Hmmm hmm ok, so there isn's really a single vector field I can show - right?
         # maybe I just leave out the vector field for now - and just show the paths of the points. 
+        # may want to consider playing the same paths as below - we'll see
         xt_history=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/conditioned_history_3.npy')
         heatmaps=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/conditioned_heatmaps_3.npy')
 
 
-        num_dots_per_class=48
+        num_dots_per_class=12 #Crank up for final viz
         colors_by_class={2:YELLOW, 0: '#00FFFF', 1: '#FF00FF'}
 
         all_traced_paths=VGroup()
@@ -516,46 +517,92 @@ class p78_85(InteractiveScene):
             self.play(*animations, rate_func=linear, run_time=0.1)
         self.wait()
 
+        # Ok at p80 now - I think for the first paragraph of p80, 
+        # we do all points in gray, and then just highlight cat points 
+        # Use colors here that match what I'll use for two different vector fields I think
+        # I think it's going to be gray and yellow, lets try that. 
 
-        # colors=[]
-        # for j in labels_array:
-        #     if j==0: colors.append('#00FFF')
-        #     if j==1: colors.append('FF00FF')
-        #     if j==2: colors.append(YELLOW)
+        self.play(FadeOut(all_dots_to_move), 
+                  dots.animate.set_color('#777777').set_opacity(1.0))
+        self.wait()
+
+        cat_dots=VGroup()
+        for i, d in enumerate(dots):
+            if labels_array[i]==2: 
+                cat_dots.add(d)
+        self.play(cat_dots.animate.set_color(YELLOW))
+        self.wait()
+
+        #Ok, now cat picture overlay again I think, probably as yello points are coming in. 
+
+        xt_history=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/conditioned_history_5.npy')
+        heatmaps=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/conditioned_heatmaps_5.npy')
+        heatmaps_u=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/conditioned_heatmaps_5u.npy')
+        heatmaps_c=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/conditioned_heatmaps_5c.npy')
+        model=torch.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/jun_27_1.pt', map_location=torch.device('cpu'))
+
+        #Setup conditional vector field! If thngs get funky here, switch to using exported heatmaps instead of model
+        
 
 
-        # num_dots=16
-        # colors=get_color_wheel_colors(num_dots)
-        # all_traced_paths=VGroup()
-        # all_dots_to_move=VGroup()
-        # for path_index in range(num_dots): 
-        #     dot_to_move=Dot(axes.c2p(*np.concatenate((xt_history[0, path_index, :], [0]))), radius=0.06)
-        #     dot_to_move.set_color(colors[path_index])
-        #     all_dots_to_move.add(dot_to_move)
+        schedule = ScheduleLogLinear(N=256, sigma_min=0.01, sigma_max=10) #N=200
+        sigmas=schedule.sample_sigmas(256)
 
-        #     traced_path = CustomTracedPath(dot_to_move.get_center, stroke_color=colors[path_index], stroke_width=2.0, 
-        #                                   opacity_range=(0.25, 1.0), fade_length=15)
-        #     # traced_path.set_opacity(0.5)
-        #     # traced_path.set_fill(opacity=0)
-        #     all_traced_paths.add(traced_path)
-        # self.add(all_traced_paths)
+        def vector_function_with_tracker(coords_array):
+            """Vector function that uses the ValueTracker for time"""
+            current_time = time_tracker.get_value()
+            max_time = 8.0  # Map time 0-8 to sigma indices 0-255
+            sigma_idx = int(np.clip(current_time * 63 / max_time, 0, 63)) #Needs to be N-1
+            
+            try:
+                res = model.forward(torch.tensor(coords_array).float(), sigmas[sigma_idx], cond=None)
+                return -res.detach().numpy()
+            except:
+                return np.zeros((len(coords_array), 2))
 
-        # self.wait()
-        # self.play(FadeIn(all_dots_to_move), FadeIn(vector_field))
 
-        # self.wait()
+        # Create the tracker-controlled vector field
+        vector_field = TrackerControlledVectorField(
+            time_tracker=time_tracker,
+            func=vector_function_with_tracker,
+            coordinate_system=extended_axes,
+            density=3.0,
+            stroke_width=2,
+            max_radius=6.0,      # Vectors fade to min_opacity at this distance
+            min_opacity=0.15,     # Minimum opacity at max_radius
+            max_opacity=0.8,     # Maximum opacity at origin
+            tip_width_ratio=4,
+            tip_len_to_width=0.01,
+            max_vect_len_to_step_size=0.7,
+            color=CHILL_BROWN
+        )
 
-        # for k in range(xt_history.shape[0]):
-        #     self.play(time_tracker.animate.set_value(8.0*(k/256.0)), 
-        #               *[all_dots_to_move[path_index].animate.move_to(axes.c2p(*[xt_history[k, path_index, 0], 
-        #                                                                         xt_history[k, path_index, 1]])) for path_index in range(len(all_dots_to_move))],
-        #              rate_func=linear, run_time=0.1)
 
+
+
+
+        path_index=70
+        guidance_index=0 #No guidance, cfg_scales=[0.0, 0.1, 0.5, 1.0, 2.0, 3.0, 5.0, 10.0]
+        dot_to_move_3 = Dot(axes.c2p(*[xt_history[guidance_index, 0, path_index, 0], xt_history[guidance_index, 0, path_index, 0], 0]), 
+                            radius=0.06)
+        dot_to_move_3.set_color(YELLOW)
+
+        self.wait()
+
+        self.play(dots.animate.set_opacity(0.2), axes.animate.set_opacity(0.5))
+        self.add(dot_to_move_3)
         self.wait()
 
 
 
 
+
+
+
+        traced_path_3 = CustomTracedPath(dot_to_move_3.get_center, stroke_color=YELLOW, stroke_width=2.0, 
+                                      opacity_range=(0.25, 0.9), fade_length=15)
+        # traced_path.set_opacity(0.5)
+        traced_path_3.set_fill(opacity=0)
 
 
 

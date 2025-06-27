@@ -194,6 +194,56 @@ class CustomTracedPath(VMobject):
         return len(self.segments)
 
 
+# class TrackerControlledVectorField(VectorField):
+#     def __init__(self, time_tracker, max_radius=2.0, min_opacity=0.1, max_opacity=0.7, **kwargs):
+#         self.time_tracker = time_tracker
+#         self.max_radius = max_radius  # Maximum radius for opacity calculation
+#         self.min_opacity = min_opacity  # Minimum opacity at max radius
+#         self.max_opacity = max_opacity  # Maximum opacity at origin
+#         super().__init__(**kwargs)
+        
+#         # Add updater that triggers when tracker changes
+#         self.add_updater(self.update_from_tracker)
+    
+#     def update_from_tracker(self, mob, dt):
+#         """Update vectors when tracker value changes"""
+#         # Only update if tracker value has changed significantly
+#         current_time = self.time_tracker.get_value()
+#         if not hasattr(self, '_last_time') or abs(current_time - self._last_time) > 0.01:
+#             self._last_time = current_time
+#             self.update_vectors()  # Redraw vectors with new time
+#             self.apply_radial_opacity()  # Apply opacity falloff after updating
+    
+#     def apply_radial_opacity(self):
+#         """Apply radial opacity falloff from origin"""
+#         # Get the stroke opacities array (this creates it if it doesn't exist)
+#         opacities = self.get_stroke_opacities()
+        
+#         # In ManimGL VectorField, each vector is represented by 8 points
+#         # Points 0,2,4,6 are the key points of each vector, with point 0 being the base
+#         n_vectors = len(self.sample_points)
+        
+#         for i in range(n_vectors):
+#             # Get the base point of this vector (every 8th point starting from 0)
+#             base_point = self.sample_points[i]
+            
+#             # Calculate distance from origin (assuming origin is at [0,0,0])
+#             distance = np.linalg.norm(base_point[:2])  # Only use x,y components
+            
+#             # Calculate opacity based on distance
+#             # Linear falloff: opacity decreases linearly with distance
+#             opacity_factor = max(0, 1 - distance / self.max_radius)
+#             final_opacity = self.min_opacity + (self.max_opacity - self.min_opacity) * opacity_factor
+            
+#             # Apply the opacity to all 8 points of this vector (except the last one)
+#             start_idx = i * 8
+#             end_idx = min(start_idx + 8, len(opacities))
+#             opacities[start_idx:end_idx] = final_opacity
+        
+#         # Make sure the data is marked as changed
+#         self.note_changed_data()
+
+
 class TrackerControlledVectorField(VectorField):
     def __init__(self, time_tracker, max_radius=2.0, min_opacity=0.1, max_opacity=0.7, **kwargs):
         self.time_tracker = time_tracker
@@ -213,6 +263,32 @@ class TrackerControlledVectorField(VectorField):
             self._last_time = current_time
             self.update_vectors()  # Redraw vectors with new time
             self.apply_radial_opacity()  # Apply opacity falloff after updating
+    
+    def set_opacity_range(self, min_opacity, max_opacity):
+        """
+        Update the opacity range and immediately apply to existing vectors.
+        
+        Args:
+            min_opacity: New minimum opacity (0.0 to 1.0)
+            max_opacity: New maximum opacity (0.0 to 1.0)
+        """
+        self.min_opacity = min_opacity
+        self.max_opacity = max_opacity
+        # Immediately apply the new opacity values
+        self.apply_radial_opacity()
+        return self
+    
+    def set_max_radius(self, max_radius):
+        """
+        Update the maximum radius for opacity calculation.
+        
+        Args:
+            max_radius: New maximum radius value
+        """
+        self.max_radius = max_radius
+        # Immediately apply with new radius
+        self.apply_radial_opacity()
+        return self
     
     def apply_radial_opacity(self):
         """Apply radial opacity falloff from origin"""
@@ -682,12 +758,12 @@ class p78_85(InteractiveScene):
         self.wait()
 
         # COMMENTING OUT THIS ANIMATION WHILE WORKING ON LATER ONES -> SLOW!
-        # for k in range(xt_history.shape[1]):
-        #     self.play(time_tracker.animate.set_value(8.0*(k/256.0)), 
-        #               dot_to_move_3.animate.move_to(axes.c2p(*[xt_history[guidance_index, k, path_index, 0], 
-        #                                                        xt_history[guidance_index, k, path_index, 1]])),
-        #              rate_func=linear, run_time=0.01)
-        # self.wait()
+        for k in range(xt_history.shape[1]):
+            self.play(time_tracker.animate.set_value(8.0*(k/256.0)), 
+                      dot_to_move_3.animate.move_to(axes.c2p(*[xt_history[guidance_index, k, path_index, 0], 
+                                                               xt_history[guidance_index, k, path_index, 1]])),
+                     rate_func=linear, run_time=0.01)
+        self.wait()
 
         #Bring up "cat part of sprial to empasize that the point doesnt make it, and I think fade out vector field. 
         self.play(cat_dots.animate.set_opacity(0.7), 
@@ -897,6 +973,8 @@ class p78_85(InteractiveScene):
         self.play(GrowArrow(example_vec_green))
         self.wait()
 
+        # Ok I think we do a quick Cats/not cats overlay in illustrator to remind folks that yellwow dots are cats. 
+        # Cool - done
 
         eq_9=Tex(r"\alpha (f(x, t, cat) - f(x,t))", font_size=48)
         eq_9.set_color(WHITE).scale(0.16)
@@ -918,33 +996,18 @@ class p78_85(InteractiveScene):
                   eq_9.animate.next_to(final_final_vec_green_lol, LEFT, buff=0.05, aligned_edge=RIGHT))
         self.wait()
 
-
-
-
-
-        # Ok I think we do a quick Cats/not cats overlay in illustrator to remind folks that yellwow dots are cats. 
-        # Cool - done
-
-
+        ## Ok ok ok ok now in need a zoom out and smooth transition back to all 3 vector fields!
 
 
         # self.play(ApplyWave(cat_dots))
         # self.play(cat_dots.animate.set_opacity(0.9))
         # self.wait()
         # self.play()
-
-
-
-
-
         # self.remove(eq_8)
 
 
         # Paragraph 84
-        # Ok let me first sketch out green arrows and new path and make sure it makes sense. 
-        # Ok yeah I think sketch looks fine -> dope!
-        
-        self.wait()
+        # self.wait()
 
         def vector_function_heatmap_g(coords_array):
             """
@@ -979,20 +1042,39 @@ class p78_85(InteractiveScene):
             density=4.0, #5 gives nice detail, but is maybe a little too much, especially to zoom in on soon? Ok I think i like 4.
             stroke_width=2,
             max_radius=5.5,      # Vectors fade to min_opacity at this distance
-            min_opacity=0.1,     # Minimum opacity at max_radius
-            max_opacity=0.9,     # Maximum opacity at origin
+            min_opacity=0.25,     # Minimum opacity at max_radius
+            max_opacity=0.85,     # Maximum opacity at origin
             tip_width_ratio=4,
             tip_len_to_width=0.01,
             max_vect_len_to_step_size=0.7,
             color=GREEN
         )
 
-        self.add(vector_field_g)
+        # self.add(vector_field_g)
         # self.remove(vector_field_g)
 
 
+        # vector_field
 
-        self.play(time_tracker.animate.set_value(0.0), run_time=0.1) #Work this in somehow, we'll see. 
+        vector_field.set_opacity_range(0.05, 0.4)
+        vector_field_u.set_opacity_range(0.05, 0.4)
+        axes.set_opacity(0.4)
+
+        self.wait()
+        self.play(FadeIn(vector_field), FadeIn(vector_field_u), FadeIn(vector_field_g), 
+                  FadeOut(eq_9), FadeOut(eq_7), FadeOut(eq_5), FadeOut(example_vec_yellow), FadeOut(final_vec_green), 
+                  FadeOut(final_final_vec_green_lol), FadeOut(example_vec_gray), cat_dots.animate.set_opacity(0.4),
+                  self.frame.animate.reorient(0, 0, 0, (0.23, 2.08, 0.0), 4.78), run_time=5) #Maybe too wide, we'll see
+        self.wait()
+
+        #Paragraph 84
+        time_display.scale(0.6)
+        time_label.scale(0.6)
+        time_display.move_to([-3.3,-0.1,0])
+        time_label.next_to(time_display, LEFT, buff=0.07)
+        self.play(FadeIn(dot_to_move_3), FadeIn(traced_path_3), FadeIn(time_display), FadeIn(time_label))
+        self.wait()
+
 
         path_index=70
         guidance_index=3 #No guidance, cfg_scales=[0.0, 0.1, 0.5, 1.0, 2.0, 3.0, 5.0, 10.0]
@@ -1007,23 +1089,33 @@ class p78_85(InteractiveScene):
         self.add(traced_path_4)
 
         self.wait()
-        # self.play(dots.animate.set_opacity(0.2), axes.animate.set_opacity(0.5), 
-        #           self.frame.animate.reorient(0, 0, 0, (0.23, 2.08, 0.0), 4.78), run_time=2.0)
+
+
+        time_value.set_value((8-3.2)/8)
+        #Ok i think i probably want my diffusion time tracker for these last two moves right?
+        self.play(time_tracker.animate.set_value(0.0), 
+                  time_value.animate.set_value(1.0), run_time=4.0) #Back to=0 here. Can edit this out if I need to
+        self.wait()
         self.add(dot_to_move_4)
         self.wait()
 
-        # self.play(FadeIn(vector_field))
-        # self.wait()
 
-        # COMMENTING OUT THIS ANIMATION WHILE WORKING ON LATER ONES -> SLOW!
         for k in range(xt_history.shape[1]):
             self.play(time_tracker.animate.set_value(8.0*(k/256.0)), 
+                      time_value.animate.set_value(1.0-k/256.0),
                       dot_to_move_4.animate.move_to(axes.c2p(*[xt_history[guidance_index, k, path_index, 0], 
                                                                xt_history[guidance_index, k, path_index, 1]])),
                      rate_func=linear, run_time=0.01)
         self.wait()
 
-        self.add(dot_to_move_3, traced_path_3)
+        # self.add(dot_to_move_3, traced_path_3)
+
+        ## Alright phew this is quite the scene. 
+        ## Last two things I think are: 
+        ## 1. Zoom out, clear paths, run process with all 3 arrows a bunch of points
+        ## 2. Add nice label on top of this legit/cool viz!
+        ## Hmm actually let me switch the order - realizing I really need to show the final/full thing in 
+        ## one run per class - since the vector field changes. 
 
 
 

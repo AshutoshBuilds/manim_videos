@@ -794,14 +794,106 @@ class p78_85(InteractiveScene):
         )
         self.wait()        
 
+        # Paragraph 83
         # Ok assuming time updates work for starting config - that gets us to 83!
         # If time update doesn't work I can split this into 2 scenes. 
         # Aright now, for 83 -> i see a few pairs of vectors that I think would be good/fine to show cfg on
         # I want to zoom way in on a single pair, make all other vectors very low opacity or just totally gone
         # and show the geometry of diffisuion guidance, introducing new green vector. 
-        #  
+        # This is going to be cool!
+        # Now I think this probably going to take some manual algiment, so I'm thinking 
+        # it make sense to skip 83 for a minute, and go ahead and make sure that everything comes together like I 
+        # expect/need in 84. 
+        # Once I've confirmed that green arrows and path look good, then I'll come back to 83
 
 
+
+
+
+        # Paragraph 84
+        # Ok let me first sketch out green arrows and new path and make sure it makes sense. 
+        # Ok yeah I think sketch looks fine -> dope!
+        self.play(FadeOut(time_display), FadeOut(time_label), FadeOut(eq_5), FadeOut(eq_5_label))
+        self.wait()
+
+        def vector_function_heatmap_g(coords_array):
+            """
+            Function that takes an array of coordinates and returns corresponding vectors
+            coords_array: shape (N, 2) or (N, 3) - array of [x, y] or [x, y, z] coordinates
+            Returns: array of shape (N, 2) with [vx, vy] vectors (z component handled automatically)
+            """
+            result = np.zeros((len(coords_array), 2))
+            
+            for i, coord in enumerate(coords_array):
+                x, y = coord[0], coord[1]  # Take only x, y coordinates
+                
+                current_time = time_tracker.get_value()
+                max_time = 8.0  # Map time 0-8 to sigma indices 0-255
+                sigma_idx = int(np.clip(current_time * 255 / max_time, 0, 255)) #Needs to be N-1
+                # Find the closest grid point to interpolate from
+                distances = np.linalg.norm(grid.numpy() - np.array([x, y]), axis=1)
+                closest_idx = np.argmin(distances)
+                
+                # Get the vector at the closest grid point
+                vector = heatmaps[3, sigma_idx, closest_idx, :] #cfg_scales=[0.0, 0.1, 0.5, 1.0, 2.0, 3.0, 5.0, 10.0]
+                result[i] = vector
+            
+            return -result #Reverse direction
+
+
+        # Create the tracker-controlled vector field
+        vector_field_g = TrackerControlledVectorField(
+            time_tracker=time_tracker,
+            func=vector_function_heatmap_g,
+            coordinate_system=extended_axes,
+            density=4.0, #5 gives nice detail, but is maybe a little too much, especially to zoom in on soon? Ok I think i like 4.
+            stroke_width=2,
+            max_radius=5.5,      # Vectors fade to min_opacity at this distance
+            min_opacity=0.1,     # Minimum opacity at max_radius
+            max_opacity=0.9,     # Maximum opacity at origin
+            tip_width_ratio=4,
+            tip_len_to_width=0.01,
+            max_vect_len_to_step_size=0.7,
+            color=GREEN
+        )
+
+        self.add(vector_field_g)
+        # self.remove(vector_field_g)
+
+
+
+        self.play(time_tracker.animate.set_value(0.0), run_time=0.1) #Work this in somehow, we'll see. 
+
+        path_index=70
+        guidance_index=3 #No guidance, cfg_scales=[0.0, 0.1, 0.5, 1.0, 2.0, 3.0, 5.0, 10.0]
+        dot_to_move_4 = Dot(axes.c2p(*[xt_history[guidance_index, 0, path_index, 0], xt_history[guidance_index, 0, path_index, 1], 0]), 
+                            radius=0.07)
+        dot_to_move_4.set_color(GREEN)
+        dot_to_move_4.set_opacity(1.0)
+
+        traced_path_4 = CustomTracedPath(dot_to_move_4.get_center, stroke_color=GREEN, stroke_width=5.0, 
+                                      opacity_range=(0.6, 0.95), fade_length=64)
+        traced_path_4.set_fill(opacity=0)
+        self.add(traced_path_4)
+
+        self.wait()
+        # self.play(dots.animate.set_opacity(0.2), axes.animate.set_opacity(0.5), 
+        #           self.frame.animate.reorient(0, 0, 0, (0.23, 2.08, 0.0), 4.78), run_time=2.0)
+        self.add(dot_to_move_4)
+        self.wait()
+
+        # self.play(FadeIn(vector_field))
+        # self.wait()
+
+        # COMMENTING OUT THIS ANIMATION WHILE WORKING ON LATER ONES -> SLOW!
+        for k in range(xt_history.shape[1]):
+            self.play(time_tracker.animate.set_value(8.0*(k/256.0)), 
+                      dot_to_move_4.animate.move_to(axes.c2p(*[xt_history[guidance_index, k, path_index, 0], 
+                                                               xt_history[guidance_index, k, path_index, 1]])),
+                     rate_func=linear, run_time=0.01)
+        self.wait()
+
+        self.add(dot_to_move_3, traced_path_3)
 
 
 

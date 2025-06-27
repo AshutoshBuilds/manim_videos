@@ -597,16 +597,61 @@ class p78_85(InteractiveScene):
             time_tracker=time_tracker,
             func=vector_function_heatmap,
             coordinate_system=extended_axes,
-            density=4.0, #5 gives nice detail, but is maybe a little too much, especially to zoom in on soon?
+            density=4.0, #5 gives nice detail, but is maybe a little too much, especially to zoom in on soon? Ok I think i like 4.
             stroke_width=2,
-            max_radius=6.0,      # Vectors fade to min_opacity at this distance
-            min_opacity=0.15,     # Minimum opacity at max_radius
+            max_radius=5.5,      # Vectors fade to min_opacity at this distance
+            min_opacity=0.1,     # Minimum opacity at max_radius
             max_opacity=0.8,     # Maximum opacity at origin
             tip_width_ratio=4,
             tip_len_to_width=0.01,
             max_vect_len_to_step_size=0.7,
             color=YELLOW
         )
+
+        #Should use partial() to not repeat so much...
+        def vector_function_heatmap_u(coords_array):
+            """
+            Function that takes an array of coordinates and returns corresponding vectors
+            coords_array: shape (N, 2) or (N, 3) - array of [x, y] or [x, y, z] coordinates
+            Returns: array of shape (N, 2) with [vx, vy] vectors (z component handled automatically)
+            """
+            result = np.zeros((len(coords_array), 2))
+            
+            for i, coord in enumerate(coords_array):
+                x, y = coord[0], coord[1]  # Take only x, y coordinates
+                
+                current_time = time_tracker.get_value()
+                max_time = 8.0  # Map time 0-8 to sigma indices 0-255
+                sigma_idx = int(np.clip(current_time * 255 / max_time, 0, 255)) #Needs to be N-1
+                # Find the closest grid point to interpolate from
+                distances = np.linalg.norm(grid.numpy() - np.array([x, y]), axis=1)
+                closest_idx = np.argmin(distances)
+                
+                # Get the vector at the closest grid point
+                vector = heatmaps_u[0, sigma_idx, closest_idx, :]
+                result[i] = vector
+            
+            return -result #Reverse direction
+
+
+
+        # Create the tracker-controlled vector field
+        vector_field_u = TrackerControlledVectorField(
+            time_tracker=time_tracker,
+            func=vector_function_heatmap_u,
+            coordinate_system=extended_axes,
+            density=4.0, #5 gives nice detail, but is maybe a little too much, especially to zoom in on soon? Ok I think i like 4.
+            stroke_width=2,
+            max_radius=5.5,      # Vectors fade to min_opacity at this distance
+            min_opacity=0.1,     # Minimum opacity at max_radius
+            max_opacity=0.8,     # Maximum opacity at origin
+            tip_width_ratio=4,
+            tip_len_to_width=0.01,
+            max_vect_len_to_step_size=0.7,
+            color='#777777'
+        )
+
+
 
 
         # self.add(vector_field)
@@ -636,12 +681,129 @@ class p78_85(InteractiveScene):
         self.play(FadeIn(vector_field))
         self.wait()
 
-        for k in range(xt_history.shape[1]):
-            self.play(time_tracker.animate.set_value(8.0*(k/256.0)), 
-                      dot_to_move_3.animate.move_to(axes.c2p(*[xt_history[guidance_index, k, path_index, 0], 
-                                                               xt_history[guidance_index, k, path_index, 1]])),
-                     rate_func=linear, run_time=0.01)
+        # COMMENTING OUT THIS ANIMATION WHILE WORKING ON LATER ONES -> SLOW!
+        # for k in range(xt_history.shape[1]):
+        #     self.play(time_tracker.animate.set_value(8.0*(k/256.0)), 
+        #               dot_to_move_3.animate.move_to(axes.c2p(*[xt_history[guidance_index, k, path_index, 0], 
+        #                                                        xt_history[guidance_index, k, path_index, 1]])),
+        #              rate_func=linear, run_time=0.01)
+        # self.wait()
+
+        #Bring up "cat part of sprial to empasize that the point doesnt make it, and I think fade out vector field. 
+        self.play(cat_dots.animate.set_opacity(0.7), 
+                  FadeOut(vector_field))
         self.wait()
+
+
+        # Ok hitting p81 now. i think zoom out to overall scene i think? 
+        # Many maybe drop vector field? Let's see here...
+        # Ok thinking of the storyboard as I go here, but I think there's some good options
+        # I think I can introduce the two different vector fields with the f(...) notation I've been using
+        
+        self.play(self.frame.animate.reorient(0, 0, 0, (0, 0, 0.0), 7.40), run_time=4)
+        self.wait()
+
+        self.play(FadeOut(dot_to_move_3), FadeOut(traced_path_3))
+        self.wait()
+
+        #A little torn, but I think we go ahead and bring in both vector fields in 81 instead of waiting until 82. 
+        #Eh these are pretty overwhelming - let's try just starting with clean f(notation)
+
+        eq_4=Tex("f(x, t)", font_size=48)
+        eq_4.set_color(WHITE)
+        eq_4.move_to([-4.5, 2, 0])
+        eq_4_label=MarkupText("UNCONDITIONAL MODEL", font_size=16, font='myriad-pro')
+        eq_4_label.next_to(eq_4, DOWN, buff=0.15).set_color(CHILL_BROWN)
+        self.play(Write(eq_4))
+        self.play(FadeIn(eq_4_label))
+        self.wait()
+
+
+        eq_5=Tex("f(x, t, cat)", font_size=48)
+        eq_5.set_color(WHITE)
+        eq_5[-4:-1].set_color(YELLOW)
+        eq_5.move_to([4.0, 2, 0])
+        eq_5_label=MarkupText("CONDITIONAL MODEL", font_size=16, font='myriad-pro')
+        eq_5_label.next_to(eq_5, DOWN, buff=0.15).set_color(CHILL_BROWN)
+        self.play(Write(eq_5))
+        self.play(FadeIn(eq_5_label))
+        self.wait()
+
+        eq_6=Tex("f(x, t, no \  class)", font_size=48)
+        eq_6.set_color(WHITE)
+        eq_6.move_to(eq_4) #, aligned_edge=LEFT)
+
+        self.play(ReplacementTransform(eq_4[-1], eq_6[-1]), 
+                  ReplacementTransform(eq_4[:5], eq_6[:5]))
+        self.play(Write(eq_6[-9:-1]))
+        self.wait()
+
+
+        # time_tracker.set_value(3.2)
+        self.play(time_tracker.animate.set_value(3.2), run_time=0.1) 
+        #This doesnt seem to be taking hmmm - maybe b/c it's faded out?
+        #Nuclear option here would be to break to a new scene at 80 -> that probably wouldn't be terrible. 
+        # set_value(3.2)
+
+        self.wait()
+        self.play(FadeOut(eq_5), FadeOut(eq_5_label))
+        self.play(FadeIn(vector_field_u))
+        self.wait()
+
+        self.play(eq_4.animate.set_opacity(0.0),
+                  eq_6.animate.set_opacity(0.0), 
+                  eq_4_label.animate.set_opacity(0.0), 
+                  FadeIn(vector_field), 
+                  FadeIn(eq_5), 
+                  FadeIn(eq_5_label))
+        self.wait()
+
+        ## Now time animation - need ot bring diffusion time counter like I did before. 
+        time_value = ValueTracker((8-3.2)/8) 
+        time_display = DecimalNumber(
+            1.0,
+            num_decimal_places=2,
+            font_size=35,
+            color=CHILL_BROWN
+        )
+        time_display.move_to([-5.4, -3.3, 0]) 
+        time_label = MarkupText("t =", font_size=35)
+        time_label.set_color(CHILL_BROWN)
+        time_label.next_to(time_display, LEFT, buff=0.15)
+
+        # Add updater to keep the display synchronized with the tracker
+        time_display.add_updater(lambda m: m.set_value(time_value.get_value()))
+
+        self.play(FadeIn(time_display), FadeIn(time_label))
+        self.wait()
+
+        self.play(
+            time_tracker.animate.set_value(0.0),  
+            time_value.animate.set_value(1.0),    
+            run_time=10.0, 
+            rate_func=linear
+        )
+        self.wait()
+
+
+        self.play(
+            time_tracker.animate.set_value(8.0),  
+            time_value.animate.set_value(0.0),    
+            run_time=10.0, 
+            rate_func=linear
+        )
+        self.wait()        
+
+        # Ok assuming time updates work for starting config - that gets us to 83!
+        # If time update doesn't work I can split this into 2 scenes. 
+        # Aright now, for 83 -> i see a few pairs of vectors that I think would be good/fine to show cfg on
+        # I want to zoom way in on a single pair, make all other vectors very low opacity or just totally gone
+        # and show the geometry of diffisuion guidance, introducing new green vector. 
+        #  
+
+
+
+
 
         self.wait(20)
         self.embed()

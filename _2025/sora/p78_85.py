@@ -474,7 +474,7 @@ class p78_85(InteractiveScene):
         heatmaps=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/conditioned_heatmaps_3.npy')
 
 
-        num_dots_per_class=12 #Crank up for final viz
+        num_dots_per_class=1 #Crank up for final viz
         colors_by_class={2:YELLOW, 0: '#00FFFF', 1: '#FF00FF'}
 
         all_traced_paths=VGroup()
@@ -542,31 +542,62 @@ class p78_85(InteractiveScene):
         model=torch.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/hackin/jun_27_1.pt', map_location=torch.device('cpu'))
 
         #Setup conditional vector field! If thngs get funky here, switch to using exported heatmaps instead of model
-        
+
+        bound=2.0
+        num_heatmap_steps=64
+        grid=[]
+        for i, x in enumerate(np.linspace(-bound, bound, num_heatmap_steps)):
+            for j, y in enumerate(np.linspace(-bound, bound, num_heatmap_steps)):
+                grid.append([x,y])
+        grid=torch.tensor(grid).float()
 
 
+        time_tracker = ValueTracker(0.0)  # Start at time 0
         schedule = ScheduleLogLinear(N=256, sigma_min=0.01, sigma_max=10) #N=200
         sigmas=schedule.sample_sigmas(256)
 
-        def vector_function_with_tracker(coords_array):
-            """Vector function that uses the ValueTracker for time"""
-            current_time = time_tracker.get_value()
-            max_time = 8.0  # Map time 0-8 to sigma indices 0-255
-            sigma_idx = int(np.clip(current_time * 63 / max_time, 0, 63)) #Needs to be N-1
+        # def vector_function_with_tracker(coords_array):
+        #     """Vector function that uses the ValueTracker for time"""
+        #     current_time = time_tracker.get_value()
+        #     max_time = 8.0  # Map time 0-8 to sigma indices 0-255
+        #     sigma_idx = int(np.clip(current_time * 255 / max_time, 0, 255)) #Needs to be N-1
+        #     res = model.forward(torch.tensor(coords_array).float(), sigmas[sigma_idx], cond=torch.tensor(2)) #Hardcode to cat for now
+        #     return -res.detach().numpy()
+
+        # Let's try the heatmap version - having trouble with model based version
+        # If this sucks, try higher resolution, and if that stucks, try model based version again
+        def vector_function_heatmap(coords_array):
+            """
+            Function that takes an array of coordinates and returns corresponding vectors
+            coords_array: shape (N, 2) or (N, 3) - array of [x, y] or [x, y, z] coordinates
+            Returns: array of shape (N, 2) with [vx, vy] vectors (z component handled automatically)
+            """
+            result = np.zeros((len(coords_array), 2))
             
-            try:
-                res = model.forward(torch.tensor(coords_array).float(), sigmas[sigma_idx], cond=None)
-                return -res.detach().numpy()
-            except:
-                return np.zeros((len(coords_array), 2))
+            for i, coord in enumerate(coords_array):
+                x, y = coord[0], coord[1]  # Take only x, y coordinates
+                
+                current_time = time_tracker.get_value()
+                max_time = 8.0  # Map time 0-8 to sigma indices 0-255
+                sigma_idx = int(np.clip(current_time * 255 / max_time, 0, 255)) #Needs to be N-1
+                # Find the closest grid point to interpolate from
+                distances = np.linalg.norm(grid.numpy() - np.array([x, y]), axis=1)
+                closest_idx = np.argmin(distances)
+                
+                # Get the vector at the closest grid point
+                vector = heatmaps_c[0, sigma_idx, closest_idx, :]
+                result[i] = vector
+            
+            return -result #Reverse direction
+
 
 
         # Create the tracker-controlled vector field
         vector_field = TrackerControlledVectorField(
             time_tracker=time_tracker,
-            func=vector_function_with_tracker,
+            func=vector_function_heatmap,
             coordinate_system=extended_axes,
-            density=3.0,
+            density=4.0, #5 gives nice detail, but is maybe a little too much, especially to zoom in on soon?
             stroke_width=2,
             max_radius=6.0,      # Vectors fade to min_opacity at this distance
             min_opacity=0.15,     # Minimum opacity at max_radius
@@ -574,38 +605,43 @@ class p78_85(InteractiveScene):
             tip_width_ratio=4,
             tip_len_to_width=0.01,
             max_vect_len_to_step_size=0.7,
-            color=CHILL_BROWN
+            color=YELLOW
         )
 
 
+        # self.add(vector_field)
 
+        # self.play(time_tracker.animate.set_value(8.0), run_time=5)
+        # self.play(time_tracker.animate.set_value(0.0), run_time=5)
 
 
         path_index=70
         guidance_index=0 #No guidance, cfg_scales=[0.0, 0.1, 0.5, 1.0, 2.0, 3.0, 5.0, 10.0]
-        dot_to_move_3 = Dot(axes.c2p(*[xt_history[guidance_index, 0, path_index, 0], xt_history[guidance_index, 0, path_index, 0], 0]), 
-                            radius=0.06)
+        dot_to_move_3 = Dot(axes.c2p(*[xt_history[guidance_index, 0, path_index, 0], xt_history[guidance_index, 0, path_index, 1], 0]), 
+                            radius=0.07)
         dot_to_move_3.set_color(YELLOW)
+        dot_to_move_3.set_opacity(1.0)
 
-        self.wait()
+        traced_path_3 = CustomTracedPath(dot_to_move_3.get_center, stroke_color=WHITE, stroke_width=5.0, 
+                                      opacity_range=(0.4, 0.95), fade_length=64)
+        traced_path_3.set_fill(opacity=0)
+        self.add(traced_path_3)
 
-        self.play(dots.animate.set_opacity(0.2), axes.animate.set_opacity(0.5))
+        self.wait(0)
+        self.play(dots.animate.set_opacity(0.2), axes.animate.set_opacity(0.5), 
+                  self.frame.animate.reorient(0, 0, 0, (0.23, 2.08, 0.0), 4.78), run_time=2.0)
         self.add(dot_to_move_3)
         self.wait()
 
+        self.play(FadeIn(vector_field))
+        self.wait()
 
-
-
-
-
-
-        traced_path_3 = CustomTracedPath(dot_to_move_3.get_center, stroke_color=YELLOW, stroke_width=2.0, 
-                                      opacity_range=(0.25, 0.9), fade_length=15)
-        # traced_path.set_opacity(0.5)
-        traced_path_3.set_fill(opacity=0)
-
-
-
+        for k in range(xt_history.shape[1]):
+            self.play(time_tracker.animate.set_value(8.0*(k/256.0)), 
+                      dot_to_move_3.animate.move_to(axes.c2p(*[xt_history[guidance_index, k, path_index, 0], 
+                                                               xt_history[guidance_index, k, path_index, 1]])),
+                     rate_func=linear, run_time=0.01)
+        self.wait()
 
         self.wait(20)
         self.embed()

@@ -1346,6 +1346,7 @@ class p85b(InteractiveScene):
         Phew - alright last big scene here - Classifier free guidance lets go!!!
 
         '''
+        num_dots_per_class=3 #Crank up for final viz - 96 takes 8-9 hours. 
 
 
         dataset = MultiClassSwissroll(np.pi/2, 5*np.pi, 100, num_classes=3)
@@ -1456,19 +1457,19 @@ class p85b(InteractiveScene):
         vector_field_cats_g = TrackerControlledVectorField(
             time_tracker=time_tracker,
             func=partial(vector_function_parent, heatmap_array=heatmaps_2, class_index=2),
-            coordinate_system=extended_axes, density=4.0, stroke_width=2, max_radius=5.5, min_opacity=0.1, max_opacity=0.8, 
+            coordinate_system=extended_axes, density=4.0, stroke_width=2, max_radius=5.5, min_opacity=0.1, max_opacity=0.9, 
             tip_width_ratio=4, tip_len_to_width=0.01, max_vect_len_to_step_size=0.7, color=GREEN)
 
         vector_field_cats_u = TrackerControlledVectorField(
             time_tracker=time_tracker,
             func=partial(vector_function_parent, heatmap_array=heatmaps_u_2, class_index=2),
-            coordinate_system=extended_axes, density=4.0, stroke_width=2, max_radius=5.5, min_opacity=0.1, max_opacity=0.5, 
+            coordinate_system=extended_axes, density=4.0, stroke_width=2, max_radius=5.5, min_opacity=0.1, max_opacity=0.7, 
             tip_width_ratio=4, tip_len_to_width=0.01, max_vect_len_to_step_size=0.7, color='#777777')
 
         vector_field_cats_c = TrackerControlledVectorField(
             time_tracker=time_tracker,
             func=partial(vector_function_parent, heatmap_array=heatmaps_c_2, class_index=2),
-            coordinate_system=extended_axes, density=4.0, stroke_width=2, max_radius=5.5, min_opacity=0.1, max_opacity=0.5, 
+            coordinate_system=extended_axes, density=4.0, stroke_width=2, max_radius=5.5, min_opacity=0.1, max_opacity=0.7, 
             tip_width_ratio=4, tip_len_to_width=0.01, max_vect_len_to_step_size=0.7, color=YELLOW)
 
         
@@ -1477,7 +1478,7 @@ class p85b(InteractiveScene):
         self.wait()
 
 
-        num_dots_per_class=4 #Crank up for final viz
+        
         colors_by_class={2:YELLOW, 0: '#00FFFF', 1: '#FF00FF'}
 
         all_traced_paths=VGroup()
@@ -1521,29 +1522,41 @@ class p85b(InteractiveScene):
         vector_field_dogs_g = TrackerControlledVectorField(
             time_tracker=time_tracker,
             func=partial(vector_function_parent, heatmap_array=heatmaps_2, class_index=1),
-            coordinate_system=extended_axes, density=4.0, stroke_width=2, max_radius=5.5, min_opacity=0.1, max_opacity=0.8, 
+            coordinate_system=extended_axes, density=4.0, stroke_width=2, max_radius=5.5, min_opacity=0.1, max_opacity=0.9, 
             tip_width_ratio=4, tip_len_to_width=0.01, max_vect_len_to_step_size=0.7, color=GREEN)
 
         vector_field_dogs_c = TrackerControlledVectorField(
             time_tracker=time_tracker,
             func=partial(vector_function_parent, heatmap_array=heatmaps_c_2, class_index=1),
-            coordinate_system=extended_axes, density=4.0, stroke_width=2, max_radius=5.5, min_opacity=0.1, max_opacity=0.5, 
+            coordinate_system=extended_axes, density=4.0, stroke_width=2, max_radius=5.5, min_opacity=0.1, max_opacity=0.7, 
             tip_width_ratio=4, tip_len_to_width=0.01, max_vect_len_to_step_size=0.7, color="#FF00FF")
 
         self.wait()
-        self.play(FadeIn(all_dots_to_move[num_dots_per_class:2*num_dots_per_class:]))
+
+        self.play(FadeOut(vector_field_cats_g), FadeOut(vector_field_cats_c))
         self.wait()
 
-        self.play(FadeOut(vector_field_dogs_g), FadeOut(vector_field_dogs_c))
+        self.play(FadeIn(vector_field_dogs_c)) #Magenta
         self.wait()
 
-        self.play(time_tracker.animate.set_value(0.0), rate_func=linear, run_time=5.0)
+        #Ok i think i advance time when I say "but our dog conditioned outputs, shown in magenta, point us..."
+        self.play(time_tracker.animate.set_value(1.6), run_time=5.0)
         self.wait()
 
-        self.play(FadeIn(vector_field_dogs_c))
+        dog_dots.set_color('#FF00FF').set_opacity(1.0)
+        self.play(FadeIn(dog_dots))
         self.wait()
+
         self.play(FadeIn(vector_field_dogs_g))
         self.wait()
+
+        self.play(FadeOut(dog_dots), time_tracker.animate.set_value(0.0), 
+                  FadeIn(all_dots_to_move[num_dots_per_class:2*num_dots_per_class:]),
+                  rate_func=linear, run_time=3.0) #Back to start time. 
+        self.wait()
+
+        # self.play(FadeIn(all_dots_to_move[num_dots_per_class:2*num_dots_per_class:]))
+        # self.wait()
 
         for k in range(xt_history_2.shape[1]):
             animations=[]
@@ -1556,22 +1569,18 @@ class p85b(InteractiveScene):
         self.wait()
 
 
-
-
         vector_field_people_g = TrackerControlledVectorField(
             time_tracker=time_tracker,
             func=partial(vector_function_parent, heatmap_array=heatmaps_2, class_index=0),
-            coordinate_system=extended_axes, density=4.0, stroke_width=2, max_radius=5.5, min_opacity=0.1, max_opacity=0.8, 
+            coordinate_system=extended_axes, density=4.0, stroke_width=2, max_radius=5.5, min_opacity=0.1, max_opacity=0.9, 
             tip_width_ratio=4, tip_len_to_width=0.01, max_vect_len_to_step_size=0.7, color=GREEN)
 
         vector_field_people_c = TrackerControlledVectorField(
             time_tracker=time_tracker,
             func=partial(vector_function_parent, heatmap_array=heatmaps_c_2, class_index=0),
-            coordinate_system=extended_axes, density=4.0, stroke_width=2, max_radius=5.5, min_opacity=0.1, max_opacity=0.5, 
+            coordinate_system=extended_axes, density=4.0, stroke_width=2, max_radius=5.5, min_opacity=0.1, max_opacity=0.7, 
             tip_width_ratio=4, tip_len_to_width=0.01, max_vect_len_to_step_size=0.7, color="#00FFFF")
 
-        self.wait()
-        self.play(FadeIn(all_dots_to_move[:num_dots_per_class:]))
         self.wait()
 
         self.play(FadeOut(vector_field_dogs_g), FadeOut(vector_field_dogs_c))
@@ -1581,9 +1590,12 @@ class p85b(InteractiveScene):
         self.play(time_tracker.animate.set_value(0.0), rate_func=linear, run_time=5.0)
         self.wait()
 
-        self.play(FadeIn(vector_field_people_c))
+        self.play(FadeIn(vector_field_people_c), FadeIn(vector_field_people_g))
         self.wait()
-        self.play(FadeIn(vector_field_people_g))
+        # self.play(FadeIn(vector_field_people_g))
+        # self.wait()
+
+        self.play(FadeIn(all_dots_to_move[:num_dots_per_class:]))
         self.wait()
 
         for k in range(xt_history_2.shape[1]):

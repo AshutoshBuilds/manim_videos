@@ -1457,9 +1457,19 @@ class p85b(InteractiveScene):
             time_tracker=time_tracker,
             func=partial(vector_function_parent, heatmap_array=heatmaps_2, class_index=2),
             coordinate_system=extended_axes, density=4.0, stroke_width=2, max_radius=5.5, min_opacity=0.1, max_opacity=0.8, 
+            tip_width_ratio=4, tip_len_to_width=0.01, max_vect_len_to_step_size=0.7, color=GREEN)
+
+        vector_field_cats_u = TrackerControlledVectorField(
+            time_tracker=time_tracker,
+            func=partial(vector_function_parent, heatmap_array=heatmaps_u_2, class_index=2),
+            coordinate_system=extended_axes, density=4.0, stroke_width=2, max_radius=5.5, min_opacity=0.1, max_opacity=0.5, 
+            tip_width_ratio=4, tip_len_to_width=0.01, max_vect_len_to_step_size=0.7, color='#777777')
+
+        vector_field_cats_c = TrackerControlledVectorField(
+            time_tracker=time_tracker,
+            func=partial(vector_function_parent, heatmap_array=heatmaps_c_2, class_index=2),
+            coordinate_system=extended_axes, density=4.0, stroke_width=2, max_radius=5.5, min_opacity=0.1, max_opacity=0.5, 
             tip_width_ratio=4, tip_len_to_width=0.01, max_vect_len_to_step_size=0.7, color=YELLOW)
-
-
 
         
         self.frame.reorient(0, 0, 0, (0.06, -0.02, 0.0), 7.52)
@@ -1467,10 +1477,128 @@ class p85b(InteractiveScene):
         self.wait()
 
 
+        num_dots_per_class=4 #Crank up for final viz
+        colors_by_class={2:YELLOW, 0: '#00FFFF', 1: '#FF00FF'}
+
+        all_traced_paths=VGroup()
+        all_dots_to_move=VGroup()
+        for class_index in range(xt_history_2.shape[0]):
+            for path_index in range(num_dots_per_class): 
+                dot_to_move=Dot(axes.c2p(*np.concatenate((xt_history_2[class_index, 0, path_index, :], [0]))), radius=0.06)
+                dot_to_move.set_color(colors_by_class[class_index])
+                all_dots_to_move.add(dot_to_move)
+
+                traced_path = CustomTracedPath(dot_to_move.get_center, stroke_color=colors_by_class[class_index], stroke_width=2.5, 
+                                              opacity_range=(0.0, 1.0), fade_length=128)
+                # traced_path.set_opacity(0.5)
+                # traced_path.set_fill(opacity=0)
+                all_traced_paths.add(traced_path)
+        self.add(all_traced_paths)
+        self.wait()
+
+        self.add(vector_field_cats_u, vector_field_cats_c, vector_field_cats_g)
+        self.wait()
+
+        self.play(FadeIn(all_dots_to_move[2*num_dots_per_class:]))
+        self.wait()
+
+        for k in range(xt_history_2.shape[1]):
+            animations=[]
+            class_index=2
+            for j in range(num_dots_per_class): 
+                animations.append(all_dots_to_move[2*num_dots_per_class+j].animate.move_to(axes.c2p(*[xt_history_2[class_index, k, j, 0], 
+                                                                                                      xt_history_2[class_index, k, j, 1]])))
+            self.play(*animations, time_tracker.animate.set_value(8.0*(k/256.0)), rate_func=linear, run_time=0.05)
+            # time_tracker.set_value(8.0*(k/256.0))
+        self.wait()
+
+        #Roll back time, can cut in editing if it's too much. 
+        # Actually I should roll back after fading out other two I think!
+        # self.play(time_tracker.animate.set_value(0.0), rate_func=linear, run_time=5.0)
+        # self.wait()
+
+
+        vector_field_dogs_g = TrackerControlledVectorField(
+            time_tracker=time_tracker,
+            func=partial(vector_function_parent, heatmap_array=heatmaps_2, class_index=1),
+            coordinate_system=extended_axes, density=4.0, stroke_width=2, max_radius=5.5, min_opacity=0.1, max_opacity=0.8, 
+            tip_width_ratio=4, tip_len_to_width=0.01, max_vect_len_to_step_size=0.7, color=GREEN)
+
+        vector_field_dogs_c = TrackerControlledVectorField(
+            time_tracker=time_tracker,
+            func=partial(vector_function_parent, heatmap_array=heatmaps_c_2, class_index=1),
+            coordinate_system=extended_axes, density=4.0, stroke_width=2, max_radius=5.5, min_opacity=0.1, max_opacity=0.5, 
+            tip_width_ratio=4, tip_len_to_width=0.01, max_vect_len_to_step_size=0.7, color="#FF00FF")
+
+        self.wait()
+        self.play(FadeIn(all_dots_to_move[num_dots_per_class:2*num_dots_per_class:]))
+        self.wait()
+
+        self.play(FadeOut(vector_field_dogs_g), FadeOut(vector_field_dogs_c))
+        self.wait()
+
+        self.play(time_tracker.animate.set_value(0.0), rate_func=linear, run_time=5.0)
+        self.wait()
+
+        self.play(FadeIn(vector_field_dogs_c))
+        self.wait()
+        self.play(FadeIn(vector_field_dogs_g))
+        self.wait()
+
+        for k in range(xt_history_2.shape[1]):
+            animations=[]
+            class_index=1
+            for j in range(num_dots_per_class): 
+                animations.append(all_dots_to_move[num_dots_per_class+j].animate.move_to(axes.c2p(*[xt_history_2[class_index, k, j, 0], 
+                                                                                                      xt_history_2[class_index, k, j, 1]])))
+            self.play(*animations, time_tracker.animate.set_value(8.0*(k/256.0)), rate_func=linear, run_time=0.05)
+            # time_tracker.set_value(8.0*(k/256.0))
+        self.wait()
 
 
 
-        
+
+        vector_field_people_g = TrackerControlledVectorField(
+            time_tracker=time_tracker,
+            func=partial(vector_function_parent, heatmap_array=heatmaps_2, class_index=0),
+            coordinate_system=extended_axes, density=4.0, stroke_width=2, max_radius=5.5, min_opacity=0.1, max_opacity=0.8, 
+            tip_width_ratio=4, tip_len_to_width=0.01, max_vect_len_to_step_size=0.7, color=GREEN)
+
+        vector_field_people_c = TrackerControlledVectorField(
+            time_tracker=time_tracker,
+            func=partial(vector_function_parent, heatmap_array=heatmaps_c_2, class_index=0),
+            coordinate_system=extended_axes, density=4.0, stroke_width=2, max_radius=5.5, min_opacity=0.1, max_opacity=0.5, 
+            tip_width_ratio=4, tip_len_to_width=0.01, max_vect_len_to_step_size=0.7, color="#00FFFF")
+
+        self.wait()
+        self.play(FadeIn(all_dots_to_move[:num_dots_per_class:]))
+        self.wait()
+
+        self.play(FadeOut(vector_field_dogs_g), FadeOut(vector_field_dogs_c))
+        self.wait()
+
+        #Roll back time, can cut in editing if it's too much. 
+        self.play(time_tracker.animate.set_value(0.0), rate_func=linear, run_time=5.0)
+        self.wait()
+
+        self.play(FadeIn(vector_field_people_c))
+        self.wait()
+        self.play(FadeIn(vector_field_people_g))
+        self.wait()
+
+        for k in range(xt_history_2.shape[1]):
+            animations=[]
+            class_index=0
+            for j in range(num_dots_per_class): 
+                animations.append(all_dots_to_move[j].animate.move_to(axes.c2p(*[xt_history_2[class_index, k, j, 0], 
+                                                                                                      xt_history_2[class_index, k, j, 1]])))
+            self.play(*animations, time_tracker.animate.set_value(8.0*(k/256.0)), rate_func=linear, run_time=0.05)
+            # time_tracker.set_value(8.0*(k/256.0))
+        self.wait()
+
+        #Roll back time, can cut in editing if it's too much. 
+        self.play(time_tracker.animate.set_value(0.0), rate_func=linear, run_time=5.0)
+        self.wait()
 
 
         self.wait(20)

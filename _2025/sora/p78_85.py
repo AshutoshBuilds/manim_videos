@@ -1346,7 +1346,7 @@ class p85b(InteractiveScene):
         Phew - alright last big scene here - Classifier free guidance lets go!!!
 
         '''
-        num_dots_per_class=3 #Crank up for final viz - 96 takes 8-9 hours. 
+        num_dots_per_class=96  #Crank up for final viz - 96 takes 8-9 hours. 
 
 
         dataset = MultiClassSwissroll(np.pi/2, 5*np.pi, 100, num_classes=3)

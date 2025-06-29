@@ -369,7 +369,7 @@ class MultiClassSwissroll(Dataset):
         return colors
 
 
-class p78_85(InteractiveScene):
+class p78_85v2(InteractiveScene):
     def construct(self):
 
         '''

@@ -572,7 +572,7 @@ class p57_58(InteractiveScene):
 
 
 
-class p53_56(InteractiveScene):
+class p53_56v2(InteractiveScene):
     def construct(self):
         '''
         Ok ok ok need to do a direct transition from p47b after fading out all the traces etc -> then bring
@@ -709,7 +709,7 @@ class p53_56(InteractiveScene):
                 axes.c2p(*[xt_history[k, path_index, 0], xt_history[k, path_index, 1]]), 
                 axes.c2p(*[history_pre_noise[k, path_index, 0], history_pre_noise[k, path_index, 1]]),
                 stroke_width=4.0,
-                stroke_color=YELLOW
+                stroke_color='#00FFFF' #'YELLOW' - Trying cyan in v2
             )
             segment2 = Line(
                 axes.c2p(*[history_pre_noise[k, path_index, 0], history_pre_noise[k, path_index, 1]]), 
@@ -926,7 +926,7 @@ class p53_56(InteractiveScene):
             all_dots_to_move.add(dot_to_move)
 
             traced_path = CustomTracedPath(dot_to_move.get_center, stroke_color=colors[path_index], stroke_width=2.0, 
-                                          opacity_range=(0.1, 1.0), fade_length=15)
+                                          opacity_range=(0.0, 1.0), fade_length=24) #Tryin opaicty 0 and longer fade length in v2
             # traced_path.set_opacity(0.5)
             # traced_path.set_fill(opacity=0)
             all_traced_paths.add(traced_path)

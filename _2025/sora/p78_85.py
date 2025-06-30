@@ -1339,7 +1339,7 @@ class p78_85v2(InteractiveScene):
 
 
 
-class p85b(InteractiveScene):
+class p85bv2(InteractiveScene):
     def construct(self):
 
         '''
@@ -1609,8 +1609,11 @@ class p85b(InteractiveScene):
         self.wait()
 
         #Roll back time, can cut in editing if it's too much. 
-        self.play(time_tracker.animate.set_value(0.0), rate_func=linear, run_time=5.0)
-        self.wait()
+        # self.play(time_tracker.animate.set_value(0.0), rate_func=linear, run_time=5.0)
+        # self.wait()
+
+        #Ok I think I want to fade out vector fields at end and leave spiral points
+        self.play(FadeOut(vector_field_people_c), FadeOut(vector_field_people_g), FadeOut(vector_field_cats_u))
 
 
         self.wait(20)

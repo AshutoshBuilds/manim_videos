@@ -11,7 +11,70 @@ CHILL_GREEN='#6c946f'
 CHILL_BLUE='#3d5c6f'
 FRESH_TAN='#dfd0b9'
 
-class P39(Scene):
+
+class P39v2(InteractiveScene):
+    def construct(self):
+        '''
+        Critical thing at the end here will be a smooth transition to the axes and positioning of p40, 
+        I should be able to smoothly zoom out and draw a spiral. 
+
+        '''
+
+        cat = ImageMobject('/Users/stephen/manim/videos/_2025/sora/n02123045_1955.jpg').scale(1)
+        cat.move_to([-3.5, 0, 0])
+
+
+
+        axes = SVGMobject('/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/graphics/to_manim/p39_2.svg')[1:]
+        axes.move_to(ORIGIN).scale(4).shift(RIGHT * 3)
+        
+        
+        x1 = VGroup(axes[6], axes[7])
+        x2 = VGroup(axes[8], axes[9])
+        x3 = VGroup(axes[10], axes[11])
+        xn = VGroup(axes[15], axes[16])
+        
+        x1_tick = axes[12]
+        x2_tick = axes[13]
+        x3_tick = axes[14]
+        
+        dots = VGroup(axes[19], axes[20], axes[21])
+        
+        x1_arrow = VGroup(axes[2], axes[3])   
+        x2_arrow = VGroup(axes[0], axes[1])
+        x3_arrow = VGroup(axes[4], axes[5])
+        xn_arrow = VGroup(axes[17], axes[18])
+        
+        final_point = axes[22]
+
+
+        axes_no_ticks=VGroup(x1_arrow, x1, x2_arrow, x2, x3_arrow, x3, xn_arrow, xn, dots)
+
+
+        self.wait()
+        self.play(FadeIn(cat))
+        self.wait(1)
+        self.play(ShowCreation(axes_no_ticks), run_time=2.5)
+        self.wait()
+
+        #Ok let me consider the "exapnding the image into pixels deal here - I think that could work pretty well?"
+
+
+
+
+
+        #Maybe when we go down to 2 pixels I switch out the axes in preparation for the move to 40
+
+
+
+        # self.remove(axes)
+
+        self.wait(20)
+        self.embed()
+
+
+
+class P39v1(Scene):
     def construct(self):
         cat = ImageMobject('n02123045_1955.jpg').scale(1)
         self.play(FadeIn(cat))

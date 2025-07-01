@@ -41,7 +41,7 @@ class P39v3(InteractiveScene):
         final_point = axes[22]
         axes_no_ticks=VGroup(x1_arrow, x1, x2_arrow, x2, x3_arrow, x3, xn_arrow, xn, dots)
 
-        img = Image.open('/Users/stephen/manim/videos/_2025/sora/cat_128.jpg')
+        img = Image.open('/Users/stephen/manim/videos/_2025/sora/dog_128.jpg')
         img_array = np.array(img) #Let's try 64x64
         pixel_dimensions = img_array.shape  
         height, width = img_array.shape[:2]
@@ -82,29 +82,65 @@ class P39v3(InteractiveScene):
         #Ok now big zoom in and dilattion -> yeah actually do I really need ot dilate? I mean ig might be cool
         # But yeah now sure if it's needed???
 
+
+        # self.add(r2, l2)
+
+        # self.remove(pixel_squares[0])
+        # self.add(pixel_squares[0])
+
+        ## Hey what about zooming way in on the upper left corner of the image while I do the dilation???
+        ## That might help clarify things nicely
+
         ul_corner=pixel_squares.get_corner(UL) 
         self.play(pixel_squares.animate.scale(15).move_to(ul_corner, aligned_edge=LEFT+UP), run_time=4.0)
         self.wait()
 
-        x1_tick.shift([-0.3, 0, 0]) #Drawing is a bit off
-        r1=SurroundingRectangle(pixel_squares[0], buff=0.02)
-        r1.set_stroke(width=4, color='#00FFFF')
+        x1_tick.shift([-0.4, 0, 0]) #Drawing is a bit off
+        r1=SurroundingRectangle(pixel_squares[0], buff=0.0)
+        r1.set_stroke(width=5, color='#00FFFF', opacity=1.0)
         l1=Line(r1.get_corner(DL), x1_tick.get_top())
-        l1.set_stroke(width=4, color='#00FFFF')
+        # l1.set_opacity(1.0)
+        l1.set_stroke(width=5, color='#00FFFF')
+
+        x2_tick.shift([0, 0.05, 0]) #Drawing is a bit off
+        r2=SurroundingRectangle(pixel_squares[1], buff=0.0)
+        r2.set_stroke(width=5, color='#FF00FF', opacity=1.0)
+        l2=Line(r2.get_corner(DL), x2_tick.get_right())
+        l2.set_stroke(width=5, color='#FF00FF')
+
 
         self.play(ShowCreation(r1))
         self.play(ShowCreation(l1))
         self.play(ShowCreation(x1_tick))
         self.wait()
 
+        self.play(ShowCreation(r2))
+        self.play(ShowCreation(l2))
+        self.play(ShowCreation(x2_tick))
+        self.wait()
 
-        # self.remove(pixel_squares[0])
-        # self.add(pixel_squares[0])
+        # "If we reduce our image to only two pixels"
+        # Get rid of everything execept to pixels and cyan and magent boxes
+        # move sligtly apart
+        # Put top center
+        # Bring in same or very similiar axes to p40 so can make the transition smoooooooth. 
 
+        pixel_one_group=VGroup(pixel_squares[0], r1)
+        pixel_two_group=VGroup(pixel_squares[1], r2)
 
+        self.play(pixel_one_group.animate.move_to([-0.1, 3, 0], aligned_edge=RIGHT).scale(2.0),
+                  pixel_two_group.animate.move_to([0.1, 3, 0], aligned_edge=LEFT).scale(2.0), 
+                  FadeOut(axes), 
+                  FadeOut(pixel_squares[2:]),
+                  FadeOut(l1), 
+                  FadeOut(l2),
+                  run_time=4.0)
+        self.wait()
 
-        ## Hey what about zooming way in on the upper left corner of the image while I do the dilation???
-        ## That might help clarify things nicely
+        pixel_one_group.move_to([-0.025, 3, 0], aligned_edge=RIGHT)
+        pixel_two_group.move_to([0.025, 3, 0], aligned_edge=LEFT)
+
+        #Now bring in p40 style axis. 
 
 
         self.wait(20)

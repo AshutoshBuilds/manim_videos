@@ -368,6 +368,53 @@ class MultiClassSwissroll(Dataset):
         
         return colors
 
+class p78_slower_fade_in(InteractiveScene):
+    def construct(self):
+        '''
+        May want to adopt an actual noise schedule here so we don't that big snap at the end - we'll see. 
+        '''
+
+        batch_size=2130
+        dataset = Swissroll(np.pi/2, 5*np.pi, 100)
+        loader = DataLoader(dataset, batch_size=batch_size)
+        batch=next(iter(loader)).numpy()
+
+        axes = Axes(
+            x_range=[-1.2, 1.2, 0.5],
+            y_range=[-1.2, 1.2, 0.5],
+            height=7,
+            width=7,
+            axis_config={
+                "color": CHILL_BROWN, 
+                "stroke_width": 2,
+                "include_tip": True,
+                "include_ticks": False,
+                "tick_size": 0.06,
+                "tip_config": {"color": CHILL_BROWN, "length": 0.15, "width": 0.15}
+            }
+        )
+
+        self.add(axes)
+        # self.wait()
+
+        dots = VGroup()
+        for point in batch:
+            # Map the point coordinates to the axes
+            screen_point = axes.c2p(point[0], point[1])
+            dot = Dot(screen_point, radius=0.04)
+            # dot.set_color(YELLOW)
+            dots.add(dot)
+        dots.set_color(YELLOW)
+
+        self.wait()
+
+        # Animate the points appearing
+        self.play(FadeIn(dots, lag_ratio=0.1), run_time=20)
+
+        self.wait(20)
+        self.embed()
+
+
 
 class p78_85v2(InteractiveScene):
     def construct(self):

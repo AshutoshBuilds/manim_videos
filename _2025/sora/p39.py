@@ -128,20 +128,46 @@ class P39v3(InteractiveScene):
         pixel_one_group=VGroup(pixel_squares[0], r1)
         pixel_two_group=VGroup(pixel_squares[1], r2)
 
-        self.play(pixel_one_group.animate.move_to([-0.1, 3, 0], aligned_edge=RIGHT).scale(2.0),
-                  pixel_two_group.animate.move_to([0.1, 3, 0], aligned_edge=LEFT).scale(2.0), 
+        self.play(pixel_one_group.animate.move_to([5-.01, 1.8, 0], aligned_edge=RIGHT), #.scale(2.0),
+                  pixel_two_group.animate.move_to([5.01, 1.8, 0], aligned_edge=LEFT), #.scale(2.0), 
                   FadeOut(axes), 
                   FadeOut(pixel_squares[2:]),
                   FadeOut(l1), 
                   FadeOut(l2),
+                  self.frame.animate.reorient(0, 0, 0, (3.34, 1.65, 0.0), 4.22),
                   run_time=4.0)
-        self.wait()
+        # self.wait()
 
-        pixel_one_group.move_to([-0.025, 3, 0], aligned_edge=RIGHT)
-        pixel_two_group.move_to([0.025, 3, 0], aligned_edge=LEFT)
+        # pixel_one_group.move_to([5-.01, 1.8, 0], aligned_edge=RIGHT)
+        # pixel_two_group.move_to([5.01, 1.8, 0], aligned_edge=LEFT)
 
         #Now bring in p40 style axis. 
 
+        axes = Axes(
+            x_range=[-1.2, 1.2, 0.5],
+            y_range=[-1.2, 1.2, 0.5],
+            height=7,
+            width=7,
+            axis_config={
+                "color": CHILL_BROWN, 
+                "stroke_width": 2,
+                "include_tip": True,
+                "include_ticks": False, #I don't think i want ticks here - transition to - actually do I want ticks like ever? The spacing is weird for some reason...
+                "tick_size": 0.06,
+                "tip_config": {"color": CHILL_BROWN, "length": 0.15, "width": 0.15}
+            }
+        )
+        self.play(FadeIn(axes))
+        self.wait()
+
+        # self.add(axes)
+
+
+
+
+
+        #Self.wait
+        self.play(self.frame.animate.reorient(0,0,0,(0,0,0), 8), run_time=2.0) #Match p40 framing. 
 
         self.wait(20)
         self.embed()

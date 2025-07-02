@@ -374,10 +374,20 @@ class P20_21v2(InteractiveScene):
         stephen_hat_arrow.rotate(65 * DEGREES, about_point=axes_intersection)
         stephen_no_hat_arrow.rotate(15 * DEGREES, about_point=axes_intersection)
         
-        stephen_delta_arrow_line = Line(stephen_hat_arrow.arrow.get_all_points()[0], stephen_no_hat_arrow.arrow.get_all_points()[0], stroke_width=5, color=YELLOW)
-        stephen_delta_arrow_arrow = SVGMobject(image_path+"welch_arrow_tip_1.svg").scale(0.1).next_to(stephen_delta_arrow_line.get_end()).rotate(DEGREES * 310).set_color(YELLOW)
-        stephen_delta_arrow_arrow.shift(stephen_no_hat_arrow.arrow.get_all_points()[0] - stephen_delta_arrow_arrow.get_all_points()[0])
+        #SW - this arrows direction was backwards
+        stephen_delta_arrow_line = Line(stephen_hat_arrow.arrow.get_all_points()[0]+np.array([0.05, -0.05, 0]), stephen_no_hat_arrow.arrow.get_all_points()[0], stroke_width=5, color=YELLOW)
         
+        # stephen_delta_arrow_line = Line(stephen_no_hat_arrow.arrow.get_all_points()[0], stephen_hat_arrow.arrow.get_all_points()[0], stroke_width=5, color=YELLOW)
+        
+        #stephen_delta_arrow_arrow = SVGMobject(image_path+"welch_arrow_tip_1.svg").scale(0.1).next_to(stephen_delta_arrow_line.get_end()).rotate(DEGREES * 310).set_color(YELLOW)
+        #stephen_delta_arrow_arrow.shift(stephen_no_hat_arrow.arrow.get_all_points()[0] - stephen_delta_arrow_arrow.get_all_points()[0])
+        
+        stephen_delta_arrow_arrow = SVGMobject(image_path+"welch_arrow_tip_1.svg").scale(0.1).set_color(YELLOW)
+        stephen_delta_arrow_arrow.rotate(DEGREES * 126)
+        stephen_delta_arrow_arrow.move_to(stephen_delta_arrow_line.get_start()).shift([0.065, -0.06, 0])
+
+        # stephen_delta_arrow_arrow.shift(stephen_delta_arrow_arrow.get_all_points()[0] - stephen_no_hat_arrow.arrow.get_all_points()[0])
+
         stephen_hat_arrow_label = Tex(r"\hat{I}_{man}").set_color(GREEN).next_to(stephen_hat_arrow.arrow, UP)
         stephen_no_hat_arrow_label = Tex(r"I_{man}").set_color(GREEN).next_to(stephen_no_hat_arrow.arrow, RIGHT)
                 
@@ -393,7 +403,7 @@ class P20_21v2(InteractiveScene):
         new_end = end - (direction / length) * trim_amount
 
         # Create the trimmed line
-        stephen_delta_arrow_line = Line(start, new_end, stroke_width=5, color=YELLOW)
+        # stephen_delta_arrow_line = Line(start, new_end, stroke_width=5, color=YELLOW)
         
         stephen_delta_arrow = VGroup(stephen_delta_arrow_line, stephen_delta_arrow_arrow)
         

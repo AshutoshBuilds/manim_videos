@@ -95,14 +95,14 @@ class P39v3(InteractiveScene):
         self.play(pixel_squares.animate.scale(15).move_to(ul_corner, aligned_edge=LEFT+UP), run_time=4.0)
         self.wait()
 
-        x1_tick.shift([-0.4, 0, 0]) #Drawing is a bit off
+        x1_tick.shift([-0.5, 0, 0]) #Drawing is a bit off
         r1=SurroundingRectangle(pixel_squares[0], buff=0.0)
         r1.set_stroke(width=5, color='#00FFFF', opacity=1.0)
         l1=Line(r1.get_corner(DL), x1_tick.get_top())
         # l1.set_opacity(1.0)
         l1.set_stroke(width=5, color='#00FFFF')
 
-        x2_tick.shift([0, 0.05, 0]) #Drawing is a bit off
+        x2_tick.shift([0, 0.07, 0]) #Drawing is a bit off
         r2=SurroundingRectangle(pixel_squares[1], buff=0.0)
         r2.set_stroke(width=5, color='#FF00FF', opacity=1.0)
         l2=Line(r2.get_corner(DL), x2_tick.get_right())
@@ -134,12 +134,12 @@ class P39v3(InteractiveScene):
                   FadeOut(pixel_squares[2:]),
                   FadeOut(l1), 
                   FadeOut(l2),
-                  self.frame.animate.reorient(0, 0, 0, (3.34, 1.65, 0.0), 4.22),
+                  self.frame.animate.reorient(0, 0, 0, (3.39, 1.65, 0.0), 4.31),
                   run_time=4.0)
         # self.wait()
 
-        # pixel_one_group.move_to([5-.01, 1.8, 0], aligned_edge=RIGHT)
-        # pixel_two_group.move_to([5.01, 1.8, 0], aligned_edge=LEFT)
+        pixel_one_group.move_to([5-.015, 1.8, 0], aligned_edge=RIGHT)
+        pixel_two_group.move_to([5.015, 1.8, 0], aligned_edge=LEFT)
 
         #Now bring in p40 style axis. 
 
@@ -157,17 +157,58 @@ class P39v3(InteractiveScene):
                 "tip_config": {"color": CHILL_BROWN, "length": 0.15, "width": 0.15}
             }
         )
-        self.play(FadeIn(axes))
+
+        # Hmm manually add ticks and labels here?
+        # I think that's probably the move...
+        x_label=Tex('x', font_size=28)
+        x_label.set_color(CHILL_BROWN)
+        x_label.move_to(axes.get_right()).shift([-0.08, -0.3, 0])
+
+        y_label=Tex('y', font_size=28)
+        y_label.set_color(CHILL_BROWN)
+        y_label.move_to(axes.get_top()).shift([-0.28, -0.08, 0])
+
+        tick_x=Line([3.0, -0.07, 0], [3.0, -0.18, 0])
+        tick_x.set_stroke(width=2, color=CHILL_BROWN)
+        tick_label_x=Tex('1', font_size=20)
+        tick_label_x.set_color(CHILL_BROWN)
+        tick_label_x.next_to(tick_x, DOWN, buff=0.05)
+
+        tick_y=Line([-0.07, 3.0, 0], [-0.18, 3.0, 0])
+        tick_y.set_stroke(width=2, color=CHILL_BROWN)
+        tick_label_y=Tex('1', font_size=20)
+        tick_label_y.set_color(CHILL_BROWN)
+        tick_label_y.next_to(tick_y, LEFT, buff=0.05)
+
+        axis_accessories=VGroup(x_label, y_label, tick_x, tick_label_x, tick_y, tick_label_y)
+
+        self.wait()
+        self.play(FadeIn(axes), FadeIn(axis_accessories))
         self.wait()
 
-        # self.add(axes)
+        #Ok i think just move and shink each pixel to the end of each axis? 
 
+        self.play(pixel_one_group.animate.scale(0.5).move_to(axes.get_right()).shift([0.05, 0.12, 0]), run_time=2.0)
+        self.wait()
 
+        self.play(pixel_two_group.animate.scale(0.5).move_to(axes.get_top()).shift([0.15, 0.00, 0]), run_time=2.0)
+        self.wait()
 
+        # pixel_one_group.scale(0.5)
+        # pixel_one_group.move_to(axes.get_right()).shift([0.05, 0.12, 0])
+        # pixel_one_group.move_to(x_label)
+        # self.remove(pixel_one_group[0])
 
+        #Ok ok now for the points themselves, I think I just do them quickly in illustrator
+        # pixel_two_group.move_to(axes.get_top()).shift([0.15, 0.00, 0])
 
         #Self.wait
-        self.play(self.frame.animate.reorient(0,0,0,(0,0,0), 8), run_time=2.0) #Match p40 framing. 
+
+        self.play(self.frame.animate.reorient(0,0,0,(0,0,0), 8), 
+                FadeOut(axis_accessories),
+                FadeOut(pixel_one_group), 
+                FadeOut(pixel_two_group),
+                run_time=4.0) #Match p40 framing. 
 
         self.wait(20)
         self.embed()

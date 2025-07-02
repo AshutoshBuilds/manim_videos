@@ -276,10 +276,12 @@ class P21(InteractiveScene):
         
         
 
-class P20_21(InteractiveScene):
+class P20_21v2(InteractiveScene):
     def construct(self):
-        stephen_no_hat_p20 = ImageMobject("me_no_hat_cropped_1.jpeg").scale(0.55)         
-        stephen_hat_p20 = ImageMobject("me_with_hat.jpeg").scale(0.55)
+        image_path='/Users/stephen/manim/videos/_2025/sora/'
+        svg_path='/Users/stephen/Stephencwelch Dropbox/welch_labs/sora/graphics/to_manim'
+        stephen_no_hat_p20 = ImageMobject(image_path+"me_no_hat_cropped_1.jpeg").scale(0.55)         
+        stephen_hat_p20 = ImageMobject(image_path+"me_with_hat.jpeg").scale(0.55)
 
         # Place both together on the left
         Group(stephen_no_hat_p20, stephen_hat_p20).arrange(DOWN, buff=1).shift(LEFT * 5.5)
@@ -292,12 +294,12 @@ class P20_21(InteractiveScene):
         
         
         
-        arrows = SVGMobject("p_20_21_to_manim-03.svg")[1:].scale(6)
+        arrows = SVGMobject(image_path+"p_20_21_to_manim-03.svg")[1:].scale(6)
         top_left_arrow = arrows[0].next_to(stephen_no_hat_p20, RIGHT)
         bottom_left_arrow = arrows[1].move_to([top_left_arrow.get_x(), initial_point.get_y(), 0])
         
-        top_image_encoder_text = SVGMobject("top_image_encoder.svg")[3:].scale(5).next_to(top_left_arrow, RIGHT)
-        bottom_image_encoder_text = SVGMobject("bottom_image_encoder.svg")[3:].scale(5).next_to(bottom_left_arrow, RIGHT)
+        top_image_encoder_text = SVGMobject(image_path+"top_image_encoder.svg")[3:].scale(5).next_to(top_left_arrow, RIGHT)
+        bottom_image_encoder_text = SVGMobject(image_path+"bottom_image_encoder.svg")[3:].scale(5).next_to(bottom_left_arrow, RIGHT)
         
         
         
@@ -341,8 +343,8 @@ class P20_21(InteractiveScene):
         axes = VGroup(x_axis, y_axis)
         axes.shift(LEFT * 4.5)
         
-        stephen_no_hat = ImageMobject("me_no_hat_cropped_1.jpeg").scale(0.3)         
-        stephen_hat = ImageMobject("me_with_hat.jpeg").scale(0.3)
+        stephen_no_hat = ImageMobject(image_path+"me_no_hat_cropped_1.jpeg").scale(0.3)         
+        stephen_hat = ImageMobject(image_path+"me_with_hat.jpeg").scale(0.3)
         
         stephen_hat.move_to((y_axis.get_center() + y_axis.get_top())/2).shift(LEFT * 0.6)
         stephen_no_hat.move_to((x_axis.get_center() + x_axis.get_right())/2).shift(DOWN * 0.6)
@@ -373,7 +375,7 @@ class P20_21(InteractiveScene):
         stephen_no_hat_arrow.rotate(15 * DEGREES, about_point=axes_intersection)
         
         stephen_delta_arrow_line = Line(stephen_hat_arrow.arrow.get_all_points()[0], stephen_no_hat_arrow.arrow.get_all_points()[0], stroke_width=5, color=YELLOW)
-        stephen_delta_arrow_arrow = SVGMobject("welch_arrow_tip_1.svg").scale(0.1).next_to(stephen_delta_arrow_line.get_end()).rotate(DEGREES * 310).set_color(YELLOW)
+        stephen_delta_arrow_arrow = SVGMobject(image_path+"welch_arrow_tip_1.svg").scale(0.1).next_to(stephen_delta_arrow_line.get_end()).rotate(DEGREES * 310).set_color(YELLOW)
         stephen_delta_arrow_arrow.shift(stephen_no_hat_arrow.arrow.get_all_points()[0] - stephen_delta_arrow_arrow.get_all_points()[0])
         
         stephen_hat_arrow_label = Tex(r"\hat{I}_{man}").set_color(GREEN).next_to(stephen_hat_arrow.arrow, UP)
@@ -409,7 +411,7 @@ class P20_21(InteractiveScene):
         top_header_word_column = Text('WORD', font='Myriad Pro').set_color(CHILL_BROWN).scale(0.6).next_to(line_intersection(top_header_line.get_left(), top_header_line.get_right(), left_align.get_top(), left_align.get_bottom()), UP, buff=0.1)
         top_header_cosine_similarity_column = Text('COSINE SIMILARITY', font='Myriad Pro').set_color(CHILL_BROWN).scale(0.6).next_to(line_intersection(top_header_line.get_left(), top_header_line.get_right(), right_align.get_top(), right_align.get_bottom()), UP, buff=0.1)
         
-        df = pd.read_csv("cosine_similarities.csv")
+        df = pd.read_csv(image_path+"cosine_similarities.csv")
         
         cosine_similarity = df[['text', 'similarity']].values.tolist()
         np.random.shuffle(cosine_similarity)
@@ -621,6 +623,7 @@ def generate_nice_ticks(min_val, max_val, min_ticks=3, max_ticks=16, ignore=[0])
         return generate_nice_ticks(min_val, max_val, min_ticks, max_ticks, ignore)
     
     return ticks, float(axis_min), float(axis_max)
+
 class WelchXAxis(VGroup):
     def __init__(
         self,
@@ -669,7 +672,7 @@ class WelchXAxis(VGroup):
             stroke_width=self.stroke_width
         )
         if self.include_tip:
-            arrow_tip=SVGMobject('welch_arrow_tip_1.svg')
+            arrow_tip=SVGMobject('/Users/stephen/manim/videos/_2025/sora/welch_arrow_tip_1.svg') #Dumb hardcode for now
             arrow_tip.scale(self.arrow_tip_scale)
             arrow_tip.move_to([self.axis_length_on_canvas, 0, 0])
             axis_line = VGroup(axis_line, arrow_tip)
@@ -772,7 +775,7 @@ class WelchYAxis(VGroup):
         
         # Add SVG arrow tip at the end
         if self.include_tip:
-            arrow_tip = SVGMobject('welch_arrow_tip_1.svg')
+            arrow_tip = SVGMobject('/Users/stephen/manim/videos/_2025/sora/welch_arrow_tip_1.svg')
             arrow_tip.scale(self.arrow_tip_scale)
             arrow_tip.move_to([0, self.axis_length_on_canvas, 0])
             # Rotate the arrow tip to point upward

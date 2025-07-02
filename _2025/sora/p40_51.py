@@ -230,7 +230,7 @@ def create_noisy_arrow_animation(self, start_point, end_point, target_point, num
 
 
 
-class p48_51(InteractiveScene):
+class p48_51v2(InteractiveScene):
     def construct(self):
         '''
         Ok ok ok need to do a direct transition from p47b after fading out all the traces etc -> then bring
@@ -250,7 +250,7 @@ class p48_51(InteractiveScene):
                 "color": CHILL_BROWN, 
                 "stroke_width": 2,
                 "include_tip": True,
-                "include_ticks": True,
+                "include_ticks": False,
                 "tick_size": 0.06,
                 "tip_config": {"color": CHILL_BROWN, "length": 0.15, "width": 0.15}
             }
@@ -872,7 +872,7 @@ class p48_51(InteractiveScene):
 
 
 
-class p47b(InteractiveScene):
+class p47bv2(InteractiveScene):
     def construct(self):
         '''
         Alright need to pick up where i left off on p44_47, and get ready for another crazy particle fly by lol
@@ -893,7 +893,7 @@ class p47b(InteractiveScene):
                 "color": CHILL_BROWN, 
                 "stroke_width": 2,
                 "include_tip": True,
-                "include_ticks": True,
+                "include_ticks": False,
                 "tick_size": 0.06,
                 "tip_config": {"color": CHILL_BROWN, "length": 0.15, "width": 0.15}
             }
@@ -1099,7 +1099,7 @@ class p44_47(InteractiveScene):
                 "color": CHILL_BROWN, 
                 "stroke_width": 2,
                 "include_tip": True,
-                "include_ticks": True,
+                "include_ticks": False,
                 "tick_size": 0.06,
                 "tip_config": {"color": CHILL_BROWN, "length": 0.15, "width": 0.15}
             }
@@ -1263,7 +1263,7 @@ class p44_47(InteractiveScene):
 
 
 
-class p40_44(InteractiveScene):
+class p40_44v2(InteractiveScene):
     def construct(self):
         '''
         May want to adopt an actual noise schedule here so we don't that big snap at the end - we'll see. 
@@ -1283,7 +1283,7 @@ class p40_44(InteractiveScene):
                 "color": CHILL_BROWN, 
                 "stroke_width": 2,
                 "include_tip": True,
-                "include_ticks": True,
+                "include_ticks": False,
                 "tick_size": 0.06,
                 "tip_config": {"color": CHILL_BROWN, "length": 0.15, "width": 0.15}
             }

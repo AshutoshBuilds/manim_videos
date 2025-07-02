@@ -440,7 +440,7 @@ class p78_85v2(InteractiveScene):
                 "color": CHILL_BROWN, 
                 "stroke_width": 2,
                 "include_tip": True,
-                "include_ticks": True,
+                "include_ticks": False,
                 "tick_size": 0.06,
                 "tip_config": {"color": CHILL_BROWN, "length": 0.15, "width": 0.15}
             }
@@ -477,7 +477,7 @@ class p78_85v2(InteractiveScene):
 
         self.add(axes)
         self.wait()
-        self.play(ShowCreation(dots), run_time=0.5)
+        self.play(ShowCreation(dots), run_time=8.0)
         self.wait()
 
         for i, d in enumerate(dots):
@@ -1335,7 +1335,7 @@ class p78_85v2(InteractiveScene):
         self.wait()
 
 
-        num_dots_per_class=8 #Crank up for final viz
+        num_dots_per_class=96 #Crank up for final viz
         colors_by_class={2:YELLOW, 0: '#00FFFF', 1: '#FF00FF'}
 
         all_traced_paths_2=VGroup()
@@ -1386,7 +1386,7 @@ class p78_85v2(InteractiveScene):
 
 
 
-class p85bv2(InteractiveScene):
+class p85bv3(InteractiveScene):
     def construct(self):
 
         '''
@@ -1411,7 +1411,7 @@ class p85bv2(InteractiveScene):
                 "color": CHILL_BROWN, 
                 "stroke_width": 2,
                 "include_tip": True,
-                "include_ticks": True,
+                "include_ticks": False,
                 "tick_size": 0.06,
                 "tip_config": {"color": CHILL_BROWN, "length": 0.15, "width": 0.15}
             }

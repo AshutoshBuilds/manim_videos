@@ -462,9 +462,21 @@ class P20_21v2(InteractiveScene):
         self.wait()
         self.play(FadeOut(arrows), FadeOut(top_image_encoder), FadeOut(bottom_image_encoder))
         self.wait()
-        self.play(FadeIn(axes), ReplacementTransform(stephen_hat_p20, stephen_hat), ReplacementTransform(stephen_hat_equation[0:5], stephen_hat_arrow_label), ReplacementTransform(stephen_hat_equation[6:], stephen_hat_arrow), FadeOut(stephen_hat_equation[5]), stephen_no_hat_p20.animate.shift(DOWN * 4 + LEFT * 0.3).set_opacity(0.5), run_time = 3)
+        self.play(FadeIn(axes), 
+                  ReplacementTransform(stephen_hat_p20, stephen_hat), 
+                  ReplacementTransform(stephen_hat_equation[0:5], stephen_hat_arrow_label), 
+                  ReplacementTransform(stephen_hat_equation[6:], stephen_hat_arrow[0]), 
+                  FadeOut(stephen_hat_equation[5]),
+                  stephen_no_hat_p20.animate.shift(DOWN * 4 + LEFT * 0.3).set_opacity(0.5), run_time = 3)
+
+        # self.play(ReplacementTransform(stephen_hat_equation[6:].copy(), stephen_hat_arrow[0]), run_time=3)
+
         self.wait()
-        self.play(ReplacementTransform(stephen_no_hat_p20, stephen_no_hat), FadeOut(stephen_no_hat_equation[4]), ReplacementTransform(stephen_no_hat_equation[0:4], stephen_no_hat_arrow_label), ReplacementTransform(stephen_no_hat_equation[5:], stephen_no_hat_arrow), run_time=3)
+        self.play(ReplacementTransform(stephen_no_hat_p20, stephen_no_hat),
+                  FadeOut(stephen_no_hat_equation[4]), 
+                  ReplacementTransform(stephen_no_hat_equation[0:4],  stephen_no_hat_arrow_label), 
+                  ReplacementTransform(stephen_no_hat_equation[5:], stephen_no_hat_arrow[0]), #Moving to WelchAxis is weird, first index helps with animation 
+                  run_time=3)
 
         
         self.wait()

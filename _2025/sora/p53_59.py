@@ -244,7 +244,7 @@ class TrackerControlledVectorField(VectorField):
 
 
 
-class p57_58(InteractiveScene):
+class p57_58v2(InteractiveScene):
     def construct(self):
 
         #Smooth transition/pickup from spiral and axes in p56
@@ -262,7 +262,7 @@ class p57_58(InteractiveScene):
                 "color": CHILL_BROWN, 
                 "stroke_width": 2,
                 "include_tip": True,
-                "include_ticks": True,
+                "include_ticks": False,
                 "tick_size": 0.06,
                 "tip_config": {"color": CHILL_BROWN, "length": 0.15, "width": 0.15}
             }
@@ -572,7 +572,7 @@ class p57_58(InteractiveScene):
 
 
 
-class p53_56v2(InteractiveScene):
+class p53_56v3(InteractiveScene):
     def construct(self):
         '''
         Ok ok ok need to do a direct transition from p47b after fading out all the traces etc -> then bring
@@ -592,7 +592,7 @@ class p53_56v2(InteractiveScene):
                 "color": CHILL_BROWN, 
                 "stroke_width": 2,
                 "include_tip": True,
-                "include_ticks": True,
+                "include_ticks": False,
                 "tick_size": 0.06,
                 "tip_config": {"color": CHILL_BROWN, "length": 0.15, "width": 0.15}
             }

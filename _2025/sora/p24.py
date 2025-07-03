@@ -1,0 +1,168 @@
+from manimlib import *
+import numpy as np
+import pandas as pd
+import ast
+import random
+
+CHILL_BROWN='#948979'
+YELLOW='#ffd35a'
+YELLOW_FADE='#7f6a2d'
+BLUE='#65c8d0'
+GREEN='#6e9671' 
+CHILL_GREEN='#6c946f'
+CHILL_BLUE='#3d5c6f'
+CHILL_PURPLE='#a9a1c8'
+FRESH_TAN='#dfd0b9'
+
+def line_intersection(p1, p2, p3, p4):
+    A = np.array([
+        [p2[0] - p1[0], p3[0] - p4[0]],
+        [p2[1] - p1[1], p3[1] - p4[1]]
+    ])
+    b = np.array([p3[0] - p1[0], p3[1] - p1[1]])
+    
+    try:
+        t, s = np.linalg.solve(A, b)
+        intersection = p1 + t * (p2 - p1)
+        return intersection
+    except np.linalg.LinAlgError:
+        return None
+
+class P24(InteractiveScene):
+    def construct(self):
+        svg = SVGMobject("p17_25_10.svg")[1:].scale(4)
+
+        top_left_arrow = VGroup(svg[0], svg[1])
+        top_right_arrow = VGroup(svg[2], svg[3])
+        bottom_left_arrow = VGroup(svg[4], svg[5])
+        bottom_right_arrow = VGroup(svg[6], svg[7])
+
+        arrows = VGroup(
+            top_left_arrow,
+            top_right_arrow,
+            bottom_left_arrow,
+            bottom_right_arrow
+        )
+
+        top_curve_arrow = VGroup(svg[13], svg[14])
+        bottom_curve_arrow = VGroup(svg[9], svg[10])
+
+        curve_arrows = VGroup(
+            top_curve_arrow,
+            bottom_curve_arrow
+        )
+
+        top_matches = VGroup(*svg[32:42])
+        top_matches_line = svg[31]
+        top_matches.move_to([top_matches_line.get_x(), top_matches.get_y(), 0])
+        top_matches_group = VGroup(top_matches, top_matches_line)
+        top_matches_group.move_to([0, top_matches_group.get_y(), 0])
+
+        cosine_similarity = VGroup(*svg[15:31])
+
+        border_box = svg[11]
+
+        VGroup(arrows, curve_arrows, cosine_similarity, border_box).shift(RIGHT)
+
+        cat = ImageMobject("n02123045_1955.jpg").scale(0.5).next_to(top_left_arrow, LEFT, buff=0.25).shift(LEFT * 0.5)
+
+        buff = 0.15
+        cat_list = Tex(r"[0.21,\ -0.12,\ \ldots\ 0.71]").set_width(((top_right_arrow.get_right()[0] - top_curve_arrow.get_left()[0]) * -1) - buff * 2).set_color(CHILL_GREEN)
+        midpoint_x = (top_right_arrow.get_right()[0] + top_curve_arrow.get_left()[0]) / 2
+        cat_list.move_to([midpoint_x, top_right_arrow.get_y(), 0])
+
+        df = pd.read_csv("cat_similarity.csv")
+        df['embedding'] = df['embedding'].apply(ast.literal_eval)
+        cosine_similarity = df[['text', 'similarity', 'embedding']].values.tolist()
+        np.random.shuffle(cosine_similarity)
+
+        left_align = Line(top_matches_line.get_center(), top_matches_line.get_center() + UP * 50000).shift(DOWN * 2).shift(LEFT * 0.9)
+        right_align = Line(top_matches_line.get_center(), top_matches_line.get_center() + UP * 50000).shift(DOWN * 2).shift(RIGHT * 0.9)
+
+        gap = 0.48
+        text_points = []
+        similarity_points = []
+
+        for i in range(300):
+            text_point = Point().move_to(line_intersection(top_matches_line.get_left(), top_matches_line.get_right(), left_align.get_top(), left_align.get_bottom())).shift(DOWN * (gap * (i + 1)))
+            similarity_point = Point().move_to(line_intersection(top_matches_line.get_left(), top_matches_line.get_right(), right_align.get_top(), right_align.get_bottom())).shift(DOWN * (gap * (i + 1)))
+            text_points.append(text_point)
+            similarity_points.append(similarity_point)
+
+        labels = VGroup(
+            Text("1.", font='Myriad Pro').set_color(CHILL_BROWN).move_to([top_matches_line.get_x(), text_points[0].get_y(), 0]).scale(0.8),
+            Text("2.", font='Myriad Pro').set_color(CHILL_BROWN).move_to([top_matches_line.get_x(), text_points[1].get_y(), 0]).scale(0.8),
+            Text("3.", font='Myriad Pro').set_color(CHILL_BROWN).move_to([top_matches_line.get_x(), text_points[2].get_y(), 0]).scale(0.8)
+        ).shift(LEFT * 2)
+
+        self.add(svg, cat, cat_list, labels)
+
+
+        
+        count = 0
+        seen = []
+        remove = False
+        last_pair = None
+        for pair in cosine_similarity:
+            text, similarity, embedding = pair
+            count += 1
+            article = "an" if str(text).strip().lower()[0] in "aeiou" else "a"
+            prefix = f'"A photo of {article} '
+            main_word = str(text).strip()
+            full_sentence = prefix + main_word + '"'
+
+            full_text = Text(full_sentence, font='Myriad Pro').set_color(CHILL_BROWN).set_width(3)
+            main_word_mobject = Text(main_word, font='Myriad Pro').set_color(CHILL_BROWN).scale(0.8)
+            full_text.move_to([cat.get_x(), bottom_left_arrow.get_y(), 0])
+            main_word_mobject.move_to([cat.get_x(), bottom_left_arrow.get_y(), 0])
+
+            similarity_mobject = Tex(str(round(similarity, 3))).set_color(FRESH_TAN).move_to(border_box.get_center()).set_width(1)
+            rand_vals = [round(random.uniform(-1, 1), 2) for _ in range(3)]
+            embedding_mobject = Tex(rf"[{rand_vals[0]},\ {rand_vals[1]},\ \ldots\ {rand_vals[2]}]").set_color(CHILL_PURPLE).move_to([cat_list.get_x(), bottom_right_arrow.get_y(), 0]).set_width(cat_list.get_width())
+            
+            if remove:
+                self.remove(last_pair)
+                
+            last_pair = VGroup(main_word_mobject, similarity_mobject, embedding_mobject)
+            
+            if count < 4:
+                self.play(FadeIn(main_word_mobject))
+                self.play(ReplacementTransform(main_word_mobject.copy(), embedding_mobject))
+                self.play(ReplacementTransform(VGroup(embedding_mobject.copy(), cat_list.copy()), similarity_mobject))
+                
+            else:
+                self.add(main_word_mobject, similarity_mobject, embedding_mobject)
+
+            seen.append([main_word_mobject, similarity_mobject])
+            ordered = sorted(seen, key=lambda x: float(x[1].get_tex()), reverse=True)
+            
+            top5_words = [w[0].text for w in ordered[:3]]
+            if text not in top5_words:
+                remove = True
+
+            for idx, (w, s) in enumerate(ordered[:3]):
+                target_word_point = text_points[idx].get_center()
+                target_sim_point = similarity_points[idx].get_center()
+                w.generate_target()
+                s.generate_target()
+                w.target.move_to(target_word_point)
+                s.target.move_to(target_sim_point)
+
+            # Move top 4 to their new spots
+            
+            
+            
+            # Move top 5 to their new spots (including the 5th)
+            # Remove the previous 5th spot if it exists (before moving)
+            if len(ordered) > 3:
+                w5, s5 = ordered[3]
+                self.remove(w5, s5)
+            self.play(
+                *[MoveToTarget(w) for w, s in ordered[:3]],
+                *[MoveToTarget(s) for w, s in ordered[:3]]
+            )
+
+            # Remove the previous 5th spot if it exists
+            
+
+            self.wait(0.2)

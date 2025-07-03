@@ -201,7 +201,7 @@ class TrackerControlledVectorField(VectorField):
         self.note_changed_data()
 
 
-class p66v3(InteractiveScene):
+class p66v4(InteractiveScene):
     def construct(self):
 
         '''
@@ -317,7 +317,7 @@ class p66v3(InteractiveScene):
             all_dots_to_move.add(dot_to_move)
 
             traced_path = CustomTracedPath(dot_to_move.get_center, stroke_color=colors[path_index], stroke_width=2.0, 
-                                          opacity_range=(0.25, 1.0), fade_length=15)
+                                          opacity_range=(0.0, 1.0), fade_length=64) #Trying a full fade to zero
             # traced_path.set_opacity(0.5)
             # traced_path.set_fill(opacity=0)
             all_traced_paths.add(traced_path)

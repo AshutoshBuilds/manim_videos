@@ -201,7 +201,7 @@ class TrackerControlledVectorField(VectorField):
         self.note_changed_data()
 
 
-class p66v2(InteractiveScene):
+class p66v3(InteractiveScene):
     def construct(self):
 
         '''
@@ -273,7 +273,7 @@ class p66v2(InteractiveScene):
             """Vector function that uses the ValueTracker for time"""
             current_time = time_tracker.get_value()
             max_time = 8.0  # Map time 0-8 to sigma indices 0-255
-            sigma_idx = int(np.clip(current_time * 63 / max_time, 0, 63)) #Needs to be N-1
+            sigma_idx = int(np.clip(current_time * 255 / max_time, 0, 255)) #Needs to be N-1
             
             try:
                 res = model.forward(torch.tensor(coords_array).float(), sigmas[sigma_idx], cond=None)

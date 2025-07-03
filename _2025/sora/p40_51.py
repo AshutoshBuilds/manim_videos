@@ -230,7 +230,7 @@ def create_noisy_arrow_animation(self, start_point, end_point, target_point, num
 
 
 
-class p48_51v3(InteractiveScene):
+class p48_51v4(InteractiveScene):
     def construct(self):
         '''
         Ok ok ok need to do a direct transition from p47b after fading out all the traces etc -> then bring
@@ -338,12 +338,23 @@ class p48_51v3(InteractiveScene):
             tip_width_ratio=5, 
             buff=0.04  # Small buffer so arrow doesn't overlap the dots
         )
+        arrow_x100_to_x99.put_start_and_end_on(dot_to_move.get_center(), [4.739921625933185, 2.8708813273028455, 0]) #Eh?
         arrow_x100_to_x99.set_color(CHILL_BROWN)
         # arrow_x100_to_x99.set_opacity(0.6)
 
 
+        # arrow_x100_to_x99 = Arrow(
+        #     start=dot_to_move.get_center(),
+        #     end=dot_history[-1].get_center(),
+        #     thickness=1.5,
+        #     tip_width_ratio=5, 
+        #     buff=0.04  # Small buffer so arrow doesn't overlap the dots
+        # )
+
+
         self.frame.reorient(0, 0, 0, (3.58, 2.57, 0.0), 2.69)
-        self.add(axes, dots, traced_path, dot_to_move)
+        self.add(axes, dots, dot_to_move)
+        # self.add(traced_path)
         self.add(x100,  x0, arrow_x100_to_x0, arrow_x100_to_x99)
         self.wait()
 
@@ -352,7 +363,12 @@ class p48_51v3(InteractiveScene):
         # I think first it's Fading everythig except that data and brown line (maybe scale of brown arrow changes)
         # I might beg able to get away with some updates to the brown arrows angle on a zoom out as I add stuff, we'll see. 
 
-        self.play(FadeOut(traced_path), FadeOut(dot_to_move), FadeOut(x100), FadeOut(x0), FadeOut(arrow_x100_to_x0), 
+        self.play(
+                # FadeOut(traced_path), 
+                  FadeOut(dot_to_move), 
+                  FadeOut(x100), 
+                  FadeOut(x0), 
+                  FadeOut(arrow_x100_to_x0), 
                  dots.animate.set_opacity(1.0).set_color(YELLOW), run_time=1.5)
 
         # Ok ok ok so I now in need some vector fields. These come from trained models. Do I want to import the model 
@@ -492,8 +508,8 @@ class p48_51v3(InteractiveScene):
             density=3.0,
             stroke_width=2,
             max_radius=6.0,      # Vectors fade to min_opacity at this distance
-            min_opacity=0.15,     # Minimum opacity at max_radius
-            max_opacity=0.8,     # Maximum opacity at origin
+            min_opacity=0.2,     # Minimum opacity at max_radius
+            max_opacity=1.0,     # Maximum opacity at origin
             tip_width_ratio=4,
             tip_len_to_width=0.01,
             max_vect_len_to_step_size=0.7,
@@ -517,7 +533,7 @@ class p48_51v3(InteractiveScene):
                  dots.animate.set_opacity(0.75),
                  arrow_x100_to_x99.animate.rotate(-14*DEGREES).shift([0.17, -0.07, 0]).scale([0.6, 1.2, 1]).set_opacity(0.5),
                  self.frame.animate.reorient(0, 0, 0, (-0.21, 0.02, 0.0), 8.08), 
-                 run_time=6.0)
+                 run_time=16.0)
         self.remove(arrow_x100_to_x99)
         self.wait()
 
@@ -657,7 +673,7 @@ class p48_51v3(InteractiveScene):
 
 
         self.remove(step_count)
-        step_count=MarkupText(str(2), font_size=35)
+        step_count=MarkupText(str(1), font_size=35)
         step_count.set_color(CHILL_BROWN)
         step_count.move_to([-6.8, -3.3, 0])
         self.add(step_count)
@@ -669,7 +685,15 @@ class p48_51v3(InteractiveScene):
                      run_time=0.1, rate_func=linear)
         self.wait()
 
-        time_tracker.set_value(8.0)
+        # time_tracker.set_value(8.0)
+        
+        self.add(vector_field)
+        time_tracker.set_value(8*(99/100))
+        self.wait()
+        self.remove(vector_field)
+
+
+
         self.play(FadeIn(vector_field), dots_to_move_2.animate.set_opacity(0.3))
 
         # self.play(time_tracker.animate.set_value(8.0), run_time=8.0)

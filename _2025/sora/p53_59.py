@@ -244,7 +244,7 @@ class TrackerControlledVectorField(VectorField):
 
 
 
-class p57_58v2(InteractiveScene):
+class p57_58v4(InteractiveScene):
     def construct(self):
 
         #Smooth transition/pickup from spiral and axes in p56
@@ -395,11 +395,11 @@ class p57_58v2(InteractiveScene):
             stroke_width=2,
             max_radius=6.0,      # Vectors fade to min_opacity at this distance
             min_opacity=0.15,     # Minimum opacity at max_radius
-            max_opacity=0.8,     # Maximum opacity at origin
+            max_opacity=1.0,     # Maximum opacity at origin
             tip_width_ratio=4,
             tip_len_to_width=0.01,
             max_vect_len_to_step_size=0.7,
-            color=CHILL_BROWN
+            color=WHITE
         )
         
 
@@ -408,7 +408,7 @@ class p57_58v2(InteractiveScene):
         self.frame.reorient(0, 0, 0, (0.00, 0.00, 0.0), 8.25)
         self.add(axes, dots)
         self.wait()
-        self.play(FadeIn(vector_field), self.frame.animate.reorient(0, 0, 0, (0.00, 0.00, 0.0), 8.0))
+        self.play(FadeIn(vector_field)) #, self.frame.animate.reorient(0, 0, 0, (0.00, 0.00, 0.0), 8.0))
         self.wait()
 
 
@@ -445,7 +445,7 @@ class p57_58v2(InteractiveScene):
         dot_to_move.set_opacity(1.0)
         self.add(dot_to_move, traced_path)
 
-        start_orientation=[0, 0, 0, (0.00, 0.00, 0.0), 8.0]
+        start_orientation=[0, 0, 0, (0.00, 0.00, 0.0), 8.25]
         # end_orientation=[0, 0, 0, (2.92, 1.65, 0.0), 4.19]
         end_orientation=[0, 0, 0, (3.48, 1.88, 0.0), 4.26]
         interp_orientations=manual_camera_interpolation(start_orientation, end_orientation, 100)
@@ -559,9 +559,16 @@ class p57_58v2(InteractiveScene):
                   FadeOut(mu_label), FadeOut(x100))
 
         #Now fade in vector field while we zoom out!
+        self.add(vector_field)
+        self.play(time_tracker.animate.set_value(8.0), run_time=2.0)
+        self.remove(vector_field)
+
 
         self.play(FadeIn(vector_field), self.frame.animate.reorient(0, 0, 0, (0.00, 0.00, 0.0), 8.0), run_time=4.0)
-        self.wait(0)
+        self.wait()
+
+        self.play(time_tracker.animate.set_value(0.0), run_time=8.0)
+        self.wait()
 
 
 
@@ -572,7 +579,7 @@ class p57_58v2(InteractiveScene):
 
 
 
-class p53_56v3(InteractiveScene):
+class p53_56v4(InteractiveScene):
     def construct(self):
         '''
         Ok ok ok need to do a direct transition from p47b after fading out all the traces etc -> then bring
@@ -934,7 +941,7 @@ class p53_56v3(InteractiveScene):
 
         self.wait()
 
-        self.play(FadeIn(all_dots_to_move))
+        self.play(FadeIn(all_dots_to_move), self.frame.animate.reorient(0, 0, 0, (-0.06, 0.01, 0.0), 7.10), run_time=3.0)
         self.wait()
 
         for k in range(64):
@@ -949,7 +956,8 @@ class p53_56v3(InteractiveScene):
 
         self.wait()
         self.play(FadeOut(all_traced_paths), FadeOut(vector_field), FadeOut(axes),
-                  self.frame.animate.reorient(0, 0, 0, (-0.11, -0.32, 0.0), 6.34), run_time=2.5)
+                  self.frame.animate.reorient(0, 0, 0, (-0.11, -0.32, 0.0), 6.34), 
+                  run_time=2.5)
         self.wait()
 
         #Ok so to get me into p57, I think i just want to go back to that sam path I showed at the beggining of 40?

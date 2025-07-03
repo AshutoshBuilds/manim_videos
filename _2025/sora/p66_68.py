@@ -201,7 +201,7 @@ class TrackerControlledVectorField(VectorField):
         self.note_changed_data()
 
 
-class p66(InteractiveScene):
+class p66v2(InteractiveScene):
     def construct(self):
 
         '''
@@ -226,7 +226,7 @@ class p66(InteractiveScene):
                 "color": CHILL_BROWN, 
                 "stroke_width": 2,
                 "include_tip": True,
-                "include_ticks": True,
+                "include_ticks": False,
                 "tick_size": 0.06,
                 "tip_config": {"color": CHILL_BROWN, "length": 0.15, "width": 0.15}
             }

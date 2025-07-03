@@ -230,7 +230,7 @@ def create_noisy_arrow_animation(self, start_point, end_point, target_point, num
 
 
 
-class p48_51v2(InteractiveScene):
+class p48_51v3(InteractiveScene):
     def construct(self):
         '''
         Ok ok ok need to do a direct transition from p47b after fading out all the traces etc -> then bring

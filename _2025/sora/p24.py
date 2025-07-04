@@ -109,10 +109,11 @@ class P24(InteractiveScene):
 
         cosine_similarity[0][0] = 'dog'
 
-        for pair in cosine_similarity[:6]:
+        for pair in cosine_similarity: #[:6]:
             text, similarity, embedding = pair
             count += 1
             article = "an" if str(text).strip().lower()[0] in "aeiou" else "a"
+            if str(text).strip().lower()[-1] == 's': article=""
             prefix = f'"A photo of {article} '
             main_word = str(text).strip()
             full_sentence = prefix + main_word + '"'

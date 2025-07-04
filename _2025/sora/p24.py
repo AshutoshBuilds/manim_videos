@@ -104,16 +104,13 @@ class P24(InteractiveScene):
 
         
         count = 0
-        seen = []
-        remove = False
-        last_pair = None
+        seen = []  # Now stores [main_word_mobject, similarity_mobject, original_text]
+        current_similarity_mobject = None
 
         cosine_similarity[0][0] = 'dog'
-        pair=cosine_similarity[0]
 
-        for pair in cosine_similarity[:7]:
+        for pair in cosine_similarity[:6]:
             text, similarity, embedding = pair
-            # text='dog' #Overide for first example
             count += 1
             article = "an" if str(text).strip().lower()[0] in "aeiou" else "a"
             prefix = f'"A photo of {article} '
@@ -123,30 +120,35 @@ class P24(InteractiveScene):
             full_text = Text(full_sentence, font='Myriad Pro', font_size=40).set_color(CHILL_BROWN).set_width(3)
             main_word_mobject = Text(main_word, font='Myriad Pro').set_color(CHILL_BROWN).scale(0.8)
             full_text.move_to([cat.get_x(), bottom_left_arrow.get_y(), 0])
-            # main_word_mobject.move_to([cat.get_x(), bottom_left_arrow.get_y(), 0])
             main_word_mobject.move_to([full_text.get_right()[0], bottom_left_arrow.get_y(), 0], aligned_edge=RIGHT)
 
             similarity_mobject = Tex(f"{similarity:.3f}", font_size=38).set_color(FRESH_TAN).move_to(border_box.get_center()).set_width(0.88)
             rand_vals = [round(random.uniform(-1, 1), 2) for _ in range(3)]
-            embedding_mobject = Tex(rf"[{rand_vals[0]},\ {rand_vals[1]},\ \ldots\ {rand_vals[2]}]", font_size=32).set_color(CHILL_PURPLE).move_to([cat_list.get_x(), bottom_right_arrow.get_y(), 0]) #.set_width(cat_list.get_width())
+            embedding_mobject = Tex(rf"[{rand_vals[0]},\ {rand_vals[1]},\ \ldots\ {rand_vals[2]}]", font_size=32).set_color(CHILL_PURPLE).move_to([cat_list.get_x(), bottom_right_arrow.get_y(), 0])
 
-
-
-            # self.wait()
+            # Remove the previous similarity mobject if it exists
+            if current_similarity_mobject is not None:
+                self.remove(current_similarity_mobject)
+            
+            # Add new elements
             self.add(full_text)
             self.add(embedding_mobject)
             self.add(similarity_mobject)
-            # self.wait()
+            current_similarity_mobject = similarity_mobject
+            self.wait(0.2)
 
-
-            seen.append([main_word_mobject, similarity_mobject])
+            # Add to seen list - now include the original text for comparison
+            seen.append([main_word_mobject, similarity_mobject, main_word])
             ordered = sorted(seen, key=lambda x: float(x[1].get_tex()), reverse=True)
             
-            top5_words = [w[0].text for w in ordered[:3]]
-            if text not in top5_words:
-                remove = True
-
-            for idx, (w, s) in enumerate(ordered[:3]):
+            # Check if current word will be in top 3 - now use the stored text
+            top3_words = [item[2] for item in ordered[:3]]  # item[2] is the original text
+            current_will_stay_in_top3 = main_word in top3_words
+            
+            print(f"Current word: {main_word}, Top 3: {top3_words}, Will stay: {current_will_stay_in_top3}")
+            
+            # Set up targets for top 3
+            for idx, (w, s, _) in enumerate(ordered[:3]):  # Unpack the third element too
                 target_word_point = text_points[idx].get_center()
                 target_sim_point = similarity_points[idx].get_center()
                 w.generate_target()
@@ -154,24 +156,28 @@ class P24(InteractiveScene):
                 w.target.move_to(target_word_point)
                 s.target.move_to(target_sim_point)
 
-            # Move top 4 to their new spots
-            
-            # Move top 5 to their new spots (including the 5th)
-            # Remove the previous 5th spot if it exists (before moving)
+            # Remove the 4th item if it exists (the one that gets bumped out)
             if len(ordered) > 3:
-                w5, s5 = ordered[3]
-                self.remove(w5, s5)
-            self.play(
-                *[MoveToTarget(w) for w, s in ordered[:3]],
-                *[MoveToTarget(s) for w, s in ordered[:3]]
-            )
-
-
-            self.wait(0.2)
+                w4, s4, _ = ordered[3]  # Unpack the third element
+                self.remove(w4, s4)
+            
+            # Move top 3 to their new spots
+            if current_will_stay_in_top3:
+                self.play(
+                    *[MoveToTarget(w) for w, s, _ in ordered[:3]],  # Unpack properly
+                    *[MoveToTarget(s) for w, s, _ in ordered[:3]]
+                )
+                
+            # Remove temporary elements
             self.remove(embedding_mobject, full_text)
-            if remove:
-                self.remove(similarity_mobject)
+            
+            # If current similarity will stay in top 3, don't mark it for removal
+            if current_will_stay_in_top3:
+                current_similarity_mobject = None  # It's now managed by the ranking system
 
+        # Clean up any remaining similarity mobject at the end
+        if current_similarity_mobject is not None:
+            self.remove(current_similarity_mobject)
 
         self.wait()
 

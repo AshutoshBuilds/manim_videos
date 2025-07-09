@@ -32,6 +32,8 @@ class P24(InteractiveScene):
     def construct(self):
         image_path='/Users/stephen/manim/videos/_2025/sora/'
         svg = SVGMobject(image_path+"p17_25_10.svg")[1:].scale(4)
+        # svg_arrow_fix = SVGMobject(image_path+"p24_background_2.svg")[1:].scale(4)
+        
 
         top_left_arrow = VGroup(svg[0], svg[1])
         top_right_arrow = VGroup(svg[2], svg[3])
@@ -47,6 +49,11 @@ class P24(InteractiveScene):
 
         top_curve_arrow = VGroup(svg[13], svg[14])
         bottom_curve_arrow = VGroup(svg[9], svg[10])
+
+        # self.wait()
+        # top_curve_arrow=svg_arrow_fix[4]
+        # self.add(top_curve_arrow)
+
 
         curve_arrows = VGroup(
             top_curve_arrow,
@@ -99,7 +106,7 @@ class P24(InteractiveScene):
         ).shift(LEFT * 2)
 
         self.frame.reorient(0, 0, 0, (-0.13, -0.06, 0.0), 8.30)
-        self.add(svg, cat, cat_list, labels)
+        self.add(svg, cat, cat_list) #, labels)
 
 
         

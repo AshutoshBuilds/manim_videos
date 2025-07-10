@@ -11,6 +11,10 @@ import pandas as pd
 from datetime import datetime
 import itertools
 import json
+import warnings
+
+# Suppress NumPy compatibility warnings
+warnings.filterwarnings('ignore', category=UserWarning, message='.*NumPy.*')
 
 # Set random seed for reproducibility
 random_seed = 25
@@ -192,7 +196,7 @@ def main():
     netherlands_coords = netherlands_coords_all[np.random.choice(len(netherlands_coords_all), num_points_to_sample), :]
     
     X = np.vstack((netherlands_coords, belgium_coords))
-    y = np.concatenate((np.zeros(len(netherlands_coords)), np.ones(len(belgium_coords)))).astype('int')
+    y = np.concatenate((np.zeros(len(netherlands_coords)), np.ones(len(belgium_coords)))).astype(np.int32)
     
     rI = np.arange(len(y))
     np.random.shuffle(rI)
@@ -200,7 +204,7 @@ def main():
     y = y[rI]
     
     X_tensor = torch.FloatTensor(X)
-    y_tensor = torch.tensor(y)
+    y_tensor = torch.tensor(y, dtype=torch.long)
     
     # Generate configurations
     network_configs = generate_network_configs(max_depth=8, max_width=512)

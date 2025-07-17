@@ -13,6 +13,277 @@ FRESH_TAN='#dfd0b9'
 
 graphics_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/graphics/'
 
+from itertools import combinations, product
+
+def get_activation_regions(w1, b1, extent=1):
+    """
+    Find all regions defined by first layer ReLU activations.
+    Returns a list of regions, each defined by which neurons are active.
+    """
+    regions = []
+    
+    # For 2 neurons, we have 4 possible activation patterns
+    for neuron1_active, neuron2_active in product([False, True], repeat=2):
+        region = {
+            'pattern': (neuron1_active, neuron2_active),
+            'constraints': []
+        }
+        
+        # Add constraints for this region
+        if neuron1_active:
+            # w1[0,0]*x + w1[0,1]*y + b1[0] >= 0
+            region['constraints'].append((w1[0,0], w1[0,1], b1[0], '>='))
+        else:
+            # w1[0,0]*x + w1[0,1]*y + b1[0] <= 0  
+            region['constraints'].append((w1[0,0], w1[0,1], b1[0], '<='))
+            
+        if neuron2_active:
+            # w1[1,0]*x + w1[1,1]*y + b1[1] >= 0
+            region['constraints'].append((w1[1,0], w1[1,1], b1[1], '>='))
+        else:
+            # w1[1,0]*x + w1[1,1]*y + b1[1] <= 0
+            region['constraints'].append((w1[1,0], w1[1,1], b1[1], '<='))
+            
+        regions.append(region)
+    
+    return regions
+
+def find_region_vertices(constraints, extent=1):
+    """
+    Find vertices of a region defined by linear constraints within [-extent, extent]^2.
+    """
+    # Boundary lines of the square domain
+    boundary_constraints = [
+        (1, 0, extent, '<='),    # x <= extent
+        (-1, 0, extent, '<='),   # x >= -extent  
+        (0, 1, extent, '<='),    # y <= extent
+        (0, -1, extent, '<=')    # y >= -extent
+    ]
+    
+    all_constraints = constraints + boundary_constraints
+    vertices = []
+    
+    # Find intersections of all pairs of constraint lines
+    for i in range(len(all_constraints)):
+        for j in range(i+1, len(all_constraints)):
+            c1 = all_constraints[i]
+            c2 = all_constraints[j]
+            
+            # Solve system: c1[0]*x + c1[1]*y = -c1[2] and c2[0]*x + c2[1]*y = -c2[2]
+            A = np.array([[c1[0], c1[1]], [c2[0], c2[1]]])
+            b = np.array([-c1[2], -c2[2]])
+            
+            try:
+                if np.abs(np.linalg.det(A)) > 1e-10:  # Non-parallel lines
+                    vertex = np.linalg.solve(A, b)
+                    x, y = vertex[0], vertex[1]
+                    
+                    # Check if vertex satisfies all constraints
+                    valid = True
+                    for constraint in all_constraints:
+                        w1, w2, bias, op = constraint
+                        value = w1 * x + w2 * y + bias
+                        if op == '<=' and value > 1e-10:
+                            valid = False
+                            break
+                        elif op == '>=' and value < -1e-10:
+                            valid = False
+                            break
+                    
+                    if valid and abs(x) <= extent + 1e-10 and abs(y) <= extent + 1e-10:
+                        vertices.append([x, y])
+            except np.linalg.LinAlgError:
+                continue
+    
+    # Remove duplicate vertices
+    unique_vertices = []
+    for vertex in vertices:
+        is_duplicate = False
+        for existing in unique_vertices:
+            if np.linalg.norm(np.array(vertex) - np.array(existing)) < 1e-8:
+                is_duplicate = True
+                break
+        if not is_duplicate:
+            unique_vertices.append(vertex)
+    
+    # Sort vertices in counter-clockwise order around centroid
+    if len(unique_vertices) >= 3:
+        centroid = np.mean(unique_vertices, axis=0)
+        angles = []
+        for vertex in unique_vertices:
+            angle = np.arctan2(vertex[1] - centroid[1], vertex[0] - centroid[0])
+            angles.append(angle)
+        
+        sorted_indices = np.argsort(angles)
+        unique_vertices = [unique_vertices[i] for i in sorted_indices]
+    
+    return unique_vertices
+
+def create_polytope_boundary_lines(w1, b1, w2=None, b2=None, layer=1, neuron_idx=0, extent=1):
+    """
+    Create complete boundary lines around each polytope face.
+    """
+    boundary_lines = []
+    
+    # Get all regions (polytope faces)
+    regions = get_activation_regions(w1, b1, extent)
+    
+    for region in regions:
+        # Find vertices of this region
+        vertices = find_region_vertices(region['constraints'], extent)
+        
+        if len(vertices) >= 3:
+            # Create boundary lines around the perimeter of this face
+            for i in range(len(vertices)):
+                start_vertex = vertices[i]
+                end_vertex = vertices[(i + 1) % len(vertices)]  # Wrap around to first vertex
+                
+                line = Line(
+                    start=[start_vertex[0], start_vertex[1], 0],
+                    end=[end_vertex[0], end_vertex[1], 0],
+                    color=WHITE,
+                    stroke_width=2
+                )
+                boundary_lines.append(line)
+    
+    # For second layer, also add boundaries where the second layer neuron switches
+    if layer == 2 and w2 is not None and b2 is not None:
+        for region in regions:
+            pattern = region['pattern']
+            
+            # Calculate effective weights for this region  
+            w_eff_x = 0
+            w_eff_y = 0
+            b_eff = b2[neuron_idx]
+            
+            for k, active in enumerate(pattern):
+                if active:
+                    w_eff_x += w2[neuron_idx, k] * w1[k, 0]
+                    w_eff_y += w2[neuron_idx, k] * w1[k, 1]
+                    b_eff += w2[neuron_idx, k] * b1[k]
+            
+            # Find where second layer neuron switches within this region
+            joint_points = get_relu_joint(w_eff_x, w_eff_y, b_eff, extent)
+            if joint_points and len(joint_points) >= 2:
+                clipped_points = clip_line_to_region(joint_points, region, extent)
+                if clipped_points and len(clipped_points) >= 2:
+                    line = Line(
+                        start=[clipped_points[0][0], clipped_points[0][1], 0],
+                        end=[clipped_points[1][0], clipped_points[1][1], 0],
+                        color=RED,
+                        stroke_width=3
+                    )
+                    boundary_lines.append(line)
+    
+    return boundary_lines
+
+def clip_line_to_region(line_points, region, extent):
+    """
+    Clip a line segment to a region defined by constraints.
+    """
+    if not line_points or len(line_points) < 2:
+        return []
+    
+    start, end = line_points[0], line_points[1]
+    
+    # Sample points along the line and keep those in the region
+    valid_points = []
+    for t in np.linspace(0, 1, 200):
+        x = start[0] + t * (end[0] - start[0])
+        y = start[1] + t * (end[1] - start[1])
+        
+        # Check if point satisfies all region constraints
+        valid = True
+        for constraint in region['constraints']:
+            w1, w2, bias, op = constraint
+            value = w1 * x + w2 * y + bias
+            if op == '<=' and value > 1e-8:
+                valid = False
+                break
+            elif op == '>=' and value < -1e-8:
+                valid = False
+                break
+        
+        if valid and abs(x) <= extent and abs(y) <= extent:
+            valid_points.append([x, y])
+    
+    # Return endpoints of valid segment
+    if len(valid_points) >= 2:
+        return [valid_points[0], valid_points[-1]]
+    else:
+        return []
+
+def create_region_polygons(w1, b1, w2=None, b2=None, layer=1, neuron_idx=0, extent=1):
+    """
+    Create polygon objects for each region of the polytope.
+    Useful for shading different regions with different colors/textures.
+    """
+    regions = get_activation_regions(w1, b1, extent)
+    polygons = []
+    
+    colors = [RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
+    
+    for i, region in enumerate(regions):
+        vertices = find_region_vertices(region['constraints'], extent)
+        
+        if len(vertices) >= 3:
+            # Create polygon
+            vertices_3d = [[v[0], v[1], 0] for v in vertices]
+            polygon = Polygon(*vertices_3d)
+            polygon.set_fill(colors[i % len(colors)], opacity=0.3)
+            polygon.set_stroke(colors[i % len(colors)], width=2)
+            
+            polygons.append({
+                'polygon': polygon,
+                'region': region,
+                'vertices': vertices
+            })
+    
+    return polygons
+
+def create_complete_polytope_outlines(w1, b1, w2=None, b2=None, layer=1, neuron_idx=0, extent=1):
+    """
+    Create complete polygon outlines for each polytope face.
+    Returns a list of polygon objects that outline each face.
+    """
+    regions = get_activation_regions(w1, b1, extent)
+    outlines = []
+    
+    colors = [WHITE, GREY, CHILL_BROWN, FRESH_TAN]
+    
+    for i, region in enumerate(regions):
+        vertices = find_region_vertices(region['constraints'], extent)
+        
+        if len(vertices) >= 3:
+            # Create vertices in 3D
+            vertices_3d = [[v[0], v[1], 0] for v in vertices]
+            
+            # Create polygon outline (no fill, just stroke)
+            polygon_outline = Polygon(*vertices_3d)
+            polygon_outline.set_fill(opacity=0)  # No fill
+            polygon_outline.set_stroke(colors[i % len(colors)], width=3)
+            
+            outlines.append(polygon_outline)
+            
+            # Also create individual line segments for more control
+            for j in range(len(vertices)):
+                start_vertex = vertices[j]
+                end_vertex = vertices[(j + 1) % len(vertices)]
+                
+                line = Line(
+                    start=[start_vertex[0], start_vertex[1], 0],
+                    end=[end_vertex[0], end_vertex[1], 0],
+                    color=WHITE,
+                    stroke_width=2
+                )
+                outlines.append(line)
+    
+    return outlines
+
+
+
+
+
 def get_relu_joint(weight_1, weight_2, bias, extent=1):
     if np.abs(weight_2) < 1e-8: 
         x_intercept = -bias / weight_1
@@ -304,6 +575,30 @@ class plane_folding_sketch_1(InteractiveScene):
         group_21.move_to([0, 0, 2.4])
         self.add(group_21)  
 
+
+
+
+        # Add complete polygon outlines
+        outlines = create_complete_polytope_outlines(w1, b1, w2, b2, 1, 1)
+        for outline in outlines:
+            outline.shift([0, 0, z_offset])
+            self.add(outline)
+
+        # Optionally add filled regions with transparency
+        regions = create_region_polygons(w1, b1, w2, b2, 1, 1)
+        for region_data in regions:
+            polygon = region_data['polygon']
+            polygon.shift([0, 0, z_offset])
+            polygon.set_fill(opacity=0.1)  # Very transparent
+            self.add(polygon)
+
+
+        self.wait()
+        # boundary_lines = create_polytope_boundary_lines(w1, b1, w2, b2, layer=1, neuron_idx=1)
+        # boundary_group = Group(*boundary_lines)
+        # boundary_group.move_to([0, 0, 2.4])
+
+        # self.wait()
 
         # Submerging a surface into a very smooth fully opaque liquid...
         # That's not quite right though, becuase values below the surface get clipped to 0

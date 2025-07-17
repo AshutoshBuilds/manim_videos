@@ -1,4 +1,5 @@
 from manimlib import *
+from functools import partial
 
  
 CHILL_BROWN='#948979'
@@ -38,6 +39,63 @@ def get_relu_joint(weight_1, weight_2, bias, extent=1):
                 unique_points.append(p)
         return unique_points
 
+def line_from_joint_points_1(joint_points):
+    if joint_points:
+        # Create 3D points for the joint line
+        joint_3d_points = []
+        for point in joint_points:
+            x, y = point
+            z = 0
+            joint_3d_points.append([x, y, z])
+        
+        if len(joint_3d_points) >= 2:
+            joint_line = DashedLine(
+                start=[joint_points[0][0], joint_points[0][1], 0],
+                end=[joint_points[1][0], joint_points[1][1], 0],
+                color=WHITE,
+                stroke_width=3,
+                dash_length=0.05
+            )
+            return joint_line
+
+
+def surface_func_general(u, v, w1, w2, b, viz_scale=0.5):
+    linear_output = w1 * u + w2 * v + b
+    relu_output = max(0, linear_output)
+    z = relu_output * viz_scale 
+    return np.array([u, v, z])
+
+
+def surface_func_second_layer(u, v, w1, b1, w2, b2, neuron_idx=0, viz_scale=0.5):
+    """
+    Surface function for second layer neurons that combines first layer outputs.
+    
+    Args:
+        u, v: Input coordinates (-1 to 1)
+        w1: First layer weights (2x2 matrix)
+        b1: First layer biases (2 element array)
+        w2: Second layer weights (2x2 matrix) 
+        b2: Second layer biases (2 element array)
+        neuron_idx: Which second layer neuron (0 or 1)
+        viz_scale: Scaling factor for visualization
+    """
+    
+    # First layer neuron 1 output
+    linear_output_1 = w1[0,0] * u + w1[0,1] * v + b1[0]
+    relu_output_1 = max(0, linear_output_1)
+    
+    # First layer neuron 2 output  
+    linear_output_2 = w1[1,0] * u + w1[1,1] * v + b1[1]
+    relu_output_2 = max(0, linear_output_2)
+    
+    # Second layer neuron computation
+    second_layer_input = w2[neuron_idx,0] * relu_output_1 + w2[neuron_idx,1] * relu_output_2 + b2[neuron_idx]
+    second_layer_output = max(0, second_layer_input)
+    
+    # Use output as z-coordinate
+    z = second_layer_output * viz_scale
+    
+    return np.array([u, v, z])
 
 class plane_folding_sketch_1(InteractiveScene):
     def construct(self):
@@ -53,6 +111,7 @@ class plane_folding_sketch_1(InteractiveScene):
                      [-1.7220999, -2.2057745]], dtype=np.float32)
         b3=np.array([-1.0249746 ,  0.61326534], dtype=np.float32)
         
+        #Not using this flat map right now - but will probably want it
         map_img=ImageMobject(graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-11.png')
         map_img.set_height(2)  # This sets the height to 2 units (-1 to 1)
         map_img.set_width(2)   # This sets the width to 2 units (-1 to 1)
@@ -62,69 +121,52 @@ class plane_folding_sketch_1(InteractiveScene):
         # self.add(map_img)
         # self.wait()
 
+        surface_func_11=partial(surface_func_general, w1=w1[0,0], w2=w1[0,1], b=b1[0], viz_scale=0.3)
+        bent_surface_11 = ParametricSurface(surface_func_11, u_range=[-1, 1], v_range=[-1, 1], resolution=(50, 50))
+        ts11=TexturedSurface(bent_surface_11, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-11.png')
+        ts11.set_shading(0,0,0)
+        ts11.set_opacity(0.75)
+        joint_points_11 = get_relu_joint(w1[0,0], w1[0,1], b1[0], extent=1)
+        joint_line_11=line_from_joint_points_1(joint_points_11).set_opacity(0.8)
+        group_11=Group(ts11, joint_line_11)
 
-        def surface_func(u, v):
-            # u and v are the parameters (from -1 to 1 for both)
-            x = u
-            y = v
-            
-            # Apply first layer transformation: w1*x + w2*y + b1
-            linear_output = w1[0,0] * x + w1[0,1] * y + b1[0]
-            
-            # Apply ReLU activation
-            relu_output = max(0, linear_output)
-            
-            # Use relu_output as the z-coordinate (height)
-            z = relu_output * 0.5  # Scale down for better visualization
-            
-            return np.array([x, y, z])
+        surface_func_12=partial(surface_func_general, w1=w1[1,0], w2=w1[1,1], b=b1[1], viz_scale=0.3)
+        bent_surface_12 = ParametricSurface(surface_func_12, u_range=[-1, 1], v_range=[-1, 1], resolution=(50, 50))
+        ts12=TexturedSurface(bent_surface_12, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-11.png')
+        ts12.set_shading(0,0,0)
+        ts12.set_opacity(0.75)
+        joint_points_12 = get_relu_joint(w1[1,0], w1[1,1], b1[1], extent=1)
+        joint_line_12=line_from_joint_points_1(joint_points_12).set_opacity(0.8)
+        group_12=Group(ts12, joint_line_12)
 
-        # Create the bent surface
-        bent_surface = ParametricSurface(
-            surface_func,
-            u_range=[-1, 1],
-            v_range=[-1, 1],
-            resolution=(50, 50),
-            # fill_color=BLUE,
-            # fill_opacity=0.7,
-            # stroke_color=WHITE,
-            # stroke_width=1
+
+        self.add(group_11)
+        self.add(group_12)    
+        group_12.move_to([0, 0, 1.2])
+        self.wait()         
+
+        # Ok scale/flip/add!
+        # I almost want liek 2 sets of copies now?
+        # One for each combination to come together?
+        # Let me start with the first one and then see what's up. 
+
+
+        surface_func_21 = partial(
+            surface_func_second_layer, 
+            w1=w1, b1=b1, w2=w2, b2=b2, 
+            neuron_idx=0, viz_scale=0.3
         )
-        ts=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-11.png')
-        ts.set_shading(0,0,0)
-        ts.set_opacity(0.95)
 
-        self.add(ts)
+
         self.wait()
+
+
+
+        
+
 
         # Ok great, bending looks good. And i think oreintation is actually mayby right?
         # Contour lines or heatmaps could be nice -> I think for now just a fold line would be a good starting point
-        joint_points = get_relu_joint(w1[0,0], w1[0,1], b1[0], extent=1)
-        
-        if joint_points:
-            # Create 3D points for the joint line
-            joint_3d_points = []
-            for point in joint_points:
-                x, y = point
-                # The z-coordinate at the joint is 0 (since ReLU output is 0 at the boundary)
-                z = 0
-                joint_3d_points.append([x, y, z])
-            
-            # Create a line connecting the joint points
-            if len(joint_3d_points) >= 2:
-                joint_line = DashedLine(
-                    start=[joint_points[0][0], joint_points[0][1], 0],
-                    end=[joint_points[1][0], joint_points[1][1], 0],
-                    color=WHITE,
-                    stroke_width=3,
-                    dash_length=0.05
-                )
-                self.add(joint_line)
-                
-
-
-        self.wait()
-
 
         # self.add(bent_surface)
         

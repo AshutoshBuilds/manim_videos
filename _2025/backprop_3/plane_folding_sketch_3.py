@@ -71,11 +71,11 @@ def create_3d_polygon_regions(polygons, w1, b1, w2, b2, neuron_idx=0, viz_scale=
 
 def create_3d_polygon_regions_with_relu(polygons, w1, b1, w2, b2, neuron_idx=0, viz_scale=0.3):
     """
-    Same as above but applies ReLU to the second layer output.
+    Creates 3D polygons with ReLU applied, splitting polygons that cross z=0.
     """
     
-    def evaluate_second_layer_at_point(x, y):
-        """Evaluate the second layer neuron output at a specific (x,y) point"""
+    def evaluate_second_layer_linear(x, y):
+        """Evaluate the second layer neuron LINEAR output (before ReLU)"""
         # First layer outputs
         linear_1 = w1[0,0] * x + w1[0,1] * y + b1[0]
         relu_1 = max(0, linear_1)
@@ -83,37 +83,126 @@ def create_3d_polygon_regions_with_relu(polygons, w1, b1, w2, b2, neuron_idx=0, 
         linear_2 = w1[1,0] * x + w1[1,1] * y + b1[1]
         relu_2 = max(0, linear_2)
         
-        # Second layer output WITH ReLU
+        # Second layer LINEAR output (before ReLU)
         second_layer_linear = w2[neuron_idx,0] * relu_1 + w2[neuron_idx,1] * relu_2 + b2[neuron_idx]
-        second_layer_output = max(0, second_layer_linear)
         
-        return second_layer_output * viz_scale
+        return second_layer_linear * viz_scale
+    
+    def find_zero_crossing_point(p1, p2, z1, z2):
+        """Find the point where a line segment crosses z=0"""
+        if abs(z2 - z1) < 1e-10:
+            return None  # Line is parallel to z=0
+        
+        # Linear interpolation to find where z=0
+        t = -z1 / (z2 - z1)
+        if 0 <= t <= 1:
+            x = p1[0] + t * (p2[0] - p1[0])
+            y = p1[1] + t * (p2[1] - p1[1])
+            return [x, y, 0]
+        return None
+    
+    def split_polygon_at_zero(polygon_2d):
+        """Split a polygon into parts above and below z=0"""
+        # Evaluate z at each corner
+        corners_3d = []
+        z_values = []
+        
+        for point_2d in polygon_2d:
+            x, y = point_2d
+            z_linear = evaluate_second_layer_linear(x, y)
+            corners_3d.append([x, y, z_linear])
+            z_values.append(z_linear)
+        
+        # Check if polygon crosses z=0
+        has_positive = any(z > 1e-10 for z in z_values)
+        has_negative = any(z < -1e-10 for z in z_values)
+        
+        if not has_negative:
+            # Entire polygon is above z=0, apply ReLU normally
+            points_3d_relu = [[p[0], p[1], max(0, p[2])] for p in corners_3d]
+            return [points_3d_relu], []
+        
+        elif not has_positive:
+            # Entire polygon is below z=0, gets clipped to z=0
+            points_2d_on_plane = [[p[0], p[1], 0] for p in corners_3d]
+            return [], [points_2d_on_plane]
+        
+        else:
+            # Polygon crosses z=0, need to split it
+            above_points = []
+            on_plane_points = []
+            
+            n = len(corners_3d)
+            for i in range(n):
+                current = corners_3d[i]
+                next_point = corners_3d[(i + 1) % n]
+                
+                current_z = current[2]
+                next_z = next_point[2]
+                
+                # Add current point if it's above z=0
+                if current_z > 1e-10:
+                    above_points.append([current[0], current[1], current_z])
+                elif abs(current_z) <= 1e-10:
+                    # On the plane
+                    above_points.append([current[0], current[1], 0])
+                    on_plane_points.append([current[0], current[1], 0])
+                else:
+                    # Below plane - add to on_plane_points
+                    on_plane_points.append([current[0], current[1], 0])
+                
+                # Check for zero crossing on edge to next point
+                if (current_z > 1e-10 and next_z < -1e-10) or (current_z < -1e-10 and next_z > 1e-10):
+                    crossing_point = find_zero_crossing_point(current, next_point, current_z, next_z)
+                    if crossing_point:
+                        above_points.append(crossing_point)
+                        on_plane_points.append(crossing_point)
+            
+            result_above = [above_points] if len(above_points) >= 3 else []
+            result_on_plane = [on_plane_points] if len(on_plane_points) >= 3 else []
+            
+            return result_above, result_on_plane
     
     polygon_objects = []
     colors = [RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE]
     
+    color_count=0
     for i, polygon in enumerate(polygons):
         if len(polygon) < 3:
             continue
-            
-        # Map each 2D corner point to 3D
-        points_3d = []
-        for point_2d in polygon:
-            x, y = point_2d
-            z = evaluate_second_layer_at_point(x, y)
-            points_3d.append([x, y, z])
         
-        # Create the 3D polygon
-        color = colors[i % len(colors)]
-        poly_3d = Polygon(*points_3d,
-                         fill_color=color,
-                         fill_opacity=0.7,
-                         stroke_color=color,
-                         stroke_width=2)
+        # Split the polygon at z=0
+        above_polygons, on_plane_polygons = split_polygon_at_zero(polygon)
         
-        polygon_objects.append(poly_3d)
+        
+        
+        # Add polygons above z=0 (with their original heights)
+        for poly_points in above_polygons:
+            if len(poly_points) >= 3:
+                color = colors[color_count % len(colors)]
+                poly_3d = Polygon(*poly_points,
+                                 fill_color=color,
+                                 fill_opacity=0.7,
+                                 stroke_color=color,
+                                 stroke_width=2)
+                polygon_objects.append(poly_3d)
+                color_count+=1
+        
+        # Add polygons on the z=0 plane (clipped parts)
+        for poly_points in on_plane_polygons:
+            if len(poly_points) >= 3:
+                color = colors[color_count % len(colors)]
+                poly_flat = Polygon(*poly_points,
+                                   fill_color=color,
+                                   fill_opacity=0.4,  # More transparent for clipped parts
+                                   stroke_color=color,
+                                   stroke_width=2)
+                polygon_objects.append(poly_flat)
+                color_count+=1
     
     return polygon_objects
+
+
 
 def get_polygon_corners(joint_points_1, joint_points_2, extent=1):
     """
@@ -716,6 +805,7 @@ class plane_folding_sketch_1(InteractiveScene):
             poly.shift([0,0,1.4])
             self.add(poly)
 
+        # self.add(polygon_3d_objects_r[3])
 
         self.wait()
 

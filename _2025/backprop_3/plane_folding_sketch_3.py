@@ -659,9 +659,65 @@ class plane_folding_sketch_1(InteractiveScene):
 
         self.wait()
 
-        # create_3d_polygon_regions_with_relu
+
+        # Ok, this is great - one interesting thing is that the 2d regions for each neuron are the same, 
+        # but the get scaled and clipped differently by ReLu there's proably a cool way to show that
+        # Man is there a reality where we show shit moving around during training?!
+        # Now before I do the ReLu stuff -> I want to add a 0,0 plane -> the intersections should be exactly
+        # where the new polytope borders will be right???
 
 
+        plane = Rectangle(
+            width=2,  # -1 to +1 = 2 units wide
+            height=2, # -1 to +1 = 2 units tall
+            fill_color=GREY,
+            fill_opacity=0.3,
+            stroke_color=WHITE,
+            stroke_width=1
+        )
+        plane.move_to([0, 0, 0])  # Position at z=0
+
+        # Add it to your scene
+        self.add(plane)
+        self.wait()
+
+        #Ok i think i do want to look at pre and post relu together, let's stack
+        surface_func_21r = partial(
+            surface_func_second_layer, 
+            w1=w1, b1=b1, w2=w2, b2=b2, 
+            neuron_idx=neuron_idx, viz_scale=0.3
+        )
+
+        # Ok so I'm trying to get my head around the fully polytope of the second layer
+        # Claude can't seem to figure it out, and it's close enough to the core thing 
+        # i'm trying to understand that i think it's worth me hackign on directly
+        # May end up with a better prompts/framing I can pass off, 
+        # or maybe I can just figure it out - we'll see!
+
+        bent_surface_21r = ParametricSurface(surface_func_21r, u_range=[-1, 1], v_range=[-1, 1], resolution=(50, 50))
+        ts21r = TexturedSurface(bent_surface_21r, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-11.png')
+        ts21r.set_shading(0,0,0)
+        ts21r.set_opacity(0.75)
+        ts21r.shift([0,0,1.4])
+
+        self.add(ts21r)
+
+        # Ok yeah so naive approach to "just Relu the polygons" doesn't work - why?
+        # Right yeah so if my polygon crosses the origin, then it gets a new joint - that's why right?
+
+
+        polygon_3d_objects_r = create_3d_polygon_regions_with_relu(
+            polygons, w1, b1, w2, b2, 
+            neuron_idx=neuron_idx, viz_scale=0.3
+        )
+        # Add them to the scene
+        for poly in polygon_3d_objects_r:
+            poly.set_opacity(0.3)
+            poly.shift([0,0,1.4])
+            self.add(poly)
+
+
+        self.wait()
 
 
         # Create colored polygons

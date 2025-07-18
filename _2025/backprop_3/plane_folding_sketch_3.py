@@ -483,6 +483,40 @@ def surface_func_second_layer(u, v, w1, b1, w2, b2, neuron_idx=0, viz_scale=0.5)
     
     return np.array([u, v, z])
 
+def surface_func_second_layer_no_relu_multi(u, v, w1, b1, w2, b2, neuron_idx=0, viz_scale=0.5):
+    """
+    Surface function for second layer neurons that combines outputs from any number of first layer neurons.
+    
+    Args:
+        u, v: Input coordinates (-1 to 1)
+        w1: First layer weights (n_hidden x 2 matrix)
+        b1: First layer biases (n_hidden element array)
+        w2: Second layer weights (n_output x n_hidden matrix) 
+        b2: Second layer biases (n_output element array)
+        neuron_idx: Which second layer neuron to visualize
+        viz_scale: Scaling factor for visualization
+    """
+    
+    # Get number of hidden neurons
+    n_hidden = w1.shape[0]
+    
+    # Compute all first layer outputs
+    relu_outputs = []
+    for i in range(n_hidden):
+        linear_output = w1[i,0] * u + w1[i,1] * v + b1[i]
+        relu_output = max(0, linear_output)
+        relu_outputs.append(relu_output)
+    
+    # Second layer neuron computation
+    second_layer_output = b2[neuron_idx]
+    for i in range(n_hidden):
+        second_layer_output += w2[neuron_idx,i] * relu_outputs[i]
+    
+    # No ReLU on output layer
+    # Use output as z-coordinate
+    z = second_layer_output * viz_scale
+    
+    return np.array([u, v, z])
 
 
 def surface_func_second_layer_no_relu(u, v, w1, b1, w2, b2, neuron_idx=0, viz_scale=0.5):

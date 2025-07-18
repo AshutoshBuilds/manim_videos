@@ -69,7 +69,7 @@ class plane_folding_sketch_single_layer_2(InteractiveScene):
         # First output neuron
         neuron_idx=0
         surface_func_21 = partial(
-            surface_func_second_layer_no_relu, 
+            surface_func_second_layer_no_relu_multi, 
             w1=w1, b1=b1, w2=w2, b2=b2, 
             neuron_idx=neuron_idx, viz_scale=viz_scale_2
         )
@@ -106,7 +106,7 @@ class plane_folding_sketch_single_layer_2(InteractiveScene):
         # Second output neuron
         neuron_idx=1
         surface_func_22 = partial(
-            surface_func_second_layer_no_relu, 
+            surface_func_second_layer_no_relu_multi, 
             w1=w1, b1=b1, w2=w2, b2=b2, 
             neuron_idx=neuron_idx, viz_scale=viz_scale_2
         )
@@ -121,54 +121,20 @@ class plane_folding_sketch_single_layer_2(InteractiveScene):
 
         self.add(ts22)
 
-
-        # Ok, Claude Opus isn't quite getting it - let's work on sorting it out together
-        colors = [RED, BLUE, GREEN, YELLOW, PURPLE]
-        polygon_mobjects = []
-
-        for i, polygon_points in enumerate(polygons):
-            if len(polygon_points) >= 3:
-                # Convert 2D points to 3D for Manim
-                points_3d = [[p[0], p[1], 0] for p in polygon_points]
-                
-                # Create the polygon
-                poly = Polygon(*points_3d, 
-                              fill_color=colors[i % len(colors)], 
-                              fill_opacity=0.4,
-                              stroke_color=colors[i % len(colors)],
-                              stroke_width=2)
-                
-                polygon_mobjects.append(poly)
-                self.add(poly)
-
-        self.wait()
-
-        # self.add(polygon_mobjects[0])
-        # self.add(polygon_mobjects[1])
-        # self.add(polygon_mobjects[2])
-        # self.add(polygon_mobjects[3])
-        # self.add(polygon_mobjects[4])
-
-
-
-
-
-
-
-
         
         # Create 3D polygon regions for second output neuron
         polygon_3d_objects_2 = create_3d_polygon_regions_multi(
-            polygons, w1, b1, w2, b2, neuron_idx=neuron_idx, viz_scale=0.25
+            polygons, w1, b1, w2, b2, neuron_idx=neuron_idx, viz_scale=viz_scale_2
         )
         polygon_3d_objects_2_copy = create_3d_polygon_regions_multi(
-            polygons, w1, b1, w2, b2, neuron_idx=neuron_idx, viz_scale=0.25
+            polygons, w1, b1, w2, b2, neuron_idx=neuron_idx, viz_scale=viz_scale_2
         )
         
         for poly in polygon_3d_objects_2:
             poly.set_opacity(0.3)
             self.add(poly)
         self.wait()
+
 
         # Final visualization positioning
         bs21_copy.move_to([3, 0, 0.75])
@@ -193,9 +159,48 @@ class plane_folding_sketch_single_layer_2(InteractiveScene):
         self.frame.reorient(11, 62, 0, (3.2, 0.86, 0.02), 4.39)
 
         self.wait()
+
+        ## Ok this is pretty freaking dope. 
+        ## What I want now (and would probably be nice for the 2 neuron case)
+        ## is to draw in the borders/intserctions between the two shells
+        ## 
+
+
+
+
+
         self.wait(20)
         self.embed()
 
 
+
+
+
+
+        # colors = [RED, BLUE, GREEN, YELLOW, PURPLE]
+        # polygon_mobjects = []
+
+        # for i, polygon_points in enumerate(polygons):
+        #     if len(polygon_points) >= 3:
+        #         # Convert 2D points to 3D for Manim
+        #         points_3d = [[p[0], p[1], 0] for p in polygon_points]
+                
+        #         # Create the polygon
+        #         poly = Polygon(*points_3d, 
+        #                       fill_color=colors[i % len(colors)], 
+        #                       fill_opacity=0.4,
+        #                       stroke_color=colors[i % len(colors)],
+        #                       stroke_width=2)
+                
+        #         polygon_mobjects.append(poly)
+        #         self.add(poly)
+
+        # self.wait()
+
+        # self.add(polygon_mobjects[0])
+        # self.add(polygon_mobjects[1])
+        # self.add(polygon_mobjects[2])
+        # self.add(polygon_mobjects[3])
+        # self.add(polygon_mobjects[4])
 
 

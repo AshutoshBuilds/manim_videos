@@ -1,6 +1,7 @@
 from manimlib import *
 from functools import partial
-
+from itertools import combinations
+import math
  
 CHILL_BROWN='#948979'
 YELLOW='#ffd35a'
@@ -10,6 +11,207 @@ GREEN='#6e9671'
 CHILL_GREEN='#6c946f'
 CHILL_BLUE='#3d5c6f'
 FRESH_TAN='#dfd0b9'
+
+
+def get_polygon_corners_multi(joint_points_list, extent=1):
+    """
+    Compute the corner points of polygons formed by multiple ReLU joint lines.
+    Each line divides the plane into two half-planes, creating distinct regions.
+    
+    Args:
+        joint_points_list: List of joint point pairs, one for each neuron
+        extent: The boundary of the square domain
+    
+    Returns:
+        List of polygons, where each polygon is a list of corner points
+    """
+    # Filter out empty joint lines
+    valid_lines = []
+    for joint_points in joint_points_list:
+        if joint_points and len(joint_points) >= 2:
+            valid_lines.append(joint_points[:2])
+    
+    if len(valid_lines) == 0:
+        # If no lines, return the entire square
+        return [[[-extent, -extent], [extent, -extent], [extent, extent], [-extent, extent]]]
+    
+    def line_equation(p1, p2):
+        """Get line equation coefficients ax + by + c = 0"""
+        x1, y1 = p1
+        x2, y2 = p2
+        a = y2 - y1
+        b = x1 - x2
+        c = x2*y1 - x1*y2
+        return a, b, c
+    
+    def evaluate_line(point, a, b, c):
+        """Evaluate ax + by + c for a point"""
+        return a * point[0] + b * point[1] + c
+    
+    def line_intersection(p1, p2, p3, p4):
+        """Find intersection of two lines"""
+        x1, y1 = p1
+        x2, y2 = p2
+        x3, y3 = p3
+        x4, y4 = p4
+        
+        denom = (x1-x2)*(y3-y4) - (y1-y2)*(x3-x4)
+        if abs(denom) < 1e-10:
+            return None
+            
+        t = ((x1-x3)*(y3-y4) - (y1-y3)*(x3-x4)) / denom
+        x = x1 + t*(x2-x1)
+        y = y1 + t*(y2-y1)
+        return [x, y]
+    
+    def clip_polygon_by_line(polygon, line_p1, line_p2):
+        """Clip a polygon by a line using Sutherland-Hodgman algorithm"""
+        if not polygon:
+            return []
+        
+        a, b, c = line_equation(line_p1, line_p2)
+        
+        output_polygon = []
+        n = len(polygon)
+        
+        for i in range(n):
+            current_vertex = polygon[i]
+            previous_vertex = polygon[i-1]
+            
+            current_side = evaluate_line(current_vertex, a, b, c)
+            previous_side = evaluate_line(previous_vertex, a, b, c)
+            
+            # We keep points on the positive side (or on the line)
+            if current_side >= -1e-10:  # Current vertex is inside
+                if previous_side < -1e-10:  # Previous vertex was outside
+                    # Add intersection point
+                    intersection = line_intersection(
+                        previous_vertex, current_vertex,
+                        line_p1, line_p2
+                    )
+                    if intersection:
+                        output_polygon.append(intersection)
+                output_polygon.append(current_vertex)
+            elif previous_side >= -1e-10:  # Current is outside, previous was inside
+                # Add intersection point
+                intersection = line_intersection(
+                    previous_vertex, current_vertex,
+                    line_p1, line_p2
+                )
+                if intersection:
+                    output_polygon.append(intersection)
+        
+        return output_polygon
+    
+    # Start with the full square
+    initial_square = [
+        [-extent, -extent],
+        [extent, -extent],
+        [extent, extent],
+        [-extent, extent]
+    ]
+    
+    # For each combination of line sides, create a region
+    n_lines = len(valid_lines)
+    polygons = []
+    
+    for region_idx in range(2**n_lines):
+        # Start with the full square
+        current_polygon = initial_square[:]
+        
+        # Clip by each line
+        for line_idx in range(n_lines):
+            if current_polygon:
+                line = valid_lines[line_idx]
+                
+                # Determine which side to keep based on the region code
+                if region_idx & (1 << line_idx):
+                    # Keep positive side - use line as is
+                    current_polygon = clip_polygon_by_line(current_polygon, line[0], line[1])
+                else:
+                    # Keep negative side - reverse line direction
+                    current_polygon = clip_polygon_by_line(current_polygon, line[1], line[0])
+        
+        # Add the resulting polygon if it's non-empty
+        if len(current_polygon) >= 3:
+            # Remove duplicate vertices
+            cleaned_polygon = []
+            for vertex in current_polygon:
+                is_duplicate = False
+                for existing in cleaned_polygon:
+                    if abs(vertex[0] - existing[0]) < 1e-8 and abs(vertex[1] - existing[1]) < 1e-8:
+                        is_duplicate = True
+                        break
+                if not is_duplicate:
+                    cleaned_polygon.append(vertex)
+            
+            if len(cleaned_polygon) >= 3:
+                polygons.append(cleaned_polygon)
+    
+    return polygons
+
+
+def create_3d_polygon_regions_multi(polygons, w1, b1, w2, b2, neuron_idx=0, viz_scale=0.3):
+    """
+    Create 3D polygons by mapping each corner point to its second layer output height.
+    Works with any number of hidden neurons.
+    
+    Args:
+        polygons: List of 2D polygon corner points from get_polygon_corners_multi
+        w1, b1: First layer weights and biases (shape: [n_hidden, 2] and [n_hidden])
+        w2, b2: Second layer weights and biases (shape: [n_output, n_hidden] and [n_output])
+        neuron_idx: Which second layer neuron to visualize
+        viz_scale: Scaling factor for z-coordinate
+    
+    Returns:
+        List of 3D polygon objects
+    """
+    
+    def evaluate_second_layer_at_point(x, y):
+        """Evaluate the second layer neuron output at a specific (x,y) point"""
+        # Calculate all first layer outputs
+        n_hidden = w1.shape[0]
+        relu_outputs = []
+        
+        for i in range(n_hidden):
+            linear_output = w1[i,0] * x + w1[i,1] * y + b1[i]
+            relu_output = max(0, linear_output)
+            relu_outputs.append(relu_output)
+        
+        # Second layer output (no ReLU applied here to see full surface)
+        second_layer_output = b2[neuron_idx]
+        for i in range(n_hidden):
+            second_layer_output += w2[neuron_idx,i] * relu_outputs[i]
+        
+        return second_layer_output * viz_scale
+    
+    polygon_objects = []
+    colors = [RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
+    
+    for i, polygon in enumerate(polygons):
+        if len(polygon) < 3:
+            continue
+            
+        # Map each 2D corner point to 3D
+        points_3d = []
+        for point_2d in polygon:
+            x, y = point_2d
+            z = evaluate_second_layer_at_point(x, y)
+            points_3d.append([x, y, z])
+        
+        # Create the 3D polygon
+        color = colors[i % len(colors)]
+        poly_3d = Polygon(*points_3d,
+                         fill_color=color,
+                         fill_opacity=0.7,
+                         stroke_color=color,
+                         stroke_width=2)
+        
+        polygon_objects.append(poly_3d)
+    
+    return polygon_objects
+
+
 
 def create_3d_polygon_regions(polygons, w1, b1, w2, b2, neuron_idx=0, viz_scale=0.3):
     """

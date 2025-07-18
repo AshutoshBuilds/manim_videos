@@ -10,6 +10,10 @@ graphics_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/graphic
 class plane_folding_sketch_single_layer_1(InteractiveScene):
     def construct(self):
 
+        map_img=ImageMobject(graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-11.png')
+        map_img.set_height(2)  # This sets the height to 2 units (-1 to 1)
+        map_img.set_width(2)   # This sets the width to 2 units (-1 to 1)
+        map_img.move_to(ORIGIN)
 
         w1=np.array([[-0.70856154,  1.809896  ],
                      [-1.7940422 , -0.4643133 ]], dtype=np.float32)
@@ -19,7 +23,7 @@ class plane_folding_sketch_single_layer_1(InteractiveScene):
         b2=np.array([-0.40461758,  0.05192775], dtype=np.float32)
 
         surface_func_11=partial(surface_func_general, w1=w1[0,0], w2=w1[0,1], b=b1[0], viz_scale=0.42) #Larger for intput layer
-        bent_surface_11 = ParametricSurface(surface_func_11, u_range=[-1, 1], v_range=[-1, 1], resolution=(50, 50))
+        bent_surface_11 = ParametricSurface(surface_func_11, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
         ts11=TexturedSurface(bent_surface_11, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-11.png')
         ts11.set_shading(0,0,0)
         ts11.set_opacity(0.75)
@@ -28,7 +32,7 @@ class plane_folding_sketch_single_layer_1(InteractiveScene):
         group_11=Group(ts11, joint_line_11)
 
         surface_func_12=partial(surface_func_general, w1=w1[1,0], w2=w1[1,1], b=b1[1], viz_scale=0.42) #Larger for intput layer
-        bent_surface_12 = ParametricSurface(surface_func_12, u_range=[-1, 1], v_range=[-1, 1], resolution=(50, 50))
+        bent_surface_12 = ParametricSurface(surface_func_12, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
         ts12=TexturedSurface(bent_surface_12, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-11.png')
         ts12.set_shading(0,0,0)
         ts12.set_opacity(0.75)
@@ -49,15 +53,20 @@ class plane_folding_sketch_single_layer_1(InteractiveScene):
             neuron_idx=neuron_idx, viz_scale=0.25
         )
 
-        bent_surface_21 = ParametricSurface(surface_func_21, u_range=[-1, 1], v_range=[-1, 1], resolution=(50, 50))
+        bent_surface_21 = ParametricSurface(surface_func_21, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
         ts21 = TexturedSurface(bent_surface_21, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-11.png')
         ts21.set_shading(0,0,0)
         ts21.set_opacity(0.75)
+
+        bs21_copy=bent_surface_21.copy()
+        ts21_copy=ts21.copy()
+
         polygons = get_polygon_corners(joint_points_11, joint_points_12, extent=1)
 
         ts21.shift([0, 0, 1.5])
         self.add(ts21)
         polygon_3d_objects = create_3d_polygon_regions( polygons, w1, b1, w2, b2,  neuron_idx=neuron_idx, viz_scale=0.25)
+        polygon_3d_objects_copy=create_3d_polygon_regions( polygons, w1, b1, w2, b2,  neuron_idx=neuron_idx, viz_scale=0.25)
         for poly in polygon_3d_objects:
             poly.set_opacity(0.3)
             poly.shift([0, 0, 1.5])
@@ -72,20 +81,66 @@ class plane_folding_sketch_single_layer_1(InteractiveScene):
             neuron_idx=neuron_idx, viz_scale=0.25
         )
 
-        bent_surface_22 = ParametricSurface(surface_func_22, u_range=[-1, 1], v_range=[-1, 1], resolution=(50, 50))
-        ts21 = TexturedSurface(bent_surface_22, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-11.png')
-        ts21.set_shading(0,0,0)
-        ts21.set_opacity(0.75)
+        bent_surface_22 = ParametricSurface(surface_func_22, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
+        ts22 = TexturedSurface(bent_surface_22, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-11.png')
+        ts22.set_shading(0,0,0)
+        ts22.set_opacity(0.75)
 
-        self.add(ts21)
+        bs22_copy=bent_surface_22.copy()
+        ts22_copy=ts22.copy()
+
+        self.add(ts22)
         polygon_3d_objects_2 = create_3d_polygon_regions( polygons, w1, b1, w2, b2,  neuron_idx=neuron_idx, viz_scale=0.25)
+        polygon_3d_objects_2_copy=create_3d_polygon_regions( polygons, w1, b1, w2, b2,  neuron_idx=neuron_idx, viz_scale=0.25)
         for poly in polygon_3d_objects_2:
             poly.set_opacity(0.3)
             self.add(poly)
         self.wait()
 
+        # Ok this all makes sense and I thikk can be be visualized nicely - now how do we get from here to final heatmap?
+        # it's kinda like Relu again I think right? Hmm -> Well I mean I guess where are the logits -> I'm looking 
+        # at the logits...
+        # Ok ok ok ok I guess I way to see what's going on would be to just color these whole planes in different colors 
+        # Bring them to the same z level, and then whoever is on top wins? 
+        # And then for extra credit we do softmax? Ok yeah I think that's potentially pretty dope -> let's see here...
+        # I could recolor individual polygons -> but I think it's going to maybe animate better if I have
+        # the full contiguous bent plane too? 
+        # Let me poke at that. 
+
+        bs21_copy.move_to([3, 0, 0.75])
+        ts21_copy.move_to([3, 0, 0.75])
+        bs22_copy.move_to([3, 0, 0.75])
+        ts22_copy.move_to([3, 0, 0.75])
+
+        map_img.move_to([3, 0, 0.5]) #Don't quite put the map at 0. 
+        self.add(map_img)
+
+        for poly in polygon_3d_objects_copy:
+            poly.set_opacity(0.3).set_color(BLUE)
+            poly.shift([3, 0, 0.75])
+            self.add(poly)
+
+        for poly in polygon_3d_objects_2_copy:
+            poly.set_opacity(0.3).set_color(YELLOW)
+            poly.shift([3, 0, 0.75])
+            self.add(poly)
+
+        self.frame.reorient(11, 62, 0, (3.2, 0.86, 0.02), 4.39)
 
         self.wait()
+
+        # self.add(ts21_copy)
+        # bs21_copy.set_color(BLUE).set_opacity(0.5)
+        # self.add(bs21_copy)
+        
+        # polygon_3d_objects
+
+        # self.wait()
+
+        # Ok that's pretty dope!
+        # Alright I'm tempted to work on softmax, but I think better to go back to writing
+        # Softmax is technical and there shouldn't be any surprises there!
+
 
 
 

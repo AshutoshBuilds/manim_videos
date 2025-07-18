@@ -4,6 +4,18 @@ import sys
 
 sys.path.append('_2025/backprop_3') #Point to folder where plane_folding_utils.py is
 from plane_folding_utils import *
+from decision_boundary_utils import *
+
+
+CHILL_BROWN='#948979'
+YELLOW='#ffd35a'
+YELLOW_FADE='#7f6a2d'
+BLUE='#65c8d0'
+GREEN='#6e9671' 
+CHILL_GREEN='#6c946f'
+CHILL_BLUE='#3d5c6f'
+FRESH_TAN='#dfd0b9'
+
 
 graphics_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/graphics/' #Point to folder where map images are
 
@@ -165,8 +177,10 @@ class plane_folding_sketch_single_layer_2(InteractiveScene):
         ## is to draw in the borders/intserctions between the two shells
         ## 
 
-
-
+        decision_boundaries=create_decision_boundary_lines(w1, b1, w2, b2, polygons, extent=1, z_offset=0, color=WHITE, stroke_width=4)
+        decision_boundaries[0].shift([3, 0, 0.75])
+        self.add(decision_boundaries[0])
+        self.wait()
 
 
         self.wait(20)

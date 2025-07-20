@@ -31,15 +31,6 @@ class goemetry_while_learning_2a(InteractiveScene):
         viz_scale_1=0.25
         viz_scale_2=0.1
 
-        #New 3 layer weights!
-        # w1 = np.array([[-2.00458, 2.24611],
-        #  [-2.56046, -1.21349],
-        #  [-1.94774, 0.716835]], dtype=np.float32)
-        # b1 = np.array([0.00728259, -1.38003, 1.77056], dtype=np.float32)
-        # w2 = np.array([[2.46867, 3.78735, -1.90977],
-        #  [-2.55351, -2.95687, 1.74294]], dtype=np.float32)
-        # b2 = np.array([1.41342, -1.23457], dtype=np.float32)
-        # pickle_path='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/hackin/3_training_weights_1/training_data_seed_00_acc_0.8101.pkl'
         pickle_path='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/hackin/3_training_weights_1/training_data_seed_13_acc_0.6098.pkl'
         
         with open(pickle_path, 'rb') as f:
@@ -56,6 +47,13 @@ class goemetry_while_learning_2a(InteractiveScene):
             w2=p['weights_history'][train_step]['model.2.weight'].numpy()
             b2=p['weights_history'][train_step]['model.2.bias'].numpy()
 
+            # Helper function to safely create joint lines
+            def create_joint_line_safely(joint_points):
+                """Create a joint line if joint_points exist, otherwise return None"""
+                if joint_points and len(joint_points) >= 2:
+                    return line_from_joint_points_1(joint_points).set_opacity(0.5)
+                else:
+                    return None
 
             # First hidden neuron
             surface_func_11=partial(surface_func_general, w1=w1[0,0], w2=w1[0,1], b=b1[0], viz_scale=viz_scale_1)
@@ -64,8 +62,13 @@ class goemetry_while_learning_2a(InteractiveScene):
             ts11.set_shading(0,0,0)
             ts11.set_opacity(0.75)
             joint_points_11 = get_relu_joint(w1[0,0], w1[0,1], b1[0], extent=1)
-            joint_line_11=line_from_joint_points_1(joint_points_11).set_opacity(0.5)
-            group_11=Group(ts11, joint_line_11)
+            joint_line_11 = create_joint_line_safely(joint_points_11)
+            
+            # Create group, adding joint line only if it exists
+            group_11_objects = [ts11]
+            if joint_line_11 is not None:
+                group_11_objects.append(joint_line_11)
+            group_11 = Group(*group_11_objects)
 
             # Second hidden neuron
             surface_func_12=partial(surface_func_general, w1=w1[1,0], w2=w1[1,1], b=b1[1], viz_scale=viz_scale_1)
@@ -74,8 +77,13 @@ class goemetry_while_learning_2a(InteractiveScene):
             ts12.set_shading(0,0,0)
             ts12.set_opacity(0.75)
             joint_points_12 = get_relu_joint(w1[1,0], w1[1,1], b1[1], extent=1)
-            joint_line_12=line_from_joint_points_1(joint_points_12).set_opacity(0.5)
-            group_12=Group(ts12, joint_line_12)
+            joint_line_12 = create_joint_line_safely(joint_points_12)
+            
+            # Create group, adding joint line only if it exists
+            group_12_objects = [ts12]
+            if joint_line_12 is not None:
+                group_12_objects.append(joint_line_12)
+            group_12 = Group(*group_12_objects)
 
             # Third hidden neuron (NEW)
             surface_func_13=partial(surface_func_general, w1=w1[2,0], w2=w1[2,1], b=b1[2], viz_scale=viz_scale_1)
@@ -84,10 +92,14 @@ class goemetry_while_learning_2a(InteractiveScene):
             ts13.set_shading(0,0,0)
             ts13.set_opacity(0.75)
             joint_points_13 = get_relu_joint(w1[2,0], w1[2,1], b1[2], extent=1)
-            joint_line_13=line_from_joint_points_1(joint_points_13).set_opacity(0.5)
-            group_13=Group(ts13, joint_line_13)
-
+            joint_line_13 = create_joint_line_safely(joint_points_13)
             
+            # Create group, adding joint line only if it exists
+            group_13_objects = [ts13]
+            if joint_line_13 is not None:
+                group_13_objects.append(joint_line_13)
+            group_13 = Group(*group_13_objects)
+
             # Position the three hidden layer visualizations
             group_13.shift([-3, 0, 3])    # Top
             group_12.shift([-3, 0, 1.5])  # Middle
@@ -109,20 +121,32 @@ class goemetry_while_learning_2a(InteractiveScene):
             bs21_copy=bent_surface_21.copy()
             ts21_copy=ts21.copy()
 
-            # Get all joint points for the 3 neurons
-            joint_points_list = [joint_points_11, joint_points_12, joint_points_13]
-            polygons = get_polygon_corners_multi(joint_points_list, extent=1)
+            # Get all joint points for the neurons that have them
+            joint_points_list = []
+            if joint_points_11:
+                joint_points_list.append(joint_points_11)
+            if joint_points_12:
+                joint_points_list.append(joint_points_12)  
+            if joint_points_13:
+                joint_points_list.append(joint_points_13)
+
+            # Only create polygons if we have at least one joint line
+            if len(joint_points_list) > 0:
+                polygons = get_polygon_corners_multi(joint_points_list, extent=1)
+                
+                # Create 3D polygon regions for first output neuron
+                polygon_3d_objects = create_3d_polygon_regions_multi(
+                    polygons, w1, b1, w2, b2, neuron_idx=neuron_idx, viz_scale=viz_scale_2
+                )
+                polygon_3d_objects_copy = create_3d_polygon_regions_multi(
+                    polygons, w1, b1, w2, b2, neuron_idx=neuron_idx, viz_scale=viz_scale_2
+                )
+            else:
+                # No joint lines, so no polygon regions to create
+                polygon_3d_objects = []
+                polygon_3d_objects_copy = []
 
             ts21.shift([0, 0, 1.5])
-            
-            
-            # Create 3D polygon regions for first output neuron
-            polygon_3d_objects = create_3d_polygon_regions_multi(
-                polygons, w1, b1, w2, b2, neuron_idx=neuron_idx, viz_scale=viz_scale_2
-            )
-            polygon_3d_objects_copy = create_3d_polygon_regions_multi(
-                polygons, w1, b1, w2, b2, neuron_idx=neuron_idx, viz_scale=viz_scale_2
-            )
 
             # Second output neuron
             neuron_idx=1
@@ -140,15 +164,17 @@ class goemetry_while_learning_2a(InteractiveScene):
             bs22_copy=bent_surface_22.copy()
             ts22_copy=ts22.copy()
 
-            
-            # Create 3D polygon regions for second output neuron
-            polygon_3d_objects_2 = create_3d_polygon_regions_multi(
-                polygons, w1, b1, w2, b2, neuron_idx=neuron_idx, viz_scale=viz_scale_2
-            )
-            polygon_3d_objects_2_copy = create_3d_polygon_regions_multi(
-                polygons, w1, b1, w2, b2, neuron_idx=neuron_idx, viz_scale=viz_scale_2
-            )
-
+            # Create 3D polygon regions for second output neuron (only if we have polygons)
+            if len(joint_points_list) > 0:
+                polygon_3d_objects_2 = create_3d_polygon_regions_multi(
+                    polygons, w1, b1, w2, b2, neuron_idx=neuron_idx, viz_scale=viz_scale_2
+                )
+                polygon_3d_objects_2_copy = create_3d_polygon_regions_multi(
+                    polygons, w1, b1, w2, b2, neuron_idx=neuron_idx, viz_scale=viz_scale_2
+                )
+            else:
+                polygon_3d_objects_2 = []
+                polygon_3d_objects_2_copy = []
 
             # Final visualization positioning
             bs21_copy.move_to([3, 0, 0.75])
@@ -158,15 +184,17 @@ class goemetry_while_learning_2a(InteractiveScene):
 
             map_img.move_to([3, 0, 0.5])
             
-            # Add the copy polygons for visualization
+            # Create decision boundaries only if we have polygons
+            if len(joint_points_list) > 0:
+                decision_boundaries = create_decision_boundary_lines(w1, b1, w2, b2, polygons, extent=1, z_offset=0, color=WHITE, stroke_width=4)
+            else:
+                decision_boundaries = []
 
-
-            decision_boundaries=create_decision_boundary_lines(w1, b1, w2, b2, polygons, extent=1, z_offset=0, color=WHITE, stroke_width=4)
-            
-
+            # Add objects to scene
             self.add(group_11, group_12, group_13)
             self.add(ts21)
 
+            # Add polygon objects only if they exist
             for poly in polygon_3d_objects:
                 poly.set_opacity(0.3)
                 poly.shift([0, 0, 1.5])
@@ -180,7 +208,6 @@ class goemetry_while_learning_2a(InteractiveScene):
 
             self.add(map_img)
 
-
             for poly in polygon_3d_objects_copy:
                 poly.set_opacity(0.3).set_color(BLUE)
                 poly.shift([3, 0, 0.75])
@@ -191,58 +218,20 @@ class goemetry_while_learning_2a(InteractiveScene):
                 poly.shift([3, 0, 0.75])
                 self.add(poly)
             
-            if len(decision_boundaries)>0:
+            # Add decision boundaries only if they exist
+            if len(decision_boundaries) > 0:
                 decision_boundaries[0].shift([3, 0, 0.75])
                 self.add(decision_boundaries[0])
 
             self.wait(0.1)
+            
+            # Remove objects from scene
             self.remove(group_11, group_12, group_13, ts21, ts22, map_img)
-            if len(decision_boundaries)>0:
+            
+            if len(decision_boundaries) > 0:
                 self.remove(decision_boundaries[0])
+                
             for poly in polygon_3d_objects+polygon_3d_objects_2+polygon_3d_objects_copy+polygon_3d_objects_2_copy: 
                 self.remove(poly)
 
-        ## Ok this is pretty freaking dope. 
-        ## What I want now (and would probably be nice for the 2 neuron case)
-        ## is to draw in the borders/intserctions between the two shells
-        ## 
-
-
-        # self.wait()
-
-
-        # self.wait(20)
         self.embed()
-
-
-
-
-
-
-        # colors = [RED, BLUE, GREEN, YELLOW, PURPLE]
-        # polygon_mobjects = []
-
-        # for i, polygon_points in enumerate(polygons):
-        #     if len(polygon_points) >= 3:
-        #         # Convert 2D points to 3D for Manim
-        #         points_3d = [[p[0], p[1], 0] for p in polygon_points]
-                
-        #         # Create the polygon
-        #         poly = Polygon(*points_3d, 
-        #                       fill_color=colors[i % len(colors)], 
-        #                       fill_opacity=0.4,
-        #                       stroke_color=colors[i % len(colors)],
-        #                       stroke_width=2)
-                
-        #         polygon_mobjects.append(poly)
-        #         self.add(poly)
-
-        # self.wait()
-
-        # self.add(polygon_mobjects[0])
-        # self.add(polygon_mobjects[1])
-        # self.add(polygon_mobjects[2])
-        # self.add(polygon_mobjects[3])
-        # self.add(polygon_mobjects[4])
-
-

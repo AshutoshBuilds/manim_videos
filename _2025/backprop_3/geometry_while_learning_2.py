@@ -20,7 +20,7 @@ FRESH_TAN='#dfd0b9'
 
 graphics_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/graphics/' #Point to folder where map images are
 
-class goemetry_while_learning_2a(InteractiveScene):
+class goemetry_while_learning_6400(InteractiveScene):
     def construct(self):
 
         map_img=ImageMobject(graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-11.png')
@@ -31,8 +31,16 @@ class goemetry_while_learning_2a(InteractiveScene):
         viz_scale_1=0.25
         viz_scale_2=0.1
 
-        pickle_path='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/hackin/3_training_weights_1/training_data_seed_13_acc_0.6098.pkl'
+        # pickle_path='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/hackin/3_training_weights_1/training_data_seed_13_acc_0.6098.pkl'
+        # pickle_path='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/hackin/3_starting_configs/training_data_seed_09_acc_0.8091.pkl'
+        # pickle_path='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/hackin/3_starting_configs/training_data_seed_02_acc_0.6045.pkl'
+        # pickle_path='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/hackin/3_starting_configs/training_data_seed_20_acc_0.6083.pkl'
+        # pickle_path='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/hackin/3_starting_configs/training_data_seed_21_acc_0.8108.pkl'
+        # pickle_path='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/hackin/3_starting_configs/training_data_seed_27_acc_0.6364.pkl'
+        pickle_path='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/hackin/3_starting_configs/training_data_seed_14_acc_0.6400.pkl'
+
         
+
         with open(pickle_path, 'rb') as f:
             p=pickle.load(f)
 

@@ -716,29 +716,9 @@ class thumbnail_hackin_1(InteractiveScene):
 
 
 
-        # Create the tracker-controlled vector field
-        vector_field = TrackerControlledVectorField(
-            time_tracker=time_tracker,
-            func=vector_function_heatmap,
-            coordinate_system=extended_axes,
-            density=4.0, #5 gives nice detail, but is maybe a little too much, especially to zoom in on soon? Ok I think i like 4.
-            stroke_width=2,
-            max_radius=5.5,      # Vectors fade to min_opacity at this distance
-            min_opacity=0.1,     # Minimum opacity at max_radius
-            max_opacity=0.8,     # Maximum opacity at origin
-            tip_width_ratio=4,
-            tip_len_to_width=0.01,
-            max_vect_len_to_step_size=0.7,
-            color=YELLOW
-        )
 
         #Should use partial() to not repeat so much...
         def vector_function_heatmap_u(coords_array):
-            """
-            Function that takes an array of coordinates and returns corresponding vectors
-            coords_array: shape (N, 2) or (N, 3) - array of [x, y] or [x, y, z] coordinates
-            Returns: array of shape (N, 2) with [vx, vy] vectors (z component handled automatically)
-            """
             result = np.zeros((len(coords_array), 2))
             
             for i, coord in enumerate(coords_array):
@@ -757,6 +737,21 @@ class thumbnail_hackin_1(InteractiveScene):
             
             return -result #Reverse direction
 
+        # Create the tracker-controlled vector field
+        vector_field = TrackerControlledVectorField(
+            time_tracker=time_tracker,
+            func=vector_function_heatmap,
+            coordinate_system=extended_axes,
+            density=3.0, #4.0, #5 gives nice detail, but is maybe a little too much, especially to zoom in on soon? Ok I think i like 4.
+            stroke_width=3,
+            max_radius=5.5,      # Vectors fade to min_opacity at this distance
+            min_opacity=0.4,     # Minimum opacity at max_radius
+            max_opacity=1.0,     # Maximum opacity at origin
+            tip_width_ratio=4,
+            tip_len_to_width=0.01,
+            max_vect_len_to_step_size=0.8,
+            color=YELLOW
+        )
 
 
         # Create the tracker-controlled vector field
@@ -764,44 +759,36 @@ class thumbnail_hackin_1(InteractiveScene):
             time_tracker=time_tracker,
             func=vector_function_heatmap_u,
             coordinate_system=extended_axes,
-            density=4.0, #5 gives nice detail, but is maybe a little too much, especially to zoom in on soon? Ok I think i like 4.
-            stroke_width=2,
+            density=3.0, #4.0, #5 gives nice detail, but is maybe a little too much, especially to zoom in on soon? Ok I think i like 4.
+            stroke_width=3,
             max_radius=5.5,      # Vectors fade to min_opacity at this distance
-            min_opacity=0.1,     # Minimum opacity at max_radius
-            max_opacity=0.8,     # Maximum opacity at origin
+            min_opacity=0.4,     # Minimum opacity at max_radius
+            max_opacity=0.7,     # Maximum opacity at origin
             tip_width_ratio=4,
             tip_len_to_width=0.01,
-            max_vect_len_to_step_size=0.7,
+            max_vect_len_to_step_size=0.8,
             color='#777777'
         )
 
 
-        # path_index=70
-        # guidance_index=0 #No guidance, cfg_scales=[0.0, 0.1, 0.5, 1.0, 2.0, 3.0, 5.0, 10.0]
-        # dot_to_move_3 = Dot(axes.c2p(*[xt_history[guidance_index, 0, path_index, 0], xt_history[guidance_index, 0, path_index, 1], 0]), 
-        #                     radius=0.07)
-        # dot_to_move_3.set_color(YELLOW)
-        # dot_to_move_3.set_opacity(1.0)
-
-        # traced_path_3 = CustomTracedPath(dot_to_move_3.get_center, stroke_color=WHITE, stroke_width=5.0, 
-        #                               opacity_range=(0.4, 0.95), fade_length=64)
-        # traced_path_3.set_fill(opacity=0)
-        # self.add(traced_path_3)
-
-
-
         self.frame.reorient(0,0,0,(0,0,0), 8)
-        self.wait()
-        self.add(dots)
-        self.add(cat_dots)
+
+        self.add(vector_field_u)
+        self.add(vector_field)
+        
 
         dots.set_color(CHILL_BROWN)
         dots.set_opacity(0.5)
         cat_dots.set_color(WHITE)
         cat_dots.set_opacity(1.0)
 
-        self.add(vector_field)
-        self.add(vector_field_u)
+        self.add(dots)
+        self.add(cat_dots)
+
+
+
+
+        self.wait()
 
         self.play(
             time_tracker.animate.set_value(8.0),  

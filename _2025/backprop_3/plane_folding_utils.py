@@ -151,6 +151,68 @@ def get_polygon_corners_multi(joint_points_list, extent=1):
     return polygons
 
 
+def create_3d_polygon_regions_multi_wth_relu(polygons, w1, b1, w2, b2, neuron_idx=0, viz_scale=0.3):
+    """
+    Create 3D polygons by mapping each corner point to its second layer output height.
+    Works with any number of hidden neurons.
+    
+    Args:
+        polygons: List of 2D polygon corner points from get_polygon_corners_multi
+        w1, b1: First layer weights and biases (shape: [n_hidden, 2] and [n_hidden])
+        w2, b2: Second layer weights and biases (shape: [n_output, n_hidden] and [n_output])
+        neuron_idx: Which second layer neuron to visualize
+        viz_scale: Scaling factor for z-coordinate
+    
+    Returns:
+        List of 3D polygon objects
+    """
+    
+    def evaluate_second_layer_at_point(x, y):
+        """Evaluate the second layer neuron output at a specific (x,y) point"""
+        # Calculate all first layer outputs
+        n_hidden = w1.shape[0]
+        relu_outputs = []
+        
+        for i in range(n_hidden):
+            linear_output = w1[i,0] * x + w1[i,1] * y + b1[i]
+            relu_output = max(0, linear_output)
+            relu_outputs.append(relu_output)
+        
+        # Second layer output (no ReLU applied here to see full surface)
+        second_layer_output = b2[neuron_idx]
+        for i in range(n_hidden):
+            second_layer_output += w2[neuron_idx,i] * relu_outputs[i]
+
+        second_layer_output = max(0, second_layer_output)
+
+        return second_layer_output * viz_scale
+    
+    polygon_objects = []
+    colors = [RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
+    
+    for i, polygon in enumerate(polygons):
+        if len(polygon) < 3:
+            continue
+            
+        # Map each 2D corner point to 3D
+        points_3d = []
+        for point_2d in polygon:
+            x, y = point_2d
+            z = evaluate_second_layer_at_point(x, y)
+            points_3d.append([x, y, z])
+        
+        # Create the 3D polygon
+        color = colors[i % len(colors)]
+        poly_3d = Polygon(*points_3d,
+                         fill_color=color,
+                         fill_opacity=0.7,
+                         stroke_color=color,
+                         stroke_width=2)
+        
+        polygon_objects.append(poly_3d)
+    
+    return polygon_objects
+
 
 def create_3d_polygon_regions_multi(polygons, w1, b1, w2, b2, neuron_idx=0, viz_scale=0.3):
     """
@@ -759,6 +821,44 @@ def surface_func_second_layer(u, v, w1, b1, w2, b2, neuron_idx=0, viz_scale=0.5)
     
     return np.array([u, v, z])
 
+
+def surface_func_second_layer_multi(u, v, w1, b1, w2, b2, neuron_idx=0, viz_scale=0.5):
+    """
+    Surface function for second layer neurons that combines outputs from any number of first layer neurons.
+    
+    Args:
+        u, v: Input coordinates (-1 to 1)
+        w1: First layer weights (n_hidden x 2 matrix)
+        b1: First layer biases (n_hidden element array)
+        w2: Second layer weights (n_output x n_hidden matrix) 
+        b2: Second layer biases (n_output element array)
+        neuron_idx: Which second layer neuron to visualize
+        viz_scale: Scaling factor for visualization
+    """
+    
+    # Get number of hidden neurons
+    n_hidden = w1.shape[0]
+    
+    # Compute all first layer outputs
+    relu_outputs = []
+    for i in range(n_hidden):
+        linear_output = w1[i,0] * u + w1[i,1] * v + b1[i]
+        relu_output = max(0, linear_output)
+        relu_outputs.append(relu_output)
+    
+    # Second layer neuron computation
+    second_layer_output = b2[neuron_idx]
+    for i in range(n_hidden):
+        second_layer_output += w2[neuron_idx,i] * relu_outputs[i]
+    
+    second_layer_output = max(0, second_layer_output) #Relu Bra!
+
+    # Use output as z-coordinate
+    z = second_layer_output * viz_scale
+    
+    return np.array([u, v, z])
+
+
 def surface_func_second_layer_no_relu_multi(u, v, w1, b1, w2, b2, neuron_idx=0, viz_scale=0.5):
     """
     Surface function for second layer neurons that combines outputs from any number of first layer neurons.
@@ -791,6 +891,48 @@ def surface_func_second_layer_no_relu_multi(u, v, w1, b1, w2, b2, neuron_idx=0, 
     # No ReLU on output layer
     # Use output as z-coordinate
     z = second_layer_output * viz_scale
+    
+    return np.array([u, v, z])
+
+
+def surface_func_third_layer_no_relu_multi(u, v, w1, b1, w2, b2, w3, b3, neuron_idx=0, viz_scale=0.5):
+    """
+    Surface function for second layer neurons that combines outputs from any number of first layer neurons.
+    
+    Args:
+        u, v: Input coordinates (-1 to 1)
+        w1: First layer weights (n_hidden x 2 matrix)
+        b1: First layer biases (n_hidden element array)
+        w2: Second layer weights (n_output x n_hidden matrix) 
+        b2: Second layer biases (n_output element array)
+        neuron_idx: Which second layer neuron to visualize
+        viz_scale: Scaling factor for visualization
+    """
+    
+    # Get number of hidden neurons
+    # n_hidden = w1.shape[0]
+    
+    # Compute all first layer outputs
+    relu_outputs = []
+    for i in range(w1.shape[0]):
+        linear_output = w1[i,0] * u + w1[i,1] * v + b1[i]
+        relu_output = max(0, linear_output)
+        relu_outputs.append(relu_output)
+    
+    # Second layer neuron computation
+    second_layer_output = b2[neuron_idx]
+    for i in range(w2.shape[0]):
+        second_layer_output += w2[neuron_idx,i] * relu_outputs[i]
+
+    second_layer_output = max(0, second_layer_output)
+    
+    third_layer_output = b3[neuron_idx]
+    for i in range(w3.shape[0]):
+        third_layer_output += w3[neuron_idx,i] * second_layer_output[i]
+
+    # No ReLU on output layer
+    # Use output as z-coordinate
+    z = third_layer_output * viz_scale
     
     return np.array([u, v, z])
 

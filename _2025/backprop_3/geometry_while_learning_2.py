@@ -20,7 +20,7 @@ FRESH_TAN='#dfd0b9'
 
 graphics_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/graphics/' #Point to folder where map images are
 
-class goemetry_while_learning_6400(InteractiveScene):
+class goemetry_while_learning_seed_90(InteractiveScene):
     def construct(self):
 
         map_img=ImageMobject(graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-11.png')
@@ -37,7 +37,18 @@ class goemetry_while_learning_6400(InteractiveScene):
         # pickle_path='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/hackin/3_starting_configs/training_data_seed_20_acc_0.6083.pkl'
         # pickle_path='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/hackin/3_starting_configs/training_data_seed_21_acc_0.8108.pkl'
         # pickle_path='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/hackin/3_starting_configs/training_data_seed_27_acc_0.6364.pkl'
-        pickle_path='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/hackin/3_starting_configs/training_data_seed_14_acc_0.6400.pkl'
+        # pickle_path='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/hackin/3_starting_configs/training_data_seed_14_acc_0.6400.pkl'
+
+        #Worst
+        # pickle_path='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/hackin/3_starting_configs_3/training_data_seed_10_acc_0.4999.pkl'
+        pickle_path='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/hackin/3_starting_configs_4/training_data_seed_90_acc_0.6159.pkl'
+
+        
+
+        #Best
+        # pickle_path='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/hackin/3_starting_configs_3/training_data_seed_76_acc_0.8510.pkl'
+        # pickle_path='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/hackin/3_starting_configs_4/training_data_seed_01_acc_0.8561.pkl'
+
 
         
 
@@ -47,7 +58,9 @@ class goemetry_while_learning_6400(InteractiveScene):
         self.frame.reorient(1, 58, 0, (-0.17, 2.27, -0.1), 8.46)
 
         step_size=10
-        for i in range(250):
+        num_steps=int(np.floor(len(p['weights_history'])/step_size))
+        print('\n', 'num_steps=', num_steps)
+        for i in range(num_steps):
 
             train_step=step_size*i
             w1=p['weights_history'][train_step]['model.0.weight'].numpy()

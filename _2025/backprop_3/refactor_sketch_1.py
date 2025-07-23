@@ -27,18 +27,18 @@ class refactor_sketch_1(InteractiveScene):
         # First change i want to make is just loading full torch models here - this will streamlien things
         
         #2x2
-        # model_path='_2025/backprop_3/models/2_2_1.pth'
-        # model = BaarleNet([2,2])
-        # model.load_state_dict(torch.load(model_path))
-        # viz_scales=[0.25, 0.25, 0.2, 0.2, 0.15]
-        # num_neurons=[2, 2, 2, 2, 2]
+        model_path='_2025/backprop_3/models/2_2_1.pth'
+        model = BaarleNet([2,2])
+        model.load_state_dict(torch.load(model_path))
+        viz_scales=[0.25, 0.25, 0.3, 0.3, 0.15]
+        num_neurons=[2, 2, 2, 2, 2]
 
         #3x3
-        model_path='_2025/backprop_3/models/3_3_1.pth'
-        model = BaarleNet([3,3])
-        model.load_state_dict(torch.load(model_path))
-        viz_scales=[0.1, 0.1, 0.05, 0.05, 0.15]
-        num_neurons=[3, 3, 3, 3, 2]
+        # model_path='_2025/backprop_3/models/3_3_1.pth'
+        # model = BaarleNet([3,3])
+        # model.load_state_dict(torch.load(model_path))
+        # viz_scales=[0.1, 0.1, 0.05, 0.05, 0.15]
+        # num_neurons=[3, 3, 3, 3, 2]
 
 
         surfaces=[]
@@ -148,6 +148,10 @@ class refactor_sketch_1(InteractiveScene):
         self.add(relu_intersections_planes_2)
 
         #Ok, making progress! Now we need to recompute each set of regions based on ReLu clipping!
+        # On to the last layer here!
+        # So I think it makes sense to merge the zerod out regions before doing th efinal region computation for 
+        # the last layer?
+        # Visually could make the zero'd out regions gray and then put the overall polygon on top or something.
         layer_idx=3
         # layer_2_polygons_3d_split=split_polygons_with_relu(layer_2_polygons_3d)
         all_polygons, merged_zero_polygons, unmerged_polygons = split_polygons_with_relu(layer_2_polygons_3d)
@@ -168,9 +172,43 @@ class refactor_sketch_1(InteractiveScene):
         # self.add(layer_2_polygons_split_vgroup)
         # self.wait()
 
+        # layer_2_polygons_split_vgroup=VGroup()
+        # layer_2_colors = [RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
+        # for neuron_idx, polygons in enumerate(unmerged_polygons):
+        #     for j, p in enumerate(polygons):
+        #         poly_3d = Polygon(*p,
+        #                          fill_color=layer_2_colors[j%len(layer_2_colors)],
+        #                          fill_opacity=0.7,
+        #                          stroke_color=layer_2_colors[j%len(layer_2_colors)],
+        #                          stroke_width=2)
+        #         poly_3d.set_opacity(0.3)
+        #         poly_3d.shift([3*layer_idx-6, 0, 1.5*neuron_idx])
+        #         layer_2_polygons_split_vgroup.add(poly_3d)
+        # self.add(layer_2_polygons_split_vgroup)
+
+        # #A little clunky, but viz zero regions separately
+        # layer_2_polygons_zero_vgroup=VGroup()
+        # for neuron_idx, polygons in enumerate(merged_zero_polygons):
+        #     for j, p in enumerate(polygons):
+        #         poly_3d = Polygon(*p,
+        #                          fill_color=GREY,
+        #                          fill_opacity=0.7,
+        #                          stroke_color=GREY,
+        #                          stroke_width=2)
+        #         poly_3d.set_opacity(0.3)
+        #         poly_3d.shift([3*layer_idx-6, 0, 1.5*neuron_idx])
+        #         layer_2_polygons_zero_vgroup.add(poly_3d)
+        # self.add(layer_2_polygons_zero_vgroup)
+        # self.wait()
+
+        #Ok a little clunky to do a post merge like this, but I think this gives some good flexiblity!
+        all_polygons_after_merging=copy.deepcopy(merged_zero_polygons)
+        for i, o in enumerate(unmerged_polygons):
+            all_polygons_after_merging[i].extend(o)
+
         layer_2_polygons_split_vgroup=VGroup()
-        layer_2_colors = [RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
-        for neuron_idx, polygons in enumerate(unmerged_polygons):
+        layer_2_colors = [GREY, RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
+        for neuron_idx, polygons in enumerate(all_polygons_after_merging):
             for j, p in enumerate(polygons):
                 poly_3d = Polygon(*p,
                                  fill_color=layer_2_colors[j%len(layer_2_colors)],
@@ -182,32 +220,38 @@ class refactor_sketch_1(InteractiveScene):
                 layer_2_polygons_split_vgroup.add(poly_3d)
         self.add(layer_2_polygons_split_vgroup)
 
-        #A little clunky, but viz zero regions separately
-        layer_2_polygons_zero_vgroup=VGroup()
-        for neuron_idx, polygons in enumerate(merged_zero_polygons):
-            for j, p in enumerate(polygons):
-                poly_3d = Polygon(*p,
-                                 fill_color=GREY,
+        # Ok this is looking pretty good. 
+        # So I need to do another merge step -> 
+        # At layer 1 i was able to get away with carve_plane_with_relu_joints
+        # Same principle here, but obviously a bit more complex
+        # Now my intuition, and the animation that comes to mind, is dropping down all the lines
+        # from all 3 layers and then recarcing based on the number of intersections
+        # between all these lines - is that right? Line combination happens in 2d basically?
+        # Ok i'm like 90% sure that's right, if it's not I think it will shake out in the viz
+        # Let's assume it's right and see what happens here exaclty. 
+
+
+        layer3_regions_2d = compute_layer3_regions(all_polygons_after_merging)
+
+        #Let's do a quick 2d viz to see how things are looking here
+        output_poygons_2d=VGroup()
+        layer_idx=4
+        neuron_idx=-1
+        for j, polygon in enumerate(layer3_regions_2d):
+                polygon = Polygon(*np.hstack((polygon, np.zeros((polygon.shape[0],1)))),
+                                 fill_color=layer_2_colors[j%len(layer_2_colors)],
                                  fill_opacity=0.7,
-                                 stroke_color=GREY,
+                                 stroke_color=layer_2_colors[j%len(layer_2_colors)],
                                  stroke_width=2)
-                poly_3d.set_opacity(0.3)
-                poly_3d.shift([3*layer_idx-6, 0, 1.5*neuron_idx])
-                layer_2_polygons_zero_vgroup.add(poly_3d)
-        self.add(layer_2_polygons_zero_vgroup)
+                polygon.set_opacity(0.3)
+                polygon.shift([3*layer_idx-6, 0, 1.5*neuron_idx])
+                output_poygons_2d.add(polygon)
+        self.add(output_poygons_2d)
 
-
-        self.wait()
-
-
-        # Ok nice!
-        # On to the last layer here!
-        # So I think it makes sense to merge the zerod out regions before doing th efinal region computation for 
-        # the last layer?
-        # Visually could make the zero'd out regions gray and then put the overall polygon on top or something.
-
-
-
+        # Ok claude hasn't been able to figure this one out yet 
+        # This polygon intersection problem is fiarly general - so it might
+        # make sense to set it up in a general way and ask claude opus ond o3 or something to 
+        # work on it in isolation - I think that's a good next step!
 
         self.wait()
 

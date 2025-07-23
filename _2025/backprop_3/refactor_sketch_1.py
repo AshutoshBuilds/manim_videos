@@ -91,7 +91,7 @@ class refactor_sketch_1(InteractiveScene):
 
         #Now move to rigth locations and visualize polygons. 
         layer_1_polygons_vgroup=VGroup()
-        layer_1_colors=[TEAL, PURPLE]
+        layer_1_colors=[TEAL, GREY]
         for neuron_idx, polygons in enumerate(layer_1_polygons_3d):
             for j, p in enumerate(polygons):
                 poly_3d = Polygon(*p,
@@ -149,11 +149,28 @@ class refactor_sketch_1(InteractiveScene):
 
         #Ok, making progress! Now we need to recompute each set of regions based on ReLu clipping!
         layer_idx=3
-        layer_2_polygons_3d_split=split_polygons_with_relu(layer_2_polygons_3d)
+        # layer_2_polygons_3d_split=split_polygons_with_relu(layer_2_polygons_3d)
+        all_polygons, merged_zero_polygons, unmerged_polygons = split_polygons_with_relu(layer_2_polygons_3d)
+
+        ## Display all polygons (dont' zero out merged ones)
+        # layer_2_polygons_split_vgroup=VGroup()
+        # layer_2_colors = [RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
+        # for neuron_idx, polygons in enumerate(all_polygons):
+        #     for j, p in enumerate(polygons):
+        #         poly_3d = Polygon(*p,
+        #                          fill_color=layer_2_colors[j%len(layer_2_colors)],
+        #                          fill_opacity=0.7,
+        #                          stroke_color=layer_2_colors[j%len(layer_2_colors)],
+        #                          stroke_width=2)
+        #         poly_3d.set_opacity(0.3)
+        #         poly_3d.shift([3*layer_idx-6, 0, 1.5*neuron_idx])
+        #         layer_2_polygons_split_vgroup.add(poly_3d)
+        # self.add(layer_2_polygons_split_vgroup)
+        # self.wait()
 
         layer_2_polygons_split_vgroup=VGroup()
         layer_2_colors = [RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
-        for neuron_idx, polygons in enumerate(layer_2_polygons_3d_split):
+        for neuron_idx, polygons in enumerate(unmerged_polygons):
             for j, p in enumerate(polygons):
                 poly_3d = Polygon(*p,
                                  fill_color=layer_2_colors[j%len(layer_2_colors)],
@@ -163,9 +180,32 @@ class refactor_sketch_1(InteractiveScene):
                 poly_3d.set_opacity(0.3)
                 poly_3d.shift([3*layer_idx-6, 0, 1.5*neuron_idx])
                 layer_2_polygons_split_vgroup.add(poly_3d)
-
         self.add(layer_2_polygons_split_vgroup)
+
+        #A little clunky, but viz zero regions separately
+        layer_2_polygons_zero_vgroup=VGroup()
+        for neuron_idx, polygons in enumerate(merged_zero_polygons):
+            for j, p in enumerate(polygons):
+                poly_3d = Polygon(*p,
+                                 fill_color=GREY,
+                                 fill_opacity=0.7,
+                                 stroke_color=GREY,
+                                 stroke_width=2)
+                poly_3d.set_opacity(0.3)
+                poly_3d.shift([3*layer_idx-6, 0, 1.5*neuron_idx])
+                layer_2_polygons_zero_vgroup.add(poly_3d)
+        self.add(layer_2_polygons_zero_vgroup)
+
+
         self.wait()
+
+
+        # Ok nice!
+        # On to the last layer here!
+        # So I think it makes sense to merge the zerod out regions before doing th efinal region computation for 
+        # the last layer?
+        # Visually could make the zero'd out regions gray and then put the overall polygon on top or something.
+
 
 
 

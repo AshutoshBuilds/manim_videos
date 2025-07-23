@@ -329,14 +329,27 @@ def carve_plane_with_relu_joints(joint_points_list, extent=1):
     return polygons
 
 
+def apply_relu_to_polygon(polygon):
+    """
+    Apply ReLU operation to a polygon's z-values (clip negative values to 0).
+    
+    Args:
+        polygon: numpy array of shape (n_points, 3)
+    
+    Returns:
+        numpy array with z-values clipped to be >= 0
+    """
+    clipped_polygon = polygon.copy()
+    clipped_polygon[:, 2] = np.maximum(clipped_polygon[:, 2], 0.0)
+    return clipped_polygon
 
 
 
-
+import numpy as np
 
 def split_polygons_with_relu(layer_polygons_3d):
     """
-    Split 3D polygons that cross the z=0 plane (ReLU boundary).
+    Split 3D polygons that cross the z=0 plane (ReLU boundary) and merge zero regions.
     
     Args:
         layer_polygons_3d: List of lists of numpy arrays representing 3D polygons
@@ -344,17 +357,22 @@ def split_polygons_with_relu(layer_polygons_3d):
                           Each numpy array is a polygon with shape (n_points, 3)
     
     Returns:
-        List of lists of numpy arrays with split polygons added
+        Tuple of (all_polygons, merged_zero_polygons, unmerged_polygons)
+        - all_polygons: List of lists of numpy arrays with split polygons (same as before)
+        - merged_zero_polygons: List of lists with merged zero-height polygons
+        - unmerged_polygons: List of lists with non-zero polygons that weren't merged
     """
-    result = []
+    all_polygons = []
+    merged_zero_polygons = []
+    unmerged_polygons = []
     
     for neuron_idx, neuron_polygons in enumerate(layer_polygons_3d):
-        neuron_result = []
+        neuron_all = []
         
         for polygon in neuron_polygons:
             if len(polygon) < 3:
                 # Skip degenerate polygons
-                neuron_result.append(polygon)
+                neuron_all.append(polygon)
                 continue
                 
             # Check if polygon crosses z=0
@@ -363,16 +381,33 @@ def split_polygons_with_relu(layer_polygons_3d):
             max_z = np.max(z_values)
             
             if min_z >= 0 or max_z <= 0:
-                # Polygon doesn't cross z=0, keep as is
-                neuron_result.append(polygon)
+                # Polygon doesn't cross z=0, apply ReLU clipping and keep as is
+                clipped_polygon = apply_relu_to_polygon(polygon)
+                neuron_all.append(clipped_polygon)
             else:
                 # Polygon crosses z=0, need to split it
                 split_polygons = split_polygon_at_z_zero(polygon)
-                neuron_result.extend(split_polygons)
+                neuron_all.extend(split_polygons)
         
-        result.append(neuron_result)
+        all_polygons.append(neuron_all)
+        
+        # Separate zero and non-zero polygons for this neuron
+        zero_polygons = []
+        nonzero_polygons = []
+        
+        for polygon in neuron_all:
+            if is_zero_polygon(polygon):
+                zero_polygons.append(polygon)
+            else:
+                nonzero_polygons.append(polygon)
+        
+        # Merge adjacent zero polygons
+        merged_zeros = merge_adjacent_polygons(zero_polygons)
+        
+        merged_zero_polygons.append(merged_zeros)
+        unmerged_polygons.append(nonzero_polygons)
     
-    return result
+    return all_polygons, merged_zero_polygons, unmerged_polygons
 
 
 def split_polygon_at_z_zero(polygon):
@@ -455,20 +490,351 @@ def split_polygon_at_z_zero(polygon):
         if len(negative_polygon) > 0 and not any(np.allclose(int_point, p, atol=1e-8) for p in negative_polygon):
             negative_polygon.append(int_point)
     
-    # Convert to numpy arrays and sort points to maintain proper polygon order
+    # Convert to numpy arrays, apply ReLU clipping, and sort points to maintain proper polygon order
     result_polygons = []
     
     if len(positive_polygon) >= 3:
         positive_polygon = np.array(positive_polygon)
+        # Apply ReLU: clip z-values to be >= 0
+        positive_polygon[:, 2] = np.maximum(positive_polygon[:, 2], 0.0)
         positive_polygon = sort_polygon_points_3d(positive_polygon)
         result_polygons.append(positive_polygon)
     
     if len(negative_polygon) >= 3:
         negative_polygon = np.array(negative_polygon)
+        # Apply ReLU: clip z-values to be >= 0
+        negative_polygon[:, 2] = np.maximum(negative_polygon[:, 2], 0.0)
         negative_polygon = sort_polygon_points_3d(negative_polygon)
         result_polygons.append(negative_polygon)
     
-    return result_polygons if result_polygons else [polygon]
+    return result_polygons if result_polygons else [apply_relu_to_polygon(polygon)]
+
+
+def is_zero_polygon(polygon):
+    """
+    Check if a polygon has all z-values equal to 0 (within tolerance).
+    
+    Args:
+        polygon: numpy array of shape (n_points, 3)
+    
+    Returns:
+        bool: True if all z-values are approximately 0
+    """
+    return np.all(np.abs(polygon[:, 2]) < 1e-8)
+
+
+def merge_adjacent_polygons(polygons):
+    """
+    Merge adjacent polygons that share edges.
+    
+    Args:
+        polygons: List of numpy arrays representing polygons
+    
+    Returns:
+        List of merged polygons
+    """
+    if len(polygons) <= 1:
+        return polygons
+    
+    # Keep merging until no more merges are possible
+    current_polygons = polygons[:]
+    
+    while True:
+        merged_any = False
+        new_polygons = []
+        used = [False] * len(current_polygons)
+        
+        for i in range(len(current_polygons)):
+            if used[i]:
+                continue
+                
+            # Start a new merge group with polygon i
+            merge_group = [current_polygons[i]]
+            used[i] = True
+            
+            # Keep looking for polygons to add to this group
+            added_to_group = True
+            while added_to_group:
+                added_to_group = False
+                for j in range(len(current_polygons)):
+                    if used[j]:
+                        continue
+                    
+                    # Check if polygon j is adjacent to any polygon in current merge group
+                    for group_poly in merge_group:
+                        if polygons_share_edge(group_poly, current_polygons[j]):
+                            merge_group.append(current_polygons[j])
+                            used[j] = True
+                            added_to_group = True
+                            merged_any = True
+                            break
+                    
+                    if added_to_group:
+                        break
+            
+            # Merge all polygons in this group
+            if len(merge_group) == 1:
+                new_polygons.append(merge_group[0])
+            else:
+                merged_polygon = merge_polygon_group(merge_group)
+                new_polygons.append(merged_polygon)
+        
+        current_polygons = new_polygons
+        
+        # If no merges happened this iteration, we're done
+        if not merged_any:
+            break
+    
+    return current_polygons
+
+
+def polygons_share_edge(poly1, poly2, tolerance=1e-6):
+    """
+    Check if two polygons share an edge (two consecutive vertices).
+    
+    Args:
+        poly1, poly2: numpy arrays representing polygons
+        tolerance: tolerance for point comparison
+    
+    Returns:
+        bool: True if polygons share an edge
+    """
+    # Get edges from both polygons
+    edges1 = get_polygon_edges(poly1)
+    edges2 = get_polygon_edges(poly2)
+    
+    # Check if any edges match (in either direction)
+    for edge1 in edges1:
+        for edge2 in edges2:
+            # Check if edges are the same (forward or backward)
+            if (edges_equal(edge1, edge2, tolerance) or 
+                edges_equal(edge1, (edge2[1], edge2[0]), tolerance)):
+                return True
+    
+    return False
+
+
+def get_polygon_edges(polygon):
+    """
+    Get all edges of a polygon as pairs of points.
+    
+    Args:
+        polygon: numpy array of shape (n_points, 3)
+    
+    Returns:
+        List of (point1, point2) tuples representing edges
+    """
+    edges = []
+    n_points = len(polygon)
+    for i in range(n_points):
+        p1 = polygon[i]
+        p2 = polygon[(i + 1) % n_points]
+        edges.append((p1, p2))
+    return edges
+
+
+def edges_equal(edge1, edge2, tolerance=1e-6):
+    """
+    Check if two edges are equal within tolerance.
+    
+    Args:
+        edge1, edge2: tuples of (start_point, end_point)
+        tolerance: tolerance for comparison
+    
+    Returns:
+        bool: True if edges are equal
+    """
+    p1_start, p1_end = edge1
+    p2_start, p2_end = edge2
+    
+    return (np.allclose(p1_start, p2_start, atol=tolerance) and 
+            np.allclose(p1_end, p2_end, atol=tolerance))
+
+
+def merge_polygon_group(polygons):
+    """
+    Merge a group of adjacent polygons into a single polygon by finding the outer boundary.
+    Uses a simpler approach: collect all unique vertices and compute the boundary.
+    
+    Args:
+        polygons: List of numpy arrays representing polygons to merge
+    
+    Returns:
+        numpy array representing the merged polygon
+    """
+    if len(polygons) == 1:
+        return polygons[0]
+    
+    # Collect all unique vertices from all polygons
+    all_vertices = []
+    for polygon in polygons:
+        for vertex in polygon:
+            # Check if this vertex is already in our list
+            is_duplicate = False
+            for existing in all_vertices:
+                if np.allclose(vertex, existing, atol=1e-8):
+                    is_duplicate = True
+                    break
+            if not is_duplicate:
+                all_vertices.append(vertex.copy())
+    
+    if len(all_vertices) < 3:
+        return polygons[0]
+    
+    # Convert to numpy array for easier processing
+    all_vertices = np.array(all_vertices)
+    
+    # Find the convex hull in 2D (x,y coordinates) to get boundary points
+    try:
+        from scipy.spatial import ConvexHull
+        hull_2d = ConvexHull(all_vertices[:, :2])
+        boundary_indices = hull_2d.vertices
+        boundary_vertices = all_vertices[boundary_indices]
+        
+        # But we want the actual boundary, not just convex hull
+        # So let's find the true outer boundary using a different approach
+        outer_boundary = find_outer_boundary_detailed(polygons)
+        if outer_boundary is not None and len(outer_boundary) >= 3:
+            return outer_boundary
+        else:
+            # Fallback to convex hull if detailed boundary fails
+            return boundary_vertices
+            
+    except Exception as e:
+        # If scipy not available or fails, use angle-based sorting
+        return sort_polygon_points_3d(all_vertices)
+
+
+def find_outer_boundary_detailed(polygons):
+    """
+    Find the true outer boundary of merged polygons by identifying boundary edges.
+    
+    Args:
+        polygons: List of polygon numpy arrays
+        
+    Returns:
+        numpy array of boundary vertices, or None if failed
+    """
+    # Create a dictionary to count how many times each edge appears
+    edge_count = {}
+    edge_to_vertices = {}  # Map edges to their actual vertex objects
+    
+    for polygon in polygons:
+        n_vertices = len(polygon)
+        for i in range(n_vertices):
+            v1 = polygon[i]
+            v2 = polygon[(i + 1) % n_vertices]
+            
+            # Create edge key using rounded coordinates for robust comparison
+            def vertex_key(v):
+                return (round(v[0], 8), round(v[1], 8), round(v[2], 8))
+            
+            key1 = vertex_key(v1)
+            key2 = vertex_key(v2)
+            
+            # Normalize edge direction (smaller key first)
+            if key1 <= key2:
+                edge_key = (key1, key2)
+                edge_direction = (v1, v2)
+            else:
+                edge_key = (key2, key1) 
+                edge_direction = (v2, v1)
+            
+            # Count this edge
+            if edge_key in edge_count:
+                edge_count[edge_key] += 1
+            else:
+                edge_count[edge_key] = 1
+                edge_to_vertices[edge_key] = edge_direction
+    
+    # Find boundary edges (edges that appear exactly once)
+    boundary_edges = []
+    for edge_key, count in edge_count.items():
+        if count == 1:
+            boundary_edges.append(edge_to_vertices[edge_key])
+    
+    if len(boundary_edges) < 3:
+        return None
+    
+    # Build connected boundary by following edges
+    if len(boundary_edges) == 0:
+        return None
+        
+    # Start with first edge
+    boundary_vertices = [boundary_edges[0][0], boundary_edges[0][1]]
+    used_edges = {0}
+    
+    # Keep adding connected edges
+    max_iterations = len(boundary_edges) * 2  # Prevent infinite loops
+    iterations = 0
+    
+    while len(used_edges) < len(boundary_edges) and iterations < max_iterations:
+        iterations += 1
+        current_end = boundary_vertices[-1]
+        found_connection = False
+        
+        for i, (start, end) in enumerate(boundary_edges):
+            if i in used_edges:
+                continue
+            
+            # Check if this edge connects to our current end
+            if np.allclose(current_end, start, atol=1e-8):
+                boundary_vertices.append(end)
+                used_edges.add(i)
+                found_connection = True
+                break
+            elif np.allclose(current_end, end, atol=1e-8):
+                boundary_vertices.append(start)  
+                used_edges.add(i)
+                found_connection = True
+                break
+        
+        if not found_connection:
+            # Check if we've formed a closed loop
+            if len(boundary_vertices) > 2 and np.allclose(boundary_vertices[-1], boundary_vertices[0], atol=1e-8):
+                break
+            else:
+                # Try to continue from a different unused edge
+                remaining_edges = [i for i in range(len(boundary_edges)) if i not in used_edges]
+                if remaining_edges:
+                    next_edge_idx = remaining_edges[0]
+                    start, end = boundary_edges[next_edge_idx]
+                    boundary_vertices.extend([start, end])
+                    used_edges.add(next_edge_idx)
+                else:
+                    break
+    
+    # Remove duplicate points (especially the closing point)
+    if len(boundary_vertices) > 1 and np.allclose(boundary_vertices[-1], boundary_vertices[0], atol=1e-8):
+        boundary_vertices = boundary_vertices[:-1]
+    
+    # Remove any remaining duplicates
+    unique_vertices = []
+    for vertex in boundary_vertices:
+        is_duplicate = False
+        for existing in unique_vertices:
+            if np.allclose(vertex, existing, atol=1e-8):
+                is_duplicate = True
+                break
+        if not is_duplicate:
+            unique_vertices.append(vertex)
+    
+    if len(unique_vertices) >= 3:
+        return np.array(unique_vertices)
+    else:
+        return None
+    """
+    Apply ReLU operation to a polygon's z-values (clip negative values to 0).
+    
+    Args:
+        polygon: numpy array of shape (n_points, 3)
+    
+    Returns:
+        numpy array with z-values clipped to be >= 0
+    """
+    clipped_polygon = polygon.copy()
+    clipped_polygon[:, 2] = np.maximum(clipped_polygon[:, 2], 0.0)
+    return clipped_polygon
 
 
 def sort_polygon_points_3d(points):
@@ -496,50 +862,3 @@ def sort_polygon_points_3d(points):
     sorted_indices = np.argsort(angles)
     
     return points[sorted_indices]
-
-# def get_relu_joint(weight_1, weight_2, bias, extent=1):
-#     if np.abs(weight_2) < 1e-8: 
-#         x_intercept = -bias / weight_1
-#         return [[x_intercept, -extent], [x_intercept, extent]] if -extent <= x_intercept <= extent else []
-#     elif np.abs(weight_1) < 1e-8:
-#         y_intercept = -bias / weight_2
-#         return [[-extent, y_intercept], [extent, y_intercept]] if -extent <= y_intercept <= extent else []
-#     else:
-#         points = []
-#         for x in [-extent, extent]:
-#             y = (-x * weight_1 - bias) / weight_2
-#             if -extent <= y <= extent: points.append([x, y])
-#         for y in [-extent, extent]:
-#             x = (-y * weight_2 - bias) / weight_1
-#             if -extent <= x <= extent: points.append([x, y])
-#         unique_points = []
-#         for p in points:
-#             is_duplicate = False
-#             for existing in unique_points:
-#                 if abs(p[0] - existing[0]) < 1e-8 and abs(p[1] - existing[1]) < 1e-8:
-#                     is_duplicate = True
-#                     break
-#             if not is_duplicate:
-#                 unique_points.append(p)
-#         return unique_points
-
-# def line_from_joint_points(joint_points):
-#     if joint_points:
-#         # Create 3D points for the joint line
-#         joint_3d_points = []
-#         for point in joint_points:
-#             x, y = point
-#             z = 0
-#             joint_3d_points.append([x, y, z])
-        
-#         if len(joint_3d_points) >= 2:
-#             joint_line = DashedLine(
-#                 start=[joint_points[0][0], joint_points[0][1], 0],
-#                 end=[joint_points[1][0], joint_points[1][1], 0],
-#                 color=WHITE,
-#                 stroke_width=3,
-#                 dash_length=0.05
-#             )
-#             return joint_line
-
-

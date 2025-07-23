@@ -255,10 +255,47 @@ class refactor_sketch_1(InteractiveScene):
                 output_poygons_2d.add(polygon)
         self.add(output_poygons_2d)
 
-        # Ok claude hasn't been able to figure this one out yet 
-        # This polygon intersection problem is fiarly general - so it might
-        # make sense to set it up in a general way and ask claude opus ond o3 or something to 
-        # work on it in isolation - I think that's a good next step!
+        # Ok making progress here - now last step and then I want to think about exponential growth here
+        # Last step will be sending these to 3d! Which should be maybe not terrible?
+
+        layer_3_polygons_3d=[]
+        for neuron_idx in range(num_neurons[layer_idx]):
+            layer_3_polygons_3d.append([])
+            for polygon_2d in layer3_regions_2d:
+                a=[]
+                for pt_idx in range(len(polygon_2d)):
+                    a.append(surface_funcs[layer_idx][neuron_idx](*polygon_2d[pt_idx])) #Might be a batch way to do this
+                a=np.array(a)
+                layer_3_polygons_3d[-1].append(a)           
+
+
+        layer_3_polygons_vgroup=VGroup()
+        for neuron_idx, polygons in enumerate(layer_3_polygons_3d):
+            for j, p in enumerate(polygons):
+                poly_3d = Polygon(*p,
+                                 fill_color=layer_3_colors[j%len(layer_3_colors)],
+                                 fill_opacity=0.7,
+                                 stroke_color=layer_3_colors[j%len(layer_3_colors)],
+                                 stroke_width=2)
+                poly_3d.set_opacity(0.3)
+                poly_3d.shift([3*layer_idx-6, 0, 1.5*neuron_idx])
+                layer_3_polygons_vgroup.add(poly_3d)
+        self.add(layer_3_polygons_vgroup)
+
+
+        # layer_2_polygons=carve_plane_with_relu_joints([o['relu_line'] for o in layer_1_polygons])
+        # layer_2_polygons_3d=[]
+        # for neuron_idx in range(num_neurons[layer_idx]):
+        #     layer_2_polygons_3d.append([])
+        #     for region in layer_2_polygons:
+        #         a=[]
+        #         for pt_idx in range(len(region)):
+        #             a.append(surface_funcs[layer_idx][neuron_idx](*region[pt_idx])) #Might be a batch way to do this
+        #         a=np.array(a)
+        #         layer_2_polygons_3d[-1].append(a)
+
+
+
 
         self.wait()
 

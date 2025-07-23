@@ -330,6 +330,173 @@ def carve_plane_with_relu_joints(joint_points_list, extent=1):
 
 
 
+
+
+
+
+def split_polygons_with_relu(layer_polygons_3d):
+    """
+    Split 3D polygons that cross the z=0 plane (ReLU boundary).
+    
+    Args:
+        layer_polygons_3d: List of lists of numpy arrays representing 3D polygons
+                          Each sublist represents polygons for one neuron
+                          Each numpy array is a polygon with shape (n_points, 3)
+    
+    Returns:
+        List of lists of numpy arrays with split polygons added
+    """
+    result = []
+    
+    for neuron_idx, neuron_polygons in enumerate(layer_polygons_3d):
+        neuron_result = []
+        
+        for polygon in neuron_polygons:
+            if len(polygon) < 3:
+                # Skip degenerate polygons
+                neuron_result.append(polygon)
+                continue
+                
+            # Check if polygon crosses z=0
+            z_values = polygon[:, 2]
+            min_z = np.min(z_values)
+            max_z = np.max(z_values)
+            
+            if min_z >= 0 or max_z <= 0:
+                # Polygon doesn't cross z=0, keep as is
+                neuron_result.append(polygon)
+            else:
+                # Polygon crosses z=0, need to split it
+                split_polygons = split_polygon_at_z_zero(polygon)
+                neuron_result.extend(split_polygons)
+        
+        result.append(neuron_result)
+    
+    return result
+
+
+def split_polygon_at_z_zero(polygon):
+    """
+    Split a single 3D polygon at the z=0 plane.
+    
+    Args:
+        polygon: numpy array of shape (n_points, 3) representing polygon vertices
+    
+    Returns:
+        List of numpy arrays representing the split polygons
+    """
+    n_points = len(polygon)
+    if n_points < 3:
+        return [polygon]
+    
+    # Find intersection points with z=0 plane
+    intersection_points = []
+    intersection_indices = []  # Track where intersections occur in the original polygon
+    
+    for i in range(n_points):
+        curr_point = polygon[i]
+        next_point = polygon[(i + 1) % n_points]
+        
+        curr_z = curr_point[2]
+        next_z = next_point[2]
+        
+        # Check if edge crosses z=0
+        if (curr_z > 0 and next_z < 0) or (curr_z < 0 and next_z > 0):
+            # Find intersection point using linear interpolation
+            t = -curr_z / (next_z - curr_z)
+            intersection = curr_point + t * (next_point - curr_point)
+            intersection[2] = 0.0  # Ensure exactly on z=0 plane
+            
+            intersection_points.append(intersection)
+            intersection_indices.append(i)
+    
+    if len(intersection_points) < 2:
+        # Not enough intersections to split properly
+        return [polygon]
+    
+    # We need exactly 2 intersection points for a clean split
+    if len(intersection_points) > 2:
+        # For more complex cases, keep only the first two intersections
+        intersection_points = intersection_points[:2]
+        intersection_indices = intersection_indices[:2]
+    
+    # Split polygon into two parts
+    positive_polygon = []
+    negative_polygon = []
+    
+    # Add intersection points to both polygons
+    int_point_1, int_point_2 = intersection_points[0], intersection_points[1]
+    
+    # Traverse the original polygon and assign points to positive or negative
+    for i in range(n_points):
+        point = polygon[i]
+        z_val = point[2]
+        
+        if z_val >= 0:
+            positive_polygon.append(point)
+        else:
+            negative_polygon.append(point)
+        
+        # Add intersection points at the right places
+        if i in intersection_indices:
+            intersection_idx = intersection_indices.index(i)
+            intersection_point = intersection_points[intersection_idx]
+            
+            # Add to both polygons
+            if z_val >= 0:
+                negative_polygon.append(intersection_point)
+            else:
+                positive_polygon.append(intersection_point)
+    
+    # Ensure intersection points are in both polygons
+    for int_point in intersection_points:
+        if len(positive_polygon) > 0 and not any(np.allclose(int_point, p, atol=1e-8) for p in positive_polygon):
+            positive_polygon.append(int_point)
+        if len(negative_polygon) > 0 and not any(np.allclose(int_point, p, atol=1e-8) for p in negative_polygon):
+            negative_polygon.append(int_point)
+    
+    # Convert to numpy arrays and sort points to maintain proper polygon order
+    result_polygons = []
+    
+    if len(positive_polygon) >= 3:
+        positive_polygon = np.array(positive_polygon)
+        positive_polygon = sort_polygon_points_3d(positive_polygon)
+        result_polygons.append(positive_polygon)
+    
+    if len(negative_polygon) >= 3:
+        negative_polygon = np.array(negative_polygon)
+        negative_polygon = sort_polygon_points_3d(negative_polygon)
+        result_polygons.append(negative_polygon)
+    
+    return result_polygons if result_polygons else [polygon]
+
+
+def sort_polygon_points_3d(points):
+    """
+    Sort 3D polygon points to maintain proper ordering.
+    Projects to 2D (x,y) plane for sorting since we're dealing with surfaces.
+    
+    Args:
+        points: numpy array of shape (n_points, 3)
+    
+    Returns:
+        numpy array of sorted points
+    """
+    if len(points) < 3:
+        return points
+    
+    # Find centroid in x,y plane
+    centroid_x = np.mean(points[:, 0])
+    centroid_y = np.mean(points[:, 1])
+    
+    # Calculate angles from centroid in x,y plane
+    angles = np.arctan2(points[:, 1] - centroid_y, points[:, 0] - centroid_x)
+    
+    # Sort by angle
+    sorted_indices = np.argsort(angles)
+    
+    return points[sorted_indices]
+
 # def get_relu_joint(weight_1, weight_2, bias, extent=1):
 #     if np.abs(weight_2) < 1e-8: 
 #         x_intercept = -bias / weight_1

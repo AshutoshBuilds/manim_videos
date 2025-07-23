@@ -66,6 +66,16 @@ class refactor_sketch_1(InteractiveScene):
         # I just want ot start figuing out zero crossing polygons.
         self.frame.reorient(0, 38, 0, (-0.16, 0.17, 0.1), 9.70)
 
+        #Optional but kinda nice RuLu intersection planes
+        relu_intersections_planes_1=VGroup()
+        layer_idx=0
+        for neuron_idx in range(num_neurons[layer_idx]):
+            plane = Rectangle( width=2,  height=2, fill_color=GREY, fill_opacity=0.3, stroke_color=WHITE, stroke_width=1)
+            plane.shift([3*layer_idx-6, 0, 1.5*neuron_idx])
+            relu_intersections_planes_1.add(plane)
+        self.add(relu_intersections_planes_1)
+
+
         #Layer 1 polygons - use surface function to find heights
         layer_idx=1
         layer_1_polygons=get_polygon_corners_layer_1(model)
@@ -117,9 +127,9 @@ class refactor_sketch_1(InteractiveScene):
         for neuron_idx, polygons in enumerate(layer_2_polygons_3d):
             for j, p in enumerate(polygons):
                 poly_3d = Polygon(*p,
-                                 fill_color=layer_2_colors[j],
+                                 fill_color=layer_2_colors[j%len(layer_2_colors)],
                                  fill_opacity=0.7,
-                                 stroke_color=layer_2_colors[j],
+                                 stroke_color=layer_2_colors[j%len(layer_2_colors)],
                                  stroke_width=2)
                 poly_3d.set_opacity(0.3)
                 poly_3d.shift([3*layer_idx-6, 0, 1.5*neuron_idx])
@@ -128,10 +138,35 @@ class refactor_sketch_1(InteractiveScene):
         self.add(layer_2_polygons_vgroup)
         self.wait()
 
-        #Ok nice!
+        #Optional but kinda nice RuLu intersection planes
+        relu_intersections_planes_2=VGroup()
+        layer_idx=2
+        for neuron_idx in range(num_neurons[layer_idx]):
+            plane = Rectangle( width=2,  height=2, fill_color=GREY, fill_opacity=0.3, stroke_color=WHITE, stroke_width=1)
+            plane.shift([3*layer_idx-6, 0, 1.5*neuron_idx])
+            relu_intersections_planes_2.add(plane)
+        self.add(relu_intersections_planes_2)
 
+        #Ok, making progress! Now we need to recompute each set of regions based on ReLu clipping!
+        layer_idx=3
+        layer_2_polygons_3d_split=split_polygons_with_relu(layer_2_polygons_3d)
 
-        
+        layer_2_polygons_split_vgroup=VGroup()
+        layer_2_colors = [RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
+        for neuron_idx, polygons in enumerate(layer_2_polygons_3d_split):
+            for j, p in enumerate(polygons):
+                poly_3d = Polygon(*p,
+                                 fill_color=layer_2_colors[j%len(layer_2_colors)],
+                                 fill_opacity=0.7,
+                                 stroke_color=layer_2_colors[j%len(layer_2_colors)],
+                                 stroke_width=2)
+                poly_3d.set_opacity(0.3)
+                poly_3d.shift([3*layer_idx-6, 0, 1.5*neuron_idx])
+                layer_2_polygons_split_vgroup.add(poly_3d)
+
+        self.add(layer_2_polygons_split_vgroup)
+        self.wait()
+
 
 
         self.wait()
@@ -146,3 +181,9 @@ class refactor_sketch_1(InteractiveScene):
 
         self.wait()
         self.embed()
+
+
+
+
+
+

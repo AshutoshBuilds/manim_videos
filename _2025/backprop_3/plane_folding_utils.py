@@ -920,6 +920,10 @@ def surface_func_third_layer_no_relu_multi(u, v, w1, b1, w2, b2, w3, b3, neuron_
         relu_outputs.append(relu_output)
     
     # Second layer neuron computation
+    # second_layer_outputs=
+    # Hmm ok there's got to be a better way to do this -> this is super clunky/manual
+    # I know i'm on a tight schedule, but I think a little refactor woudl proably have some pretty big
+    # beenfits.
     second_layer_output = b2[neuron_idx]
     for i in range(w2.shape[0]):
         second_layer_output += w2[neuron_idx,i] * relu_outputs[i]

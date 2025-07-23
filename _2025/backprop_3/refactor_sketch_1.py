@@ -27,18 +27,18 @@ class refactor_sketch_1(InteractiveScene):
         # First change i want to make is just loading full torch models here - this will streamlien things
         
         #2x2
-        model_path='_2025/backprop_3/models/2_2_1.pth'
-        model = BaarleNet([2,2])
-        model.load_state_dict(torch.load(model_path))
-        viz_scales=[0.25, 0.25, 0.3, 0.3, 0.15]
-        num_neurons=[2, 2, 2, 2, 2]
+        # model_path='_2025/backprop_3/models/2_2_1.pth'
+        # model = BaarleNet([2,2])
+        # model.load_state_dict(torch.load(model_path))
+        # viz_scales=[0.25, 0.25, 0.3, 0.3, 0.15]
+        # num_neurons=[2, 2, 2, 2, 2]
 
         #3x3
-        # model_path='_2025/backprop_3/models/3_3_1.pth'
-        # model = BaarleNet([3,3])
-        # model.load_state_dict(torch.load(model_path))
-        # viz_scales=[0.1, 0.1, 0.05, 0.05, 0.15]
-        # num_neurons=[3, 3, 3, 3, 2]
+        model_path='_2025/backprop_3/models/3_3_1.pth'
+        model = BaarleNet([3,3])
+        model.load_state_dict(torch.load(model_path))
+        viz_scales=[0.1, 0.1, 0.05, 0.05, 0.15]
+        num_neurons=[3, 3, 3, 3, 2]
 
 
         surfaces=[]
@@ -230,18 +230,25 @@ class refactor_sketch_1(InteractiveScene):
         # Ok i'm like 90% sure that's right, if it's not I think it will shake out in the viz
         # Let's assume it's right and see what happens here exaclty. 
 
+        #Drop last coords. 
+        all_polygons_after_merging_2d=[]
+        for p in all_polygons_after_merging:
+            pd2=[o[:,:2] for o in p]
+            all_polygons_after_merging_2d.append(pd2)
 
-        layer3_regions_2d = compute_layer3_regions(all_polygons_after_merging)
+        # layer3_regions_2d = compute_layer3_regions(all_polygons_after_merging)
+        layer3_regions_2d = find_polygon_intersections(all_polygons_after_merging_2d)
 
         #Let's do a quick 2d viz to see how things are looking here
         output_poygons_2d=VGroup()
         layer_idx=4
         neuron_idx=-1
+        layer_3_colors = [RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
         for j, polygon in enumerate(layer3_regions_2d):
                 polygon = Polygon(*np.hstack((polygon, np.zeros((polygon.shape[0],1)))),
-                                 fill_color=layer_2_colors[j%len(layer_2_colors)],
+                                 fill_color=layer_3_colors[j%len(layer_3_colors)],
                                  fill_opacity=0.7,
-                                 stroke_color=layer_2_colors[j%len(layer_2_colors)],
+                                 stroke_color=layer_3_colors[j%len(layer_3_colors)],
                                  stroke_width=2)
                 polygon.set_opacity(0.3)
                 polygon.shift([3*layer_idx-6, 0, 1.5*neuron_idx])

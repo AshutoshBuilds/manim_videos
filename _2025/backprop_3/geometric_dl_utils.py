@@ -868,342 +868,184 @@ def sort_polygon_points_3d(points):
 ## --- Second layer intersections --- ##
 
 
-import numpy as np
-from collections import defaultdict
 
-def compute_layer3_regions(all_polygons_after_merging, extent=1):
+
+import numpy as np
+import shapely.geometry as sg #import Polygon, sg.MultiPolygon
+from shapely.ops import unary_union
+
+
+
+def find_polygon_intersections(all_polygons_after_merging_2d):
     """
-    Compute all distinct 2D regions formed by intersecting the polygons from multiple neurons.
-    Uses an efficient line-based subdivision approach.
+    Find intersections of N sets of non-overlapping polygons.
     
-    Args:
-        all_polygons_after_merging: List of lists, each containing polygons for one neuron
-        extent: The boundary extent (default 1 for [-1,1] x [-1,1] domain)
+    Parameters:
+    -----------
+    all_polygons_after_merging_2d : list of list of numpy arrays
+        A list containing N lists of polygon coordinates. Each inner list contains
+        numpy arrays representing polygons that fully cover the plane without overlapping.
     
     Returns:
-        List of polygons representing all distinct regions that tile the plane
+    --------
+    list of numpy arrays
+        A list of numpy arrays, with one array for each resulting polygon from the intersection
+        of all N sets.
     """
-    if len(all_polygons_after_merging) < 1:
-        raise ValueError("Expected at least 1 neuron worth of polygons")
+    if len(all_polygons_after_merging_2d) < 2:
+        raise ValueError("Input must contain at least 2 sets of polygons")
     
-    # Flatten all polygons to 2D (x,y coordinates only)
-    polygons_2d = []
-    all_edges = []
+    # Start with the first set of polygons
+    current_polygons = [sg.Polygon(coords) for coords in all_polygons_after_merging_2d[0]]
     
-    for neuron_idx, neuron_polygons in enumerate(all_polygons_after_merging):
-        neuron_2d = []
-        for poly_idx, polygon in enumerate(neuron_polygons):
-            # Extract just x,y coordinates
-            polygon_2d = polygon[:, :2]  # Shape: (n_points, 2)
-            neuron_2d.append(polygon_2d)
-            
-            # Collect all edges for intersection finding
-            for i in range(len(polygon_2d)):
-                edge = (polygon_2d[i], polygon_2d[(i+1) % len(polygon_2d)])
-                all_edges.append((edge, neuron_idx, poly_idx))
+    # Iteratively intersect with each subsequent set
+    for set_idx in range(1, len(all_polygons_after_merging_2d)):
+        next_set_polygons = [sg.Polygon(coords) for coords in all_polygons_after_merging_2d[set_idx]]
         
-        polygons_2d.append(neuron_2d)
-    
-    # Use a much simpler and faster approach: sample-based subdivision
-    return fast_subdivide_plane(polygons_2d, extent)
-
-
-def fast_subdivide_plane(polygons_by_neuron, extent, resolution=20):
-    """
-    Fast plane subdivision using a coarse grid with boundary refinement.
-    Much faster than the previous approach.
-    """
-    # Create a coarse grid first
-    x_coords = np.linspace(-extent, extent, resolution)
-    y_coords = np.linspace(-extent, extent, resolution)
-    
-    # Find all intersection points to add to our subdivision
-    intersection_points = find_polygon_intersections(polygons_by_neuron)
-    
-    # Add boundary points
-    boundary_points = []
-    for neuron_polygons in polygons_by_neuron:
-        for polygon in neuron_polygons:
-            for point in polygon:
-                boundary_points.append(point)
-    
-    # Combine all important points
-    all_important_points = intersection_points + boundary_points
-    
-    # Add some grid points for coverage
-    grid_points = []
-    for i in range(0, len(x_coords), 4):  # Every 4th point to keep it sparse
-        for j in range(0, len(y_coords), 4):
-            grid_points.append([x_coords[i], y_coords[j]])
-    
-    all_important_points.extend(grid_points)
-    
-    # Use Voronoi-like approach: for each important point, find its region
-    regions = []
-    processed_signatures = set()
-    
-    for point in all_important_points:
-        signature = get_point_signature(np.array(point), polygons_by_neuron)
+        # Store the new intersection polygons for this iteration
+        new_intersection_polygons = []
         
-        if signature not in processed_signatures:
-            # Create a region around this signature
-            region = create_region_for_signature(signature, polygons_by_neuron, extent)
-            if region is not None and len(region) >= 3:
-                regions.append(region)
-                processed_signatures.add(signature)
-    
-    return regions
-
-
-def find_polygon_intersections(polygons_by_neuron):
-    """
-    Find intersection points between polygons from different neurons.
-    Uses a simplified approach for speed.
-    """
-    intersection_points = []
-    
-    # Compare polygons between different neurons
-    for neuron1_idx in range(len(polygons_by_neuron)):
-        for neuron2_idx in range(neuron1_idx + 1, len(polygons_by_neuron)):
-            for poly1 in polygons_by_neuron[neuron1_idx]:
-                for poly2 in polygons_by_neuron[neuron2_idx]:
-                    intersections = find_polygon_polygon_intersections(poly1, poly2)
-                    intersection_points.extend(intersections)
-    
-    return intersection_points
-
-
-def find_polygon_polygon_intersections(poly1, poly2):
-    """Find intersection points between two polygons."""
-    intersections = []
-    
-    # Check each edge of poly1 against each edge of poly2
-    for i in range(len(poly1)):
-        edge1_start = poly1[i]
-        edge1_end = poly1[(i + 1) % len(poly1)]
+        # Find all pairwise intersections between current polygons and next set
+        for poly1 in current_polygons:
+            for poly2 in next_set_polygons:
+                # Calculate intersection
+                intersection = poly1.intersection(poly2)
+                
+                # Skip if no intersection
+                if intersection.is_empty:
+                    continue
+                
+                # Handle different geometry types
+                if isinstance(intersection, sg.Polygon):
+                    # Single sg.polygon intersection
+                    if intersection.area > 1e-10:  # Skip tiny polygons (numerical artifacts)
+                        new_intersection_polygons.append(intersection)
+                elif isinstance(intersection, sg.MultiPolygon):
+                    # Multiple sg.polygon intersection (rare but possible)
+                    for geom in intersection.geoms:
+                        if isinstance(geom, sg.Polygon) and geom.area > 1e-10:
+                            new_intersection_polygons.append(geom)
         
-        for j in range(len(poly2)):
-            edge2_start = poly2[j]
-            edge2_end = poly2[(j + 1) % len(poly2)]
-            
-            intersection = line_segment_intersection(
-                edge1_start, edge1_end, edge2_start, edge2_end
-            )
-            
-            if intersection is not None:
-                intersections.append(intersection)
-    
-    return intersections
-
-
-def line_segment_intersection(p1, p2, p3, p4):
-    """Find intersection of two line segments."""
-    x1, y1 = p1
-    x2, y2 = p2
-    x3, y3 = p3
-    x4, y4 = p4
-    
-    denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
-    if abs(denom) < 1e-10:
-        return None
-    
-    t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / denom
-    u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / denom
-    
-    # Check if intersection is within both line segments
-    if 0 <= t <= 1 and 0 <= u <= 1:
-        x = x1 + t * (x2 - x1)
-        y = y1 + t * (y2 - y1)
-        return np.array([x, y])
-    
-    return None
-
-
-def create_region_for_signature(signature, polygons_by_neuron, extent):
-    """
-    Create a region polygon for a given signature by finding the intersection
-    of the appropriate constraints.
-    """
-    # Start with the full domain
-    current_region = np.array([
-        [-extent, -extent],
-        [extent, -extent],
-        [extent, extent],
-        [-extent, extent]
-    ])
-    
-    # Apply constraints for each neuron
-    for neuron_idx, poly_idx in enumerate(signature):
-        if poly_idx == -1:
-            # Outside all polygons for this neuron - subtract all polygons
-            for polygon in polygons_by_neuron[neuron_idx]:
-                current_region = subtract_polygon_simple(current_region, polygon)
-                if current_region is None or len(current_region) < 3:
-                    return None
-        else:
-            # Inside specific polygon - intersect with it
-            target_polygon = polygons_by_neuron[neuron_idx][poly_idx]
-            current_region = intersect_polygons_simple(current_region, target_polygon)
-            if current_region is None or len(current_region) < 3:
-                return None
-    
-    return current_region
-
-
-def intersect_polygons_simple(poly1, poly2):
-    """
-    Simple polygon intersection using Sutherland-Hodgman clipping.
-    Optimized for speed over perfect accuracy.
-    """
-    if len(poly1) < 3 or len(poly2) < 3:
-        return None
-    
-    subject_polygon = poly1.tolist()
-    
-    # Clip against each edge of the clipping polygon
-    for i in range(len(poly2)):
-        if not subject_polygon:
+        # Update current polygons for next iteration
+        current_polygons = new_intersection_polygons
+        
+        # If no intersections remain, we can stop early
+        if not current_polygons:
             break
-            
-        clip_vertex1 = poly2[i]
-        clip_vertex2 = poly2[(i + 1) % len(poly2)]
-        
-        input_list = subject_polygon
-        subject_polygon = []
-        
-        if not input_list:
-            continue
-            
-        if len(input_list) > 0:
-            s = input_list[-1]
-        
-        for e in input_list:
-            if inside_edge(e, clip_vertex1, clip_vertex2):
-                if not inside_edge(s, clip_vertex1, clip_vertex2):
-                    intersection = line_intersection_2d(s, e, clip_vertex1, clip_vertex2)
-                    if intersection is not None:
-                        subject_polygon.append(intersection.tolist())
-                subject_polygon.append(e)
-            elif inside_edge(s, clip_vertex1, clip_vertex2):
-                intersection = line_intersection_2d(s, e, clip_vertex1, clip_vertex2)
-                if intersection is not None:
-                    subject_polygon.append(intersection.tolist())
-            s = e
     
-    if len(subject_polygon) >= 3:
-        return np.array(subject_polygon)
-    return None
+    # Convert Shapely polygons back to numpy arrays
+    result = []
+    for poly in current_polygons:
+        # Get exterior coordinates (excluding holes for simplicity)
+        coords = np.array(poly.exterior.coords[:-1])  # [:-1] to remove duplicate last point
+        result.append(coords)
+    
+    return result
 
 
-def subtract_polygon_simple(region, polygon_to_subtract):
+def find_polygon_intersections_pairwise(set1_coords, set2_coords):
     """
-    Simplified polygon subtraction. Returns the region minus the polygon.
-    This is a very simplified version - not geometrically perfect but fast.
+    Helper function to find intersections between two sets of polygons.
+    
+    Parameters:
+    -----------
+    set1_coords : list of numpy arrays
+        First set of polygon coordinates
+    set2_coords : list of numpy arrays
+        Second set of polygon coordinates
+    
+    Returns:
+    --------
+    list of numpy arrays
+        Intersection polygons
     """
-    # For speed, we'll use a sampling approach
-    # Keep points from region that are outside the polygon to subtract
-    result_points = []
+    # Convert to Shapely polygons
+    set1_polygons = [sg.Polygon(coords) for coords in set1_coords]
+    set2_polygons = [sg.Polygon(coords) for coords in set2_coords]
     
-    for point in region:
-        if not point_in_polygon_robust(point, polygon_to_subtract):
-            result_points.append(point)
+    # Store intersection polygons
+    intersection_polygons = []
     
-    # Also add intersection points
-    for i in range(len(region)):
-        edge_start = region[i]
-        edge_end = region[(i + 1) % len(region)]
-        
-        for j in range(len(polygon_to_subtract)):
-            poly_start = polygon_to_subtract[j]
-            poly_end = polygon_to_subtract[(j + 1) % len(polygon_to_subtract)]
+    # Find all pairwise intersections
+    for poly1 in set1_polygons:
+        for poly2 in set2_polygons:
+            intersection = poly1.intersection(poly2)
             
-            intersection = line_segment_intersection(edge_start, edge_end, poly_start, poly_end)
-            if intersection is not None:
-                result_points.append(intersection)
+            if intersection.is_empty:
+                continue
+            
+            if isinstance(intersection, sg.Polygon):
+                if intersection.area > 1e-10:
+                    intersection_polygons.append(intersection)
+            elif isinstance(intersection, sg.MultiPolygon):
+                for geom in intersection.geoms:
+                    if isinstance(geom, sg.Polygon) and geom.area > 1e-10:
+                        intersection_polygons.append(geom)
     
-    if len(result_points) >= 3:
-        return sort_polygon_points_2d(np.array(result_points))
+    # Convert back to numpy arrays
+    result = []
+    for poly in intersection_polygons:
+        coords = np.array(poly.exterior.coords[:-1])
+        result.append(coords)
     
-    return region  # Fallback: return original region
+    return result
 
 
-def get_point_signature(point, polygons_by_neuron):
-    """Get signature indicating which polygons contain this point."""
-    signature = []
+## This one works great for 2 sets at a time. 
+# def find_polygon_intersections(all_polygons_after_merging_2d):
+#     """
+#     Find intersections of two sets of non-overlapping polygons - works great for the 2 sets of inputs case!
     
-    for neuron_idx, neuron_polygons in enumerate(polygons_by_neuron):
-        containing_polygon = -1
-        
-        for poly_idx, polygon in enumerate(neuron_polygons):
-            if point_in_polygon_robust(point, polygon):
-                containing_polygon = poly_idx
-                break
-        
-        signature.append(containing_polygon)
+#     Parameters:
+#     -----------
+#     all_polygons_after_merging_2d : list of list of numpy arrays
+#         A list containing two lists of polygon coordinates. Each inner list contains
+#         numpy arrays representing polygons that fully cover the plane without overlapping.
     
-    return tuple(signature)
-
-
-def point_in_polygon_robust(point, polygon):
-    """Fast point-in-polygon test."""
-    if len(polygon) < 3:
-        return False
+#     Returns:
+#     --------
+#     list of numpy arrays
+#         A list of numpy arrays, with one array for each resulting polygon from the intersection.
+#     """
+#     if len(all_polygons_after_merging_2d) != 2:
+#         raise ValueError("Input must contain exactly 2 sets of polygons")
     
-    x, y = point
-    n = len(polygon)
-    inside = False
+#     # Convert numpy arrays to Shapely polygons
+#     set1_polygons = [sg.Polygon(coords) for coords in all_polygons_after_merging_2d[0]]
+#     set2_polygons = [sg.Polygon(coords) for coords in all_polygons_after_merging_2d[1]]
     
-    p1x, p1y = polygon[0]
-    for i in range(1, n + 1):
-        p2x, p2y = polygon[i % n]
-        if y > min(p1y, p2y):
-            if y <= max(p1y, p2y):
-                if x <= max(p1x, p2x):
-                    if p1y != p2y:
-                        xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
-                    if p1x == p2x or x <= xinters:
-                        inside = not inside
-        p1x, p1y = p2x, p2y
+#     # Store all intersection polygons
+#     intersection_polygons = []
     
-    return inside
-
-
-def inside_edge(point, edge_start, edge_end):
-    """Check if point is on inside of edge."""
-    return ((edge_end[0] - edge_start[0]) * (point[1] - edge_start[1]) - 
-            (edge_end[1] - edge_start[1]) * (point[0] - edge_start[0])) >= 0
-
-
-def line_intersection_2d(p1, p2, p3, p4):
-    """Find intersection of two 2D lines."""
-    x1, y1 = p1
-    x2, y2 = p2
-    x3, y3 = p3
-    x4, y4 = p4
+#     # Find all pairwise intersections between polygons from set1 and set2
+#     for poly1 in set1_polygons:
+#         for poly2 in set2_polygons:
+#             # Calculate intersection
+#             intersection = poly1.intersection(poly2)
+            
+#             # Skip if no intersection or if intersection is not a polygon
+#             if intersection.is_empty:
+#                 continue
+            
+#             # Handle different geometry types
+#             if isinstance(intersection, sg.Polygon):
+#                 # Single polygon intersection
+#                 if intersection.area > 1e-10:  # Skip tiny polygons (numerical artifacts)
+#                     intersection_polygons.append(intersection)
+#             elif isinstance(intersection, sg.MultiPolygon):
+#                 # Multiple polygon intersection (rare but possible)
+#                 for geom in intersection.geoms:
+#                     if isinstance(geom, sg.Polygon) and geom.area > 1e-10:
+#                         intersection_polygons.append(geom)
     
-    denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
-    if abs(denom) < 1e-10:
-        return None
+#     # Convert Shapely polygons back to numpy arrays
+#     result = []
+#     for poly in intersection_polygons:
+#         # Get exterior coordinates (excluding holes for simplicity)
+#         coords = np.array(poly.exterior.coords[:-1])  # [:-1] to remove duplicate last point
+#         result.append(coords)
     
-    t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / denom
-    x = x1 + t * (x2 - x1)
-    y = y1 + t * (y2 - y1)
-    return np.array([x, y])
-
-
-def sort_polygon_points_2d(points):
-    """Sort 2D polygon points in counter-clockwise order."""
-    if len(points) < 3:
-        return points
-    
-    centroid = np.mean(points, axis=0)
-    
-    def angle_from_centroid(point):
-        return np.arctan2(point[1] - centroid[1], point[0] - centroid[0])
-    
-    sorted_indices = np.argsort([angle_from_centroid(p) for p in points])
-    return points[sorted_indices]
-
+#     return result
 
 
 

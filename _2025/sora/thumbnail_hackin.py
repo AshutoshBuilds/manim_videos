@@ -742,11 +742,11 @@ class thumbnail_hackin_1(InteractiveScene):
             time_tracker=time_tracker,
             func=vector_function_heatmap,
             coordinate_system=extended_axes,
-            density=3.5, #4.0, #5 gives nice detail, but is maybe a little too much, especially to zoom in on soon? Ok I think i like 4.
-            stroke_width=2.2,
+            density=3.0, #4.0, #5 gives nice detail, but is maybe a little too much, especially to zoom in on soon? Ok I think i like 4.
+            stroke_width=3.5,
             max_radius=4.5,      # Vectors fade to min_opacity at this distance
             min_opacity=0.1,     # Minimum opacity at max_radius
-            max_opacity=0.95,     # Maximum opacity at origin
+            max_opacity=1.0,     # Maximum opacity at origin
             tip_width_ratio=4,
             tip_len_to_width=0.01,
             max_vect_len_to_step_size=0.7,
@@ -759,8 +759,8 @@ class thumbnail_hackin_1(InteractiveScene):
             time_tracker=time_tracker,
             func=vector_function_heatmap_u,
             coordinate_system=extended_axes,
-            density=3.5, #4.0, #5 gives nice detail, but is maybe a little too much, especially to zoom in on soon? Ok I think i like 4.
-            stroke_width=2.2,
+            density=3.0, #4.0, #5 gives nice detail, but is maybe a little too much, especially to zoom in on soon? Ok I think i like 4.
+            stroke_width=3.5,
             max_radius=4.5,      # Vectors fade to min_opacity at this distance
             min_opacity=0.1,     # Minimum opacity at max_radius
             max_opacity=0.7,     # Maximum opacity at origin

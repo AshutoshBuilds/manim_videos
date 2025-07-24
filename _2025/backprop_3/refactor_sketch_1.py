@@ -27,18 +27,18 @@ class refactor_sketch_1(InteractiveScene):
         # First change i want to make is just loading full torch models here - this will streamlien things
         
         #2x2
-        # model_path='_2025/backprop_3/models/2_2_1.pth'
-        # model = BaarleNet([2,2])
-        # model.load_state_dict(torch.load(model_path))
-        # viz_scales=[0.25, 0.25, 0.3, 0.3, 0.15]
-        # num_neurons=[2, 2, 2, 2, 2]
+        model_path='_2025/backprop_3/models/2_2_1.pth'
+        model = BaarleNet([2,2])
+        model.load_state_dict(torch.load(model_path))
+        viz_scales=[0.25, 0.25, 0.3, 0.3, 0.15]
+        num_neurons=[2, 2, 2, 2, 2]
 
         #3x3
-        model_path='_2025/backprop_3/models/3_3_1.pth'
-        model = BaarleNet([3,3])
-        model.load_state_dict(torch.load(model_path))
-        viz_scales=[0.1, 0.1, 0.05, 0.05, 0.15]
-        num_neurons=[3, 3, 3, 3, 2]
+        # model_path='_2025/backprop_3/models/3_3_1.pth'
+        # model = BaarleNet([3,3])
+        # model.load_state_dict(torch.load(model_path))
+        # viz_scales=[0.1, 0.1, 0.05, 0.05, 0.15]
+        # num_neurons=[3, 3, 3, 3, 2]
 
 
         surfaces=[]
@@ -283,16 +283,6 @@ class refactor_sketch_1(InteractiveScene):
         self.add(layer_3_polygons_vgroup)
 
 
-        # layer_2_polygons=carve_plane_with_relu_joints([o['relu_line'] for o in layer_1_polygons])
-        # layer_2_polygons_3d=[]
-        # for neuron_idx in range(num_neurons[layer_idx]):
-        #     layer_2_polygons_3d.append([])
-        #     for region in layer_2_polygons:
-        #         a=[]
-        #         for pt_idx in range(len(region)):
-        #             a.append(surface_funcs[layer_idx][neuron_idx](*region[pt_idx])) #Might be a batch way to do this
-        #         a=np.array(a)
-        #         layer_2_polygons_3d[-1].append(a)
 
 
 

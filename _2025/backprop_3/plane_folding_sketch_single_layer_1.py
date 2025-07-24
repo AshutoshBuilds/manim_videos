@@ -15,12 +15,21 @@ class plane_folding_sketch_single_layer_1(InteractiveScene):
         map_img.set_width(2)   # This sets the width to 2 units (-1 to 1)
         map_img.move_to(ORIGIN)
 
-        w1=np.array([[-0.70856154,  1.809896  ],
-                     [-1.7940422 , -0.4643133 ]], dtype=np.float32)
-        b1=np.array([-0.47732198, -1.0138882 ], dtype=np.float32)
-        w2=np.array([[ 1.5246898,  2.049856 ],
-                    [-1.6014509, -1.3020881]], dtype=np.float32)
-        b2=np.array([-0.40461758,  0.05192775], dtype=np.float32)
+        #Fold up 2 edges
+        # w1=np.array([[-0.70856154,  1.809896  ],
+        #              [-1.7940422 , -0.4643133 ]], dtype=np.float32)
+        # b1=np.array([-0.47732198, -1.0138882 ], dtype=np.float32)
+        # w2=np.array([[ 1.5246898,  2.049856 ],
+        #             [-1.6014509, -1.3020881]], dtype=np.float32)
+        # b2=np.array([-0.40461758,  0.05192775], dtype=np.float32)
+
+        #The cone
+        w1 = np.array([[2.5135, -1.02481],
+         [-1.4043, 2.41291]], dtype=np.float32)
+        b1 = np.array([-1.23981, -0.450078], dtype=np.float32)
+        w2 = np.array([[3.17024, 1.32567],
+         [-3.40372, -1.53878]], dtype=np.float32)
+        b2 = np.array([-0.884835, 0.0332228], dtype=np.float32)
 
         surface_func_11=partial(surface_func_general, w1=w1[0,0], w2=w1[0,1], b=b1[0], viz_scale=0.42) #Larger for intput layer
         bent_surface_11 = ParametricSurface(surface_func_11, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))

@@ -18,7 +18,7 @@ FRESH_TAN='#dfd0b9'
 
 graphics_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/graphics/' #Point to folder where map images are
 
-class refactor_sketch_1(InteractiveScene):
+class simple_weights_deep_example_1(InteractiveScene):
     def construct(self):
         # Ok I generally don't think refactoring on these projects is a good use of time
         # buuut this stuff is gettring pretty unwieldy, and I think Claude can write me a clean API quickly.
@@ -34,11 +34,41 @@ class refactor_sketch_1(InteractiveScene):
         # num_neurons=[2, 2, 2, 2, 2]
 
         #3x3
-        model_path='_2025/backprop_3/models/3_3_1.pth'
-        model = BaarleNet([3,3])
-        model.load_state_dict(torch.load(model_path))
-        viz_scales=[0.1, 0.1, 0.05, 0.05, 0.15]
-        num_neurons=[3, 3, 3, 3, 2]
+        # model_path='_2025/backprop_3/models/3_3_1.pth'
+        # model = BaarleNet([3,3])
+        # model.load_state_dict(torch.load(model_path))
+        # viz_scales=[0.1, 0.1, 0.05, 0.05, 0.15]
+        # num_neurons=[3, 3, 3, 3, 2]
+
+        #Simple weights
+        model = BaarleNet([2,2,2])
+        viz_scales=[0.1, 0.1, 0.1, 0.1, 0.05, 0.05, 0.05]
+        num_neurons=[2, 2, 2, 2, 2, 2, 2]
+        with torch.no_grad():
+            # Layer 1: 2 -> 2 (transformed for [-1,1] input range)
+            # Original ha: -x1 + x2
+            # With scaling: -(3*x1_new + 2) + (3*x2_new + 2) = -3*x1_new + 3*x2_new
+            # Original hb: x1 + x2 - 4
+            # With scaling: (3*x1_new + 2) + (3*x2_new + 2) - 4 = 3*x1_new + 3*x2_new
+            model.model[0].weight = nn.Parameter(torch.tensor([
+                [-3.0, 3.0],   # ha: coefficients for x1_new and x2_new
+                [3.0, 3.0]     # hb: coefficients for x1_new and x2_new
+            ]))
+            model.model[0].bias = nn.Parameter(torch.tensor([0.0, 0.0]))
+            
+            # Layer 2: 2 -> 2 (unchanged - operates on hidden layer outputs)
+            model.model[2].weight = nn.Parameter(torch.tensor([
+                [-1.0, -3.0],  # hc = max{0, -ha - 3hb + 4}
+                [-3.0, -1.0]   # hd = max{0, -3ha - hb + 4}
+            ]))
+            model.model[2].bias = nn.Parameter(torch.tensor([4.0, 4.0]))
+            
+            # Layer 3: 2 -> 2 (unchanged - operates on hidden layer outputs)
+            model.model[4].weight = nn.Parameter(torch.tensor([
+                [1.0, 3.0],    # he = max{0, hc + 3hd - 4}
+                [3.0, 1.0]     # hf = max{0, 3hc + hd - 4}
+            ]))
+            model.model[4].bias = nn.Parameter(torch.tensor([-4.0, -4.0]))
 
 
         surfaces=[]
@@ -64,7 +94,8 @@ class refactor_sketch_1(InteractiveScene):
         # Hmm ok yeah so i think the dashed fold line is nice early on in animtation
         # But here I guess at the very first relu (and you could even do before that),
         # I just want ot start figuing out zero crossing polygons.
-        self.frame.reorient(0, 38, 0, (-0.16, 0.17, 0.1), 9.70)
+        # self.frame.reorient(0, 38, 0, (-0.16, 0.17, 0.1), 9.70)
+        self.frame.reorient(-1, 55, 0, (2.66, 1.22, 0.06), 14.35)
 
         #Optional but kinda nice RuLu intersection planes
         relu_intersections_planes_1=VGroup()
@@ -94,6 +125,9 @@ class refactor_sketch_1(InteractiveScene):
         layer_1_colors=[TEAL, GREY]
         for neuron_idx, polygons in enumerate(layer_1_polygons_3d):
             for j, p in enumerate(polygons):
+                if len(p)<3: 
+                    print("skipping polygon with length ", len(p))
+                    continue
                 poly_3d = Polygon(*p,
                                  fill_color=layer_1_colors[j],
                                  fill_opacity=0.7,
@@ -283,7 +317,60 @@ class refactor_sketch_1(InteractiveScene):
         self.add(layer_3_polygons_vgroup)
 
 
+        relu_intersections_planes_4=VGroup()
+        for neuron_idx in range(num_neurons[layer_idx]):
+            plane = Rectangle( width=2,  height=2, fill_color=GREY, fill_opacity=0.3, stroke_color=WHITE, stroke_width=1)
+            plane.shift([3*layer_idx-6, 0, 1.5*neuron_idx])
+            relu_intersections_planes_4.add(plane)
+        self.add(relu_intersections_planes_4)
 
+
+        #Ok once more here I think!
+        layer_idx=5
+        # layer_2_polygons_3d_split=split_polygons_with_relu(layer_2_polygons_3d)
+        all_polygons, merged_zero_polygons, unmerged_polygons = split_polygons_with_relu(layer_3_polygons_3d) #Maybe?
+
+
+        all_polygons_after_merging=copy.deepcopy(merged_zero_polygons)
+        for i, o in enumerate(unmerged_polygons):
+            all_polygons_after_merging[i].extend(o)
+
+        layer_3_polygons_split_vgroup=VGroup()
+        layer_3_colors = [GREY, RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
+        for neuron_idx, polygons in enumerate(all_polygons_after_merging):
+            for j, p in enumerate(polygons):
+                poly_3d = Polygon(*p,
+                                 fill_color=layer_3_colors[j%len(layer_3_colors)],
+                                 fill_opacity=0.7,
+                                 stroke_color=layer_3_colors[j%len(layer_3_colors)],
+                                 stroke_width=2)
+                poly_3d.set_opacity(0.3)
+                poly_3d.shift([3*layer_idx-6, 0, 1.5*neuron_idx])
+                layer_3_polygons_split_vgroup.add(poly_3d)
+        self.add(layer_3_polygons_split_vgroup)
+
+        all_polygons_after_merging_2d=[]
+        for p in all_polygons_after_merging:
+            pd2=[o[:,:2] for o in p]
+            all_polygons_after_merging_2d.append(pd2)
+
+        # layer3_regions_2d = compute_layer3_regions(all_polygons_after_merging)
+        layer3_regions_2d = find_polygon_intersections(all_polygons_after_merging_2d)
+
+        #Let's do a quick 2d viz to see how things are looking here
+        output_poygons_2d=VGroup()
+        neuron_idx=-1
+        layer_3_colors = [RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
+        for j, polygon in enumerate(layer3_regions_2d):
+                polygon = Polygon(*np.hstack((polygon, np.zeros((polygon.shape[0],1)))),
+                                 fill_color=layer_3_colors[j%len(layer_3_colors)],
+                                 fill_opacity=0.7,
+                                 stroke_color=layer_3_colors[j%len(layer_3_colors)],
+                                 stroke_width=2)
+                polygon.set_opacity(0.3)
+                polygon.shift([3*layer_idx-6, 0, 1.5*neuron_idx])
+                output_poygons_2d.add(polygon)
+        self.add(output_poygons_2d)
 
 
 

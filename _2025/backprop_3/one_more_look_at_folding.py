@@ -91,13 +91,13 @@ class refactor_sketch_1(InteractiveScene):
 
         #Now move to rigth locations and visualize polygons. 
         layer_1_polygons_vgroup=VGroup()
-        layer_1_colors=[TEAL, GREY]
+        layer_1_colors=[PURPLE, BLUE, YELLOW, RED]
         for neuron_idx, polygons in enumerate(layer_1_polygons_3d):
             for j, p in enumerate(polygons):
                 poly_3d = Polygon(*p,
-                                 fill_color=layer_1_colors[j],
+                                 fill_color=layer_1_colors[2*neuron_idx+j],
                                  fill_opacity=0.7,
-                                 stroke_color=layer_1_colors[j],
+                                 stroke_color=layer_1_colors[2*neuron_idx+j],
                                  stroke_width=2)
                 poly_3d.set_opacity(0.3)
                 poly_3d.shift([3*layer_idx-6, 0, 1.5*neuron_idx])
@@ -105,6 +105,20 @@ class refactor_sketch_1(InteractiveScene):
 
         self.add(layer_1_polygons_vgroup)
         self.wait()
+
+
+        # Ok one more look at the more traditional folding perspective here
+        # Lets start with the first layer regions, although the second layer ones may be more interesting!
+        # How do my polygon regions move and shift when i transition from showing them as the hites of two 
+        # separate maps to an h1/h2 scatter plot view? Is it foldy?
+        # Hmmm hmm hmmm 
+        # Ok so like the first polygon, doens't really have an h2 value, right? 
+        # Ok let me pause on that for a minute and think about the isoline thing
+        
+        layer_1_polygons_3d
+
+
+
 
         # Ok, that's pretty dope! Now we need to merge these borders
         # Start in 2d again, then back up to 3d
@@ -146,6 +160,24 @@ class refactor_sketch_1(InteractiveScene):
             plane.shift([3*layer_idx-6, 0, 1.5*neuron_idx])
             relu_intersections_planes_2.add(plane)
         self.add(relu_intersections_planes_2)
+
+        self.wait()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         #Ok, making progress! Now we need to recompute each set of regions based on ReLu clipping!
         # On to the last layer here!

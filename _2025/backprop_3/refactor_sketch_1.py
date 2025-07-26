@@ -27,18 +27,18 @@ class refactor_sketch_1(InteractiveScene):
         # First change i want to make is just loading full torch models here - this will streamlien things
         
         #2x2
-        model_path='_2025/backprop_3/models/2_2_1.pth'
-        model = BaarleNet([2,2])
-        model.load_state_dict(torch.load(model_path))
-        viz_scales=[0.25, 0.25, 0.3, 0.3, 0.15]
-        num_neurons=[2, 2, 2, 2, 2]
+        # model_path='_2025/backprop_3/models/2_2_1.pth'
+        # model = BaarleNet([2,2])
+        # model.load_state_dict(torch.load(model_path))
+        # viz_scales=[0.25, 0.25, 0.3, 0.3, 0.15]
+        # num_neurons=[2, 2, 2, 2, 2]
 
         #3x3
-        # model_path='_2025/backprop_3/models/3_3_1.pth'
-        # model = BaarleNet([3,3])
-        # model.load_state_dict(torch.load(model_path))
-        # viz_scales=[0.1, 0.1, 0.05, 0.05, 0.15]
-        # num_neurons=[3, 3, 3, 3, 2]
+        model_path='_2025/backprop_3/models/3_3_1.pth'
+        model = BaarleNet([3,3])
+        model.load_state_dict(torch.load(model_path))
+        viz_scales=[0.1, 0.1, 0.05, 0.05, 0.15]
+        num_neurons=[3, 3, 3, 3, 2]
 
 
         surfaces=[]

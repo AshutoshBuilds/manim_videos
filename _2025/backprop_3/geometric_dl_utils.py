@@ -4,6 +4,7 @@ from itertools import combinations
 import math
 import torch.nn as nn
 import torch
+import copy
 
 class BaarleNet(nn.Module):
     def __init__(self, hidden_layers=[64]):
@@ -19,6 +20,221 @@ class BaarleNet(nn.Module):
     def forward(self, x):
         return self.model(x)
 
+
+
+def get_relu_intersection_planes(num_neurons, layer_idx, neuron_idx, horizontal_spacing, vertical_spacing):
+    relu_intersections_planes=VGroup()
+    for neuron_idx in range(num_neurons):
+        plane = Rectangle( width=2, height=2, fill_color=GREY, fill_opacity=0.15, stroke_color=WHITE, stroke_width=0.5)
+        plane.shift([horizontal_spacing*layer_idx-6, 0, vertical_spacing*neuron_idx])
+        relu_intersections_planes.add(plane)
+    return relu_intersections_planes
+
+def get_3d_polygons_layer_1(layer_1_polygons, surface_funcs, num_neurons, layer_idx=1):
+    layer_1_polygons_3d=[]
+    for neuron_idx in range(num_neurons):
+        layer_1_polygons_3d.append([])
+        for region in ['positive_region', 'negative_region']:
+            a=[]
+            for pt_idx in range(len(layer_1_polygons[neuron_idx][region])):
+                a.append(surface_funcs[layer_idx][neuron_idx](*layer_1_polygons[neuron_idx][region][pt_idx]))
+            a=np.array(a)
+            layer_1_polygons_3d[-1].append(a)
+    return layer_1_polygons_3d
+
+def get_3d_polygons(polygons_2d, num_neurons, surface_funcs, layer_idx):
+    polygons_3d=[]
+    for neuron_idx in range(num_neurons):
+        polygons_3d.append([])
+        for region in polygons_2d:
+            a=[]
+            for pt_idx in range(len(region)):
+                a.append(surface_funcs[layer_idx][neuron_idx](*region[pt_idx])) #Might be a batch way to do this
+            a=np.array(a)
+            polygons_3d[-1].append(a)
+    return polygons_3d
+
+
+def viz_3d_polygons(polygons_3d, layer_idx, colors=None):
+    #Now move to rigth locations and visualize polygons. 
+    if colors==None: 
+        colors=[BLUE, RED, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
+
+    polygons_vgroup=VGroup()
+    for neuron_idx, polygons in enumerate(polygons_3d):
+        for j, p in enumerate(polygons):
+            if len(p)<3: continue
+            poly_3d = Polygon(*p,
+                             fill_color=colors[j%len(colors)],
+                             fill_opacity=0.7,
+                             stroke_color=colors[j%len(colors)],
+                             stroke_width=2)
+            poly_3d.set_opacity(0.3)
+            poly_3d.shift([3*layer_idx-6, 0, 1.5*neuron_idx])
+            polygons_vgroup.add(poly_3d)
+    return polygons_vgroup
+
+def viz_carved_regions_flat(layer_2_polygons, horizontal_spacing, layer_idx, colors=None):
+    if colors==None: 
+        colors=[BLUE, RED, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
+    output_poygons_2d=VGroup()
+    for j, polygon in enumerate(layer_2_polygons):
+            polygon = Polygon(*np.hstack((np.array(polygon), np.zeros((len(polygon),1)))),
+                             fill_color=colors[j%len(colors)],
+                             fill_opacity=0.7,
+                             stroke_color=colors[j%len(colors)],
+                             stroke_width=2)
+            polygon.set_opacity(0.3)
+            polygon.shift([horizontal_spacing*layer_idx-6, 0, -1.5])
+            output_poygons_2d.add(polygon)
+    return output_poygons_2d
+
+# def compute_adaptive_viz_scales(model, max_surface_height=0.75, extent=1):
+#     '''
+#     Plugs in [-extent, -extent], [-extent,extent], [extent, -extent], [extent, extent]
+#     into model, and then chooses the largest available_viz_scales that keeps the max/min output 
+#     for that layer within max_surface_height
+#     Returns a list of lists [layers, then neurons] of viz scales for EVERY layer (including ReLU)
+#     '''
+#     available_viz_scales = [1.0, 0.5, 0.25, 0.15, 0.1, 0.05, 0.01, 0.005, 0.001]
+    
+#     # Test points at corners of the domain
+#     test_points = torch.tensor([
+#         [-extent, -extent],
+#         [-extent, extent], 
+#         [extent, -extent],
+#         [extent, extent]
+#     ], dtype=torch.float32)
+    
+#     adaptive_scales = []
+    
+#     # Process EVERY layer in model.model (both Linear and ReLU)
+#     for layer_idx in range(len(model.model)):
+#         # Get activations after this layer
+#         with torch.no_grad():
+#             x = test_points
+#             # Forward through layers up to and including target layer
+#             for i in range(layer_idx + 1):
+#                 x = model.model[i](x)
+        
+#         # Get number of neurons (output dimensions) at this layer
+#         num_neurons = x.shape[1]
+#         layer_scales = []
+        
+#         # Process each neuron in this layer
+#         for neuron_idx in range(num_neurons):
+#             # Get activations for this specific neuron
+#             neuron_activations = x[:, neuron_idx].numpy()
+            
+#             # Find the maximum absolute activation value
+#             max_abs_activation = np.max(np.abs(neuron_activations))
+            
+#             # Choose the largest scale that keeps visualization within bounds
+#             selected_scale = available_viz_scales[-1]  # Start with smallest scale
+            
+#             for scale in available_viz_scales:
+#                 max_viz_height = max_abs_activation * scale
+#                 if max_viz_height <= max_surface_height:
+#                     selected_scale = scale
+#                     break
+            
+#             layer_scales.append(selected_scale)
+        
+#         adaptive_scales.append(layer_scales)
+    
+#     return adaptive_scales
+
+
+def compute_adaptive_viz_scales(model, max_surface_height=0.75, extent=1):
+    '''
+    Plugs in [-extent, -extent], [-extent,extent], [extent, -extent], [extent, extent]
+    into model, and then chooses the largest available_viz_scales that keeps the max/min output 
+    for that layer within max_surface_height
+    Returns a list of lists [layers, then neurons] of viz scales for EVERY layer (including ReLU)
+    
+    For ReLU layers, copies the scale from the preceding Linear layer since they should match visually.
+    '''
+    available_viz_scales = [1.0, 0.5, 0.25, 0.15, 0.1, 0.05, 0.01, 0.005, 0.001]
+    
+    # Test points at corners of the domain
+    test_points = torch.tensor([
+        [-extent, -extent],
+        [-extent, extent], 
+        [extent, -extent],
+        [extent, extent]
+    ], dtype=torch.float32)
+    
+    adaptive_scales = []
+    
+    # Process EVERY layer in model.model (both Linear and ReLU)
+    for layer_idx in range(len(model.model)):
+        current_layer = model.model[layer_idx]
+        
+        # Check if this is a ReLU layer
+        if isinstance(current_layer, torch.nn.ReLU):
+            # For ReLU layers, copy the scale from the previous layer (which should be Linear)
+            if layer_idx > 0 and len(adaptive_scales) > 0:
+                # Copy scales from previous layer
+                previous_scales = adaptive_scales[-1].copy()
+                adaptive_scales.append(previous_scales)
+            else:
+                # Fallback: compute scales normally (shouldn't happen in typical architectures)
+                with torch.no_grad():
+                    x = test_points
+                    for i in range(layer_idx + 1):
+                        x = model.model[i](x)
+                
+                num_neurons = x.shape[1]
+                layer_scales = []
+                
+                for neuron_idx in range(num_neurons):
+                    neuron_activations = x[:, neuron_idx].numpy()
+                    max_abs_activation = np.max(np.abs(neuron_activations))
+                    
+                    selected_scale = available_viz_scales[-1]
+                    for scale in available_viz_scales:
+                        max_viz_height = max_abs_activation * scale
+                        if max_viz_height <= max_surface_height:
+                            selected_scale = scale
+                            break
+                    
+                    layer_scales.append(selected_scale)
+                
+                adaptive_scales.append(layer_scales)
+        else:
+            # For Linear layers, compute scales normally
+            with torch.no_grad():
+                x = test_points
+                # Forward through layers up to and including target layer
+                for i in range(layer_idx + 1):
+                    x = model.model[i](x)
+            
+            # Get number of neurons (output dimensions) at this layer
+            num_neurons = x.shape[1]
+            layer_scales = []
+            
+            # Process each neuron in this layer
+            for neuron_idx in range(num_neurons):
+                # Get activations for this specific neuron
+                neuron_activations = x[:, neuron_idx].numpy()
+                
+                # Find the maximum absolute activation value
+                max_abs_activation = np.max(np.abs(neuron_activations))
+                
+                # Choose the largest scale that keeps visualization within bounds
+                selected_scale = available_viz_scales[-1]  # Start with smallest scale
+                
+                for scale in available_viz_scales:
+                    max_viz_height = max_abs_activation * scale
+                    if max_viz_height <= max_surface_height:
+                        selected_scale = scale
+                        break
+                
+                layer_scales.append(selected_scale)
+            
+            adaptive_scales.append(layer_scales)
+    
+    return adaptive_scales
 
 def surface_func_from_model(u, v, model, layer_idx, neuron_idx, viz_scale=0.5):
     """
@@ -345,7 +561,27 @@ def apply_relu_to_polygon(polygon):
 
 
 
-import numpy as np
+def apply_viz_scale_to_3d_polygons(polygons_3d, adaptive_viz_scales):
+    '''takes in list of list of numpy arrays of shape Nx3, and adaptive_viz_scales, a lists of the same length as polygons_3d
+    for each polygon in polygons_3d, multiply the z value by the corresponding adaptive viz scale
+    Should operate on and return a copy. 
+
+    '''
+    scaled_polygons_3d = copy.deepcopy(polygons_3d)
+
+    # Apply scales for each neuron
+    for neuron_idx, neuron_polygons in enumerate(scaled_polygons_3d):
+        # Get the scale for this neuron at this layer
+        scale = adaptive_viz_scales[neuron_idx]
+        
+        # Apply scale to each polygon for this neuron
+        for polygon_idx, polygon in enumerate(neuron_polygons):
+            if len(polygon) > 0 and polygon.shape[1] >= 3:
+                # Scale the z-coordinates (index 2)
+                scaled_polygons_3d[neuron_idx][polygon_idx][:, 2] *= scale
+    
+    return scaled_polygons_3d   
+
 
 def split_polygons_with_relu(layer_polygons_3d):
     """

@@ -36,11 +36,11 @@ class refactor_sketch_1(InteractiveScene):
         num_neurons=[3, 3, 3, 3, 2]
 
         #8x8
-        model_path='_2025/backprop_3/models/8_8_1.pth'
-        model = BaarleNet([8,8])
-        model.load_state_dict(torch.load(model_path))
-        # viz_scales=[0.1, 0.1, 0.05, 0.05, 0.15]
-        num_neurons=[8,8, 8, 8, 2]
+        # model_path='_2025/backprop_3/models/8_8_1.pth'
+        # model = BaarleNet([8,8])
+        # model.load_state_dict(torch.load(model_path))
+        # # viz_scales=[0.1, 0.1, 0.05, 0.05, 0.15]
+        # num_neurons=[8,8, 8, 8, 2]
 
         vertical_spacing=1.5
         horizontal_spacing=3
@@ -49,7 +49,7 @@ class refactor_sketch_1(InteractiveScene):
         # Hmm ok I think I need to compute a different viz scale for each surface probably 
         # I don't want to totally normalize the heights though, ya know?
         # Maybe there's a discrete set of possible viz scales: 
-        adaptive_viz_scales = compute_adaptive_viz_scales(model, max_surface_height=0.75, extent=1)
+        adaptive_viz_scales = compute_adaptive_viz_scales(model, max_surface_height=1.0, extent=1)
 
 
         surfaces=[]
@@ -118,7 +118,6 @@ class refactor_sketch_1(InteractiveScene):
         polygons_vgroup_2=viz_3d_polygons(scaled_layer_2_polygons_3d, layer_idx, colors=None)
         self.add(polygons_vgroup_2)
 
-
    
         relu_intersections_planes_2=get_relu_intersection_planes(num_neurons[layer_idx], layer_idx, neuron_idx, horizontal_spacing, vertical_spacing)
         self.add(relu_intersections_planes_2)
@@ -137,108 +136,79 @@ class refactor_sketch_1(InteractiveScene):
 
         all_polygons_after_merging_scaled=apply_viz_scale_to_3d_polygons(all_polygons_after_merging, adaptive_viz_scales[layer_idx])
 
-        # layer_2_polygons_split_vgroup=viz_3d_polygons(all_polygons_after_merging, layer_idx, colors=None)
-        # self.add(layer_2_polygons_split_vgroup)
-
-
-        layer_2_polygons_split_vgroup=VGroup()
-        layer_2_colors = [GREY, RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
-        for neuron_idx, polygons in enumerate(all_polygons_after_merging_scaled):
-            for j, p in enumerate(polygons):
-                poly_3d = Polygon(*p,
-                                 fill_color=layer_2_colors[j%len(layer_2_colors)],
-                                 fill_opacity=0.7,
-                                 stroke_color=layer_2_colors[j%len(layer_2_colors)],
-                                 stroke_width=2)
-                poly_3d.set_opacity(0.3)
-                poly_3d.shift([3*layer_idx-6, 0, 1.5*neuron_idx])
-                layer_2_polygons_split_vgroup.add(poly_3d)
+        layer_2_polygons_split_vgroup=viz_3d_polygons(all_polygons_after_merging_scaled, layer_idx, colors=None, color_first_polygon_gray=True)
         self.add(layer_2_polygons_split_vgroup)
 
 
-        #Making progress! I think I need to mess with the scaling a little though?
-
-
-
-
-
-
-
-        # Ok this is looking pretty good. 
-        # So I need to do another merge step -> 
-        # At layer 1 i was able to get away with carve_plane_with_relu_joints
-        # Same principle here, but obviously a bit more complex
-        # Now my intuition, and the animation that comes to mind, is dropping down all the lines
-        # from all 3 layers and then recarcing based on the number of intersections
-        # between all these lines - is that right? Line combination happens in 2d basically?
-        # Ok i'm like 90% sure that's right, if it's not I think it will shake out in the viz
-        # Let's assume it's right and see what happens here exaclty. 
-
-        #Drop last coords. 
+        #2D Projection of Layer 2 After Relu Cuts
+        #Drop last coords - using unnscaled polgons - dont think it matters?
         all_polygons_after_merging_2d=[]
         for p in all_polygons_after_merging:
             pd2=[o[:,:2] for o in p]
             all_polygons_after_merging_2d.append(pd2)
 
-        # layer3_regions_2d = compute_layer3_regions(all_polygons_after_merging)
         layer3_regions_2d = find_polygon_intersections(all_polygons_after_merging_2d)
+        output_poygons_2d_2=viz_carved_regions_flat(layer3_regions_2d, horizontal_spacing, layer_idx, colors=None)
+        self.add(output_poygons_2d_2)
 
-        #Let's do a quick 2d viz to see how things are looking here
-        output_poygons_2d=VGroup()
+
+        # Layer 3 Linear
+        # Ok output layer and decision boundary
+        # I kinda want a version tha thas all the fun colors and then a yellow and blue version
         layer_idx=4
-        neuron_idx=-1
-        layer_3_colors = [RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
-        for j, polygon in enumerate(layer3_regions_2d):
-                polygon = Polygon(*np.hstack((polygon, np.zeros((polygon.shape[0],1)))),
-                                 fill_color=layer_3_colors[j%len(layer_3_colors)],
-                                 fill_opacity=0.7,
-                                 stroke_color=layer_3_colors[j%len(layer_3_colors)],
-                                 stroke_width=2)
-                polygon.set_opacity(0.3)
-                polygon.shift([3*layer_idx-6, 0, 1.5*neuron_idx])
-                output_poygons_2d.add(polygon)
-        self.add(output_poygons_2d)
+        # adaptive_viz_scales[layer_idx]=[0.02, 0.02] #Try some manual scale here
+        layer_3_polygons_3d=get_3d_polygons(layer3_regions_2d, num_neurons[layer_idx], surface_funcs_no_viz_scale, layer_idx)
+        scaled_layer_3_polygons_3d=apply_viz_scale_to_3d_polygons(layer_3_polygons_3d, adaptive_viz_scales[layer_idx])
 
-        # Ok making progress here - now last step and then I want to think about exponential growth here
-        # Last step will be sending these to 3d! Which should be maybe not terrible?
-
-        layer_3_polygons_3d=[]
-        for neuron_idx in range(num_neurons[layer_idx]):
-            layer_3_polygons_3d.append([])
-            for polygon_2d in layer3_regions_2d:
-                a=[]
-                for pt_idx in range(len(polygon_2d)):
-                    a.append(surface_funcs[layer_idx][neuron_idx](*polygon_2d[pt_idx])) #Might be a batch way to do this
-                a=np.array(a)
-                layer_3_polygons_3d[-1].append(a)           
+        polygons_vgroup_3=viz_3d_polygons(scaled_layer_3_polygons_3d, layer_idx, colors=None)
+        self.add(polygons_vgroup_3)
 
 
-        layer_3_polygons_vgroup=VGroup()
-        for neuron_idx, polygons in enumerate(layer_3_polygons_3d):
-            for j, p in enumerate(polygons):
-                poly_3d = Polygon(*p,
-                                 fill_color=layer_3_colors[j%len(layer_3_colors)],
-                                 fill_opacity=0.7,
-                                 stroke_color=layer_3_colors[j%len(layer_3_colors)],
-                                 stroke_width=2)
-                poly_3d.set_opacity(0.3)
-                poly_3d.shift([3*layer_idx-6, 0, 1.5*neuron_idx])
-                layer_3_polygons_vgroup.add(poly_3d)
-        self.add(layer_3_polygons_vgroup)
+        # Ok this is looking dope! 
+        # Now I think it's more more layer (that isn't really a layer)
+        # With output planes brought together, solid colors, and decision boundary!
+        scaled_final_polygons=copy.deepcopy(scaled_layer_3_polygons_3d)
+        polygons_vgroup_4a=viz_3d_polygons([scaled_final_polygons[0]], layer_idx=5, colors=[BLUE])
+        polygons_vgroup_4b=viz_3d_polygons([scaled_final_polygons[1]], layer_idx=5, colors=[YELLOW])
+        self.add(polygons_vgroup_4a, polygons_vgroup_4b)
+
+        # Ok dope - maybe want to mess with final layer scaling, we'll see
+        # Now we just need a decision boundary. 
+
+        # def find_polytope_intersection(polygons_1, polygons_2):
+        #     '''
+        #     Given two lists of Nx3 numpy arrays, (polygons_1, polygons_2), where each 
+        #     numpy array gives the vertices of face of a polytope, find all intersection lines between the 
+        #     two polytope surfaces, and return as a list of starting an dending points for each line. 
+        #     '''
+
+        #     return intersection_line_coords
 
 
-
-
-
-
-        self.wait()
-
+        final_polygons=copy.deepcopy(layer_3_polygons_3d) #Need to to intersection on non-scaled polytopes
+        intersection_line_coords=find_polytope_intersection(final_polygons[0], final_polygons[1])
+        #Hmm like 3k results? Seems like a lot lol. Maybe analtyical in not 
         
+        decision_boundary_lines = Group()
+        for line_segment in intersection_line_coords:
+            if len(line_segment) == 2:
+                start_point, end_point = line_segment
+                line = Line3D(
+                    start=start_point,
+                    end=end_point,
+                    color="#FF00FF",
+                    width=0.01,
+                )
+                # Shift to match your layer positioning (layer_idx=5 for final output)
+                line.shift([3*5-6, 0, 0])  # horizontal_spacing * layer_idx - 6
+                decision_boundary_lines.add(line)
 
-        self.wait()
+        # Add the decision boundary to the scene
+        self.add(decision_boundary_lines)
 
-
-
+        # Ok ChatGPT's solution is getting there, it still misses a segmmetn it looks like, and 
+        # I need to scale it back down for viz!
+        # Ok, so I'll pick up here when I'm back and see what I can figure out!
 
 
         self.wait()

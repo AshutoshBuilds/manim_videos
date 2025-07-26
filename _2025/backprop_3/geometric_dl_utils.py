@@ -55,7 +55,7 @@ def get_3d_polygons(polygons_2d, num_neurons, surface_funcs, layer_idx):
     return polygons_3d
 
 
-def viz_3d_polygons(polygons_3d, layer_idx, colors=None):
+def viz_3d_polygons(polygons_3d, layer_idx, colors=None, color_first_polygon_gray=True):
     #Now move to rigth locations and visualize polygons. 
     if colors==None: 
         colors=[BLUE, RED, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
@@ -64,10 +64,12 @@ def viz_3d_polygons(polygons_3d, layer_idx, colors=None):
     for neuron_idx, polygons in enumerate(polygons_3d):
         for j, p in enumerate(polygons):
             if len(p)<3: continue
+            if j==0 and color_first_polygon_gray: color=GREY
+            else: color = colors[j%len(colors)]
             poly_3d = Polygon(*p,
-                             fill_color=colors[j%len(colors)],
+                             fill_color=color,
                              fill_opacity=0.7,
-                             stroke_color=colors[j%len(colors)],
+                             stroke_color=color,
                              stroke_width=2)
             poly_3d.set_opacity(0.3)
             poly_3d.shift([3*layer_idx-6, 0, 1.5*neuron_idx])
@@ -154,7 +156,7 @@ def compute_adaptive_viz_scales(model, max_surface_height=0.75, extent=1):
     
     For ReLU layers, copies the scale from the preceding Linear layer since they should match visually.
     '''
-    available_viz_scales = [1.0, 0.5, 0.25, 0.15, 0.1, 0.05, 0.01, 0.005, 0.001]
+    available_viz_scales = [1.0, 0.5, 0.25, 0.15, 0.125, 0.1, 0.075, 0.05, 0.025, 0.01, 0.0075, 0.005, 0.0025, 0.001]
     
     # Test points at corners of the domain
     test_points = torch.tensor([
@@ -1282,6 +1284,113 @@ def find_polygon_intersections_pairwise(set1_coords, set2_coords):
 #         result.append(coords)
     
 #     return result
+
+
+
+## ---- Decision Boundary Stuff ---- ##
+
+
+import numpy as np
+
+import numpy as np
+
+def find_polytope_intersection(polygons_1, polygons_2, tol=1e-8):
+    """
+    Assumes polygons_1[i] and polygons_2[i] are the two 3D patches
+    over the same 2D region.  Returns a list of (A, B) endpoints
+    for each intersection line segment (or fewer if no intersection).
+    """
+    def plane_from_face(pts):
+        # take first 3 non‑collinear points
+        p0, p1, p2 = pts[0], pts[1], pts[2]
+        n = np.cross(p1 - p0, p2 - p0)
+        norm = np.linalg.norm(n)
+        if norm < tol:
+            return None, None
+        n /= norm
+        d = -n.dot(p0)
+        return n, d
+
+    def plane_intersection(n1, d1, n2, d2):
+        # line dir
+        v = np.cross(n1, n2)
+        denom = np.dot(v, v)
+        if denom < tol:
+            return None, None
+        # point on both planes:
+        # (d2 n1 - d1 n2) × v  / |v|^2
+        p0 = np.cross(d2*n1 - d1*n2, v) / denom
+        return p0, v
+
+    def clip_poly_to_plane(poly, n, d):
+        """
+        Intersect convex poly with plane n·x + d = 0.
+        Returns two endpoints if it slices it, else None.
+        """
+        vals = np.dot(poly, n) + d
+        pts = []
+        # any vertex exactly on plane?
+        for p, v in zip(poly, vals):
+            if abs(v) < tol:
+                pts.append(p)
+        # each edge that crosses?
+        for i in range(len(poly)):
+            j = (i+1) % len(poly)
+            vi, vj = vals[i], vals[j]
+            if vi * vj < -tol*tol:
+                t = vi / (vi - vj)
+                pts.append(poly[i] + t*(poly[j] - poly[i]))
+        if len(pts) < 2:
+            return None
+        # dedupe
+        uniq = []
+        for p in pts:
+            if not any(np.allclose(p, q, atol=tol) for q in uniq):
+                uniq.append(p)
+        if len(uniq) < 2:
+            return None
+        # pick the two farthest apart
+        maxd, pair = 0, None
+        for i in range(len(uniq)):
+            for j in range(i+1, len(uniq)):
+                d2 = np.sum((uniq[i]-uniq[j])**2)
+                if d2 > maxd:
+                    maxd, pair = d2, (uniq[i], uniq[j])
+        return pair
+
+    segments = []
+    if len(polygons_1) != len(polygons_2):
+        raise ValueError("This version expects the two lists to be the same length and in matching order.")
+
+    for f1, f2 in zip(polygons_1, polygons_2):
+        # 1) fit planes
+        n1, d1 = plane_from_face(f1)
+        n2, d2 = plane_from_face(f2)
+        if n1 is None or n2 is None:
+            continue
+
+        # 2) plane–plane → line
+        p0, v = plane_intersection(n1, d1, n2, d2)
+        if v is None:
+            continue
+
+        # 3) clip that line back to each patch
+        #    – clip f1 by plane of f2, and f2 by plane of f1
+        seg1 = clip_poly_to_plane(f1, n2, d2)
+        seg2 = clip_poly_to_plane(f2, n1, d1)
+        if seg1 is None or seg2 is None:
+            continue
+
+        # 4) average endpoints (to cancel tiny mismatches)
+        A = 0.5*(seg1[0] + seg2[0])
+        B = 0.5*(seg1[1] + seg2[1])
+        segments.append((A, B))
+
+    return segments
+
+
+
+
 
 
 

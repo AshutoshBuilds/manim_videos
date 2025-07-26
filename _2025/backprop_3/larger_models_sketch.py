@@ -209,6 +209,10 @@ class refactor_sketch_1(InteractiveScene):
         # Ok ChatGPT's solution is getting there, it still misses a segmmetn it looks like, and 
         # I need to scale it back down for viz!
         # Ok, so I'll pick up here when I'm back and see what I can figure out!
+        # Might be worth looking at what I did in my first round of sketches -> that seemed to work ok??
+        # Hmm after I viz scale, will they still intersect at the right point?
+        # And final final question -> intersection line Z does not seem arbitrary -> is it fixed Z somehow? 
+        # If so, why, and does it help me????
 
 
         self.wait()

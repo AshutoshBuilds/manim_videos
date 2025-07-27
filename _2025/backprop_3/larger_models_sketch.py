@@ -17,6 +17,7 @@ FRESH_TAN='#dfd0b9'
 
 
 graphics_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/graphics/' #Point to folder where map images are
+heatmaps_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/hackin/heatmaps'
 
 class refactor_sketch_1(InteractiveScene):
     def construct(self):
@@ -29,18 +30,18 @@ class refactor_sketch_1(InteractiveScene):
         # num_neurons=[2, 2, 2, 2, 2]
 
         #3x3
-        model_path='_2025/backprop_3/models/3_3_1.pth'
-        model = BaarleNet([3,3])
-        model.load_state_dict(torch.load(model_path))
-        viz_scales=[0.1, 0.1, 0.05, 0.05, 0.15]
-        num_neurons=[3, 3, 3, 3, 2]
+        # model_path='_2025/backprop_3/models/3_3_1.pth'
+        # model = BaarleNet([3,3])
+        # model.load_state_dict(torch.load(model_path))
+        # viz_scales=[0.1, 0.1, 0.05, 0.05, 0.15]
+        # num_neurons=[3, 3, 3, 3, 2]
 
         #8x8
-        # model_path='_2025/backprop_3/models/8_8_1.pth'
-        # model = BaarleNet([8,8])
-        # model.load_state_dict(torch.load(model_path))
-        # # viz_scales=[0.1, 0.1, 0.05, 0.05, 0.15]
-        # num_neurons=[8,8, 8, 8, 2]
+        model_path='_2025/backprop_3/models/8_8_1.pth'
+        model = BaarleNet([8,8])
+        model.load_state_dict(torch.load(model_path))
+        # viz_scales=[0.1, 0.1, 0.05, 0.05, 0.15]
+        num_neurons=[8, 8, 8, 8, 2]
 
         vertical_spacing=1.5
         horizontal_spacing=3
@@ -50,6 +51,9 @@ class refactor_sketch_1(InteractiveScene):
         # I don't want to totally normalize the heights though, ya know?
         # Maybe there's a discrete set of possible viz scales: 
         adaptive_viz_scales = compute_adaptive_viz_scales(model, max_surface_height=1.0, extent=1)
+        #For the interesection to make sense, these scales need to match - either need to manual overide or chnage method above
+        final_layer_viz=scale=min(adaptive_viz_scales[-1])
+        adaptive_viz_scales[-1]=[final_layer_viz, final_layer_viz]
 
 
         surfaces=[]
@@ -95,7 +99,7 @@ class refactor_sketch_1(InteractiveScene):
         #Ok now I need to rescale. 
         scaled_layer_1_polygons_3d=apply_viz_scale_to_3d_polygons(layer_1_polygons_3d, adaptive_viz_scales[layer_idx])
 
-        polygons_vgroup=viz_3d_polygons(scaled_layer_1_polygons_3d, layer_idx, colors=None)
+        polygons_vgroup=viz_3d_polygons(scaled_layer_1_polygons_3d, layer_idx, colors=None, color_gray_index=1)
         self.add(polygons_vgroup)
         self.wait()
 
@@ -136,7 +140,7 @@ class refactor_sketch_1(InteractiveScene):
 
         all_polygons_after_merging_scaled=apply_viz_scale_to_3d_polygons(all_polygons_after_merging, adaptive_viz_scales[layer_idx])
 
-        layer_2_polygons_split_vgroup=viz_3d_polygons(all_polygons_after_merging_scaled, layer_idx, colors=None, color_first_polygon_gray=True)
+        layer_2_polygons_split_vgroup=viz_3d_polygons(all_polygons_after_merging_scaled, layer_idx, colors=None)
         self.add(layer_2_polygons_split_vgroup)
 
 
@@ -156,9 +160,6 @@ class refactor_sketch_1(InteractiveScene):
         # Ok output layer and decision boundary
         # I kinda want a version tha thas all the fun colors and then a yellow and blue version
         layer_idx=4
-        
-        #For the interesection to make sense, these scales need to match - either need to manual overide or chnage method above
-        adaptive_viz_scales[layer_idx]=[0.01, 0.01] #Try some manual scale here
 
 
         layer_3_polygons_3d=get_3d_polygons(layer3_regions_2d, num_neurons[layer_idx], surface_funcs_no_viz_scale, layer_idx)
@@ -166,6 +167,20 @@ class refactor_sketch_1(InteractiveScene):
 
         polygons_vgroup_3=viz_3d_polygons(scaled_layer_3_polygons_3d, layer_idx, colors=None)
         self.add(polygons_vgroup_3)
+
+
+        #Final map regions
+        map_img=ImageMobject(graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-11.png').set_width(2).set_height(2)  
+        map_img.shift([horizontal_spacing*(layer_idx+1)-6, 0, -1.5])
+        self.add(map_img)
+
+        map_region_1=ImageMobject(heatmaps_dir+'/8_8_0.png').set_width(2).set_height(2).set_opacity(0.5)  
+        map_region_1.shift([horizontal_spacing*(layer_idx+1)-6, 0, -1.5])
+        self.add(map_region_1)
+
+        map_region_2=ImageMobject(heatmaps_dir+'/8_8_1.png').set_width(2).set_height(2).set_opacity(0.5)  
+        map_region_2.shift([horizontal_spacing*(layer_idx+1)-6, 0, -1.5])
+        self.add(map_region_2)
 
 
         # Ok this is looking dope! 
@@ -199,19 +214,18 @@ class refactor_sketch_1(InteractiveScene):
                 l[2]=l[2]*adaptive_viz_scales[layer_idx][0]
 
 
-        
         decision_boundary_lines = Group()
-        for line_segment in intersection_line_coords:
+        for line_segment in intersection_line_coords_scaled:
             if len(line_segment) == 2:
                 start_point, end_point = line_segment
                 line = Line3D(
                     start=start_point,
                     end=end_point,
                     color="#FF00FF",
-                    width=0.01,
+                    width=0.02,
                 )
                 # Shift to match your layer positioning (layer_idx=5 for final output)
-                line.shift([3*5-6, 0, 0])  # horizontal_spacing * layer_idx - 6
+                line.shift([horizontal_spacing*(layer_idx+1)-6, 0, 0])  # horizontal_spacing * layer_idx - 6
                 decision_boundary_lines.add(line)
 
         # Add the decision boundary to the scene
@@ -224,6 +238,29 @@ class refactor_sketch_1(InteractiveScene):
         # Hmm after I viz scale, will they still intersect at the right point?
         # And final final question -> intersection line Z does not seem arbitrary -> is it fixed Z somehow? 
         # If so, why, and does it help me????
+
+        #Will want to wrap this stuff up after things are kinda working
+        decision_boundary_lines_flat = Group()
+        for line_segment in intersection_line_coords_scaled:
+            if len(line_segment) == 2:
+                start_point, end_point = line_segment
+                start_point[2]=-1.5 #Flatten that shit!
+                end_point[2]=-1.5
+                line = Line3D(
+                    start=start_point,
+                    end=end_point,
+                    color="#FF00FF",
+                    width=0.02,
+                )
+                # Shift to match your layer positioning (layer_idx=5 for final output)
+                line.shift([horizontal_spacing*(layer_idx+1)-6, 0, 0])  # horizontal_spacing * layer_idx - 6
+                decision_boundary_lines_flat.add(line)
+
+        # Add the decision boundary to the scene
+        self.add(decision_boundary_lines_flat)
+
+
+
 
 
         self.wait()

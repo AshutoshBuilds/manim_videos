@@ -55,7 +55,7 @@ def get_3d_polygons(polygons_2d, num_neurons, surface_funcs, layer_idx):
     return polygons_3d
 
 
-def viz_3d_polygons(polygons_3d, layer_idx, colors=None, color_first_polygon_gray=True):
+def viz_3d_polygons(polygons_3d, layer_idx, colors=None, color_gray_index=0):
     #Now move to rigth locations and visualize polygons. 
     if colors==None: 
         colors=[BLUE, RED, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
@@ -64,7 +64,10 @@ def viz_3d_polygons(polygons_3d, layer_idx, colors=None, color_first_polygon_gra
     for neuron_idx, polygons in enumerate(polygons_3d):
         for j, p in enumerate(polygons):
             if len(p)<3: continue
-            if j==0 and color_first_polygon_gray: color=GREY
+            color = colors[j%len(colors)]
+            if color_gray_index is not None:
+                if color_gray_index==j:
+                    color=GREY
             else: color = colors[j%len(colors)]
             poly_3d = Polygon(*p,
                              fill_color=color,
@@ -1290,103 +1293,219 @@ def find_polygon_intersections_pairwise(set1_coords, set2_coords):
 ## ---- Decision Boundary Stuff ---- ##
 
 
+
+from shapely.geometry import Polygon as ShapelyPolygon
 import numpy as np
 
-import numpy as np
+def find_polytope_intersection(polygons_1, polygons_2, tol=1e-8, debug=False):
+    """
+    Finds all intersection line segments between surfaces defined by two sets of 3D polygonal faces.
+    
+    Parameters:
+    -----------
+    polygons_1 : list of np.ndarray (Nx3)
+        First set of polygonal surfaces (e.g., from output of one neuron).
+    polygons_2 : list of np.ndarray (Nx3)
+        Second set of polygonal surfaces (e.g., from another neuron).
+    tol : float
+        Numerical tolerance for degeneracy and overlap.
+    debug : bool
+        If True, prints diagnostic messages.
+    
+    Returns:
+    --------
+    list of (np.ndarray, np.ndarray)
+        Line segments (A, B), each a 3D point, representing intersections between polytopes.
+    """
 
-def find_polytope_intersection(polygons_1, polygons_2, tol=1e-8):
-    """
-    Assumes polygons_1[i] and polygons_2[i] are the two 3D patches
-    over the same 2D region.  Returns a list of (A, B) endpoints
-    for each intersection line segment (or fewer if no intersection).
-    """
     def plane_from_face(pts):
-        # take first 3 non‑collinear points
-        p0, p1, p2 = pts[0], pts[1], pts[2]
-        n = np.cross(p1 - p0, p2 - p0)
-        norm = np.linalg.norm(n)
-        if norm < tol:
-            return None, None
-        n /= norm
-        d = -n.dot(p0)
-        return n, d
+        for i in range(len(pts) - 2):
+            p0, p1, p2 = pts[i], pts[i+1], pts[i+2]
+            n = np.cross(p1 - p0, p2 - p0)
+            norm = np.linalg.norm(n)
+            if norm > tol:
+                n /= norm
+                d = -np.dot(n, p0)
+                return n, d
+        return None, None
 
     def plane_intersection(n1, d1, n2, d2):
-        # line dir
         v = np.cross(n1, n2)
         denom = np.dot(v, v)
         if denom < tol:
             return None, None
-        # point on both planes:
-        # (d2 n1 - d1 n2) × v  / |v|^2
-        p0 = np.cross(d2*n1 - d1*n2, v) / denom
+        p0 = np.cross(d2 * n1 - d1 * n2, v) / denom
         return p0, v
 
     def clip_poly_to_plane(poly, n, d):
-        """
-        Intersect convex poly with plane n·x + d = 0.
-        Returns two endpoints if it slices it, else None.
-        """
         vals = np.dot(poly, n) + d
         pts = []
-        # any vertex exactly on plane?
         for p, v in zip(poly, vals):
             if abs(v) < tol:
                 pts.append(p)
-        # each edge that crosses?
         for i in range(len(poly)):
-            j = (i+1) % len(poly)
+            j = (i + 1) % len(poly)
             vi, vj = vals[i], vals[j]
-            if vi * vj < -tol*tol:
+            if vi * vj < -tol * tol:
                 t = vi / (vi - vj)
-                pts.append(poly[i] + t*(poly[j] - poly[i]))
+                pts.append(poly[i] + t * (poly[j] - poly[i]))
         if len(pts) < 2:
             return None
-        # dedupe
         uniq = []
         for p in pts:
             if not any(np.allclose(p, q, atol=tol) for q in uniq):
                 uniq.append(p)
         if len(uniq) < 2:
             return None
-        # pick the two farthest apart
         maxd, pair = 0, None
         for i in range(len(uniq)):
             for j in range(i+1, len(uniq)):
-                d2 = np.sum((uniq[i]-uniq[j])**2)
+                d2 = np.sum((uniq[i] - uniq[j])**2)
                 if d2 > maxd:
                     maxd, pair = d2, (uniq[i], uniq[j])
         return pair
 
+    def polygons_overlap_2d(poly1, poly2):
+        """
+        Projects 3D polygons to 2D (x, y) and checks for intersection.
+        """
+        p1_2d = ShapelyPolygon(poly1[:, :2])
+        p2_2d = ShapelyPolygon(poly2[:, :2])
+        return p1_2d.is_valid and p2_2d.is_valid and p1_2d.intersects(p2_2d) and p1_2d.intersection(p2_2d).area > tol
+
     segments = []
-    if len(polygons_1) != len(polygons_2):
-        raise ValueError("This version expects the two lists to be the same length and in matching order.")
 
-    for f1, f2 in zip(polygons_1, polygons_2):
-        # 1) fit planes
-        n1, d1 = plane_from_face(f1)
-        n2, d2 = plane_from_face(f2)
-        if n1 is None or n2 is None:
-            continue
+    for i, f1 in enumerate(polygons_1):
+        for j, f2 in enumerate(polygons_2):
+            if not polygons_overlap_2d(f1, f2):
+                continue
 
-        # 2) plane–plane → line
-        p0, v = plane_intersection(n1, d1, n2, d2)
-        if v is None:
-            continue
+            n1, d1 = plane_from_face(f1)
+            n2, d2 = plane_from_face(f2)
+            if n1 is None or n2 is None:
+                if debug:
+                    print(f"[SKIP] Degenerate face at ({i},{j})")
+                continue
 
-        # 3) clip that line back to each patch
-        #    – clip f1 by plane of f2, and f2 by plane of f1
-        seg1 = clip_poly_to_plane(f1, n2, d2)
-        seg2 = clip_poly_to_plane(f2, n1, d1)
-        if seg1 is None or seg2 is None:
-            continue
+            p0, v = plane_intersection(n1, d1, n2, d2)
+            if v is None:
+                if debug:
+                    print(f"[SKIP] Parallel planes at ({i},{j})")
+                continue
 
-        # 4) average endpoints (to cancel tiny mismatches)
-        A = 0.5*(seg1[0] + seg2[0])
-        B = 0.5*(seg1[1] + seg2[1])
-        segments.append((A, B))
+            seg1 = clip_poly_to_plane(f1, n2, d2)
+            seg2 = clip_poly_to_plane(f2, n1, d1)
+            if seg1 is None or seg2 is None:
+                if debug:
+                    print(f"[SKIP] No clip on ({i},{j})")
+                continue
+
+            A = 0.5 * (seg1[0] + seg2[0])
+            B = 0.5 * (seg1[1] + seg2[1])
+            segments.append((A, B))
+
+    if debug:
+        print(f"[INFO] Found {len(segments)} intersection segments")
 
     return segments
+
+
+
+
+## --- Almost workign ChatGPT draft --- ##
+# def find_polytope_intersection(polygons_1, polygons_2, tol=1e-8):
+#     """
+#     Assumes polygons_1[i] and polygons_2[i] are the two 3D patches
+#     over the same 2D region.  Returns a list of (A, B) endpoints
+#     for each intersection line segment (or fewer if no intersection).
+#     """
+#     def plane_from_face(pts):
+#         # take first 3 non‑collinear points
+#         p0, p1, p2 = pts[0], pts[1], pts[2]
+#         n = np.cross(p1 - p0, p2 - p0)
+#         norm = np.linalg.norm(n)
+#         if norm < tol:
+#             return None, None
+#         n /= norm
+#         d = -n.dot(p0)
+#         return n, d
+
+#     def plane_intersection(n1, d1, n2, d2):
+#         # line dir
+#         v = np.cross(n1, n2)
+#         denom = np.dot(v, v)
+#         if denom < tol:
+#             return None, None
+#         # point on both planes:
+#         # (d2 n1 - d1 n2) × v  / |v|^2
+#         p0 = np.cross(d2*n1 - d1*n2, v) / denom
+#         return p0, v
+
+#     def clip_poly_to_plane(poly, n, d):
+#         """
+#         Intersect convex poly with plane n·x + d = 0.
+#         Returns two endpoints if it slices it, else None.
+#         """
+#         vals = np.dot(poly, n) + d
+#         pts = []
+#         # any vertex exactly on plane?
+#         for p, v in zip(poly, vals):
+#             if abs(v) < tol:
+#                 pts.append(p)
+#         # each edge that crosses?
+#         for i in range(len(poly)):
+#             j = (i+1) % len(poly)
+#             vi, vj = vals[i], vals[j]
+#             if vi * vj < -tol*tol:
+#                 t = vi / (vi - vj)
+#                 pts.append(poly[i] + t*(poly[j] - poly[i]))
+#         if len(pts) < 2:
+#             return None
+#         # dedupe
+#         uniq = []
+#         for p in pts:
+#             if not any(np.allclose(p, q, atol=tol) for q in uniq):
+#                 uniq.append(p)
+#         if len(uniq) < 2:
+#             return None
+#         # pick the two farthest apart
+#         maxd, pair = 0, None
+#         for i in range(len(uniq)):
+#             for j in range(i+1, len(uniq)):
+#                 d2 = np.sum((uniq[i]-uniq[j])**2)
+#                 if d2 > maxd:
+#                     maxd, pair = d2, (uniq[i], uniq[j])
+#         return pair
+
+#     segments = []
+#     if len(polygons_1) != len(polygons_2):
+#         raise ValueError("This version expects the two lists to be the same length and in matching order.")
+
+#     for f1, f2 in zip(polygons_1, polygons_2):
+#         # 1) fit planes
+#         n1, d1 = plane_from_face(f1)
+#         n2, d2 = plane_from_face(f2)
+#         if n1 is None or n2 is None:
+#             continue
+
+#         # 2) plane–plane → line
+#         p0, v = plane_intersection(n1, d1, n2, d2)
+#         if v is None:
+#             continue
+
+#         # 3) clip that line back to each patch
+#         #    – clip f1 by plane of f2, and f2 by plane of f1
+#         seg1 = clip_poly_to_plane(f1, n2, d2)
+#         seg2 = clip_poly_to_plane(f2, n1, d1)
+#         if seg1 is None or seg2 is None:
+#             continue
+
+#         # 4) average endpoints (to cancel tiny mismatches)
+#         A = 0.5*(seg1[0] + seg2[0])
+#         B = 0.5*(seg1[1] + seg2[1])
+#         segments.append((A, B))
+
+#     return segments
 
 
 

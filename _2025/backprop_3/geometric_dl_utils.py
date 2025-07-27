@@ -1296,118 +1296,219 @@ def find_polygon_intersections_pairwise(set1_coords, set2_coords):
 
 from shapely.geometry import Polygon as ShapelyPolygon
 import numpy as np
+import numpy as np
+import shapely.geometry as sg #import Polygon, LineString
+from shapely.ops import split
 
-def find_polytope_intersection(polygons_1, polygons_2, tol=1e-8, debug=False):
+
+def intersect_polytopes(polygons_1, polygons_2, tol=1e-8):
     """
-    Finds all intersection line segments between surfaces defined by two sets of 3D polygonal faces.
-    
-    Parameters:
-    -----------
-    polygons_1 : list of np.ndarray (Nx3)
-        First set of polygonal surfaces (e.g., from output of one neuron).
-    polygons_2 : list of np.ndarray (Nx3)
-        Second set of polygonal surfaces (e.g., from another neuron).
-    tol : float
-        Numerical tolerance for degeneracy and overlap.
-    debug : bool
-        If True, prints diagnostic messages.
-    
+    Compare two polytopes (tilings of the same (x,y) plane) and determine
+    where one is on top, where the other is, and where they intersect.
+
     Returns:
-    --------
-    list of (np.ndarray, np.ndarray)
-        Line segments (A, B), each a 3D point, representing intersections between polytopes.
+        intersection_lines: List of (start, end) np.ndarrays of shape (3,)
+        new_tiling: List of np.ndarrays of shape (N, 2) representing new 2D polygons
+        top_polygons: List of np.ndarrays of shape (N, 3) representing 3D top surfaces
+        indicator: np.ndarray of 0s and 1s showing source of top surface (0=poly1, 1=poly2)
     """
 
-    def plane_from_face(pts):
-        for i in range(len(pts) - 2):
-            p0, p1, p2 = pts[i], pts[i+1], pts[i+2]
-            n = np.cross(p1 - p0, p2 - p0)
-            norm = np.linalg.norm(n)
-            if norm > tol:
-                n /= norm
-                d = -np.dot(n, p0)
-                return n, d
-        return None, None
+    intersection_lines = []
+    new_tiling = []
+    top_polygons = []
+    indicator = []
 
-    def plane_intersection(n1, d1, n2, d2):
-        v = np.cross(n1, n2)
-        denom = np.dot(v, v)
-        if denom < tol:
-            return None, None
-        p0 = np.cross(d2 * n1 - d1 * n2, v) / denom
-        return p0, v
+    for poly1, poly2 in zip(polygons_1, polygons_2):
+        poly1_2d = poly1[:, :2]
+        poly2_2d = poly2[:, :2]
+        z1 = poly1[:, 2]
+        z2 = poly2[:, 2]
 
-    def clip_poly_to_plane(poly, n, d):
-        vals = np.dot(poly, n) + d
-        pts = []
-        for p, v in zip(poly, vals):
-            if abs(v) < tol:
-                pts.append(p)
-        for i in range(len(poly)):
-            j = (i + 1) % len(poly)
-            vi, vj = vals[i], vals[j]
-            if vi * vj < -tol * tol:
-                t = vi / (vi - vj)
-                pts.append(poly[i] + t * (poly[j] - poly[i]))
-        if len(pts) < 2:
-            return None
-        uniq = []
-        for p in pts:
-            if not any(np.allclose(p, q, atol=tol) for q in uniq):
-                uniq.append(p)
-        if len(uniq) < 2:
-            return None
-        maxd, pair = 0, None
-        for i in range(len(uniq)):
-            for j in range(i+1, len(uniq)):
-                d2 = np.sum((uniq[i] - uniq[j])**2)
-                if d2 > maxd:
-                    maxd, pair = d2, (uniq[i], uniq[j])
-        return pair
+        # Assumption: same (x,y) layout
+        assert np.allclose(poly1_2d, poly2_2d, atol=tol)
 
-    def polygons_overlap_2d(poly1, poly2):
-        """
-        Projects 3D polygons to 2D (x, y) and checks for intersection.
-        """
-        p1_2d = ShapelyPolygon(poly1[:, :2])
-        p2_2d = ShapelyPolygon(poly2[:, :2])
-        return p1_2d.is_valid and p2_2d.is_valid and p1_2d.intersects(p2_2d) and p1_2d.intersection(p2_2d).area > tol
+        above = z1 > z2 + tol
+        below = z2 > z1 + tol
+        mixed = np.any(above) and np.any(below)
 
-    segments = []
+        if not mixed:
+            if np.all(above):
+                new_tiling.append(poly1_2d)
+                top_polygons.append(poly1)
+                indicator.append(0)
+            else:
+                new_tiling.append(poly2_2d)
+                top_polygons.append(poly2)
+                indicator.append(1)
+        else:
+            # Intersecting: find edges crossing and build split line
+            crossings = []
+            for i in range(len(poly1)):
+                j = (i + 1) % len(poly1)
+                if (z1[i] > z2[i] and z1[j] < z2[j]) or (z1[i] < z2[i] and z1[j] > z2[j]):
+                    t = (z2[i] - z1[i]) / ((z1[j] - z2[j]) - (z1[i] - z2[i]))
+                    pt = (1 - t) * poly1[i] + t * poly1[j]
+                    crossings.append(pt)
 
-    for i, f1 in enumerate(polygons_1):
-        for j, f2 in enumerate(polygons_2):
-            if not polygons_overlap_2d(f1, f2):
-                continue
+            if len(crossings) >= 2:
+                split_line = sg.LineString([crossings[0][:2], crossings[1][:2]])
+                poly_shapely = sg.Polygon(poly1_2d)
+                split_polys = split(poly_shapely, split_line)
 
-            n1, d1 = plane_from_face(f1)
-            n2, d2 = plane_from_face(f2)
-            if n1 is None or n2 is None:
-                if debug:
-                    print(f"[SKIP] Degenerate face at ({i},{j})")
-                continue
+                for subpoly in split_polys.geoms:
+                    coords_2d = np.array(subpoly.exterior.coords[:-1])
+                    new_tiling.append(coords_2d)
 
-            p0, v = plane_intersection(n1, d1, n2, d2)
-            if v is None:
-                if debug:
-                    print(f"[SKIP] Parallel planes at ({i},{j})")
-                continue
+                    # Evaluate midpoint height to determine which poly is on top
+                    centroid = np.mean(coords_2d, axis=0)
+                    z1_val = interpolate_z(centroid, poly1)
+                    z2_val = interpolate_z(centroid, poly2)
 
-            seg1 = clip_poly_to_plane(f1, n2, d2)
-            seg2 = clip_poly_to_plane(f2, n1, d1)
-            if seg1 is None or seg2 is None:
-                if debug:
-                    print(f"[SKIP] No clip on ({i},{j})")
-                continue
+                    if z1_val > z2_val:
+                        top_z = interpolate_polygon(coords_2d, poly1)
+                        indicator.append(0)
+                    else:
+                        top_z = interpolate_polygon(coords_2d, poly2)
+                        indicator.append(1)
 
-            A = 0.5 * (seg1[0] + seg2[0])
-            B = 0.5 * (seg1[1] + seg2[1])
-            segments.append((A, B))
+                    top_polygons.append(np.hstack([coords_2d, top_z[:, None]]))
+                    intersection_lines.append((crossings[0], crossings[1]))
 
-    if debug:
-        print(f"[INFO] Found {len(segments)} intersection segments")
+    return intersection_lines, new_tiling, top_polygons, np.array(indicator)
 
-    return segments
+
+def interpolate_z(point, polygon):
+    """
+    Bilinear interpolation of z at a given (x, y) point inside polygon
+    """
+    from scipy.interpolate import LinearNDInterpolator
+    interp = LinearNDInterpolator(polygon[:, :2], polygon[:, 2])
+    return interp(point)
+
+
+def interpolate_polygon(coords_2d, polygon_3d):
+    """
+    Interpolates z-values for a new 2D polygon using the original 3D polygon surface
+    """
+    from scipy.interpolate import LinearNDInterpolator
+    interp = LinearNDInterpolator(polygon_3d[:, :2], polygon_3d[:, 2])
+    return interp(coords_2d)
+
+
+
+
+# --- Works well but I found a cleaner more geenral approach --- #
+# def find_polytope_intersection(polygons_1, polygons_2, tol=1e-8, debug=False):
+#     """
+#     Finds all intersection line segments between surfaces defined by two sets of 3D polygonal faces.
+    
+#     Parameters:
+#     -----------
+#     polygons_1 : list of np.ndarray (Nx3)
+#         First set of polygonal surfaces (e.g., from output of one neuron).
+#     polygons_2 : list of np.ndarray (Nx3)
+#         Second set of polygonal surfaces (e.g., from another neuron).
+#     tol : float
+#         Numerical tolerance for degeneracy and overlap.
+#     debug : bool
+#         If True, prints diagnostic messages.
+    
+#     Returns:
+#     --------
+#     list of (np.ndarray, np.ndarray)
+#         Line segments (A, B), each a 3D point, representing intersections between polytopes.
+#     """
+
+#     def plane_from_face(pts):
+#         for i in range(len(pts) - 2):
+#             p0, p1, p2 = pts[i], pts[i+1], pts[i+2]
+#             n = np.cross(p1 - p0, p2 - p0)
+#             norm = np.linalg.norm(n)
+#             if norm > tol:
+#                 n /= norm
+#                 d = -np.dot(n, p0)
+#                 return n, d
+#         return None, None
+
+#     def plane_intersection(n1, d1, n2, d2):
+#         v = np.cross(n1, n2)
+#         denom = np.dot(v, v)
+#         if denom < tol:
+#             return None, None
+#         p0 = np.cross(d2 * n1 - d1 * n2, v) / denom
+#         return p0, v
+
+#     def clip_poly_to_plane(poly, n, d):
+#         vals = np.dot(poly, n) + d
+#         pts = []
+#         for p, v in zip(poly, vals):
+#             if abs(v) < tol:
+#                 pts.append(p)
+#         for i in range(len(poly)):
+#             j = (i + 1) % len(poly)
+#             vi, vj = vals[i], vals[j]
+#             if vi * vj < -tol * tol:
+#                 t = vi / (vi - vj)
+#                 pts.append(poly[i] + t * (poly[j] - poly[i]))
+#         if len(pts) < 2:
+#             return None
+#         uniq = []
+#         for p in pts:
+#             if not any(np.allclose(p, q, atol=tol) for q in uniq):
+#                 uniq.append(p)
+#         if len(uniq) < 2:
+#             return None
+#         maxd, pair = 0, None
+#         for i in range(len(uniq)):
+#             for j in range(i+1, len(uniq)):
+#                 d2 = np.sum((uniq[i] - uniq[j])**2)
+#                 if d2 > maxd:
+#                     maxd, pair = d2, (uniq[i], uniq[j])
+#         return pair
+
+#     def polygons_overlap_2d(poly1, poly2):
+#         """
+#         Projects 3D polygons to 2D (x, y) and checks for intersection.
+#         """
+#         p1_2d = ShapelyPolygon(poly1[:, :2])
+#         p2_2d = ShapelyPolygon(poly2[:, :2])
+#         return p1_2d.is_valid and p2_2d.is_valid and p1_2d.intersects(p2_2d) and p1_2d.intersection(p2_2d).area > tol
+
+#     segments = []
+
+#     for i, f1 in enumerate(polygons_1):
+#         for j, f2 in enumerate(polygons_2):
+#             if not polygons_overlap_2d(f1, f2):
+#                 continue
+
+#             n1, d1 = plane_from_face(f1)
+#             n2, d2 = plane_from_face(f2)
+#             if n1 is None or n2 is None:
+#                 if debug:
+#                     print(f"[SKIP] Degenerate face at ({i},{j})")
+#                 continue
+
+#             p0, v = plane_intersection(n1, d1, n2, d2)
+#             if v is None:
+#                 if debug:
+#                     print(f"[SKIP] Parallel planes at ({i},{j})")
+#                 continue
+
+#             seg1 = clip_poly_to_plane(f1, n2, d2)
+#             seg2 = clip_poly_to_plane(f2, n1, d1)
+#             if seg1 is None or seg2 is None:
+#                 if debug:
+#                     print(f"[SKIP] No clip on ({i},{j})")
+#                 continue
+
+#             A = 0.5 * (seg1[0] + seg2[0])
+#             B = 0.5 * (seg1[1] + seg2[1])
+#             segments.append((A, B))
+
+#     if debug:
+#         print(f"[INFO] Found {len(segments)} intersection segments")
+
+#     return segments
 
 
 

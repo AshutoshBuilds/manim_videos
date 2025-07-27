@@ -199,6 +199,53 @@ class refactor_sketch_1(InteractiveScene):
 
         self.add(polygons_vgroup_4a, polygons_vgroup_4b)
 
+
+        #Ok final tiling/intersection time -> I think I've found a better/cleaner way to do this
+        # See notes in notion!
+
+        final_polygons=copy.deepcopy(layer_3_polygons_3d) #Need to to intersection on non-scaled polytopes
+        intersection_lines, new_tiling, top_polygons, indicator = intersect_polytopes(final_polygons[0], final_polygons[1])
+
+        # Jul 27 am
+        # Ok ok ok ok ok getting close here on I think some nice viz options
+        # I haven't tested intersect_polytopes yet -> seems like it's returning too few results
+        # I'll get into that when I get back. 
+        # But I think this is going to be a nice approach!
+
+
+
+
+
+
+
+
+        #Coping over some notes from notions
+        # - Ok, so I definitely want to explicitly compute the new 2d tiling
+        # - From there, the “upper polytope” i’m looking for should be pretty straigthfoward to get I think!
+        # - man this perspective is actually intersesting in a bunch of ways
+        # - Many and maybe even a cool intro/hoook
+        # - Because what I didn’t realize here, which is actually really cool and makes sense is that:
+        #     - THE MODEL LEARNS A TILING THAT MATCHES THE CITY!!!
+        #     - Ah that’s so cool. Totally makes sense. c
+        # - **Ok yeah yeah yeah and the smooth animation from the 2d multicolored tiling to the 3d “top” polytope, still in mulitcolor or maybe fading to blue/yellow would be SICK!**
+        # - Ok yeah yeah yeah → the algorithm is strating to click in my head a bit here.
+        # - Oh wow → the connection to the “original” way the 2 neuron model tried to solve the problem is pretty interesting!
+        #     - It’s like:
+        #         - **Divide the map into these regions.**
+        #         - **For each one you have 2 copies of the the polygone to fit togeether at some angle**
+        #         - **Their intersection becomes the decision boundary! Just like the 2 neuron case, just all the layers before have chopped up the space for you.**
+        #         - **Hmm that’s pretty interesting!**
+
+
+
+
+
+
+
+
+
+
+
         # Ok dope - maybe want to mess with final layer scaling, we'll see
         # Now we just need a decision boundary. 
 
@@ -258,7 +305,7 @@ class refactor_sketch_1(InteractiveScene):
                     start=start_point,
                     end=end_point,
                     color="#FF00FF",
-                    width=0.02,
+                    width=0.02, #0.02 is probably better
                 )
                 # Shift to match your layer positioning (layer_idx=5 for final output)
                 line.shift([horizontal_spacing*(layer_idx+1)-6, 0, 0])  # horizontal_spacing * layer_idx - 6
@@ -266,6 +313,37 @@ class refactor_sketch_1(InteractiveScene):
 
         # Add the decision boundary to the scene
         self.add(decision_boundary_lines_flat)
+
+        # Ok so we're getting close 
+        # Probably right now is that it's really hard to see how the the yellow and blue polytopes intersect
+        # I think what might help here is having a mostly or full opaque "top surface"
+        # Then I coudl imagine the yellow plane "comming up from below" (which I think matching flipping everythong over, which 
+        # i think want to do to match the matrices better)
+        # Then this "top surface gradually forms with magenta boundaries, and solid or very opaque yellow and blue faces"
+        # To do this though, I need to compute a "top polytope", and I need to know the color for each face. 
+        # Let me start designing my interface here!
+        # Once i get that working, i can slowly adjust up the yellow polytope to get a nice "growing up " animation.
+        # Ahh it's the SAME TILING for top and bottom, that's important! It will be same tiling after too. 
+        # The 2d version of that is actually kinda interesting too right?
+        # Let me add that to the final map for a second and see what that vibe is. 
+
+        output_poygons_2d_2_copy=copy.deepcopy(output_poygons_2d_2)
+        output_poygons_2d_2_copy=output_poygons_2d_2_copy.shift([horizontal_spacing*2,0, 0])
+        self.add(output_poygons_2d_2_copy)
+        self.remove(map_region_1, map_region_2, map_img)
+
+
+        def get_upper_polytope(polygons_1, polygons_2):
+            '''
+            Given two lists of Nx3 numpy arrays, (polygons_1, polygons_2), where each 
+            numpy array gives the vertices of face of a polytope that tiles the -1,1 plane, 
+            find all intersection lines between the two polytope surfaces, and split copies of thethe existing polytopes along 
+            the intersection lines. 
+            '''
+
+            return intersection_line_coords
+
+
 
 
 

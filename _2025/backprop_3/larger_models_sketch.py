@@ -52,7 +52,7 @@ class refactor_sketch_1(InteractiveScene):
         # Maybe there's a discrete set of possible viz scales: 
         adaptive_viz_scales = compute_adaptive_viz_scales(model, max_surface_height=1.0, extent=1)
         #For the interesection to make sense, these scales need to match - either need to manual overide or chnage method above
-        final_layer_viz=scale=min(adaptive_viz_scales[-1])
+        final_layer_viz=scale=2*min(adaptive_viz_scales[-1]) #little manual ramp here
         adaptive_viz_scales[-1]=[final_layer_viz, final_layer_viz]
 
 
@@ -174,7 +174,7 @@ class refactor_sketch_1(InteractiveScene):
         map_img.shift([horizontal_spacing*(layer_idx+1)-6, 0, -1.5])
         self.add(map_img)
 
-        map_region_1=ImageMobject(heatmaps_dir+'/8_8_0.png').set_width(2).set_height(2).set_opacity(0.5)  
+        map_region_1=ImageMobject(heatmaps_dir+'/8_8_0.png').set_width(2).set_height(2).set_opacity(0.3)  
         map_region_1.shift([horizontal_spacing*(layer_idx+1)-6, 0, -1.5])
         self.add(map_region_1)
 
@@ -189,6 +189,14 @@ class refactor_sketch_1(InteractiveScene):
         scaled_final_polygons=copy.deepcopy(scaled_layer_3_polygons_3d)
         polygons_vgroup_4a=viz_3d_polygons([scaled_final_polygons[0]], layer_idx=5, colors=[BLUE])
         polygons_vgroup_4b=viz_3d_polygons([scaled_final_polygons[1]], layer_idx=5, colors=[YELLOW])
+
+        # self.add(polygons_vgroup_4a)
+
+        # self.add(polygons_vgroup_4b)
+        # polygons_vgroup_4b.set_opacity(0.9)
+        # polygons_vgroup_4b.set_fill
+
+
         self.add(polygons_vgroup_4a, polygons_vgroup_4b)
 
         # Ok dope - maybe want to mess with final layer scaling, we'll see

@@ -17,6 +17,7 @@ FRESH_TAN='#dfd0b9'
 
 
 graphics_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/graphics/' #Point to folder where map images are
+heatmaps_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/hackin/heatmaps'
 
 class refactor_sketch_1(InteractiveScene):
     def construct(self):
@@ -29,18 +30,18 @@ class refactor_sketch_1(InteractiveScene):
         # num_neurons=[2, 2, 2, 2, 2]
 
         #3x3
-        model_path='_2025/backprop_3/models/3_3_1.pth'
-        model = BaarleNet([3,3])
-        model.load_state_dict(torch.load(model_path))
-        viz_scales=[0.1, 0.1, 0.05, 0.05, 0.15]
-        num_neurons=[3, 3, 3, 3, 2]
+        # model_path='_2025/backprop_3/models/3_3_1.pth'
+        # model = BaarleNet([3,3])
+        # model.load_state_dict(torch.load(model_path))
+        # viz_scales=[0.1, 0.1, 0.05, 0.05, 0.15]
+        # num_neurons=[3, 3, 3, 3, 2]
 
         #8x8
-        # model_path='_2025/backprop_3/models/8_8_1.pth'
-        # model = BaarleNet([8,8])
-        # model.load_state_dict(torch.load(model_path))
-        # # viz_scales=[0.1, 0.1, 0.05, 0.05, 0.15]
-        # num_neurons=[8,8, 8, 8, 2]
+        model_path='_2025/backprop_3/models/8_8_1.pth'
+        model = BaarleNet([8,8])
+        model.load_state_dict(torch.load(model_path))
+        # viz_scales=[0.1, 0.1, 0.05, 0.05, 0.15]
+        num_neurons=[8, 8, 8, 8, 2]
 
         vertical_spacing=1.5
         horizontal_spacing=3
@@ -50,6 +51,9 @@ class refactor_sketch_1(InteractiveScene):
         # I don't want to totally normalize the heights though, ya know?
         # Maybe there's a discrete set of possible viz scales: 
         adaptive_viz_scales = compute_adaptive_viz_scales(model, max_surface_height=1.0, extent=1)
+        #For the interesection to make sense, these scales need to match - either need to manual overide or chnage method above
+        final_layer_viz=scale=2*min(adaptive_viz_scales[-1]) #little manual ramp here
+        adaptive_viz_scales[-1]=[final_layer_viz, final_layer_viz]
 
 
         surfaces=[]
@@ -95,7 +99,7 @@ class refactor_sketch_1(InteractiveScene):
         #Ok now I need to rescale. 
         scaled_layer_1_polygons_3d=apply_viz_scale_to_3d_polygons(layer_1_polygons_3d, adaptive_viz_scales[layer_idx])
 
-        polygons_vgroup=viz_3d_polygons(scaled_layer_1_polygons_3d, layer_idx, colors=None)
+        polygons_vgroup=viz_3d_polygons(scaled_layer_1_polygons_3d, layer_idx, colors=None, color_gray_index=1)
         self.add(polygons_vgroup)
         self.wait()
 
@@ -136,7 +140,7 @@ class refactor_sketch_1(InteractiveScene):
 
         all_polygons_after_merging_scaled=apply_viz_scale_to_3d_polygons(all_polygons_after_merging, adaptive_viz_scales[layer_idx])
 
-        layer_2_polygons_split_vgroup=viz_3d_polygons(all_polygons_after_merging_scaled, layer_idx, colors=None, color_first_polygon_gray=True)
+        layer_2_polygons_split_vgroup=viz_3d_polygons(all_polygons_after_merging_scaled, layer_idx, colors=None)
         self.add(layer_2_polygons_split_vgroup)
 
 
@@ -156,12 +160,27 @@ class refactor_sketch_1(InteractiveScene):
         # Ok output layer and decision boundary
         # I kinda want a version tha thas all the fun colors and then a yellow and blue version
         layer_idx=4
-        # adaptive_viz_scales[layer_idx]=[0.02, 0.02] #Try some manual scale here
+
+
         layer_3_polygons_3d=get_3d_polygons(layer3_regions_2d, num_neurons[layer_idx], surface_funcs_no_viz_scale, layer_idx)
         scaled_layer_3_polygons_3d=apply_viz_scale_to_3d_polygons(layer_3_polygons_3d, adaptive_viz_scales[layer_idx])
 
         polygons_vgroup_3=viz_3d_polygons(scaled_layer_3_polygons_3d, layer_idx, colors=None)
         self.add(polygons_vgroup_3)
+
+
+        #Final map regions
+        map_img=ImageMobject(graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-11.png').set_width(2).set_height(2)  
+        map_img.shift([horizontal_spacing*(layer_idx+1)-6, 0, -1.5])
+        self.add(map_img)
+
+        map_region_1=ImageMobject(heatmaps_dir+'/8_8_0.png').set_width(2).set_height(2).set_opacity(0.3)  
+        map_region_1.shift([horizontal_spacing*(layer_idx+1)-6, 0, -1.5])
+        self.add(map_region_1)
+
+        map_region_2=ImageMobject(heatmaps_dir+'/8_8_1.png').set_width(2).set_height(2).set_opacity(0.5)  
+        map_region_2.shift([horizontal_spacing*(layer_idx+1)-6, 0, -1.5])
+        self.add(map_region_2)
 
 
         # Ok this is looking dope! 
@@ -170,7 +189,62 @@ class refactor_sketch_1(InteractiveScene):
         scaled_final_polygons=copy.deepcopy(scaled_layer_3_polygons_3d)
         polygons_vgroup_4a=viz_3d_polygons([scaled_final_polygons[0]], layer_idx=5, colors=[BLUE])
         polygons_vgroup_4b=viz_3d_polygons([scaled_final_polygons[1]], layer_idx=5, colors=[YELLOW])
+
+        # self.add(polygons_vgroup_4a)
+
+        # self.add(polygons_vgroup_4b)
+        # polygons_vgroup_4b.set_opacity(0.9)
+        # polygons_vgroup_4b.set_fill
+
+
         self.add(polygons_vgroup_4a, polygons_vgroup_4b)
+
+
+        #Ok final tiling/intersection time -> I think I've found a better/cleaner way to do this
+        # See notes in notion!
+
+        final_polygons=copy.deepcopy(layer_3_polygons_3d) #Need to to intersection on non-scaled polytopes
+        intersection_lines, new_tiling, top_polygons, indicator = intersect_polytopes(final_polygons[0], final_polygons[1])
+
+        # Jul 27 am
+        # Ok ok ok ok ok getting close here on I think some nice viz options
+        # I haven't tested intersect_polytopes yet -> seems like it's returning too few results
+        # I'll get into that when I get back. 
+        # But I think this is going to be a nice approach!
+
+
+
+
+
+
+
+
+        #Coping over some notes from notions
+        # - Ok, so I definitely want to explicitly compute the new 2d tiling
+        # - From there, the “upper polytope” i’m looking for should be pretty straigthfoward to get I think!
+        # - man this perspective is actually intersesting in a bunch of ways
+        # - Many and maybe even a cool intro/hoook
+        # - Because what I didn’t realize here, which is actually really cool and makes sense is that:
+        #     - THE MODEL LEARNS A TILING THAT MATCHES THE CITY!!!
+        #     - Ah that’s so cool. Totally makes sense. c
+        # - **Ok yeah yeah yeah and the smooth animation from the 2d multicolored tiling to the 3d “top” polytope, still in mulitcolor or maybe fading to blue/yellow would be SICK!**
+        # - Ok yeah yeah yeah → the algorithm is strating to click in my head a bit here.
+        # - Oh wow → the connection to the “original” way the 2 neuron model tried to solve the problem is pretty interesting!
+        #     - It’s like:
+        #         - **Divide the map into these regions.**
+        #         - **For each one you have 2 copies of the the polygone to fit togeether at some angle**
+        #         - **Their intersection becomes the decision boundary! Just like the 2 neuron case, just all the layers before have chopped up the space for you.**
+        #         - **Hmm that’s pretty interesting!**
+
+
+
+
+
+
+
+
+
+
 
         # Ok dope - maybe want to mess with final layer scaling, we'll see
         # Now we just need a decision boundary. 
@@ -188,19 +262,25 @@ class refactor_sketch_1(InteractiveScene):
         final_polygons=copy.deepcopy(layer_3_polygons_3d) #Need to to intersection on non-scaled polytopes
         intersection_line_coords=find_polytope_intersection(final_polygons[0], final_polygons[1])
         #Hmm like 3k results? Seems like a lot lol. Maybe analtyical in not 
-        
+
+        intersection_line_coords_scaled=copy.deepcopy(intersection_line_coords)
+        for line in intersection_line_coords_scaled:
+            for l in line:
+                l[2]=l[2]*adaptive_viz_scales[layer_idx][0]
+
+
         decision_boundary_lines = Group()
-        for line_segment in intersection_line_coords:
+        for line_segment in intersection_line_coords_scaled:
             if len(line_segment) == 2:
                 start_point, end_point = line_segment
                 line = Line3D(
                     start=start_point,
                     end=end_point,
                     color="#FF00FF",
-                    width=0.01,
+                    width=0.02,
                 )
                 # Shift to match your layer positioning (layer_idx=5 for final output)
-                line.shift([3*5-6, 0, 0])  # horizontal_spacing * layer_idx - 6
+                line.shift([horizontal_spacing*(layer_idx+1)-6, 0, 0])  # horizontal_spacing * layer_idx - 6
                 decision_boundary_lines.add(line)
 
         # Add the decision boundary to the scene
@@ -213,6 +293,60 @@ class refactor_sketch_1(InteractiveScene):
         # Hmm after I viz scale, will they still intersect at the right point?
         # And final final question -> intersection line Z does not seem arbitrary -> is it fixed Z somehow? 
         # If so, why, and does it help me????
+
+        #Will want to wrap this stuff up after things are kinda working
+        decision_boundary_lines_flat = Group()
+        for line_segment in intersection_line_coords_scaled:
+            if len(line_segment) == 2:
+                start_point, end_point = line_segment
+                start_point[2]=-1.5 #Flatten that shit!
+                end_point[2]=-1.5
+                line = Line3D(
+                    start=start_point,
+                    end=end_point,
+                    color="#FF00FF",
+                    width=0.02, #0.02 is probably better
+                )
+                # Shift to match your layer positioning (layer_idx=5 for final output)
+                line.shift([horizontal_spacing*(layer_idx+1)-6, 0, 0])  # horizontal_spacing * layer_idx - 6
+                decision_boundary_lines_flat.add(line)
+
+        # Add the decision boundary to the scene
+        self.add(decision_boundary_lines_flat)
+
+        # Ok so we're getting close 
+        # Probably right now is that it's really hard to see how the the yellow and blue polytopes intersect
+        # I think what might help here is having a mostly or full opaque "top surface"
+        # Then I coudl imagine the yellow plane "comming up from below" (which I think matching flipping everythong over, which 
+        # i think want to do to match the matrices better)
+        # Then this "top surface gradually forms with magenta boundaries, and solid or very opaque yellow and blue faces"
+        # To do this though, I need to compute a "top polytope", and I need to know the color for each face. 
+        # Let me start designing my interface here!
+        # Once i get that working, i can slowly adjust up the yellow polytope to get a nice "growing up " animation.
+        # Ahh it's the SAME TILING for top and bottom, that's important! It will be same tiling after too. 
+        # The 2d version of that is actually kinda interesting too right?
+        # Let me add that to the final map for a second and see what that vibe is. 
+
+        output_poygons_2d_2_copy=copy.deepcopy(output_poygons_2d_2)
+        output_poygons_2d_2_copy=output_poygons_2d_2_copy.shift([horizontal_spacing*2,0, 0])
+        self.add(output_poygons_2d_2_copy)
+        self.remove(map_region_1, map_region_2, map_img)
+
+
+        def get_upper_polytope(polygons_1, polygons_2):
+            '''
+            Given two lists of Nx3 numpy arrays, (polygons_1, polygons_2), where each 
+            numpy array gives the vertices of face of a polytope that tiles the -1,1 plane, 
+            find all intersection lines between the two polytope surfaces, and split copies of thethe existing polytopes along 
+            the intersection lines. 
+            '''
+
+            return intersection_line_coords
+
+
+
+
+
 
 
         self.wait()

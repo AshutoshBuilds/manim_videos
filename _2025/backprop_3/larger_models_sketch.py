@@ -156,7 +156,11 @@ class refactor_sketch_1(InteractiveScene):
         # Ok output layer and decision boundary
         # I kinda want a version tha thas all the fun colors and then a yellow and blue version
         layer_idx=4
-        # adaptive_viz_scales[layer_idx]=[0.02, 0.02] #Try some manual scale here
+        
+        #For the interesection to make sense, these scales need to match - either need to manual overide or chnage method above
+        adaptive_viz_scales[layer_idx]=[0.01, 0.01] #Try some manual scale here
+
+
         layer_3_polygons_3d=get_3d_polygons(layer3_regions_2d, num_neurons[layer_idx], surface_funcs_no_viz_scale, layer_idx)
         scaled_layer_3_polygons_3d=apply_viz_scale_to_3d_polygons(layer_3_polygons_3d, adaptive_viz_scales[layer_idx])
 
@@ -188,6 +192,13 @@ class refactor_sketch_1(InteractiveScene):
         final_polygons=copy.deepcopy(layer_3_polygons_3d) #Need to to intersection on non-scaled polytopes
         intersection_line_coords=find_polytope_intersection(final_polygons[0], final_polygons[1])
         #Hmm like 3k results? Seems like a lot lol. Maybe analtyical in not 
+
+        intersection_line_coords_scaled=copy.deepcopy(intersection_line_coords)
+        for line in intersection_line_coords_scaled:
+            for l in line:
+                l[2]=l[2]*adaptive_viz_scales[layer_idx][0]
+
+
         
         decision_boundary_lines = Group()
         for line_segment in intersection_line_coords:

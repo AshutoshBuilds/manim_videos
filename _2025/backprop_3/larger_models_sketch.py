@@ -4,7 +4,7 @@ import sys
 
 sys.path.append('_2025/backprop_3') #Point to folder where plane_folding_utils.py is
 from geometric_dl_utils import *
-
+from polytope_intersection_utils import intersect_polytopes
 
 CHILL_BROWN='#948979'
 YELLOW='#ffd35a'
@@ -204,64 +204,9 @@ class refactor_sketch_1(InteractiveScene):
         # See notes in notion!
 
         final_polygons=copy.deepcopy(layer_3_polygons_3d) #Need to to intersection on non-scaled polytopes
-        intersection_lines, new_tiling, top_polygons, indicator = intersect_polytopes(final_polygons[0], final_polygons[1])
+        intersection_line_coords, new_tiling, top_polygons, indicator = intersect_polytopes(final_polygons[0], final_polygons[1])
+        # intersection_line_coords=find_polytope_intersection(final_polygons[0], final_polygons[1])
 
-        # Jul 27 am
-        # Ok ok ok ok ok getting close here on I think some nice viz options
-        # I haven't tested intersect_polytopes yet -> seems like it's returning too few results
-        # I'll get into that when I get back. 
-        # But I think this is going to be a nice approach!
-
-
-
-
-
-
-
-
-        #Coping over some notes from notions
-        # - Ok, so I definitely want to explicitly compute the new 2d tiling
-        # - From there, the “upper polytope” i’m looking for should be pretty straigthfoward to get I think!
-        # - man this perspective is actually intersesting in a bunch of ways
-        # - Many and maybe even a cool intro/hoook
-        # - Because what I didn’t realize here, which is actually really cool and makes sense is that:
-        #     - THE MODEL LEARNS A TILING THAT MATCHES THE CITY!!!
-        #     - Ah that’s so cool. Totally makes sense. c
-        # - **Ok yeah yeah yeah and the smooth animation from the 2d multicolored tiling to the 3d “top” polytope, still in mulitcolor or maybe fading to blue/yellow would be SICK!**
-        # - Ok yeah yeah yeah → the algorithm is strating to click in my head a bit here.
-        # - Oh wow → the connection to the “original” way the 2 neuron model tried to solve the problem is pretty interesting!
-        #     - It’s like:
-        #         - **Divide the map into these regions.**
-        #         - **For each one you have 2 copies of the the polygone to fit togeether at some angle**
-        #         - **Their intersection becomes the decision boundary! Just like the 2 neuron case, just all the layers before have chopped up the space for you.**
-        #         - **Hmm that’s pretty interesting!**
-
-
-
-
-
-
-
-
-
-
-
-        # Ok dope - maybe want to mess with final layer scaling, we'll see
-        # Now we just need a decision boundary. 
-
-        # def find_polytope_intersection(polygons_1, polygons_2):
-        #     '''
-        #     Given two lists of Nx3 numpy arrays, (polygons_1, polygons_2), where each 
-        #     numpy array gives the vertices of face of a polytope, find all intersection lines between the 
-        #     two polytope surfaces, and return as a list of starting an dending points for each line. 
-        #     '''
-
-        #     return intersection_line_coords
-
-
-        final_polygons=copy.deepcopy(layer_3_polygons_3d) #Need to to intersection on non-scaled polytopes
-        intersection_line_coords=find_polytope_intersection(final_polygons[0], final_polygons[1])
-        #Hmm like 3k results? Seems like a lot lol. Maybe analtyical in not 
 
         intersection_line_coords_scaled=copy.deepcopy(intersection_line_coords)
         for line in intersection_line_coords_scaled:
@@ -286,15 +231,7 @@ class refactor_sketch_1(InteractiveScene):
         # Add the decision boundary to the scene
         self.add(decision_boundary_lines)
 
-        # Ok ChatGPT's solution is getting there, it still misses a segmmetn it looks like, and 
-        # I need to scale it back down for viz!
-        # Ok, so I'll pick up here when I'm back and see what I can figure out!
-        # Might be worth looking at what I did in my first round of sketches -> that seemed to work ok??
-        # Hmm after I viz scale, will they still intersect at the right point?
-        # And final final question -> intersection line Z does not seem arbitrary -> is it fixed Z somehow? 
-        # If so, why, and does it help me????
 
-        #Will want to wrap this stuff up after things are kinda working
         decision_boundary_lines_flat = Group()
         for line_segment in intersection_line_coords_scaled:
             if len(line_segment) == 2:
@@ -314,6 +251,106 @@ class refactor_sketch_1(InteractiveScene):
         # Add the decision boundary to the scene
         self.add(decision_boundary_lines_flat)
 
+
+        # Ok I'm interesting in 3 new visualizations here, then I can decide which ones i want to show 
+        # and probably do a little more refactoring
+        # Ok, so I definitely want to see the new tiling, with the borders on top of it, that will be dope!
+        # And I want to make the colored "top polytope" with decision borders - I think this will be alot more clear!
+        # Let me just hack stuff together here, than I can worry about making it clean/wrapped up
+        # Oh also, I think the toppolytome with individual plane coloring coudl be cool? Maybe? We'll see here. 
+
+
+        polygons_vgroup=VGroup()
+        for j, p in enumerate(top_polygons):
+            if len(p)<3: continue
+            if indicator[j]: color=YELLOW
+            else: color=BLUE
+            
+            p_scaled=copy.deepcopy(p) #Scaling for viz
+            p_scaled[:,2]=p_scaled[:,2]*adaptive_viz_scales[layer_idx][0]
+            poly_3d = Polygon(*p_scaled,
+                             fill_color=color,
+                             fill_opacity=0.4,
+                             stroke_color=color,
+                             stroke_width=2)
+            poly_3d.set_opacity(0.8)
+            poly_3d.shift([horizontal_spacing*(layer_idx+1)-6, 0, 4])
+            polygons_vgroup.add(poly_3d)
+
+        self.add(polygons_vgroup)
+
+
+
+        # Jul 27 am
+        # Ok ok ok ok ok getting close here on I think some nice viz options
+        # I haven't tested intersect_polytopes yet -> seems like it's returning too few results
+        # I'll get into that when I get back. 
+        # But I think this is going to be a nice approach!
+
+
+        #Coping over some notes from notions
+        # - Ok, so I definitely want to explicitly compute the new 2d tiling
+        # - From there, the “upper polytope” i’m looking for should be pretty straigthfoward to get I think!
+        # - man this perspective is actually intersesting in a bunch of ways
+        # - Many and maybe even a cool intro/hoook
+        # - Because what I didn’t realize here, which is actually really cool and makes sense is that:
+        #     - THE MODEL LEARNS A TILING THAT MATCHES THE CITY!!!
+        #     - Ah that’s so cool. Totally makes sense. c
+        # - **Ok yeah yeah yeah and the smooth animation from the 2d multicolored tiling to the 3d “top” polytope, still in mulitcolor or maybe fading to blue/yellow would be SICK!**
+        # - Ok yeah yeah yeah → the algorithm is strating to click in my head a bit here.
+        # - Oh wow → the connection to the “original” way the 2 neuron model tried to solve the problem is pretty interesting!
+        #     - It’s like:
+        #         - **Divide the map into these regions.**
+        #         - **For each one you have 2 copies of the the polygone to fit togeether at some angle**
+        #         - **Their intersection becomes the decision boundary! Just like the 2 neuron case, just all the layers before have chopped up the space for you.**
+        #         - **Hmm that’s pretty interesting!**
+
+
+        # Ok dope - maybe want to mess with final layer scaling, we'll see
+        # Now we just need a decision boundary. 
+
+        # def find_polytope_intersection(polygons_1, polygons_2):
+        #     '''
+        #     Given two lists of Nx3 numpy arrays, (polygons_1, polygons_2), where each 
+        #     numpy array gives the vertices of face of a polytope, find all intersection lines between the 
+        #     two polytope surfaces, and return as a list of starting an dending points for each line. 
+        #     '''
+
+        #     return intersection_line_coords
+
+
+        #Hmm like 3k results? Seems like a lot lol. Maybe analtyical in not 
+
+
+
+        # Ok ChatGPT's solution is getting there, it still misses a segmmetn it looks like, and 
+        # I need to scale it back down for viz!
+        # Ok, so I'll pick up here when I'm back and see what I can figure out!
+        # Might be worth looking at what I did in my first round of sketches -> that seemed to work ok??
+        # Hmm after I viz scale, will they still intersect at the right point?
+        # And final final question -> intersection line Z does not seem arbitrary -> is it fixed Z somehow? 
+        # If so, why, and does it help me????
+
+        #Will want to wrap this stuff up after things are kinda working
+        # decision_boundary_lines_flat = Group()
+        # for line_segment in intersection_line_coords_scaled:
+        #     if len(line_segment) == 2:
+        #         start_point, end_point = line_segment
+        #         start_point[2]=-1.5 #Flatten that shit!
+        #         end_point[2]=-1.5
+        #         line = Line3D(
+        #             start=start_point,
+        #             end=end_point,
+        #             color="#FF00FF",
+        #             width=0.02, #0.02 is probably better
+        #         )
+        #         # Shift to match your layer positioning (layer_idx=5 for final output)
+        #         line.shift([horizontal_spacing*(layer_idx+1)-6, 0, 0])  # horizontal_spacing * layer_idx - 6
+        #         decision_boundary_lines_flat.add(line)
+
+        # # Add the decision boundary to the scene
+        # self.add(decision_boundary_lines_flat)
+
         # Ok so we're getting close 
         # Probably right now is that it's really hard to see how the the yellow and blue polytopes intersect
         # I think what might help here is having a mostly or full opaque "top surface"
@@ -327,21 +364,21 @@ class refactor_sketch_1(InteractiveScene):
         # The 2d version of that is actually kinda interesting too right?
         # Let me add that to the final map for a second and see what that vibe is. 
 
-        output_poygons_2d_2_copy=copy.deepcopy(output_poygons_2d_2)
-        output_poygons_2d_2_copy=output_poygons_2d_2_copy.shift([horizontal_spacing*2,0, 0])
-        self.add(output_poygons_2d_2_copy)
-        self.remove(map_region_1, map_region_2, map_img)
+        # output_poygons_2d_2_copy=copy.deepcopy(output_poygons_2d_2)
+        # output_poygons_2d_2_copy=output_poygons_2d_2_copy.shift([horizontal_spacing*2,0, 0])
+        # self.add(output_poygons_2d_2_copy)
+        # self.remove(map_region_1, map_region_2, map_img)
 
 
-        def get_upper_polytope(polygons_1, polygons_2):
-            '''
-            Given two lists of Nx3 numpy arrays, (polygons_1, polygons_2), where each 
-            numpy array gives the vertices of face of a polytope that tiles the -1,1 plane, 
-            find all intersection lines between the two polytope surfaces, and split copies of thethe existing polytopes along 
-            the intersection lines. 
-            '''
+        # def get_upper_polytope(polygons_1, polygons_2):
+        #     '''
+        #     Given two lists of Nx3 numpy arrays, (polygons_1, polygons_2), where each 
+        #     numpy array gives the vertices of face of a polytope that tiles the -1,1 plane, 
+        #     find all intersection lines between the two polytope surfaces, and split copies of thethe existing polytopes along 
+        #     the intersection lines. 
+        #     '''
 
-            return intersection_line_coords
+        #     return intersection_line_coords
 
 
 

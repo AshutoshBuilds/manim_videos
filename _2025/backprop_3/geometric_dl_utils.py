@@ -1293,107 +1293,387 @@ def find_polygon_intersections_pairwise(set1_coords, set2_coords):
 ## ---- Decision Boundary Stuff ---- ##
 
 
+# import numpy as np
+# import shapely.geometry as sg #Polygon, LineString, GeometryCollection
+# from shapely.ops import split
 
-from shapely.geometry import Polygon as ShapelyPolygon
-import numpy as np
-import numpy as np
-import shapely.geometry as sg #import Polygon, LineString
-from shapely.ops import split
-
-
-def intersect_polytopes(polygons_1, polygons_2, tol=1e-8):
-    """
-    Compare two polytopes (tilings of the same (x,y) plane) and determine
-    where one is on top, where the other is, and where they intersect.
-
-    Returns:
-        intersection_lines: List of (start, end) np.ndarrays of shape (3,)
-        new_tiling: List of np.ndarrays of shape (N, 2) representing new 2D polygons
-        top_polygons: List of np.ndarrays of shape (N, 3) representing 3D top surfaces
-        indicator: np.ndarray of 0s and 1s showing source of top surface (0=poly1, 1=poly2)
-    """
-
-    intersection_lines = []
-    new_tiling = []
-    top_polygons = []
-    indicator = []
-
-    for poly1, poly2 in zip(polygons_1, polygons_2):
-        poly1_2d = poly1[:, :2]
-        poly2_2d = poly2[:, :2]
-        z1 = poly1[:, 2]
-        z2 = poly2[:, 2]
-
-        # Assumption: same (x,y) layout
-        assert np.allclose(poly1_2d, poly2_2d, atol=tol)
-
-        above = z1 > z2 + tol
-        below = z2 > z1 + tol
-        mixed = np.any(above) and np.any(below)
-
-        if not mixed:
-            if np.all(above):
-                new_tiling.append(poly1_2d)
-                top_polygons.append(poly1)
-                indicator.append(0)
-            else:
-                new_tiling.append(poly2_2d)
-                top_polygons.append(poly2)
-                indicator.append(1)
-        else:
-            # Intersecting: find edges crossing and build split line
-            crossings = []
-            for i in range(len(poly1)):
-                j = (i + 1) % len(poly1)
-                if (z1[i] > z2[i] and z1[j] < z2[j]) or (z1[i] < z2[i] and z1[j] > z2[j]):
-                    t = (z2[i] - z1[i]) / ((z1[j] - z2[j]) - (z1[i] - z2[i]))
-                    pt = (1 - t) * poly1[i] + t * poly1[j]
-                    crossings.append(pt)
-
-            if len(crossings) >= 2:
-                split_line = sg.LineString([crossings[0][:2], crossings[1][:2]])
-                poly_shapely = sg.Polygon(poly1_2d)
-                split_polys = split(poly_shapely, split_line)
-
-                for subpoly in split_polys.geoms:
-                    coords_2d = np.array(subpoly.exterior.coords[:-1])
-                    new_tiling.append(coords_2d)
-
-                    # Evaluate midpoint height to determine which poly is on top
-                    centroid = np.mean(coords_2d, axis=0)
-                    z1_val = interpolate_z(centroid, poly1)
-                    z2_val = interpolate_z(centroid, poly2)
-
-                    if z1_val > z2_val:
-                        top_z = interpolate_polygon(coords_2d, poly1)
-                        indicator.append(0)
-                    else:
-                        top_z = interpolate_polygon(coords_2d, poly2)
-                        indicator.append(1)
-
-                    top_polygons.append(np.hstack([coords_2d, top_z[:, None]]))
-                    intersection_lines.append((crossings[0], crossings[1]))
-
-    return intersection_lines, new_tiling, top_polygons, np.array(indicator)
+# from typing import List, Tuple, Dict, Set
+# from collections import defaultdict
 
 
-def interpolate_z(point, polygon):
-    """
-    Bilinear interpolation of z at a given (x, y) point inside polygon
-    """
-    from scipy.interpolate import LinearNDInterpolator
-    interp = LinearNDInterpolator(polygon[:, :2], polygon[:, 2])
-    return interp(point)
+# def intersect_polytopes(polygons_1: List[np.ndarray], polygons_2: List[np.ndarray]) -> Tuple[List[Tuple[np.ndarray, np.ndarray]], List[np.ndarray], List[np.ndarray], np.ndarray]:
+#     """
+#     Intersect two polytopes represented as lists of polygons.
+    
+#     Args:
+#         polygons_1: List of Nx3 numpy arrays representing first polytope
+#         polygons_2: List of Nx3 numpy arrays representing second polytope
+        
+#     Returns:
+#         - intersection_lines: List of (start, end) 3D points for intersection lines
+#         - new_2d_tiling: List of 2D polygons (Nx2 arrays) after splitting
+#         - top_polytope: List of 3D polygons (Nx3 arrays) representing the top surface
+#         - indicator: 1D array (0 if from polygons_1, 1 if from polygons_2)
+#     """
+#     assert len(polygons_1) == len(polygons_2), "Polygon lists must have same length"
+    
+#     # First pass: collect all intersection segments
+#     all_intersection_segments = []
+#     polygon_pairs_to_split = []
+    
+#     for idx, (poly1, poly2) in enumerate(zip(polygons_1, polygons_2)):
+#         # Extract 2D coordinates (x, y) - should be same for both polygons
+#         xy_coords = poly1[:, :2]
+        
+#         # Get z values for both polygons
+#         z1 = poly1[:, 2]
+#         z2 = poly2[:, 2]
+        
+#         # Check if one polygon is completely above the other
+#         if np.all(z1 >= z2):
+#             # polygon_1 is completely on top - no splitting needed
+#             continue
+#         elif np.all(z2 >= z1):
+#             # polygon_2 is completely on top - no splitting needed
+#             continue
+#         else:
+#             # Polygons intersect - find intersection points
+#             intersection_points = find_polygon_intersection(poly1, poly2)
+            
+#             if len(intersection_points) >= 2:
+#                 # Add this polygon pair for splitting
+#                 polygon_pairs_to_split.append((idx, poly1, poly2, intersection_points))
+                
+#                 # Add intersection segment
+#                 if len(intersection_points) == 2:
+#                     all_intersection_segments.append((intersection_points[0], intersection_points[1]))
+    
+#     # Build a graph of all vertices and edges
+#     vertex_graph = build_vertex_graph(polygons_1, polygon_pairs_to_split)
+    
+#     # Extract new polygons from the graph
+#     new_polygons_2d = extract_polygons_from_graph(vertex_graph)
+    
+#     # Build the 3D top surface and indicator array
+#     intersection_lines = []
+#     top_polytope = []
+#     indicator = []
+    
+#     for poly_2d in new_polygons_2d:
+#         # Find which original polygon(s) this new polygon came from
+#         center = np.mean(poly_2d, axis=0)
+        
+#         # Find the original polygon index
+#         orig_idx = find_containing_polygon(center, polygons_1)
+        
+#         if orig_idx is not None:
+#             poly1 = polygons_1[orig_idx]
+#             poly2 = polygons_2[orig_idx]
+            
+#             # Create 3D polygon
+#             poly_3d = create_3d_polygon(poly_2d, poly1, poly2)
+            
+#             # Determine which surface is on top at center
+#             z1_center = interpolate_z_at_point(center, poly1[:, :2], poly1[:, 2])
+#             z2_center = interpolate_z_at_point(center, poly2[:, :2], poly2[:, 2])
+            
+#             top_polytope.append(poly_3d)
+#             indicator.append(0 if z1_center >= z2_center else 1)
+    
+#     # Extract unique intersection lines
+#     for seg in all_intersection_segments:
+#         intersection_lines.append(seg)
+    
+#     return intersection_lines, new_polygons_2d, top_polytope, np.array(indicator)
 
 
-def interpolate_polygon(coords_2d, polygon_3d):
-    """
-    Interpolates z-values for a new 2D polygon using the original 3D polygon surface
-    """
-    from scipy.interpolate import LinearNDInterpolator
-    interp = LinearNDInterpolator(polygon_3d[:, :2], polygon_3d[:, 2])
-    return interp(coords_2d)
+# def find_polygon_intersection(poly1: np.ndarray, poly2: np.ndarray) -> List[np.ndarray]:
+#     """Find intersection points between two polygons with same x,y but different z."""
+#     intersection_points = []
+#     n = len(poly1)
+    
+#     # Check each edge
+#     for i in range(n):
+#         j = (i + 1) % n
+        
+#         # Edge endpoints
+#         p1_i, p1_j = poly1[i], poly1[j]
+#         p2_i, p2_j = poly2[i], poly2[j]
+        
+#         # Z values at endpoints
+#         z1_i, z1_j = p1_i[2], p1_j[2]
+#         z2_i, z2_j = p2_i[2], p2_j[2]
+        
+#         # Check if surfaces cross on this edge
+#         diff_i = z1_i - z2_i
+#         diff_j = z1_j - z2_j
+        
+#         if diff_i * diff_j < 0:  # Different signs = crossing
+#             # Linear interpolation to find crossing point
+#             t = diff_i / (diff_i - diff_j)
+#             intersection_3d = p1_i + t * (p1_j - p1_i)
+#             intersection_points.append(intersection_3d)
+    
+#     return intersection_points
 
+
+# def build_vertex_graph(polygons: List[np.ndarray], polygons_to_split: List[Tuple]) -> Dict:
+#     """Build a graph of vertices and edges including intersection points."""
+#     graph = defaultdict(set)
+#     vertex_positions = {}
+#     vertex_id = 0
+    
+#     # Tolerance for matching vertices
+#     eps = 1e-8
+    
+#     # Helper to get or create vertex ID
+#     def get_vertex_id(pos_2d):
+#         nonlocal vertex_id
+#         # Check if vertex already exists
+#         for vid, vpos in vertex_positions.items():
+#             if np.linalg.norm(vpos - pos_2d) < eps:
+#                 return vid
+#         # Create new vertex
+#         vertex_positions[vertex_id] = pos_2d
+#         vid = vertex_id
+#         vertex_id += 1
+#         return vid
+    
+#     # First, add all original polygon edges
+#     for poly_idx, poly in enumerate(polygons):
+#         n = len(poly)
+#         vertex_ids = []
+        
+#         # Get vertex IDs for this polygon
+#         for i in range(n):
+#             vid = get_vertex_id(poly[i, :2])
+#             vertex_ids.append(vid)
+        
+#         # Add edges
+#         for i in range(n):
+#             j = (i + 1) % n
+#             graph[vertex_ids[i]].add(vertex_ids[j])
+#             graph[vertex_ids[j]].add(vertex_ids[i])
+    
+#     # Now handle polygons that need splitting
+#     for poly_idx, poly1, poly2, intersection_points in polygons_to_split:
+#         if len(intersection_points) != 2:
+#             continue
+            
+#         # Add intersection points to graph
+#         int_pt1, int_pt2 = intersection_points[0][:2], intersection_points[1][:2]
+#         int_id1 = get_vertex_id(int_pt1)
+#         int_id2 = get_vertex_id(int_pt2)
+        
+#         # Add edge between intersection points
+#         graph[int_id1].add(int_id2)
+#         graph[int_id2].add(int_id1)
+        
+#         # Find which edges the intersection points lie on
+#         n = len(poly1)
+#         for i in range(n):
+#             j = (i + 1) % n
+#             edge_start = poly1[i, :2]
+#             edge_end = poly1[j, :2]
+            
+#             start_id = get_vertex_id(edge_start)
+#             end_id = get_vertex_id(edge_end)
+            
+#             # Check if intersection points lie on this edge
+#             for int_pt, int_id in [(int_pt1, int_id1), (int_pt2, int_id2)]:
+#                 if point_on_segment(int_pt, edge_start, edge_end, eps):
+#                     # Remove original edge
+#                     graph[start_id].discard(end_id)
+#                     graph[end_id].discard(start_id)
+                    
+#                     # Add new edges through intersection point
+#                     graph[start_id].add(int_id)
+#                     graph[int_id].add(start_id)
+#                     graph[int_id].add(end_id)
+#                     graph[end_id].add(int_id)
+    
+#     return {'graph': graph, 'positions': vertex_positions}
+
+
+# def point_on_segment(point: np.ndarray, seg_start: np.ndarray, seg_end: np.ndarray, eps: float = 1e-8) -> bool:
+#     """Check if a point lies on a line segment."""
+#     # Vector from start to end
+#     seg_vec = seg_end - seg_start
+#     seg_len_sq = np.dot(seg_vec, seg_vec)
+    
+#     if seg_len_sq < eps:
+#         return np.linalg.norm(point - seg_start) < eps
+    
+#     # Project point onto line
+#     t = np.dot(point - seg_start, seg_vec) / seg_len_sq
+    
+#     if t < -eps or t > 1 + eps:
+#         return False
+    
+#     # Check distance to line
+#     proj_point = seg_start + t * seg_vec
+#     return np.linalg.norm(point - proj_point) < eps
+
+
+# def extract_polygons_from_graph(vertex_graph: Dict) -> List[np.ndarray]:
+#     """Extract polygons from the vertex graph using a planar face extraction algorithm."""
+#     graph = vertex_graph['graph']
+#     positions = vertex_graph['positions']
+    
+#     # Build edge list with angles for planar subdivision
+#     edges_by_vertex = defaultdict(list)
+    
+#     for v1, neighbors in graph.items():
+#         pos1 = positions[v1]
+#         for v2 in neighbors:
+#             pos2 = positions[v2]
+#             # Calculate angle of edge from v1 to v2
+#             angle = np.arctan2(pos2[1] - pos1[1], pos2[0] - pos1[0])
+#             edges_by_vertex[v1].append((v2, angle))
+    
+#     # Sort edges by angle for each vertex
+#     for v in edges_by_vertex:
+#         edges_by_vertex[v].sort(key=lambda x: x[1])
+    
+#     # Extract faces using edge traversal
+#     used_edges = set()
+#     polygons = []
+    
+#     for start_vertex in graph:
+#         for next_vertex, _ in edges_by_vertex[start_vertex]:
+#             edge = (start_vertex, next_vertex)
+            
+#             if edge in used_edges:
+#                 continue
+            
+#             # Trace a face
+#             face = [start_vertex]
+#             current = start_vertex
+#             next_v = next_vertex
+            
+#             while next_v != start_vertex:
+#                 face.append(next_v)
+#                 used_edges.add((current, next_v))
+                
+#                 # Find the next edge (rightmost turn)
+#                 current_pos = positions[current]
+#                 next_pos = positions[next_v]
+#                 incoming_angle = np.arctan2(current_pos[1] - next_pos[1], 
+#                                            current_pos[0] - next_pos[0])
+                
+#                 # Find the rightmost outgoing edge
+#                 best_vertex = None
+#                 best_angle_diff = -np.inf
+                
+#                 for out_vertex, out_angle in edges_by_vertex[next_v]:
+#                     if out_vertex == current:
+#                         continue
+                    
+#                     angle_diff = (out_angle - incoming_angle) % (2 * np.pi)
+#                     if angle_diff > best_angle_diff:
+#                         best_angle_diff = angle_diff
+#                         best_vertex = out_vertex
+                
+#                 if best_vertex is None:
+#                     break
+                
+#                 current = next_v
+#                 next_v = best_vertex
+                
+#                 if len(face) > 100:  # Prevent infinite loops
+#                     break
+            
+#             if len(face) >= 3 and next_v == start_vertex:
+#                 # Convert to 2D coordinates
+#                 poly_2d = np.array([positions[v] for v in face])
+                
+#                 # Check if polygon is counterclockwise (positive area)
+#                 area = compute_polygon_area(poly_2d)
+#                 if area > 0:
+#                     polygons.append(poly_2d)
+    
+#     return polygons
+
+
+# def compute_polygon_area(vertices: np.ndarray) -> float:
+#     """Compute the signed area of a polygon."""
+#     n = len(vertices)
+#     area = 0.0
+#     for i in range(n):
+#         j = (i + 1) % n
+#         area += vertices[i][0] * vertices[j][1]
+#         area -= vertices[j][0] * vertices[i][1]
+#     return area / 2.0
+
+
+# def find_containing_polygon(point: np.ndarray, polygons: List[np.ndarray]) -> int:
+#     """Find which polygon contains a given 2D point."""
+#     for idx, poly in enumerate(polygons):
+#         if point_in_polygon(point, poly[:, :2]):
+#             return idx
+#     return None
+
+
+# def point_in_polygon(point: np.ndarray, polygon: np.ndarray) -> bool:
+#     """Check if a 2D point is inside a polygon using ray casting."""
+#     x, y = point
+#     n = len(polygon)
+#     inside = False
+    
+#     p1x, p1y = polygon[0]
+#     for i in range(1, n + 1):
+#         p2x, p2y = polygon[i % n]
+#         if y > min(p1y, p2y):
+#             if y <= max(p1y, p2y):
+#                 if x <= max(p1x, p2x):
+#                     if p1y != p2y:
+#                         xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
+#                     if p1x == p2x or x <= xinters:
+#                         inside = not inside
+#         p1x, p1y = p2x, p2y
+    
+#     return inside
+
+
+# def create_3d_polygon(poly_2d: np.ndarray, orig_poly1: np.ndarray, orig_poly2: np.ndarray) -> np.ndarray:
+#     """Create a 3D polygon by interpolating z-values from original polygons."""
+#     n = len(poly_2d)
+#     poly_3d = np.zeros((n, 3))
+    
+#     # Copy x,y coordinates
+#     poly_3d[:, :2] = poly_2d
+    
+#     # Determine which surface is on top at center
+#     center = np.mean(poly_2d, axis=0)
+#     z1_center = interpolate_z_at_point(center, orig_poly1[:, :2], orig_poly1[:, 2])
+#     z2_center = interpolate_z_at_point(center, orig_poly2[:, :2], orig_poly2[:, 2])
+    
+#     # Use the higher surface
+#     if z1_center >= z2_center:
+#         for i in range(n):
+#             poly_3d[i, 2] = interpolate_z_at_point(poly_2d[i], orig_poly1[:, :2], orig_poly1[:, 2])
+#     else:
+#         for i in range(n):
+#             poly_3d[i, 2] = interpolate_z_at_point(poly_2d[i], orig_poly2[:, :2], orig_poly2[:, 2])
+    
+#     return poly_3d
+
+
+# def interpolate_z_at_point(point_2d: np.ndarray, polygon_2d: np.ndarray, z_values: np.ndarray) -> float:
+#     """
+#     Interpolate z-value at a 2D point using barycentric coordinates.
+#     """
+#     # Check if point is at a vertex
+#     for i, vertex in enumerate(polygon_2d):
+#         if np.linalg.norm(point_2d - vertex) < 1e-10:
+#             return z_values[i]
+    
+#     # For general points, use inverse distance weighting
+#     distances = np.linalg.norm(polygon_2d - point_2d, axis=1)
+#     weights = 1.0 / (distances + 1e-10)
+#     weights /= np.sum(weights)
+    
+#     return np.sum(weights * z_values)
 
 
 

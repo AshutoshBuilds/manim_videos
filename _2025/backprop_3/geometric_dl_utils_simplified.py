@@ -1,0 +1,272 @@
+import torch
+import numpy as np
+from shapely.geometry import Polygon
+from shapely.ops import unary_union
+import shapely.affinity
+
+
+
+def process_with_layers(model_layers, polygons_flat):
+    '''
+    model_layers is a pytorch Sequential object, in practice is typically a subset of a model, or could be full model. 
+    polygons_flat is a list of 3d or 2d polygons as Nx3 or Nx2 numpy arrays.
+    In the Nx3 case, process_with_linear_layer only uses first xy coords, not the z value
+    Returns a new list of list of polygons. Outer dimension is over neurons, inner list is over polygons as Nx3 numpy arrays
+    The xy values of each polygon are the same across all neurons
+    The z value of each point corresponds to the output of that neuron for that vertex
+    '''
+
+    
+    # Get number of neurons from the model's output dimension
+    with torch.no_grad():
+        # Use first polygon to determine output size
+        test_input = torch.tensor(polygons_flat[0][:,:2]).float()
+        test_output = model_layers(test_input)
+        num_neurons = test_output.shape[1]
+    
+    # Initialize result: list of lists, outer dim = neurons, inner dim = polygons
+    result = [[] for _ in range(num_neurons)]
+    
+    for i, p in enumerate(polygons_flat):
+        with torch.no_grad():
+            out = model_layers(torch.tensor(p[:,:2]).float())  # Returns num_vertices x num_neurons
+            
+            # For each neuron, create a new polygon with xy from original and z from neuron output
+            for neuron_idx in range(num_neurons):
+                # Create Nx3 array: xy from original polygon, z from neuron output
+                new_polygon = np.zeros((p.shape[0], 3))
+                new_polygon[:, :2] = p[:, :2]  # Copy xy coordinates
+                new_polygon[:, 2] = out[:, neuron_idx].numpy()  # Set z to neuron output
+                
+                result[neuron_idx].append(new_polygon)
+    
+    return result
+
+
+def split_polygons_with_relu_simple(polygons):
+    """
+    Split 3D polygons that cross the z=0 plane (ReLU boundary)
+    If a polygon does not cross z=0, simply pass through. If a polygon does cross z=0, split at the z=0 line, remove old polygon and
+    add new polygons. 
+    
+    Args:
+        polygons: List of lists of numpy arrays representing 3D polygons
+                          Each sublist represents polygons for one neuron
+                          Each numpy array is a polygon with shape (n_points, 3)
+    
+    Returns:
+        - split_polygons: List of lists of lists of numpy arrays 
+                         First two dimensions match input structure
+                         Third dimension is length 1 for unsplit polygons, length 2 for split polygons
+    """
+    
+    def intersect_edge_with_z_plane(p1, p2, z=0):
+        """Find intersection of edge p1-p2 with z=z plane"""
+        if abs(p1[2] - p2[2]) < 1e-10:  # Edge is parallel to z plane
+            return None
+        
+        # Parametric line: point = p1 + t*(p2-p1)
+        # At intersection: p1[2] + t*(p2[2]-p1[2]) = z
+        t = (z - p1[2]) / (p2[2] - p1[2])
+        
+        if 0 <= t <= 1:  # Intersection is within the edge
+            intersection = p1 + t * (p2 - p1)
+            intersection[2] = z  # Ensure exact z value
+            return intersection
+        return None
+    
+    def split_polygon_at_z_plane(polygon, z=0):
+        """Split a polygon at the z=z plane"""
+        points = polygon
+        n = len(points)
+        
+        # Check if polygon crosses the plane
+        z_values = points[:, 2]
+        if np.all(z_values >= z) or np.all(z_values <= z):
+            # Polygon doesn't cross the plane
+            return [polygon]
+        
+        # Find intersections and classify points
+        above_points = []
+        below_points = []
+        intersection_points = []
+        
+        for i in range(n):
+            curr_point = points[i]
+            next_point = points[(i + 1) % n]
+            
+            # Add current point to appropriate list
+            if curr_point[2] >= z:
+                above_points.append(curr_point.copy())
+            if curr_point[2] <= z:
+                below_points.append(curr_point.copy())
+            
+            # Check for intersection with next edge
+            intersection = intersect_edge_with_z_plane(curr_point, next_point, z)
+            if intersection is not None:
+                intersection_points.append(intersection)
+                # Add intersection to both polygons
+                above_points.append(intersection.copy())
+                below_points.append(intersection.copy())
+        
+        # Create the split polygons
+        result_polygons = []
+        
+        if len(above_points) >= 3:
+            result_polygons.append(np.array(above_points))
+        
+        if len(below_points) >= 3:
+            result_polygons.append(np.array(below_points))
+        
+        return result_polygons if result_polygons else [polygon]
+    
+    # Process each neuron's polygons
+    split_polygons = []
+    
+    for neuron_polygons in polygons:
+        neuron_split_polygons = []
+        
+        for polygon in neuron_polygons:
+            # Split this polygon at z=0
+            split_parts = split_polygon_at_z_plane(polygon, z=0)
+            
+            # Wrap result in a list to maintain triple-nested structure
+            # Length 1 for unsplit, length 2 for split polygons
+            neuron_split_polygons.append(split_parts)
+        
+        split_polygons.append(neuron_split_polygons)
+    
+    return split_polygons
+
+
+def recompute_tiling(polygons_nested):
+    '''
+    polygons_nested is a list of list of list of polygons in 3d space as Nx3 or Nx2 numpy arrays 
+    this method only uses the first 2 dimensions
+    The outer list correspond to neurons in a given layer, recompute_tiling collapses across this dimension
+    The second layer of list correspond to "input polygons" into the layer that maybe have been split by the given layer's Relu
+    The inner layer correspond to resulting polygons from splitting a polygon that was input into this layer
+    #The length of the second layer lists shoudl all the same
+    recompute_tiling iterates through input polygons (second layer list). 
+    For each input polygon, recompute_tiling collapses this polygon across all neurons by finding the intersections of all new polygons
+    generate withing this input polygon. In the null case, all polygons for a specific neuron will be lists of length 1, where the polygon 
+    has not been split by any of the neurons - in this case recompute_tiling just returns the original polygon borders
+    If only one neuron has split the polygon at hand, then polygons_nested can just return these 2 new polygons
+    Otherwise recompute_tiling needs to recompute N new polygons based on the intersections of the new polygons formed by mutiple neurons
+    recompute_tiling returns a list of list of polygons, where the outer list correspond to the number of input polygons (should match the length
+    of the second nested list passed in), and the inner lists are all the polygons that an input polygon are split into. 
+    '''
+    import numpy as np
+    from shapely.geometry import Polygon
+    from shapely.ops import unary_union
+    import shapely.affinity
+    
+    def numpy_to_shapely(poly_array):
+        """Convert numpy array to shapely polygon using only xy coordinates"""
+        return Polygon(poly_array[:, :2])
+    
+    def shapely_to_numpy(shapely_poly, z_value=0):
+        """Convert shapely polygon back to numpy array with z coordinate"""
+        coords = list(shapely_poly.exterior.coords)[:-1]  # Remove duplicate last point
+        result = np.zeros((len(coords), 3))
+        result[:, :2] = coords
+        result[:, 2] = z_value
+        return result
+    
+    def find_polygon_intersections(polygon_lists):
+        """
+        Find all distinct regions created by intersecting multiple sets of polygons
+        
+        Args:
+            polygon_lists: List of lists, where each inner list contains shapely polygons
+                          from one neuron's splitting of the original polygon
+        
+        Returns:
+            List of shapely polygons representing all distinct regions
+        """
+        if not polygon_lists or all(len(plist) == 0 for plist in polygon_lists):
+            return []
+        
+        # Start with the first neuron's polygons
+        current_regions = polygon_lists[0].copy()
+        
+        # Intersect with each subsequent neuron's polygons
+        for neuron_polys in polygon_lists[1:]:
+            new_regions = []
+            
+            for current_poly in current_regions:
+                for neuron_poly in neuron_polys:
+                    intersection = current_poly.intersection(neuron_poly)
+                    
+                    # Handle different intersection types
+                    if intersection.is_empty:
+                        continue
+                    elif hasattr(intersection, 'geoms'):  # MultiPolygon
+                        for geom in intersection.geoms:
+                            if isinstance(geom, Polygon) and geom.area > 1e-10:
+                                new_regions.append(geom)
+                    elif isinstance(intersection, Polygon) and intersection.area > 1e-10:
+                        new_regions.append(intersection)
+            
+            current_regions = new_regions
+            
+            # If no regions remain, break early
+            if not current_regions:
+                break
+        
+        return current_regions
+    
+    # Get dimensions
+    if not polygons_nested or not polygons_nested[0]:
+        return []
+    
+    num_neurons = len(polygons_nested)
+    num_input_polygons = len(polygons_nested[0])
+    
+    # Result: list of lists, outer = input polygons, inner = resulting split polygons
+    result = []
+    
+    # Process each input polygon
+    for input_poly_idx in range(num_input_polygons):
+        # Collect all split polygons for this input polygon across all neurons
+        neuron_polygon_lists = []
+        
+        for neuron_idx in range(num_neurons):
+            # Get the split polygons for this input polygon from this neuron
+            split_polys = polygons_nested[neuron_idx][input_poly_idx]
+            
+            # Convert to shapely polygons
+            shapely_polys = [numpy_to_shapely(poly) for poly in split_polys]
+            neuron_polygon_lists.append(shapely_polys)
+        
+        # Check how many neurons actually split this polygon
+        split_counts = [len(plist) for plist in neuron_polygon_lists]
+        num_splits = sum(1 for count in split_counts if count > 1)
+        
+        if num_splits == 0:
+            # No neuron split this polygon, return original
+            original_poly = polygons_nested[0][input_poly_idx][0]  # Get from first neuron
+            result.append([original_poly])
+            
+        elif num_splits == 1:
+            # Only one neuron split this polygon, return its splits
+            for plist in neuron_polygon_lists:
+                if len(plist) > 1:
+                    # Convert back to numpy arrays
+                    numpy_splits = [shapely_to_numpy(sp) for sp in plist]
+                    result.append(numpy_splits)
+                    break
+        else:
+            # Multiple neurons split this polygon, need to find intersections
+            intersected_regions = find_polygon_intersections(neuron_polygon_lists)
+            
+            if intersected_regions:
+                # Convert back to numpy arrays
+                numpy_regions = [shapely_to_numpy(region) for region in intersected_regions]
+                result.append(numpy_regions)
+            else:
+                # Fallback: return original polygon if intersection fails
+                original_poly = polygons_nested[0][input_poly_idx][0]
+                result.append([original_poly])
+    
+    return result

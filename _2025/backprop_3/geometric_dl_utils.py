@@ -588,12 +588,12 @@ def apply_viz_scale_to_3d_polygons(polygons_3d, adaptive_viz_scales):
     return scaled_polygons_3d   
 
 
-def split_polygons_with_relu(layer_polygons_3d):
+def split_polygons_with_relu(polygons):
     """
     Split 3D polygons that cross the z=0 plane (ReLU boundary) and merge zero regions.
     
     Args:
-        layer_polygons_3d: List of lists of numpy arrays representing 3D polygons
+        polygons: List of lists of numpy arrays representing 3D polygons
                           Each sublist represents polygons for one neuron
                           Each numpy array is a polygon with shape (n_points, 3)
     
@@ -607,7 +607,7 @@ def split_polygons_with_relu(layer_polygons_3d):
     merged_zero_polygons = []
     unmerged_polygons = []
     
-    for neuron_idx, neuron_polygons in enumerate(layer_polygons_3d):
+    for neuron_idx, neuron_polygons in enumerate(polygons):
         neuron_all = []
         
         for polygon in neuron_polygons:

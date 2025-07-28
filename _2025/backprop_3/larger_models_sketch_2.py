@@ -94,7 +94,7 @@ class refactor_sketch_1(InteractiveScene):
 
 
         # self.frame.reorient(0, 54, 0, (1.41, 1.82, 4.15), 15.71)
-        self.farme.reorient(0, 62, 0, (4.08, 5.37, 9.7), 32.21)
+        self.frame.reorient(0, 62, 0, (4.08, 5.37, 9.7), 32.21)
 
 
         #Optional but kinda nice RuLu intersection planes
@@ -172,9 +172,11 @@ class refactor_sketch_1(InteractiveScene):
 
 
 
+
+
         #Layer 3 linear
         layer_idx=4
-        layer_3_polygons_3d=get_3d_polygons(layer_2_polygons, num_neurons[layer_idx], surface_funcs_no_viz_scale, layer_idx)
+        layer_3_polygons_3d=get_3d_polygons(layer3_regions_2d, num_neurons[layer_idx], surface_funcs_no_viz_scale, layer_idx)
         scaled_layer_3_polygons_3d=apply_viz_scale_to_3d_polygons(layer_3_polygons_3d, adaptive_viz_scales[layer_idx])
 
 
@@ -222,7 +224,7 @@ class refactor_sketch_1(InteractiveScene):
 
 
 
-        # Start output stuff
+        ## --- Start output stuff ---- ##
         # Layer 3 Linear
         # Ok output layer and decision boundary
         # I kinda want a version tha thas all the fun colors and then a yellow and blue version

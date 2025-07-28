@@ -23,11 +23,11 @@ class refactor_sketch_1(InteractiveScene):
     def construct(self):
         
         #2x2
-        # model_path='_2025/backprop_3/models/2_2_1.pth'
-        # model = BaarleNet([2,2])
-        # model.load_state_dict(torch.load(model_path))
-        # viz_scales=[0.25, 0.25, 0.3, 0.3, 0.15]
-        # num_neurons=[2, 2, 2, 2, 2]
+        model_path='_2025/backprop_3/models/2_2_1.pth'
+        model = BaarleNet([2,2])
+        model.load_state_dict(torch.load(model_path))
+        viz_scales=[0.25, 0.25, 0.3, 0.3, 0.15]
+        num_neurons=[2, 2, 2, 2, 2]
 
         #3x3
         # model_path='_2025/backprop_3/models/3_3_1.pth'
@@ -37,11 +37,11 @@ class refactor_sketch_1(InteractiveScene):
         # num_neurons=[3, 3, 3, 3, 2]
 
         #8x8
-        model_path='_2025/backprop_3/models/8_8_1.pth'
-        model = BaarleNet([8,8])
-        model.load_state_dict(torch.load(model_path))
-        # viz_scales=[0.1, 0.1, 0.05, 0.05, 0.15]
-        num_neurons=[8, 8, 8, 8, 2]
+        # model_path='_2025/backprop_3/models/8_8_1.pth'
+        # model = BaarleNet([8,8])
+        # model.load_state_dict(torch.load(model_path))
+        ### viz_scales=[0.1, 0.1, 0.05, 0.05, 0.15]
+        # num_neurons=[8, 8, 8, 8, 2]
 
         vertical_spacing=1.5
         horizontal_spacing=3
@@ -260,24 +260,24 @@ class refactor_sketch_1(InteractiveScene):
         # Oh also, I think the toppolytome with individual plane coloring coudl be cool? Maybe? We'll see here. 
 
 
-        polygons_vgroup=VGroup()
-        for j, p in enumerate(top_polygons):
-            if len(p)<3: continue
-            if indicator[j]: color=YELLOW
-            else: color=BLUE
+        # polygons_vgroup=VGroup()
+        # for j, p in enumerate(top_polygons):
+        #     if len(p)<3: continue
+        #     if indicator[j]: color=YELLOW
+        #     else: color=BLUE
             
-            p_scaled=copy.deepcopy(p) #Scaling for viz
-            p_scaled[:,2]=p_scaled[:,2]*adaptive_viz_scales[layer_idx][0]
-            poly_3d = Polygon(*p_scaled,
-                             fill_color=color,
-                             fill_opacity=0.4,
-                             stroke_color=color,
-                             stroke_width=2)
-            poly_3d.set_opacity(0.8)
-            poly_3d.shift([horizontal_spacing*(layer_idx+1)-6, 0, 4])
-            polygons_vgroup.add(poly_3d)
+        #     p_scaled=copy.deepcopy(p) #Scaling for viz
+        #     p_scaled[:,2]=p_scaled[:,2]*adaptive_viz_scales[layer_idx][0]
+        #     poly_3d = Polygon(*p_scaled,
+        #                      fill_color=color,
+        #                      fill_opacity=0.4,
+        #                      stroke_color=color,
+        #                      stroke_width=2)
+        #     poly_3d.set_opacity(0.8)
+        #     poly_3d.shift([horizontal_spacing*(layer_idx+1)-6, 0, 4])
+        #     polygons_vgroup.add(poly_3d)
 
-        self.add(polygons_vgroup)
+        # self.add(polygons_vgroup)
 
 
         output_poygons_2d_final=viz_carved_regions_flat(new_tiling, horizontal_spacing, layer_idx+2, colors=None)
@@ -303,6 +303,59 @@ class refactor_sketch_1(InteractiveScene):
         # Add the decision boundary to the scene
         self.add(decision_boundary_lines_flat)
         decision_boundary_lines_flat.set_opacity(0.3)
+
+
+        # Ok let my try my own idea on the top polytope thing here -
+        # I feel like I can just run it through the surface function myself???
+        hyperspace_polygons=[]
+        for poly_2d in new_tiling:
+            hyperspace_polygon=[]
+            for pt in poly_2d:
+                pt_copy=copy.deepcopy(list(pt))
+                for j, surf_func in enumerate(surface_funcs_no_viz_scale[4]):
+                    pt_copy.append(surf_func(*pt)[-1])
+                hyperspace_polygon.append(pt_copy)
+            hyperspace_polygons.append(np.array(hyperspace_polygon))
+
+
+        my_top_polygons=[]
+        my_indicator=[]
+        for p in hyperspace_polygons:
+            if np.all(p[:,2]>p[:,3]):
+                my_top_polygons.append(p[:, (0,1,2)])
+                my_indicator.append(0)
+            elif np.all(p[:,3]>p[:,2]):
+                my_top_polygons.append(p[:, (0,1,3)])
+                my_indicator.append(1)
+            elif np.max(p[:,2])>np.max(p[:,3]): #Is this crazy? Seems like it works? I think i only need these last 2 really. 
+                my_top_polygons.append(p[:, (0,1,2)])
+                my_indicator.append(0)
+            elif np.max(p[:,3])>np.max(p[:,2]): #Is this crazy?
+                my_top_polygons.append(p[:, (0,1,3)])
+                my_indicator.append(1)
+
+
+        polygons_vgroup=VGroup()
+        for j, p in enumerate(my_top_polygons):
+            if len(p)<3: continue
+            if my_indicator[j]: color=YELLOW
+            else: color=BLUE
+            
+            p_scaled=copy.deepcopy(p) #Scaling for viz
+            p_scaled[:,2]=p_scaled[:,2]*adaptive_viz_scales[layer_idx][0]
+            poly_3d = Polygon(*p_scaled,
+                             fill_color=color,
+                             fill_opacity=0.4,
+                             stroke_color=color,
+                             stroke_width=2)
+            poly_3d.set_opacity(0.3)
+            poly_3d.shift([horizontal_spacing*(layer_idx+1)-6, 0, 2])
+            polygons_vgroup.add(poly_3d)
+
+        self.add(polygons_vgroup)
+
+
+
 
 
 

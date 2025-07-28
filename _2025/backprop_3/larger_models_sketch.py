@@ -119,7 +119,7 @@ class refactor_sketch_1(InteractiveScene):
         scaled_layer_2_polygons_3d=apply_viz_scale_to_3d_polygons(layer_2_polygons_3d, adaptive_viz_scales[layer_idx])
 
 
-        polygons_vgroup_2=viz_3d_polygons(scaled_layer_2_polygons_3d, layer_idx, colors=None)
+        polygons_vgroup_2=viz_3d_polygons(scaled_layer_2_polygons_3d, layer_idx, colors=None, color_gray_index=None)
         self.add(polygons_vgroup_2)
 
    
@@ -278,6 +278,31 @@ class refactor_sketch_1(InteractiveScene):
             polygons_vgroup.add(poly_3d)
 
         self.add(polygons_vgroup)
+
+
+        output_poygons_2d_final=viz_carved_regions_flat(new_tiling, horizontal_spacing, layer_idx+2, colors=None)
+        self.add(output_poygons_2d_final)
+
+        #Lol gotta wrap up this sucka
+        decision_boundary_lines_flat = Group()
+        for line_segment in intersection_line_coords_scaled:
+            if len(line_segment) == 2:
+                start_point, end_point = line_segment
+                start_point[2]=-1.5 #Flatten that shit!
+                end_point[2]=-1.5
+                line = Line3D(
+                    start=start_point,
+                    end=end_point,
+                    color="#FF00FF",
+                    width=0.02, #0.02 is probably better
+                )
+                # Shift to match your layer positioning (layer_idx=5 for final output)
+                line.shift([horizontal_spacing*(layer_idx+2)-6, 0, 0])  # horizontal_spacing * layer_idx - 6
+                decision_boundary_lines_flat.add(line)
+
+        # Add the decision boundary to the scene
+        self.add(decision_boundary_lines_flat)
+        decision_boundary_lines_flat.set_opacity(0.3)
 
 
 

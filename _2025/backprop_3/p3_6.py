@@ -51,7 +51,7 @@ class p3_6(InteractiveScene):
                 surface_func=partial(surface_func_from_model, model=model, layer_idx=layer_idx, neuron_idx=neuron_idx, viz_scale=viz_scales[layer_idx])
                 bent_surface = ParametricSurface(surface_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
                 ts=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-12.png')
-                ts.set_shading(0,0,0).set_opacity(0.9)
+                ts.set_shading(0,0,0).set_opacity(0.8)
                 s.add(ts)
                 surface_funcs[-1].append(surface_func)
             surfaces.append(s)
@@ -211,13 +211,18 @@ class p3_6(InteractiveScene):
         self.frame.reorient(-8, 57, 0, (3.16, 0.5, -0.45), 7.91)
         self.add(group_11, group_12, group_13)
 
-        #Scale and move over planes
+        #Scale and move over planes - I think one at a time is actually better. 
         self.wait()
         self.play(ReplacementTransform(group_11.copy(), group_11_scaled), 
-                  ReplacementTransform(group_12.copy(), group_12_scaled),
-                  ReplacementTransform(group_13.copy(), group_13_scaled), 
+                  # ReplacementTransform(group_12.copy(), group_12_scaled),
+                  # ReplacementTransform(group_13.copy(), group_13_scaled), 
                   self.frame.animate.reorient(8, 63, 0, (3.25, 0.84, 0.06), 7.46),
                   run_time=3)
+        self.wait()
+
+        self.play(ReplacementTransform(group_12.copy(), group_12_scaled), run_time=3)
+        self.wait()
+        self.play(ReplacementTransform(group_13.copy(), group_13_scaled), run_time=3)
         self.wait()
 
 
@@ -231,9 +236,10 @@ class p3_6(InteractiveScene):
 
         #Ok dope 
         polygons_21=manim_polygons_from_np_list(polygons['1.linear_out'][0], colors=colors, viz_scale=viz_scales[2])
-        polygons_21.shift([3, 0, 0.0])
+        polygons_21.shift([3, 0, 0.001]) #Move slightly above map
 
         self.play(self.frame.animate.reorient(18, 52, 0, (3.23, 0.7, -0.1), 6.18), run_time=2.5)
+        self.wait()
         for p in polygons_21:
             self.add(p)
             self.wait(0.2)
@@ -244,12 +250,73 @@ class p3_6(InteractiveScene):
 
         self.play(self.frame.animate.reorient(-8, 65, 0, (3.04, 0.61, -0.23), 7.05), 
                   bent_plane_joint_lines.animate.set_opacity(0.0), 
-                  bent_plane_joint_lines.animate.shift([0,0,0.9]).set_opacity(0.0),
-                  surfaces[2][0].animate.shift([0,0,0.9]),
-                  polygons_21.animate.shift([0,0,0.9]), run_time=3)
+                  bent_plane_joint_lines.animate.shift([0,0,0.8]).set_opacity(0.0),
+                  surfaces[2][0].animate.shift([0,0,0.8]),
+                  polygons_21.animate.shift([0,0,0.8]), run_time=3)
         self.wait()
 
 
+        surfaces[2][1].shift([3,0,-0.8])
+        polygons_22=manim_polygons_from_np_list(polygons['1.linear_out'][1], colors=colors, viz_scale=viz_scales[2])
+        polygons_22.shift([3, 0, -0.799])
+
+        self.play(ReplacementTransform(surfaces[1][0].copy(), surfaces[2][1]), 
+                  ReplacementTransform(surfaces[1][1].copy(), surfaces[2][1]),
+                  ReplacementTransform(surfaces[1][2].copy(), surfaces[2][1]),
+                  run_time=3)
+        self.wait()
+        self.play(FadeIn(polygons_22))
+        self.wait()
+
+        self.play(self.frame.animate.reorient(17, 53, 0, (3.06, 0.86, -0.02), 7.05), run_time=3.0)
+        self.wait()
+
+        # self.add(polygons_22)
+        # self.add(surfaces[2][1], polygons_22)
+
+        # Ok, now we're brinign our planes together "onto the same axis"
+        # Probalby should draw actually axis?
+        # Wondering if I make a monochromatic copy first - modify script a little to 
+        # Ok ok ok here's what I think I want to do 
+        # Let's actually create two basic 3d axes, and I can label the z axis with something like
+        # ~P(Netherlands)
+        # I can then bring these two axes together. 
+
+        axes_1 = ThreeDAxes(
+            x_range=[-1.2, 1.2, 1],
+            y_range=[-1.2, 1.2, 1],
+            z_range=[-0.8, 0.8, 1],
+            height=2.4,
+            width=2.4,
+            depth=1.6,
+            axis_config={
+                "include_ticks": False,
+                "color": CHILL_BROWN,
+                "stroke_width": 2,
+                "include_tip": True,
+                "tip_config": {"fill_opacity": 1, "width": 0.1, "length": 0.1}
+            }
+        )
+
+        axes_1.shift([6, 0, 0.8])
+
+        # surface_21_copy=surfaces[2][0].copy()
+        # surface_21_copy.shift([3, 0, 0])
+        # polygons_21_copy=polygons_21.copy()
+        # polygons_21_copy.shift([3, 0, 0]) #.set_color(BLUE).set_opacity(0.3)
+        # self.add(surface_21_copy, polygons_21_copy)
+        self.wait()
+        self.play(self.frame.animate.reorient(1, 72, 0, (3.32, 0.84, 0.01), 7.05), run_time=3)
+
+        self.wait()
+        self.play(
+                  surfaces[2][0].copy().animate.shift([3, 0, 0]), 
+                  polygons_21.copy().animate.shift([3, 0, 0.01]), 
+                  # polygons_21.copy().animate.shift([3, 0, 0.00]).set_color(BLUE).set_opacity(0.3),
+                  run_time=3)
+        self.wait()
+
+        self.add(axes_1)
 
 
 

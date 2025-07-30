@@ -3,7 +3,7 @@ import numpy as np
 from shapely.geometry import Polygon
 from shapely.ops import unary_union
 import shapely.affinity
-
+import copy
 
 
 def process_with_layers(model_layers, polygons_flat):
@@ -42,6 +42,23 @@ def process_with_layers(model_layers, polygons_flat):
     
     return result
 
+
+def clip_polygons(polygons):
+    '''
+    Clip polygon z values to zero for various depths of lists
+    Im sure theres a cool recursive solution
+    '''
+    clipped_polygons=copy.deepcopy(polygons)
+    for l1 in clipped_polygons:
+        if isinstance(l1, np.ndarray): l1[:,2]=np.maximum(0,  l1[:,2])
+        else: 
+            for l2 in l1: 
+                if isinstance(l2, np.ndarray): l2[:,2]=np.maximum(0,  l2[:,2])
+                else:
+                    for l3 in l2: 
+                        if isinstance(l3, np.ndarray): l3[:,2]=np.maximum(0,  l3[:,2])
+                        
+    return clipped_polygons
 
 def split_polygons_with_relu_simple(polygons):
     """
@@ -270,3 +287,86 @@ def recompute_tiling(polygons_nested):
                 result.append([original_poly])
     
     return result
+
+
+## --- Merging z=0 polygons --- ##
+
+from shapely.geometry import Polygon
+from shapely.ops import unary_union, snap
+import numpy as np
+
+def merge_zero_regions_nested(nested_polygons, 
+                              snap_tol=1e-8, 
+                              buffer_eps=1e-6, 
+                              min_area=1e-8):
+    """
+    Merge adjacent or corner‐touching zero‐height regions for each neuron,
+    eliminating tiny slivers and ensuring that any polygons that share
+    even a point get unioned.
+
+    Args:
+      nested_polygons: list of per‐neuron data, where each neuron entry is
+                       a list of lists of Nx3 numpy arrays.
+      snap_tol: maximum snapping distance to align shared edges
+      buffer_eps: small buffer distance used to bridge point‐contacts
+      min_area: drop any merged region whose area falls below this
+
+    Returns:
+      merged_per_neuron: list of per‐neuron flat lists of Nx3 numpy arrays.
+                         All contiguous zero‐regions have been unioned,
+                         tiny slivers removed, non‐zero polygons untouched.
+    """
+    merged_per_neuron = []
+
+    for neuron_polys in nested_polygons:
+        # 1) flatten two layers of grouping
+        flat = [poly
+                for group in neuron_polys
+                for poly in group]
+
+        # 2) split zero vs nonzero
+        zero_polys = [p for p in flat if np.allclose(p[:,2], 0)]
+        nonzero_polys = [p for p in flat if not np.allclose(p[:,2], 0)]
+
+        merged_zero_numpy = []
+        if zero_polys:
+            # convert to shapely, using only XY
+            shapely_zero = [Polygon(p[:, :2]) for p in zero_polys]
+
+            # 3a) snap each polygon to itself & to the others to align edges
+            #    this ensures shared edges are exactly identical
+            snapped = []
+            for poly in shapely_zero:
+                # snap against the union of all others
+                others = unary_union([q for q in shapely_zero if q is not poly])
+                snapped_poly = snap(poly, others, snap_tol)
+                snapped.append(snapped_poly)
+
+            # 3b) buffer out and back in to fuse any point‐contacts
+            buffered_out = [p.buffer(buffer_eps, join_style=2) for p in snapped]
+            unioned = unary_union(buffered_out)
+            cleaned = unioned.buffer(-buffer_eps, join_style=2)
+
+            # 4) extract resulting polygons, drop tiny ones
+            geoms = (cleaned.geoms 
+                     if hasattr(cleaned, "geoms") 
+                     else [cleaned])
+            for geom in geoms:
+                if geom.area >= min_area and isinstance(geom, Polygon):
+                    coords = list(geom.exterior.coords)[:-1]
+                    arr = np.zeros((len(coords), 3), dtype=float)
+                    arr[:, :2] = coords
+                    # z stays zero
+                    merged_zero_numpy.append(arr)
+
+        # 5) combine merged zero‐regions + original nonzeros
+        merged_per_neuron.append( merged_zero_numpy + nonzero_polys )
+
+    return merged_per_neuron
+
+
+
+
+
+
+

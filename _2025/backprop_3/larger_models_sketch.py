@@ -37,18 +37,18 @@ class refactor_sketch_1(InteractiveScene):
         # num_neurons=[3, 3, 3, 3, 2]
 
         #8x8
-        # model_path='_2025/backprop_3/models/8_8_1.pth'
-        # model = BaarleNet([8,8])
-        # model.load_state_dict(torch.load(model_path))
-        # ## viz_scales=[0.1, 0.1, 0.05, 0.05, 0.15]
-        # num_neurons=[8, 8, 8, 8, 2]
-
-        #16x16
-        model_path='_2025/backprop_3/models/16_16_1.pth'
-        model = BaarleNet([16, 16])
+        model_path='_2025/backprop_3/models/8_8_1.pth'
+        model = BaarleNet([8,8])
         model.load_state_dict(torch.load(model_path))
         ## viz_scales=[0.1, 0.1, 0.05, 0.05, 0.15]
-        num_neurons=[16, 16, 16, 16, 2]
+        num_neurons=[8, 8, 8, 8, 2]
+
+        #16x16
+        # model_path='_2025/backprop_3/models/16_16_1.pth'
+        # model = BaarleNet([16, 16])
+        # model.load_state_dict(torch.load(model_path))
+        # ## viz_scales=[0.1, 0.1, 0.05, 0.05, 0.15]
+        # num_neurons=[16, 16, 16, 16, 2]
 
         vertical_spacing=1.5
         horizontal_spacing=3

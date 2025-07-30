@@ -1,0 +1,351 @@
+from manimlib import *
+from functools import partial
+import sys
+
+sys.path.append('_2025/backprop_3') #Point to folder where plane_folding_utils.py is
+from geometric_dl_utils import *
+from plane_folding_utils import *
+from geometric_dl_utils_simplified import *
+from polytope_intersection_utils import intersect_polytopes
+# from decision_boundary_utils import *
+
+graphics_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/graphics/' #Point to folder where map images are
+colors = [RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
+
+
+class p3_6(InteractiveScene):
+    def construct(self):
+
+        map_img=ImageMobject(graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-12.png')
+        map_img.set_height(2)  # This sets the height to 2 units (-1 to 1)
+        map_img.set_width(2)   # This sets the width to 2 units (-1 to 1)
+        map_img.move_to(ORIGIN)
+
+        model = BaarleNet([3])
+
+        w1 = np.array([[-2.00458, 2.24611],
+         [-2.56046, -1.21349],
+         [-1.94774, 0.716835]], dtype=np.float32)
+        b1 = np.array([0.00728259, -1.38003, 1.77056], dtype=np.float32)
+        w2 = np.array([[2.46867, 3.78735, -1.90977],
+         [-2.55351, -2.95687, 1.74294]], dtype=np.float32)
+        b2 = np.array([1.41342, -1.23457], dtype=np.float32)
+
+        with torch.no_grad():
+            model.model[0].weight.copy_(torch.from_numpy(w1))
+            model.model[0].bias.copy_(torch.from_numpy(b1))
+            model.model[2].weight.copy_(torch.from_numpy(w2))
+            model.model[2].bias.copy_(torch.from_numpy(b2))
+
+        viz_scales=[0.2, 0.2, 0.13]
+        num_neurons=[3, 3, 2]
+
+
+        #Precompute my surfaces, and polygons moving through network
+        surfaces=[]
+        surface_funcs=[]
+        for layer_idx in range(len(model.model)):
+            s=Group()
+            surface_funcs.append([])
+            for neuron_idx in range(num_neurons[layer_idx]):
+                surface_func=partial(surface_func_from_model, model=model, layer_idx=layer_idx, neuron_idx=neuron_idx, viz_scale=viz_scales[layer_idx])
+                bent_surface = ParametricSurface(surface_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
+                ts=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-12.png')
+                ts.set_shading(0,0,0).set_opacity(0.9)
+                s.add(ts)
+                surface_funcs[-1].append(surface_func)
+            surfaces.append(s)
+
+        #Move polygons through network
+        polygons={} #dict of all polygones as we go. 
+        polygons['-1.new_tiling']=[np.array([[-1., -1, 0], #First polygon is just input plane
+                                            [-1, 1, 0], 
+                                            [1, 1, 0], 
+                                            [1, -1, 0]])]
+
+        for layer_id in range(len(model.model)//2): #Move polygont through layers     
+            polygons[str(layer_id)+'.linear_out']=process_with_layers(model.model[:2*layer_id+1], polygons[str(layer_id-1)+'.new_tiling']) 
+
+            #Split polygons w/ Relu and clip negative values to z=0
+            polygons[str(layer_id)+'.split_polygons_nested']=split_polygons_with_relu_simple(polygons[str(layer_id)+'.linear_out']) #Triple nested list so we can simplify merging process layer. 
+            polygons[str(layer_id)+'.split_polygons_nested_clipped'] = clip_polygons(polygons[str(layer_id)+'.split_polygons_nested'])
+            #Merge zero regions
+            polygons[str(layer_id)+'.split_polygons_merged'] = merge_zero_regions(polygons[str(layer_id)+'.split_polygons_nested_clipped'])
+            #Compute new tiling
+            polygons[str(layer_id)+'.new_tiling']=recompute_tiling_general(polygons[str(layer_id)+'.split_polygons_merged'])
+            print('Retiled plane into ', str(len(polygons[str(layer_id)+'.new_tiling'])), ' polygons.')
+
+            #Optional filtering step
+            #polygons[str(layer_id)+'.new_tiling'] = filter_small_polygons(polygons[str(layer_id)+'.new_tiling'], min_area=1e-5)
+            #print(str(len(polygons[str(layer_id)+'.new_tiling'])), ' polygons remaining after filtering out small polygons')
+
+        #Last linear layer & output
+        polygons[str(layer_id+1)+'.linear_out']=process_with_layers(model.model, polygons[str(layer_id)+'.new_tiling'])
+        intersection_lines, new_2d_tiling, upper_polytope, indicator = intersect_polytopes(*polygons[str(layer_id+1)+'.linear_out'])
+        my_indicator, my_top_polygons = compute_top_polytope(model, new_2d_tiling)
+
+
+
+        #Get first layer Relu Joints
+        joint_points_11 = get_relu_joint(w1[0,0], w1[0,1], b1[0], extent=1)
+        joint_line_11=line_from_joint_points_1(joint_points_11).set_opacity(0.9)
+        group_11=Group(surfaces[1][0], joint_line_11)
+        joint_points_12 = get_relu_joint(w1[1,0], w1[1,1], b1[1], extent=1)
+        joint_line_12=line_from_joint_points_1(joint_points_12).set_opacity(0.9)
+        group_12=Group(surfaces[1][1], joint_line_12)
+        joint_points_13 = get_relu_joint(w1[2,0], w1[2,1], b1[2], extent=1)
+        joint_line_13=line_from_joint_points_1(joint_points_13).set_opacity(0.9)
+        group_13=Group(surfaces[1][2], joint_line_13)
+
+        group_11.shift([0, 0, 1.5])
+        group_13.shift([0, 0, -1.5])
+
+
+        #Ok i think a move over while scaling, and then vertical stack for adding is going to make more sense 
+        # How i do this lol. 
+        
+
+        #Get surfaces after scaling - this is hacky but probably fine
+        #If this animation kinda works, then we definitely want to bring along the fold lines!
+
+        surface_func=partial(surface_func_from_model, model=model, layer_idx=1, neuron_idx=0, viz_scale=w2[0, 0]*viz_scales[2])
+        bent_surface = ParametricSurface(surface_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
+        scaled_surface_1=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-12.png')
+        scaled_surface_1.set_shading(0,0,0).set_opacity(0.9)
+        scaled_surface_1.shift([3, 0, 1.5])
+
+        surface_func=partial(surface_func_from_model, model=model, layer_idx=1, neuron_idx=1, viz_scale=w2[0, 1]*viz_scales[2])
+        bent_surface = ParametricSurface(surface_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
+        scaled_surface_2=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-12.png')
+        scaled_surface_2.set_shading(0,0,0).set_opacity(0.9)
+        scaled_surface_2.shift([3, 0, 0])
+
+        surface_func=partial(surface_func_from_model, model=model, layer_idx=1, neuron_idx=2, viz_scale=w2[0, 2]*viz_scales[2])
+        bent_surface = ParametricSurface(surface_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
+        scaled_surface_3=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-12.png')
+        scaled_surface_3.set_shading(0,0,0).set_opacity(0.9)
+        scaled_surface_3.shift([3, 0, -1.5])
+
+
+        # self.add(scaled_surface_1)
+        group_11_scaled=Group(scaled_surface_1, joint_line_11.copy().shift([3,0,0]))
+        group_12_scaled=Group(scaled_surface_2, joint_line_12.copy().shift([3,0,0]))
+        group_13_scaled=Group(scaled_surface_3, joint_line_13.copy().shift([3,0,0]))
+
+
+
+        bent_plane_joint_lines=VGroup()
+        pre_move_lines=VGroup()
+        #Kinda hacky, but it might actually be easiest just to pick out edges from my polygons?
+        # Line Section 1
+        line_start=polygons['1.linear_out'][0][0][2]*np.array([1,1,viz_scales[2]])
+        line_end=polygons['1.linear_out'][0][0][1]*np.array([1,1,viz_scales[2]])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([3, 0, 0.0])
+        bent_plane_joint_lines.add(joint_line)
+
+        line_start=polygons['1.linear_out'][0][0][2]*np.array([1,1,0]) #z=0 version
+        line_end=polygons['1.linear_out'][0][0][1]*np.array([1,1,0])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([3, 0, -1.5])
+        pre_move_lines.add(joint_line)
+
+        # Line Section 2
+        line_start=polygons['1.linear_out'][0][1][3]*np.array([1,1,viz_scales[2]])
+        line_end=polygons['1.linear_out'][0][1][4]*np.array([1,1,viz_scales[2]])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([3, 0, 0.0])
+        bent_plane_joint_lines.add(joint_line)
+
+        line_start=polygons['1.linear_out'][0][1][3]*np.array([1,1,0])
+        line_end=polygons['1.linear_out'][0][1][4]*np.array([1,1,0])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([3, 0, 1.5])
+        pre_move_lines.add(joint_line)
+
+        # Line Section 3
+        line_start=polygons['1.linear_out'][0][2][3]*np.array([1,1,viz_scales[2]])
+        line_end=polygons['1.linear_out'][0][2][0]*np.array([1,1,viz_scales[2]])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([3, 0, 0.0])
+        bent_plane_joint_lines.add(joint_line)
+
+        line_start=polygons['1.linear_out'][0][2][3]*np.array([1,1,0])
+        line_end=polygons['1.linear_out'][0][2][0]*np.array([1,1,0])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([3, 0, 1.5])
+        pre_move_lines.add(joint_line)
+
+        #Line Section 4
+        line_start=polygons['1.linear_out'][0][2][0]*np.array([1,1,viz_scales[2]])
+        line_end=polygons['1.linear_out'][0][2][1]*np.array([1,1,viz_scales[2]])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([3, 0, 0.0])
+        bent_plane_joint_lines.add(joint_line)
+
+        line_start=polygons['1.linear_out'][0][2][0]*np.array([1,1,0])
+        line_end=polygons['1.linear_out'][0][2][1]*np.array([1,1,0])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([3, 0, 0.0])
+        pre_move_lines.add(joint_line)
+
+        #Line Section 5
+        line_start=polygons['1.linear_out'][0][4][2]*np.array([1,1,viz_scales[2]])
+        line_end=polygons['1.linear_out'][0][4][0]*np.array([1,1,viz_scales[2]])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([3, 0, 0.0])
+        bent_plane_joint_lines.add(joint_line)
+
+        line_start=polygons['1.linear_out'][0][4][2]*np.array([1,1,0])
+        line_end=polygons['1.linear_out'][0][4][0]*np.array([1,1,0])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([3, 0, 0.0])
+        pre_move_lines.add(joint_line)
+
+        #Ok grr bu tthis kinda makes sense -> pretty sure i need to predivide 2 of my lines before moving
+
+        surfaces[2][0].shift([3,0,0])
+        self.wait()
+
+
+        self.frame.reorient(-8, 57, 0, (3.16, 0.5, -0.45), 7.91)
+        self.add(group_11, group_12, group_13)
+
+        #Scale and move over planes
+        self.wait()
+        self.play(ReplacementTransform(group_11.copy(), group_11_scaled), 
+                  ReplacementTransform(group_12.copy(), group_12_scaled),
+                  ReplacementTransform(group_13.copy(), group_13_scaled), 
+                  self.frame.animate.reorient(8, 63, 0, (3.25, 0.84, 0.06), 7.46),
+                  run_time=3)
+        self.wait()
+
+
+        self.add(pre_move_lines)
+        self.remove(group_11_scaled[1], group_12_scaled[1], group_13_scaled[1])
+        self.play(ReplacementTransform(scaled_surface_1, surfaces[2][0]),
+                  ReplacementTransform(scaled_surface_2, surfaces[2][0]),
+                  ReplacementTransform(scaled_surface_3, surfaces[2][0]), 
+                  ReplacementTransform(pre_move_lines, bent_plane_joint_lines), run_time=3)
+        self.wait()
+
+        #Ok dope 
+        polygons_21=manim_polygons_from_np_list(polygons['1.linear_out'][0], colors=colors, viz_scale=viz_scales[2])
+        polygons_21.shift([3, 0, 0.0])
+
+        self.play(self.frame.animate.reorient(18, 52, 0, (3.23, 0.7, -0.1), 6.18), run_time=2.5)
+        for p in polygons_21:
+            self.add(p)
+            self.wait(0.2)
+        self.wait()
+
+        # Reframe and clear room for second neuron
+        # Cant quite decide if I need a little "guide/reference network along the way - ya know?"
+
+        self.play(self.frame.animate.reorient(-8, 65, 0, (3.04, 0.61, -0.23), 7.05), 
+                  bent_plane_joint_lines.animate.set_opacity(0.0), 
+                  bent_plane_joint_lines.animate.shift([0,0,0.9]).set_opacity(0.0),
+                  surfaces[2][0].animate.shift([0,0,0.9]),
+                  polygons_21.animate.shift([0,0,0.9]), run_time=3)
+        self.wait()
+
+
+
+
+
+        self.wait(20)
+        self.embed()
+
+
+
+
+
+
+
+      # ReplacementTransform(group_11_scaled[1].copy(), bent_plane_joint_lines[1]),
+      # ReplacementTransform(group_11_scaled[1], bent_plane_joint_lines[2]), 
+      # ReplacementTransform(group_12_scaled[1].copy(), bent_plane_joint_lines[3]),
+      # ReplacementTransform(group_12_scaled[1], bent_plane_joint_lines[4]),
+      # ReplacementTransform(group_13_scaled[1], bent_plane_joint_lines[0]),
+      # run_time=3.0)
+
+        # self.wait()
+
+
+
+        # self.add(bent_plane_joint_lines)
+        # self.remove(bent_plane_joint_lines)
+
+
+        # self.play(ReplacementTransform(group_11_scaled[1].copy(), bent_plane_joint_lines[1]),
+        #           ReplacementTransform(group_11_scaled[1], bent_plane_joint_lines[2]), 
+        #           ReplacementTransform(group_12_scaled[1].copy(), bent_plane_joint_lines[3]),
+        #           ReplacementTransform(group_12_scaled[1], bent_plane_joint_lines[4]),
+        #           ReplacementTransform(group_13_scaled[1], bent_plane_joint_lines[0]),
+        #           run_time=3.0)
+
+
+        # joint_line_11_copy=joint_line_11.copy()
+        # self.add(joint_line_11_copy)
+        # joint_line_11_copy.shift([3, 0, 0])
+
+
+        # self.wait()
+        # self.play(ReplacementTransform(surfaces[1][0].copy(), scaled_surface_1), 
+        #           ReplacementTransform(surfaces[1][1].copy(), scaled_surface_2), 
+        #           ReplacementTransform(surfaces[1][2].copy(), scaled_surface_3),
+        #           joint_line_11_copy.animate.shift([3,0,0]),
+        #            run_time=3)
+        # self.wait()
+
+        # Ok so, moving these maps over first feels good!
+        # Big thing I'm missing is my 3 dotted lines on my final merged surface
+        # let me go ahead and make the merged surface, then I'll figure this out. 
+
+        # surfaces[2][0].shift([3,0,0])
+        # self.play(ReplacementTransform(scaled_surface_1, surfaces[2][0]),
+        #           ReplacementTransform(scaled_surface_2, surfaces[2][0]),
+        #           ReplacementTransform(scaled_surface_3, surfaces[2][0]), run_time=3.0)
+        # self.wait()
+
+
+
+
+
+
+        #Figure out end point, then replacement transform. 
+        #Trying to decide if we introduce polygons visually on the 
+        # bent planes - maybe! Could modify the script a smidge
+
+
+
+        # group_21=Group(surfaces[2][0], polygons_21) #Add polygons
+        # group_21.shift([3, 0, 0.0])
+        # self.add(group_21)
+
+
+
+        # self.play(ReplacementTransform(surfaces[1][0].copy(), surfaces[2][0]), 
+        #           ReplacementTransform(surfaces[1][1].copy(), surfaces[2][0]),
+        #           ReplacementTransform(surfaces[1][2].copy(), surfaces[2][0]),
+        #           run_time=3)
+
+
+
+
+        #Hmm so we definitely want to bring along the lines in some capacity - visually the shaded regions are nice
+
+
+
+        # for layer_idx, sl in enumerate(surfaces):
+        #     for neuron_idx, s in enumerate(sl):
+        #         s.shift([3*layer_idx-6, 0, 1.5*neuron_idx])
+        #         self.add(s)
+
+        # self.wait()
+
+
+
+
+
+

@@ -20,7 +20,22 @@ class BaarleNet(nn.Module):
     def forward(self, x):
         return self.model(x)
 
-
+def manim_polygons_from_np_list(np_polygon_list, colors=None, viz_scale=1.0):
+    if colors is None: 
+        colors = [RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
+    polygons=VGroup()
+    list_copy=copy.deepcopy(np_polygon_list)
+    for j, p in enumerate(list_copy):
+        if len(p)<3: continue
+        p[:,2]=p[:,2]*viz_scale 
+        poly_3d = Polygon(*p,
+                         fill_color=colors[j%len(colors)],
+                         fill_opacity=0.7,
+                         stroke_color=colors[j%len(colors)],
+                         stroke_width=2)
+        poly_3d.set_opacity(0.3)
+        polygons.add(poly_3d)
+    return polygons
 
 def get_relu_intersection_planes(num_neurons, layer_idx, neuron_idx, horizontal_spacing, vertical_spacing):
     relu_intersections_planes=VGroup()

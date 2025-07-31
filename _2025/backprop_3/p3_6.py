@@ -16,7 +16,7 @@ colors = [RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
 class p3_6(InteractiveScene):
     def construct(self):
 
-        map_img=ImageMobject(graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-12.png')
+        map_img=ImageMobject(graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
         map_img.set_height(2)  # This sets the height to 2 units (-1 to 1)
         map_img.set_width(2)   # This sets the width to 2 units (-1 to 1)
         map_img.move_to(ORIGIN)
@@ -50,7 +50,7 @@ class p3_6(InteractiveScene):
             for neuron_idx in range(num_neurons[layer_idx]):
                 surface_func=partial(surface_func_from_model, model=model, layer_idx=layer_idx, neuron_idx=neuron_idx, viz_scale=viz_scales[layer_idx])
                 bent_surface = ParametricSurface(surface_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
-                ts=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-12.png')
+                ts=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
                 ts.set_shading(0,0,0).set_opacity(0.8)
                 s.add(ts)
                 surface_funcs[-1].append(surface_func)
@@ -110,19 +110,19 @@ class p3_6(InteractiveScene):
 
         surface_func=partial(surface_func_from_model, model=model, layer_idx=1, neuron_idx=0, viz_scale=w2[0, 0]*viz_scales[2])
         bent_surface = ParametricSurface(surface_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
-        scaled_surface_1=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-12.png')
+        scaled_surface_1=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
         scaled_surface_1.set_shading(0,0,0).set_opacity(0.9)
         scaled_surface_1.shift([3, 0, 1.5])
 
         surface_func=partial(surface_func_from_model, model=model, layer_idx=1, neuron_idx=1, viz_scale=w2[0, 1]*viz_scales[2])
         bent_surface = ParametricSurface(surface_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
-        scaled_surface_2=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-12.png')
+        scaled_surface_2=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
         scaled_surface_2.set_shading(0,0,0).set_opacity(0.9)
         scaled_surface_2.shift([3, 0, 0])
 
         surface_func=partial(surface_func_from_model, model=model, layer_idx=1, neuron_idx=2, viz_scale=w2[0, 2]*viz_scales[2])
         bent_surface = ParametricSurface(surface_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
-        scaled_surface_3=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-12.png')
+        scaled_surface_3=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
         scaled_surface_3.set_shading(0,0,0).set_opacity(0.9)
         scaled_surface_3.shift([3, 0, -1.5])
 
@@ -359,18 +359,82 @@ class p3_6(InteractiveScene):
         #Trace outline, maybe while zooming in?
 
         intersection_points_raveled=np.array(intersection_lines).reshape(8, 3)
-        intersection_points_raveled=intersection_points_raveled[(0, 1, 5, 6, 2),:] #Change ordering for smooth animation in
+        intersection_points_raveled=intersection_points_raveled*np.array([1, 1, viz_scales[2]])
+        # intersection_points_raveled=intersection_points_raveled[(0, 1, 5, 6, 2),:] #Change ordering for smooth animation in
+        intersection_points_raveled=intersection_points_raveled[(2, 6, 5, 1, 0),:] #Change ordering for smooth animation in
 
         line = VMobject()
         line.set_points_as_corners(intersection_points_raveled)
         line.set_stroke(color='#FF00FF', width=5)
         line.shift([3, 0, 0])
-        self.add(line)
+        # self.add(line)
 
 
-        self.remove(line)
+        # self.remove(line)
+        self.wait()
+        self.play(ShowCreation(line), 
+                 self.frame.animate.reorient(-16, 45, 0, (3.02, 0.49, -0.61), 4.31),
+                 run_time=5)
+        self.wait()
 
-        self.play(self.frame.animate.reorient(14, 38, 0, (2.72, 0.6, -0.84), 4.96))
+        # Ok phew getting closer here. 
+        # No I need to flatten everything and show final border, and move to an overhead view!
+        # And then I think simple heatmaps yellow/blue regions fade in when I say Belgium/Netherlands at the end
+        # Wonder if it makes sense to add back in the plot legend here?
+        # Let me try to flatten than map first. 
+
+        # map_img.move_to([3, 0, 0])
+        def flat_surf_func(u, v): return [u, v, 0]
+        flat_map_surf = ParametricSurface(flat_surf_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
+        flat_map=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+        flat_map.set_shading(0,0,0).set_opacity(0.8)
+        flat_map.shift([3, 0, 0])
+
+
+        self.wait()
+
+        self.remove(polygons_21, polygons_22, axes_1, axes_2)
+        self.play(
+                  # polygons_21.animate.set_opacity(0.0),
+                  # polygons_22.animate.set_opacity(0.0), 
+                  # FadeOut(axes_1), FadeOut(axes_2),
+                  ReplacementTransform(surfaces[2][0], flat_map), 
+                  ReplacementTransform(surfaces[2][1], flat_map),
+                  # line.animate.shift([0,0,0.05]),
+                  self.frame.animate.reorient(0, 0, 0, (3.0, -0.01, -0.67), 3.82),
+                  run_time=4)
+        self.remove(line); self.add(line) #Occlusions
+        self.wait()
+
+        # Ok ok ok ok ok for this last little region highlighting thing -> i kinda feel like I want to actually higlight the 
+        # regions of the map, which i can do crossfadding to different textures - I'll do that next
+        # We'll then be in pretty good shape, buuut I think it's worth thinking about how the ball and stick overlay 
+        # Will work exactly - that's going to matter alot in p6! I assum it needs to be in manim at some point,
+        # but it's probably ok to be in illustrator at the very beginning? 
+        # This opening scene is taking some time, but hopefully there's some good reusable approaches. 
+        flat_map_belgium=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-18.png')
+        flat_map_belgium.set_shading(0,0,0).set_opacity(0.0)
+        flat_map_belgium.shift([3, 0, 0.01])
+
+        flat_map_netherlands=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-19.png')
+        flat_map_netherlands.set_shading(0,0,0).set_opacity(0.0)
+        flat_map_netherlands.shift([3, 0, 0.01])
+        self.add(flat_map_belgium, flat_map_netherlands)
+
+        self.wait()
+        self.play(flat_map_belgium.animate.set_opacity(0.6))
+        # self.remove(line); self.add(line) #Occlusions
+        self.wait()
+        self.play(flat_map_netherlands.animate.set_opacity(0.6))
+
+
+        self.add()
+
+
+
+
+        # self.play(ReplacementTransform(surfaces[2][0], flat_map), 
+        #           ReplacementTransform(surfaces[2][1], flat_map))
 
 
         # i=1

@@ -1,4 +1,3 @@
-from manimlib import *
 from functools import partial
 import sys
 
@@ -8,9 +7,20 @@ from plane_folding_utils import *
 from geometric_dl_utils_simplified import *
 from polytope_intersection_utils import intersect_polytopes
 # from decision_boundary_utils import *
+from manimlib import *
 
 graphics_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/graphics/' #Point to folder where map images are
 colors = [RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
+
+CHILL_BROWN='#948979'
+YELLOW='#ffd35a'
+YELLOW_FADE='#7f6a2d'
+BLUE='#65c8d0'
+GREEN='#6e9671' 
+CHILL_GREEN='#6c946f'
+CHILL_BLUE='#3d5c6f'
+FRESH_TAN='#dfd0b9'
+
 
 def create_first_layer_relu_groups(model, surfaces, num_neurons_first_layer=8, extent=1, vertical_spacing=0.9):
     """
@@ -60,6 +70,66 @@ def create_first_layer_relu_groups(model, surfaces, num_neurons_first_layer=8, e
         all_relu_groups.add(neuron_group)
     
     return all_relu_groups
+
+
+def order_closed_loops_with_closure(segments, tol=1e-6):
+    """
+    Like before, but returns each loop as an (N,3) array of vertices
+    where the first point is repeated at the end to explicitly close the loop.
+    """
+    used = [False] * len(segments)
+    loops_pts = []
+
+    for i, seg in enumerate(segments):
+        if used[i]:
+            continue
+
+        # build ordered, oriented segment list for this loop
+        loop_segs = [seg.copy()]
+        used[i] = True
+        start_pt = seg[0].copy()
+        curr_pt = seg[1].copy()
+
+        while True:
+            found = False
+            for j, seg2 in enumerate(segments):
+                if used[j]:
+                    continue
+                p0, p1 = seg2[0], seg2[1]
+
+                if np.linalg.norm(p0 - curr_pt) < tol:
+                    loop_segs.append(seg2.copy())
+                    curr_pt = p1.copy()
+                    used[j] = True
+                    found = True
+                    break
+
+                if np.linalg.norm(p1 - curr_pt) < tol:
+                    rev = seg2[::-1].copy()
+                    loop_segs.append(rev)
+                    curr_pt = rev[1].copy()
+                    used[j] = True
+                    found = True
+                    break
+
+            # stop if no continuation or we’re back at start
+            if not found or np.linalg.norm(curr_pt - start_pt) < tol:
+                break
+
+        # collect vertices and explicitly close the loop
+        pts = [loop_segs[0][0]]
+        for s in loop_segs:
+            pts.append(s[1])
+
+        # if it didn’t naturally close, append the start_pt
+        if np.linalg.norm(pts[-1] - start_pt) > tol:
+            pts.append(start_pt)
+
+        loops_pts.append(np.vstack(pts))
+
+    return loops_pts
+
+
 
 
 class p7a(InteractiveScene):
@@ -124,10 +194,12 @@ class p7a(InteractiveScene):
 
         surfaces[2][0].shift([3,0,0.6])
         polygons_21=manim_polygons_from_np_list(polygons['1.linear_out'][0], colors=colors, viz_scale=viz_scales[2])
+        polygons_21_copy=polygons_21.copy()
         polygons_21.shift([3, 0, 0.601]) #Move slightly above map
 
         surfaces[2][1].shift([3,0,-0.6])
         polygons_22=manim_polygons_from_np_list(polygons['1.linear_out'][1], colors=colors, viz_scale=viz_scales[2])
+        polygons_22_copy=polygons_22.copy()
         polygons_22.shift([3, 0, -0.599]) #Move slightly above map
 
         self.wait()
@@ -176,16 +248,191 @@ class p7a(InteractiveScene):
 
 
         #I think slight camera move while I do the second animation?
-        shifted_line_copies_2.shift([3,0,-0.6])
+        shifted_line_copies_2.shift([3,0,-0.7])
         self.add(og_line_copies_2)
 
         self.wait()
         self.play(*[ReplacementTransform(og_line_copies_2[j], shifted_line_copies_2[j]) for j in range(len(shifted_line_copies_2))]+
                     [ReplacementTransform(surfaces_1_copy_2[i], surfaces[2][1]) for i in range(len(surfaces[1]))],
-                    self.frame.animate.reorient(-1, 56, 0, (3.02, 0.27, 0.15), 7.05),
+                    self.frame.animate.reorient(-3, 61, 0, (2.87, 0.24, 0.08), 7.01),
                     run_time=2) #Play fast becuase it kidna sucks lol
         self.remove(shifted_line_copies_2); self.add(polygons_22)
         self.wait()
+
+
+        #Now bring together on same axis - I think with copies this time, so I can just swap stuff out as we get bigger
+        #Drop opacity on input maps and lines too!
+
+        # Hmm hmm hmm maybe I dont' need a third panel -> maybe it's enough to bring them together like I did last time??
+        # Then I'm just showing final surfaces and border as we expand -> that might be kinda a nice vibe actually. 
+
+
+        # So it's definitely not that easy to see the border here -> i should briefly look at my top polytope option I think!
+        # We could have them merge into this, or cross fade to it or something -> let me mess around here. 
+
+
+        self.wait()
+
+
+        top_polygons_vgroup=VGroup()
+        for j, p in enumerate(my_top_polygons):
+            if len(p)<3: continue
+            if my_indicator[j]: color=YELLOW
+            else: color=BLUE
+            
+            p_scaled=copy.deepcopy(p) #Scaling for viz
+            p_scaled[:,2]=p_scaled[:,2]*viz_scales[2]
+            poly_3d = Polygon(*p_scaled,
+                             fill_color=color,
+                             fill_opacity=0.4,
+                             stroke_color=color,
+                             stroke_width=2)
+            poly_3d.set_opacity(0.3)
+            poly_3d.shift([3, 0, 0])
+            top_polygons_vgroup.add(poly_3d)
+
+        self.wait()
+
+        self.play(surfaces[2][0].animate.shift([0, 0, -0.6]), 
+                  surfaces[2][1].animate.shift([0, 0, 0.6]), 
+                  polygons_21.animate.shift([0, 0, -0.6]).set_color(BLUE),
+                  polygons_22.animate.shift([0, 0, 0.6]).set_color(YELLOW),
+                  surfaces[1].animate.set_opacity(0.1), 
+                  og_lines.animate.set_opacity(0.2),
+                  self.frame.animate.reorient(1, 42, 0, (3.0, 0.05, -0.17), 3.54),
+                  run_time=3)
+        self.add(top_polygons_vgroup) #This actually worked pretty well!
+
+
+        loops=order_closed_loops_with_closure(intersection_lines)
+        lines=VGroup()
+        for loop in loops: 
+            loop=loop*np.array([1, 1, viz_scales[2]])
+            line = VMobject()
+            line.set_points_as_corners(loop)
+            line.set_stroke(color='#FF00FF', width=5)
+            lines.add(line)
+        lines.shift([3, 0, 0])
+
+        self.wait()
+        self.play(ShowCreation(lines), run_time=3)
+        self.wait()
+
+
+        ## Ok ok ok getting close ot finishing the 8 neuron model -> it's messy but I do think 
+        ## that this will be a cool opening. 
+        ## Last move I think is: 
+        ## Move cameara to the right as I make the copy
+        ## Toally fade out layer 1, make a copy of the map and final borders, flatten both and move a copy over
+        ## Then as I step through bigger models I'll just render these 2 things!
+        ## Then on P8 I can move to nice overhead view or something fun on the 512 map. 
+
+
+        def flat_surf_func(u, v): return [u, v, 0]
+        flat_map_surf = ParametricSurface(flat_surf_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
+        flat_map=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+        flat_map.set_shading(0,0,0).set_opacity(0.8)
+        flat_map.shift([5.7, 0, 0])
+
+        lines_flat=VGroup()
+        for loop in loops: 
+            loop=loop*np.array([1, 1, 0])
+            line = VMobject()
+            line.set_points_as_corners(loop)
+            line.set_stroke(color='#FF00FF', width=5)
+            lines_flat.add(line)
+        lines_flat.shift([5.7, 0, 0])
+
+        self.wait()
+        self.play(ReplacementTransform(lines.copy(), lines_flat), 
+                 ReplacementTransform(surfaces[2][0], flat_map), 
+                  surfaces[1].animate.set_opacity(0.0), 
+                  og_lines.animate.set_opacity(0.0),
+                 self.frame.animate.reorient(0, 45, 0, (4.33, 0.06, -0.18), 3.97), 
+                 run_time=3)
+        self.add(lines_flat) #Occlusions
+        self.wait()
+
+
+
+
+
+
+        # self.add(top_polygons_vgroup)
+
+
+        # self.play(ReplacementTransform(polygons_21, top_polygons_vgroup), run_time=3
+
+
+        # polygons_22.set_opacity(0.4)
+
+
+
+        # self.play(polygons_21.animate.set_color(BLUE), run_time=1.5)
+        # self.play(polygons_22.animate.set_color(YELLOW), run_time=1.5)
+
+        # self.remove(netherlands_label, belgium_label)
+        # self.play(polygons_21.animate.shift([0, 0, -0.8]), 
+        #           surfaces[2][0].animate.shift([0, 0, -0.8]), 
+        #           axes_1.animate.shift([0, 0, -0.8]), 
+        #           polygons_22.animate.shift([0, 0, 0.8]),
+        #           surfaces[2][1].animate.shift([0, 0, 0.8]), 
+        #           axes_2.animate.shift([0, 0, 0.8]),
+        #           # self.frame.animate.reorient(-7, 40, 0, (3.21, 0.51, -0.66), 3.95), 
+        #           group_11[0].animate.set_opacity(0.0),
+        #           group_11[1].animate.set_opacity(0.0),
+        #           group_12[0].animate.set_opacity(0.0),
+        #           group_12[1].animate.set_opacity(0.0),
+        #           group_13[0].animate.set_opacity(0.0),
+        #           group_13[1].animate.set_opacity(0.0),      
+        #           run_time=3)
+        # self.wait()
+
+
+
+
+
+        # polygons_21_copy.shift([6, 0, 0])
+        # polygons_22_copy.shift([6, 0, 0])
+        # polygons_21_copy.set_color(BLUE)
+        # polygons_22_copy.set_color(YELLOW)
+
+        # loops=order_closed_loops_with_closure(intersection_lines)
+
+        # lines=VGroup()
+        # for loop in loops: 
+        #     loop=loop*np.array([1, 1, viz_scales[2]])
+        #     line = VMobject()
+        #     line.set_points_as_corners(loop)
+        #     line.set_stroke(color='#FF00FF', width=5)
+        #     lines.add(line)
+        # lines.shift([6, 0, 0])
+
+        # self.wait()
+        # self.play(ReplacementTransform(polygons_21.copy(), polygons_21_copy), 
+        #           ReplacementTransform(polygons_22.copy(), polygons_22_copy), 
+        #           surfaces[2][0].copy().animate.move_to([6,0,0]), 
+        #           surfaces[1].animate.set_opacity(0.1), 
+        #           og_lines.animate.set_opacity(0.2),
+        #           self.frame.animate.reorient(-2, 57, 0, (4.84, -0.09, 0.01), 5.02),
+        #           run_time=3)
+        # self.play(ShowCreation(lines), run_time=3)
+        # self.wait()
+
+
+
+
+
+
+
+        # intersection_points_raveled=np.array(intersection_lines).reshape(-1, 3)
+
+        # intersection_points_raveled=intersection_points_raveled*np.array([1, 1, viz_scales[2]])
+        # intersection_points_raveled=intersection_points_raveled[(2, 6, 5, 1, 0),:] #Change ordering for smooth animation in
+        # self.add(polygons_21_copy, polygons_22_copy)
+        # self.play(ShowCreation(lines))
+
+
 
 
 

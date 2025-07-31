@@ -285,10 +285,10 @@ class p3_6(InteractiveScene):
         axes_1 = ThreeDAxes(
             x_range=[-1.2, 1.2, 1],
             y_range=[-1.2, 1.2, 1],
-            z_range=[-0.8, 0.8, 1],
+            z_range=[-0.7, 0.7, 1],
             height=2.4,
             width=2.4,
-            depth=1.6,
+            depth=1.4,
             axis_config={
                 "include_ticks": False,
                 "color": CHILL_BROWN,
@@ -298,25 +298,115 @@ class p3_6(InteractiveScene):
             }
         )
 
-        axes_1.shift([6, 0, 0.8])
+        axes_1.shift([3, 0, 0.8])
+
+
+        # self.add(axes_1)
+        self.wait()
+        self.play(self.frame.animate.reorient(0, 71, 0, (2.65, 1.0, -0.06), 6.31), 
+                  FadeIn(axes_1), 
+                  group_11[0].animate.set_opacity(0.7),
+                  group_11[1].animate.set_opacity(0.4),
+                  group_12[0].animate.set_opacity(0.7),
+                  group_12[1].animate.set_opacity(0.4),
+                  group_13[0].animate.set_opacity(0.7),
+                  group_13[1].animate.set_opacity(0.4),
+                  run_time=3)
+
+        netherlands_label=Tex(r'\sim P(Netherlands)', font_size=20) #, alignment='left')
+        netherlands_label.set_color(BLUE)
+        netherlands_label.rotate(90*DEGREES, [1, 0, 0])
+        # netherlands_label.next_to(axes_1, direction=LEFT, buff=0.05)
+        netherlands_label.move_to([3.85, 0, 1.65])
+        # self.add(netherlands_label)
+        self.play(Write(netherlands_label))
+        self.wait()
+
+
+        axes_2 = axes_1.copy()
+        axes_2.shift([0, 0, -2*0.8])
+        self.play(FadeIn(axes_2))
+
+
+        belgium_label=Tex(r'\sim P(Belgium)', font_size=20) #, alignment='left')
+        belgium_label.set_color(YELLOW)
+        belgium_label.rotate(90*DEGREES, [1, 0, 0])
+        belgium_label.move_to([3.65, 0, 0])
+        self.play(Write(belgium_label))
+        self.wait()
+
+
+        self.play(polygons_21.animate.set_color(BLUE), run_time=1.5)
+        self.play(polygons_22.animate.set_color(YELLOW), run_time=1.5)
+
+        self.remove(netherlands_label, belgium_label)
+        self.play(polygons_21.animate.shift([0, 0, -0.8]), 
+                  surfaces[2][0].animate.shift([0, 0, -0.8]), 
+                  axes_1.animate.shift([0, 0, -0.8]), 
+                  polygons_22.animate.shift([0, 0, 0.8]),
+                  surfaces[2][1].animate.shift([0, 0, 0.8]), 
+                  axes_2.animate.shift([0, 0, 0.8]),
+                  # self.frame.animate.reorient(-7, 40, 0, (3.21, 0.51, -0.66), 3.95), 
+                  group_11[0].animate.set_opacity(0.0),
+                  group_11[1].animate.set_opacity(0.0),
+                  group_12[0].animate.set_opacity(0.0),
+                  group_12[1].animate.set_opacity(0.0),
+                  group_13[0].animate.set_opacity(0.0),
+                  group_13[1].animate.set_opacity(0.0),      
+                  run_time=3)
+        self.wait()
+
+        #Trace outline, maybe while zooming in?
+
+        intersection_points_raveled=np.array(intersection_lines).reshape(8, 3)
+        intersection_points_raveled=intersection_points_raveled[(0, 1, 5, 6, 2),:] #Change ordering for smooth animation in
+
+        line = VMobject()
+        line.set_points_as_corners(intersection_points_raveled)
+        line.set_stroke(color='#FF00FF', width=5)
+        line.shift([3, 0, 0])
+        self.add(line)
+
+
+        self.remove(line)
+
+        self.play(self.frame.animate.reorient(14, 38, 0, (2.72, 0.6, -0.84), 4.96))
+
+
+        # i=1
+        # intersection_line=Line(intersection_lines[i][0], intersection_lines[i][0])
+        # intersection_line.shift([3, 0, 0])
+        # self.add(intersection_line)
+        # intersection_line.set_stroke(width=5).set_color('#FF00FF')
+
+        # self.remove(axes_1)
+
+        # Eh I'm kinda starting to think that keeping these surfaces in the sample place might make more sense?
+        # At least for this first walk through?
+        # yeah let's try leaving this in place, and adding axes/labels to existing structure, then change color, and maybe 
+        # with a little camera move. 
+
 
         # surface_21_copy=surfaces[2][0].copy()
         # surface_21_copy.shift([3, 0, 0])
         # polygons_21_copy=polygons_21.copy()
         # polygons_21_copy.shift([3, 0, 0]) #.set_color(BLUE).set_opacity(0.3)
         # self.add(surface_21_copy, polygons_21_copy)
-        self.wait()
-        self.play(self.frame.animate.reorient(1, 72, 0, (3.32, 0.84, 0.01), 7.05), run_time=3)
+        # self.wait()
+        # self.play(self.frame.animate.reorient(1, 72, 0, (3.32, 0.84, 0.01), 7.05), run_time=3)
+        # polygons_21_copy=polygons_21.copy()
+        # polygons_21_copy.shift([0,0,0.01])
 
-        self.wait()
-        self.play(
-                  surfaces[2][0].copy().animate.shift([3, 0, 0]), 
-                  polygons_21.copy().animate.shift([3, 0, 0.01]), 
-                  # polygons_21.copy().animate.shift([3, 0, 0.00]).set_color(BLUE).set_opacity(0.3),
-                  run_time=3)
-        self.wait()
+        # #This move is still a little annoying/noisy - not sure how to fix it exactly. 
+        # self.wait()
+        # self.play(
+        #           surfaces[2][0].copy().animate.shift([3, 0, 0]), 
+        #           polygons_21_copy.animate.shift([3, 0, 0]), 
+        #           # polygons_21.copy().animate.shift([3, 0, 0.00]).set_color(BLUE).set_opacity(0.3),
+        #           run_time=3)
+        # self.wait()
 
-        self.add(axes_1)
+        # self.add(axes_1)
 
 
 

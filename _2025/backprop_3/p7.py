@@ -428,7 +428,7 @@ class p7b_16(InteractiveScene):
             lines.add(line)
         lines.shift([3, 0, 0])
 
-        polygon_max_height=1.2
+        polygon_max_height=0.8
 
         top_polygons_vgroup=VGroup()
         for j, p in enumerate(my_top_polygons):
@@ -568,7 +568,7 @@ class p7c_32(InteractiveScene):
             lines.add(line)
         lines.shift([3, 0, 0])
 
-        polygon_max_height=1.2
+        polygon_max_height=0.8
 
         top_polygons_vgroup=VGroup()
         for j, p in enumerate(my_top_polygons):
@@ -707,7 +707,7 @@ class p7d_64(InteractiveScene):
             lines.add(line)
         lines.shift([3, 0, 0])
 
-        polygon_max_height=1.2
+        polygon_max_height=0.8
 
         top_polygons_vgroup=VGroup()
         for j, p in enumerate(my_top_polygons):
@@ -854,7 +854,7 @@ class p7g_512(InteractiveScene):
             lines.add(line)
         lines.shift([3, 0, 0])
 
-        polygon_max_height=1.2
+        polygon_max_height=0.8
 
         print('Creating top polygons...')
         top_polygons_vgroup=VGroup()
@@ -870,20 +870,20 @@ class p7g_512(InteractiveScene):
                              fill_color=color,
                              fill_opacity=0.4,
                              stroke_color=color,
-                             stroke_width=1)
+                             stroke_width=0.5)
             poly_3d.set_opacity(0.3)
             poly_3d.shift([3, 0, 0])
             top_polygons_vgroup.add(poly_3d)
 
         surfaces[0][0].shift([3,0,0])
         polygons_21=manim_polygons_from_np_list(polygons['1.linear_out'][0], colors=colors, viz_scale=viz_scales[2], 
-                                                polygon_max_height=polygon_max_height, stroke_width=1)
+                                                polygon_max_height=polygon_max_height, stroke_width=0.5)
         polygons_21_copy=polygons_21.copy()
         polygons_21.shift([3, 0, 0.001]) #Move slightly above map
 
         surfaces[0][1].shift([3,0,0])
         polygons_22=manim_polygons_from_np_list(polygons['1.linear_out'][1], colors=colors, viz_scale=viz_scales[2], 
-                                                polygon_max_height=polygon_max_height, stroke_width=1)
+                                                polygon_max_height=polygon_max_height, stroke_width=0.5)
         polygons_22_copy=polygons_22.copy()
         polygons_22.shift([3, 0, 0.002]) #Move slightly above map
 
@@ -926,8 +926,10 @@ class p7g_512(InteractiveScene):
         self.wait()
 
 
+        self.remove(lines)
+        self.play(self.frame.animate.reorient(-43, 28, 0, (3.11, 0.17, -0.13), 3.97), run_time=6)
 
-        # self.remove(lines)
+        
 
         self.wait(20)
         self.embed()
@@ -1005,7 +1007,7 @@ class p7h_1024(InteractiveScene):
             lines.add(line)
         lines.shift([3, 0, 0])
 
-        polygon_max_height=1.2
+        polygon_max_height=0.8
 
         print('Creating top polygons...')
         top_polygons_vgroup=VGroup()
@@ -1021,20 +1023,20 @@ class p7h_1024(InteractiveScene):
                              fill_color=color,
                              fill_opacity=0.4,
                              stroke_color=color,
-                             stroke_width=1)
+                             stroke_width=0.5)
             poly_3d.set_opacity(0.3)
             poly_3d.shift([3, 0, 0])
             top_polygons_vgroup.add(poly_3d)
 
         surfaces[0][0].shift([3,0,0])
         polygons_21=manim_polygons_from_np_list(polygons['1.linear_out'][0], colors=colors, viz_scale=viz_scales[2], 
-                                                polygon_max_height=polygon_max_height, stroke_width=1)
+                                                polygon_max_height=polygon_max_height, stroke_width=0.5)
         polygons_21_copy=polygons_21.copy()
         polygons_21.shift([3, 0, 0.001]) #Move slightly above map
 
         surfaces[0][1].shift([3,0,0])
         polygons_22=manim_polygons_from_np_list(polygons['1.linear_out'][1], colors=colors, viz_scale=viz_scales[2], 
-                                                polygon_max_height=polygon_max_height, stroke_width=1)
+                                                polygon_max_height=polygon_max_height, stroke_width=0.5)
         polygons_22_copy=polygons_22.copy()
         polygons_22.shift([3, 0, 0.002]) #Move slightly above map
 
@@ -1074,7 +1076,7 @@ class p7h_1024(InteractiveScene):
         self.add(flat_map, lines_flat)
         self.wait()
 
-        self.play(self.frame.reorient(0, 20, 0, (4.28, 0.08, -0.19), 3.97), run_time=8) #Little motion
+        self.play(self.frame.animate.reorient(0, 30, 0, (4.28, 0.08, -0.19), 3.97), run_time=8) #Little motion
         self.wait()
 
 
@@ -1156,7 +1158,7 @@ class p7i_10k(InteractiveScene):
             lines.add(line)
         lines.shift([3, 0, 0])
 
-        polygon_max_height=1.2
+        polygon_max_height=0.8
 
         print('Creating top polygons...')
         top_polygons_vgroup=VGroup()
@@ -1172,20 +1174,20 @@ class p7i_10k(InteractiveScene):
                              fill_color=color,
                              fill_opacity=0.4,
                              stroke_color=color,
-                             stroke_width=1)
+                             stroke_width=0.5)
             poly_3d.set_opacity(0.3)
             poly_3d.shift([3, 0, 0])
             top_polygons_vgroup.add(poly_3d)
 
         surfaces[0][0].shift([3,0,0])
         polygons_21=manim_polygons_from_np_list(polygons['1.linear_out'][0], colors=colors, viz_scale=viz_scales[2], 
-                                                polygon_max_height=polygon_max_height, stroke_width=1)
+                                                polygon_max_height=polygon_max_height, stroke_width=0.5)
         polygons_21_copy=polygons_21.copy()
         polygons_21.shift([3, 0, 0.001]) #Move slightly above map
 
         surfaces[0][1].shift([3,0,0])
         polygons_22=manim_polygons_from_np_list(polygons['1.linear_out'][1], colors=colors, viz_scale=viz_scales[2], 
-                                                polygon_max_height=polygon_max_height, stroke_width=1)
+                                                polygon_max_height=polygon_max_height, stroke_width=0.5)
         polygons_22_copy=polygons_22.copy()
         polygons_22.shift([3, 0, 0.002]) #Move slightly above map
 
@@ -1225,7 +1227,7 @@ class p7i_10k(InteractiveScene):
         self.add(flat_map, lines_flat)
         self.wait()
 
-        self.play(self.frame.reorient(0, 20, 0, (4.28, 0.08, -0.19), 3.97), run_time=8) #Little motion
+        self.play(self.frame.animate.reorient(0, 30, 0, (4.28, 0.08, -0.19), 3.97), run_time=8) #Little motion
         self.wait()
 
 
@@ -1308,7 +1310,7 @@ class p7j_100k(InteractiveScene):
             lines.add(line)
         lines.shift([3, 0, 0])
 
-        polygon_max_height=1.2
+        polygon_max_height=0.8
 
         print('Creating top polygons...')
         top_polygons_vgroup=VGroup()
@@ -1324,20 +1326,20 @@ class p7j_100k(InteractiveScene):
                              fill_color=color,
                              fill_opacity=0.4,
                              stroke_color=color,
-                             stroke_width=1)
+                             stroke_width=0.5)
             poly_3d.set_opacity(0.3)
             poly_3d.shift([3, 0, 0])
             top_polygons_vgroup.add(poly_3d)
 
         surfaces[0][0].shift([3,0,0])
         polygons_21=manim_polygons_from_np_list(polygons['1.linear_out'][0], colors=colors, viz_scale=viz_scales[2], 
-                                                polygon_max_height=polygon_max_height, stroke_width=1)
+                                                polygon_max_height=polygon_max_height, stroke_width=0.5)
         polygons_21_copy=polygons_21.copy()
         polygons_21.shift([3, 0, 0.001]) #Move slightly above map
 
         surfaces[0][1].shift([3,0,0])
         polygons_22=manim_polygons_from_np_list(polygons['1.linear_out'][1], colors=colors, viz_scale=viz_scales[2], 
-                                                polygon_max_height=polygon_max_height, stroke_width=1)
+                                                polygon_max_height=polygon_max_height, stroke_width=0.5)
         polygons_22_copy=polygons_22.copy()
         polygons_22.shift([3, 0, 0.002]) #Move slightly above map
 
@@ -1377,7 +1379,7 @@ class p7j_100k(InteractiveScene):
         self.add(flat_map, lines_flat)
         self.wait()
 
-        self.play(self.frame.reorient(0, 20, 0, (4.28, 0.08, -0.19), 3.97), run_time=8) #Little motion
+        self.play(self.frame.animate.reorient(0, 30, 0, (4.28, 0.08, -0.19), 3.97), run_time=8) #Little motion
         self.wait()
 
 

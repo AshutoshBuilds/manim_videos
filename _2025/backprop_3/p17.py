@@ -91,6 +91,58 @@ class IntersectionLine(ParametricCurve):
             **kwargs
         )
 
+class HalfPlane(Surface):
+    def __init__(self, axes, base_plane, other_plane, above=True, **kwargs):
+        self.axes = axes
+        self.base_plane = base_plane
+        self.other_plane = other_plane
+        self.above = above
+        super().__init__(
+            u_range=(-5, 5),
+            v_range=(-5, 5),
+            resolution=(32, 32),
+            **kwargs
+        )
+    
+    def uv_func(self, u, v):
+        x1, x2 = u, v
+        z1 = self.base_plane.vertical_viz_scale * (self.base_plane.m1 * x1 + self.base_plane.m2 * x2 + self.base_plane.b)
+        z2 = self.other_plane.vertical_viz_scale * (self.other_plane.m1 * x1 + self.other_plane.m2 * x2 + self.other_plane.b)
+        
+        # Only show points where this plane is above/below the other
+        if self.above and z1 <= z2:
+            return self.axes.c2p(x1, x2, -10)  # Hide below visible range
+        elif not self.above and z1 >= z2:
+            return self.axes.c2p(x1, x2, -10)  # Hide below visible range
+        else:
+            return self.axes.c2p(x1, x2, z1)
+
+class FlatHalfPlane(Surface):
+    def __init__(self, axes, base_plane, other_plane, above=True, **kwargs):
+        self.axes = axes
+        self.base_plane = base_plane
+        self.other_plane = other_plane
+        self.above = above
+        super().__init__(
+            u_range=(-5, 5),
+            v_range=(-5, 5),
+            resolution=(32, 32),
+            **kwargs
+        )
+    
+    def uv_func(self, u, v):
+        x1, x2 = u, v
+        z1 = self.base_plane.vertical_viz_scale * (self.base_plane.m1 * x1 + self.base_plane.m2 * x2 + self.base_plane.b)
+        z2 = self.other_plane.vertical_viz_scale * (self.other_plane.m1 * x1 + self.other_plane.m2 * x2 + self.other_plane.b)
+        
+        # Only show points where this plane is above/below the other, but flatten to z=0
+        if self.above and z1 <= z2:
+            return self.axes.c2p(x1, x2, -10)  # Hide below visible range
+        elif not self.above and z1 >= z2:
+            return self.axes.c2p(x1, x2, -10)  # Hide below visible range
+        else:
+            return self.axes.c2p(x1, x2, 0)  # Flatten to z=0
+
 class p17(InteractiveScene):
     def construct(self):
         map_img=ImageMobject(graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-11.png')
@@ -128,11 +180,10 @@ class p17(InteractiveScene):
             plane_1, 
             plane_2, 
             t_range=(-5, 5, 0.1),
-            color=WHITE,
+            color='#FF00FF',
             stroke_width=4
         )
             
-
         self.frame.reorient(0, 0, 0, (0.01, -0.01, 0.0), 1.29)
         self.add(map_img)
 
@@ -144,15 +195,83 @@ class p17(InteractiveScene):
         self.play(ShowCreation(intersection_line))
         self.wait()
         
-        ## Move to overhead view, bring down line, and each color half plane onto z=0
+        ## Move to overhead view, bring down line flat onto z=0, and each color half plane onto z=0
         
+        class FlatIntersectionLine(ParametricCurve):
+            def __init__(self, axes, plane1, plane2, t_range=(-5, 5, 0.1), **kwargs):
+                self.axes = axes
+                self.plane1 = plane1
+                self.plane2 = plane2
+                self.intersection_func = find_plane_intersection(plane1, plane2)
+                
+                super().__init__(
+                    lambda t: self.axes.c2p(*self.intersection_func(t)[:2], 0),  # Flatten to z=0
+                    t_range=t_range,
+                    **kwargs
+                )
+        
+        flat_intersection_line = FlatIntersectionLine(
+            axes_1, 
+            plane_1, 
+            plane_2, 
+            t_range=(-5, 5, 0.1),
+            color='#FF00FF',
+            stroke_width=4
+        )
 
         self.wait()
 
+        self.play(ReplacementTransform(intersection_line, flat_intersection_line), 
+                  plane_1.animate.set_opacity(0.0),
+                  plane_2.animate.set_opacity(0.0),
+                  self.frame.animate.reorient(0, 2, 0, (-0.04, 0.02, 0.0), 1.62),
+                  run_time=4)
 
+        self.wait()
+
+        #Ok not perfect, but good for an overhead pass -> gut to my head I just added the final shaded flat regions in illustrator!
+
+
+
+
+        # First, move to overhead view
+        # self.play(self.frame.animate.reorient(-90, 0, 0, (0, 0, 0), 1.62), run_time=3)
+        # self.wait()
+        
+        # # Create flattened intersection line (same line but at z=0)
+
+        
+        # # Create the half planes
+        # half_plane_1 = HalfPlane(axes_1, plane_1, plane_2, above=True, color='#00FFFF', opacity=0.3)
+        # half_plane_2 = HalfPlane(axes_1, plane_2, plane_1, above=True, color=YELLOW, opacity=0.3)
+        
+        # # Create flattened versions at z=0
+        # flat_half_plane_1 = FlatHalfPlane(axes_1, plane_1, plane_2, above=True, color='#00FFFF', opacity=0.6)
+        # flat_half_plane_2 = FlatHalfPlane(axes_1, plane_2, plane_1, above=True, color=YELLOW, opacity=0.6)
+        
+        # # Animate the transformation
+        # self.play(
+        #     Transform(intersection_line, flat_intersection_line),
+        #     Transform(plane_1, flat_half_plane_1),
+        #     Transform(plane_2, flat_half_plane_2),
+        #     run_time=4
+        # )
+        
+        # self.wait(3)
 
         self.wait(20)
         self.embed()
+
+
+
+
+
+
+
+
+
+
+
 
 
 

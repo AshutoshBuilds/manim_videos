@@ -262,6 +262,27 @@ class p18a(InteractiveScene):
         self.play(Write(eq3))
         self.wait()
 
+        # Ok so at this point, I need to add the hieght of this to my plane p18b
+        # So I think on p19 I bring back up the opacity of the last two neurons
+        # And then do the collapsing trick, I think right?
+
+        self.play(
+                  neuron_21_group.animate.set_opacity(1.0),
+                  neuron_22_group.animate.set_opacity(1.0),
+                    run_time=2)
+        self.wait()
+
+        # Ok ok ok ok ok ok ok now how do I animate this collapsing thing?
+        # Fade out middle layer, and then bring inputs over? That might kinda work?
+        # Ok taking a break then will try that.
+
+
+
+
+
+
+        
+
 
         self.wait(20)
         self.embed()
@@ -318,11 +339,36 @@ class p18b(InteractiveScene):
         h1.next_to(axes_1[2].get_end(), buff=0.15, direction=np.array([0,0,1]))
 
 
-
         self.frame.reorient(44, 73, 0, (0.14, 0.04, -0.1), 6.00)
         self.add(axis_and_plane_11)
         self.add(x1, x2, h1)
 
+        #Add point, connecting lines and maybe a nice little twist zoom in animation
+        dot_point = axes_1.c2p(0.6, 0.4, -0.25)
+        magenta_dot = Sphere(radius=0.1, color='#FF00FF')
+        magenta_dot.move_to(dot_point)
+
+        line1_start = axes_1.c2p(0.6, 0, 0)
+        line1_end = axes_1.c2p(0.6, 0.4, 0)
+        dashed_line1 = DashedLine(line1_start, line1_end, color='#FF00FF', stroke_width=8)
+        dashed_line1.rotate(90*DEGREES, [0,1,0])
+        
+        line2_start = axes_1.c2p(0.0, 0.4, 0)
+        line2_end = axes_1.c2p(0.6, 0.4, 0)
+        dashed_line2 = DashedLine(line2_start, line2_end, color='#FF00FF', stroke_width=8)
+        dashed_line2.rotate(90*DEGREES, [1,0,0])
+
+        line3_start = axes_1.c2p(0.6, 0.4, 0)
+        line3_end = axes_1.c2p(0.6, 0.4, -0.25)
+        dashed_line3 = DashedLine(line3_start, line3_end, color='#FF00FF', stroke_width=8)
+        # dashed_line2.rotate(90*DEGREES, [1,0,0])
+
+        # self.add(magenta_dot, dashed_line1, dashed_line2, dashed_line3)
+        self.wait()
+        self.play(self.frame.animate.reorient(69, 68, 0, (0.14, 0.09, -0.06), 5.11), 
+                  FadeIn(dashed_line1), FadeIn(dashed_line2), FadeIn(dashed_line3), FadeIn(magenta_dot),
+                 run_time=4.0)
+        self.wait()
 
 
 

@@ -948,52 +948,37 @@ class p7e_128(InteractiveScene):
         polygons_21_flat.set_opacity(0.1)
         polygons_22_flat.set_opacity(0.1)
 
+
+        top_polygons_vgroup_flat.set_opacity(0.5)
+
         self.wait()
+        self.remove(polygons_21, polygons_22)
         self.play(ReplacementTransform(top_polygons_vgroup, top_polygons_vgroup_flat),
-                  ReplacementTransform(polygons_21, polygons_21_flat),
-                  ReplacementTransform(polygons_22, polygons_22_flat),
-                  polygons_21_flat.animate.set_opacity(0.0),
-                  polygons_22_flat.animate.set_opacity(0.0),
+                  # ReplacementTransform(polygons_21, polygons_21_flat),
+                  # ReplacementTransform(polygons_22, polygons_22_flat),
+                  # polygons_21_flat.animate.set_opacity(0.0),
+                  # polygons_22_flat.animate.set_opacity(0.0),
                   self.frame.animate.reorient(0, 0, 0, (4.34, 0.02, -0.19), 3.47),
-                  run_time=4)
+                  run_time=6)
         self.remove(lines); self.add(lines)
+        self.wait()
         # self.remove(top_polygons_vgroup_flat); self.add(top_polygons_vgroup_flat)
 
         # polygons_21_flat.set_opacity(0.0)
         # polygons_22_flat.set_opacity(0.0)
-
 
         self.wait(20)
         self.embed()
 
 
 
-
-
-class p7g_512(InteractiveScene):
+class p7f_256(InteractiveScene):
     def construct(self):
-        model_path='_2025/backprop_3/models/512_1_longer.pth'
-        model = BaarleNet([512])
+        model_path='_2025/backprop_3/models/256_1.pth'
+        model = BaarleNet([256])
         model.load_state_dict(torch.load(model_path))
         viz_scales=[0.07, 0.07, 0.04]
-        num_neurons=[512, 512, 2]
-
-        #Precompute my surfaces, and polygons moving through network
-        surfaces=[]
-        surface_funcs=[]
-        for layer_idx in [2]: #Skip first layers, dont need em
-            s=Group()
-            surface_funcs.append([])
-            for neuron_idx in range(num_neurons[layer_idx]):
-                surface_func=partial(surface_func_from_model, model=model, layer_idx=layer_idx, neuron_idx=neuron_idx, viz_scale=viz_scales[layer_idx])
-                bent_surface = ParametricSurface(surface_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
-                ts=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
-                ts.set_shading(0,0,0).set_opacity(0.8)
-                s.add(ts)
-                surface_funcs[-1].append(surface_func)
-            surfaces.append(s)
-
-        print('Finished computing surfaces...')
+        num_neurons=[256, 256, 2]
 
         #Move polygons through network
         polygons={} #dict of all polygones as we go. 
@@ -1011,8 +996,7 @@ class p7g_512(InteractiveScene):
             #Merge zero regions
             polygons[str(layer_id)+'.split_polygons_merged'] = merge_zero_regions(polygons[str(layer_id)+'.split_polygons_nested_clipped'])
             #Compute new tiling
-            #This min_area thing is helpful for compute time!!! 1e-5 has lots of detail
-            polygons[str(layer_id)+'.new_tiling']=recompute_tiling_general(polygons[str(layer_id)+'.split_polygons_merged'], min_area=1e-5)
+            polygons[str(layer_id)+'.new_tiling']=recompute_tiling_general(polygons[str(layer_id)+'.split_polygons_merged'])
             print('Retiled plane into ', str(len(polygons[str(layer_id)+'.new_tiling'])), ' polygons.')
 
             #Optional filtering step
@@ -1024,70 +1008,40 @@ class p7g_512(InteractiveScene):
         intersection_lines, new_2d_tiling, upper_polytope, indicator = intersect_polytopes(*polygons[str(layer_id+1)+'.linear_out'])
         my_indicator, my_top_polygons = compute_top_polytope(model, new_2d_tiling)
 
-        print('finished computing polygons and surfaces')
         
-
+        with open('_2025/backprop_3/models/256_1_borders.p', 'rb') as file:
+            borders_interp = pickle.load(file)
 
         #I guess I don't have to do this every time -> coudl just draw all the lines? Might be better when we get really big here
-        loops=order_closed_loops_with_closure(intersection_lines)
+        # loops=order_closed_loops_with_closure(intersection_lines)
         lines=VGroup()
-        print('Computing loops...')
-        for loop in tqdm(loops): 
-            loop=loop*np.array([1, 1, viz_scales[2]])
+        for loop in borders_interp: 
+            loop=np.hstack((loop, np.zeros((len(loop), 1))))
             line = VMobject()
             line.set_points_as_corners(loop)
             line.set_stroke(color='#FF00FF', width=5)
             lines.add(line)
         lines.shift([3, 0, 0])
 
-        polygon_max_height=0.8
-
-        print('Creating top polygons...')
-        top_polygons_vgroup=VGroup()
-        for j, p in tqdm(enumerate(my_top_polygons)):
+        top_polygons_vgroup_flat=VGroup()
+        for j, p in enumerate(my_top_polygons):
             if len(p)<3: continue
             if my_indicator[j]: color=YELLOW
             else: color=BLUE
             
             p_scaled=copy.deepcopy(p) #Scaling for viz
-            p_scaled[:,2]=p_scaled[:,2]*viz_scales[2]
-            p_scaled[:, -1] = np.clip(p_scaled[:, -1], -polygon_max_height, polygon_max_height)
+            p_scaled[:,2]=0 #p_scaled[:,2]*viz_scales[2] #Flatten that shit!
+            # p_scaled[:, -1] = np.clip(p_scaled[:, -1], -polygon_max_height, polygon_max_height)
             poly_3d = Polygon(*p_scaled,
                              fill_color=color,
                              fill_opacity=0.4,
                              stroke_color=color,
-                             stroke_width=0.5)
+                             stroke_width=2)
             poly_3d.set_opacity(0.3)
             poly_3d.shift([3, 0, 0])
-            top_polygons_vgroup.add(poly_3d)
+            top_polygons_vgroup_flat.add(poly_3d)
 
-        surfaces[0][0].shift([3,0,0])
-        polygons_21=manim_polygons_from_np_list(polygons['1.linear_out'][0], colors=colors, viz_scale=viz_scales[2], 
-                                                polygon_max_height=polygon_max_height, stroke_width=0.5)
-        polygons_21_copy=polygons_21.copy()
-        polygons_21.shift([3, 0, 0.001]) #Move slightly above map
-
-        surfaces[0][1].shift([3,0,0])
-        polygons_22=manim_polygons_from_np_list(polygons['1.linear_out'][1], colors=colors, viz_scale=viz_scales[2], 
-                                                polygon_max_height=polygon_max_height, stroke_width=0.5)
-        polygons_22_copy=polygons_22.copy()
-        polygons_22.shift([3, 0, 0.002]) #Move slightly above map
-
-        polygons_22.set_color(YELLOW)
-        polygons_21.set_color(BLUE)
-
-        polygons_21.set_opacity(0.1)
-        polygons_22.set_opacity(0.1)
-        surfaces[0][0].set_opacity(0.4)
-        surfaces[0][1].set_opacity(0.4)
-        top_polygons_vgroup.set_opacity(0.5)
-
-        self.frame.reorient(0, 20, 0, (4.28, 0.08, -0.19), 3.97)
-        # self.add(surfaces[0][0], surfaces[2][1]) #ok i want to include these, but the max value clipping is tricky -> ignore for now. 
-        self.add(polygons_21, polygons_22)
-        self.add(top_polygons_vgroup)
-        self.add(lines)
-
+        top_polygons_vgroup_flat.set_opacity(0.5) #Eh?
 
         def flat_surf_func(u, v): return [u, v, 0]
         flat_map_surf = ParametricSurface(flat_surf_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
@@ -1095,27 +1049,127 @@ class p7g_512(InteractiveScene):
         flat_map.set_shading(0,0,0).set_opacity(0.8)
         flat_map.shift([5.7, 0, 0])
 
-        lines_flat=VGroup()
-        for loop in loops: 
-            loop=loop*np.array([1, 1, 0])
+        lines_flat_cleaner=VGroup()
+        for loop in borders_interp: 
+            loop=np.hstack((loop, np.zeros((len(loop), 1))))
             line = VMobject()
             line.set_points_as_corners(loop)
             line.set_stroke(color='#FF00FF', width=4)
-            lines_flat.add(line)
-        lines_flat.shift([5.7, 0, 0])
+            lines_flat_cleaner.add(line)
+        lines_flat_cleaner.shift([5.7, 0, 0])      
 
+        self.frame.reorient(0, 0, 0, (4.34, 0.02, -0.19), 3.47)
+        self.add(top_polygons_vgroup_flat)
+        self.add(lines)
 
-        self.add(flat_map, lines_flat)
+        self.add(flat_map, lines_flat_cleaner)
         self.wait()
 
-        self.play(self.frame.animate.reorient(0, 0, 0, (4.28, 0.08, -0.19), 3.97), run_time=8)
-        self.wait()
+        self.wait(20)
+        self.embed()
 
 
-        self.remove(lines)
-        self.play(self.frame.animate.reorient(-43, 28, 0, (3.11, 0.17, -0.13), 3.97), run_time=6)
+
+
+class p7g_512(InteractiveScene):
+    def construct(self):
+        model_path='_2025/backprop_3/models/512_1_longer.pth'
+        model = BaarleNet([512])
+        model.load_state_dict(torch.load(model_path))
+        viz_scales=[0.07, 0.07, 0.04]
+        num_neurons=[512, 512, 2]
+
+        #Move polygons through network
+        polygons={} #dict of all polygones as we go. 
+        polygons['-1.new_tiling']=[np.array([[-1., -1, 0], #First polygon is just input plane
+                                            [-1, 1, 0], 
+                                            [1, 1, 0], 
+                                            [1, -1, 0]])]
+
+        for layer_id in range(len(model.model)//2): #Move polygont through layers     
+            polygons[str(layer_id)+'.linear_out']=process_with_layers(model.model[:2*layer_id+1], polygons[str(layer_id-1)+'.new_tiling']) 
+
+            #Split polygons w/ Relu and clip negative values to z=0
+            polygons[str(layer_id)+'.split_polygons_nested']=split_polygons_with_relu_simple(polygons[str(layer_id)+'.linear_out']) #Triple nested list so we can simplify merging process layer. 
+            polygons[str(layer_id)+'.split_polygons_nested_clipped'] = clip_polygons(polygons[str(layer_id)+'.split_polygons_nested'])
+            #Merge zero regions
+            polygons[str(layer_id)+'.split_polygons_merged'] = merge_zero_regions(polygons[str(layer_id)+'.split_polygons_nested_clipped'])
+            #Compute new tiling
+            polygons[str(layer_id)+'.new_tiling']=recompute_tiling_general(polygons[str(layer_id)+'.split_polygons_merged'])
+            print('Retiled plane into ', str(len(polygons[str(layer_id)+'.new_tiling'])), ' polygons.')
+
+            #Optional filtering step
+            #polygons[str(layer_id)+'.new_tiling'] = filter_small_polygons(polygons[str(layer_id)+'.new_tiling'], min_area=1e-5)
+            #print(str(len(polygons[str(layer_id)+'.new_tiling'])), ' polygons remaining after filtering out small polygons')
+
+        #Last linear layer & output
+        polygons[str(layer_id+1)+'.linear_out']=process_with_layers(model.model, polygons[str(layer_id)+'.new_tiling'])
+        intersection_lines, new_2d_tiling, upper_polytope, indicator = intersect_polytopes(*polygons[str(layer_id+1)+'.linear_out'])
+        my_indicator, my_top_polygons = compute_top_polytope(model, new_2d_tiling)
 
         
+        with open('_2025/backprop_3/models/256_1_borders.p', 'rb') as file:
+            borders_interp = pickle.load(file)
+
+        #I guess I don't have to do this every time -> coudl just draw all the lines? Might be better when we get really big here
+        # loops=order_closed_loops_with_closure(intersection_lines)
+        lines=VGroup()
+        for loop in borders_interp: 
+            loop=np.hstack((loop, np.zeros((len(loop), 1))))
+            line = VMobject()
+            line.set_points_as_corners(loop)
+            line.set_stroke(color='#FF00FF', width=5)
+            lines.add(line)
+        lines.shift([3, 0, 0])
+
+        top_polygons_vgroup_flat=VGroup()
+        for j, p in enumerate(my_top_polygons):
+            if len(p)<3: continue
+            if my_indicator[j]: color=YELLOW
+            else: color=BLUE
+            
+            p_scaled=copy.deepcopy(p) #Scaling for viz
+            p_scaled[:,2]=0 #p_scaled[:,2]*viz_scales[2] #Flatten that shit!
+            # p_scaled[:, -1] = np.clip(p_scaled[:, -1], -polygon_max_height, polygon_max_height)
+            poly_3d = Polygon(*p_scaled,
+                             fill_color=color,
+                             fill_opacity=0.4,
+                             stroke_color=color,
+                             stroke_width=2)
+            poly_3d.set_opacity(0.3)
+            poly_3d.shift([3, 0, 0])
+            top_polygons_vgroup_flat.add(poly_3d)
+
+        top_polygons_vgroup_flat.set_opacity(0.5) #Eh?
+
+        def flat_surf_func(u, v): return [u, v, 0]
+        flat_map_surf = ParametricSurface(flat_surf_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
+        flat_map=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+        flat_map.set_shading(0,0,0).set_opacity(0.8)
+        flat_map.shift([5.7, 0, 0])
+
+        lines_flat_cleaner=VGroup()
+        for loop in borders_interp: 
+            loop=np.hstack((loop, np.zeros((len(loop), 1))))
+            line = VMobject()
+            line.set_points_as_corners(loop)
+            line.set_stroke(color='#FF00FF', width=4)
+            lines_flat_cleaner.add(line)
+        lines_flat_cleaner.shift([5.7, 0, 0])      
+
+        self.frame.reorient(0, 0, 0, (4.34, 0.02, -0.19), 3.47)
+        self.add(top_polygons_vgroup_flat)
+        self.add(lines)
+
+        self.add(flat_map, lines_flat_cleaner)
+        self.wait()
+
+        #Optional fade and center on just map -> although I think i actually want to do it on 1024!
+        # self.play(top_polygons_vgroup_flat.animate.set_opacity(0.0),
+        #           lines.animate.set_opacity(0.0),
+        #           self.frame.animate.reorient(0, 0, 0, (5.67, -0.01, -0.19), 3.47),
+        #           run_time=5.0)
+
 
         self.wait(20)
         self.embed()
@@ -1130,24 +1184,6 @@ class p7h_1024(InteractiveScene):
         viz_scales=[0.07, 0.07, 0.04]
         num_neurons=[1024, 1024, 2]
 
-
-        #Precompute my surfaces, and polygons moving through network
-        surfaces=[]
-        surface_funcs=[]
-        for layer_idx in [2]: #Skip first layers, dont need em
-            s=Group()
-            surface_funcs.append([])
-            for neuron_idx in range(num_neurons[layer_idx]):
-                surface_func=partial(surface_func_from_model, model=model, layer_idx=layer_idx, neuron_idx=neuron_idx, viz_scale=viz_scales[layer_idx])
-                bent_surface = ParametricSurface(surface_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
-                ts=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
-                ts.set_shading(0,0,0).set_opacity(0.8)
-                s.add(ts)
-                surface_funcs[-1].append(surface_func)
-            surfaces.append(s)
-
-        print('Finished computing surfaces...')
-
         #Move polygons through network
         polygons={} #dict of all polygones as we go. 
         polygons['-1.new_tiling']=[np.array([[-1., -1, 0], #First polygon is just input plane
@@ -1164,8 +1200,7 @@ class p7h_1024(InteractiveScene):
             #Merge zero regions
             polygons[str(layer_id)+'.split_polygons_merged'] = merge_zero_regions(polygons[str(layer_id)+'.split_polygons_nested_clipped'])
             #Compute new tiling
-            #This min_area thing is helpful for compute time!!! 1e-5 has lots of detail, could go bigger for final. 
-            polygons[str(layer_id)+'.new_tiling']=recompute_tiling_general(polygons[str(layer_id)+'.split_polygons_merged'], min_area=1e-5)
+            polygons[str(layer_id)+'.new_tiling']=recompute_tiling_general(polygons[str(layer_id)+'.split_polygons_merged'])
             print('Retiled plane into ', str(len(polygons[str(layer_id)+'.new_tiling'])), ' polygons.')
 
             #Optional filtering step
@@ -1177,96 +1212,46 @@ class p7h_1024(InteractiveScene):
         intersection_lines, new_2d_tiling, upper_polytope, indicator = intersect_polytopes(*polygons[str(layer_id+1)+'.linear_out'])
         my_indicator, my_top_polygons = compute_top_polytope(model, new_2d_tiling)
 
-        print('finished computing polygons and surfaces')
         
-
+        with open('_2025/backprop_3/models/256_1_borders.p', 'rb') as file:
+            borders_interp = pickle.load(file)
 
         #I guess I don't have to do this every time -> coudl just draw all the lines? Might be better when we get really big here
-        loops=order_closed_loops_with_closure(intersection_lines)
+        # loops=order_closed_loops_with_closure(intersection_lines)
         lines=VGroup()
-        print('Computing loops...')
-        for loop in tqdm(loops): 
-            loop=loop*np.array([1, 1, viz_scales[2]])
+        for loop in borders_interp: 
+            loop=np.hstack((loop, np.zeros((len(loop), 1))))
             line = VMobject()
             line.set_points_as_corners(loop)
             line.set_stroke(color='#FF00FF', width=5)
             lines.add(line)
         lines.shift([3, 0, 0])
 
-        polygon_max_height=0.8
-
-        print('Creating top polygons...')
-        top_polygons_vgroup=VGroup()
-        for j, p in tqdm(enumerate(my_top_polygons)):
+        top_polygons_vgroup_flat=VGroup()
+        for j, p in enumerate(my_top_polygons):
             if len(p)<3: continue
             if my_indicator[j]: color=YELLOW
             else: color=BLUE
             
             p_scaled=copy.deepcopy(p) #Scaling for viz
-            p_scaled[:,2]=p_scaled[:,2]*viz_scales[2]
-            p_scaled[:, -1] = np.clip(p_scaled[:, -1], -polygon_max_height, polygon_max_height)
+            p_scaled[:,2]=0 #p_scaled[:,2]*viz_scales[2] #Flatten that shit!
+            # p_scaled[:, -1] = np.clip(p_scaled[:, -1], -polygon_max_height, polygon_max_height)
             poly_3d = Polygon(*p_scaled,
                              fill_color=color,
                              fill_opacity=0.4,
                              stroke_color=color,
-                             stroke_width=0.5)
+                             stroke_width=2)
             poly_3d.set_opacity(0.3)
             poly_3d.shift([3, 0, 0])
-            top_polygons_vgroup.add(poly_3d)
+            top_polygons_vgroup_flat.add(poly_3d)
 
-        surfaces[0][0].shift([3,0,0])
-        polygons_21=manim_polygons_from_np_list(polygons['1.linear_out'][0], colors=colors, viz_scale=viz_scales[2], 
-                                                polygon_max_height=polygon_max_height, stroke_width=0.5)
-        polygons_21_copy=polygons_21.copy()
-        polygons_21.shift([3, 0, 0.001]) #Move slightly above map
+        top_polygons_vgroup_flat.set_opacity(0.5) #Eh?
 
-        surfaces[0][1].shift([3,0,0])
-        polygons_22=manim_polygons_from_np_list(polygons['1.linear_out'][1], colors=colors, viz_scale=viz_scales[2], 
-                                                polygon_max_height=polygon_max_height, stroke_width=0.5)
-        polygons_22_copy=polygons_22.copy()
-        polygons_22.shift([3, 0, 0.002]) #Move slightly above map
-
-        polygons_22.set_color(YELLOW)
-        polygons_21.set_color(BLUE)
-
-        polygons_21.set_opacity(0.1)
-        polygons_22.set_opacity(0.1)
-        surfaces[0][0].set_opacity(0.4)
-        surfaces[0][1].set_opacity(0.4)
-        top_polygons_vgroup.set_opacity(0.5)
-
-        # self.frame.reorient(0, 20, 0, (4.28, 0.08, -0.19), 3.97)
-        self.frame.reorient(0, 0, 0, (4.28, 0.08, -0.19), 3.97)
-        # self.add(surfaces[0][0], surfaces[2][1]) #ok i want to include these, but the max value clipping is tricky -> ignore for now. 
-        self.add(polygons_21, polygons_22)
-        self.add(top_polygons_vgroup)
-        self.add(lines)
-
-
-        # For bigger models, get decisin border from interp method instead of polygon intersection. 
-        # def flat_surf_func(u, v): return [u, v, 0]
-        # flat_map_surf = ParametricSurface(flat_surf_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
-        # flat_map=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
-        # flat_map.set_shading(0,0,0).set_opacity(0.8)
-        # flat_map.shift([5.7, 0, 0])
-
-        # lines_flat=VGroup()
-        # for loop in loops: 
-        #     loop=loop*np.array([1, 1, 0])
-        #     line = VMobject()
-        #     line.set_points_as_corners(loop)
-        #     line.set_stroke(color='#FF00FF', width=4)
-        #     lines_flat.add(line)
-        # lines_flat.shift([5.7, 0, 0])
-
-
-        # self.add(flat_map)
-        self.wait()
-
-        ## ---Try cleaner border computed in notebook ---
-        ## If these look significantly better then could consider them on the 3d version too -> we'll see. 
-        with open('_2025/backprop_3/models/one_layer_1024_nuerons_long_borders.p', 'rb') as file:
-            borders_interp = pickle.load(file)
+        def flat_surf_func(u, v): return [u, v, 0]
+        flat_map_surf = ParametricSurface(flat_surf_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
+        flat_map=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+        flat_map.set_shading(0,0,0).set_opacity(0.8)
+        flat_map.shift([5.7, 0, 0])
 
         lines_flat_cleaner=VGroup()
         for loop in borders_interp: 
@@ -1275,23 +1260,27 @@ class p7h_1024(InteractiveScene):
             line.set_points_as_corners(loop)
             line.set_stroke(color='#FF00FF', width=4)
             lines_flat_cleaner.add(line)
-        lines_flat_cleaner.shift([5.7, 0, 0])        
+        lines_flat_cleaner.shift([5.7, 0, 0])      
 
-        self.add(lines_flat_cleaner)
+        self.frame.reorient(0, 0, 0, (4.34, 0.02, -0.19), 3.47)
+        self.add(top_polygons_vgroup_flat)
+        self.add(lines)
 
-
+        self.add(flat_map, lines_flat_cleaner)
         self.wait()
-        self.play(self.frame.animate.reorient(0, 30, 0, (4.28, 0.08, -0.19), 3.97), run_time=8) #Little motion
-        self.wait()
 
-        #Ok so i think it would be nice to use the cleaner border on the polygons too, but I'll leave that for a second pass if i have time!
+        #maybe a fade out and center on map/border? That's all we'll see for these last few rigth?
+        self.play(top_polygons_vgroup_flat.animate.set_opacity(0.0),
+                  lines.animate.set_opacity(0.0),
+                  self.frame.animate.reorient(0, 0, 0, (5.67, -0.01, -0.19), 3.47),
+                  run_time=5.0)
 
-
-        # self.remove(lines)
 
         self.wait(20)
         self.embed()
 
+
+#Ok for these we just want the map and refined border!
 
 class p7i_10k(InteractiveScene):
     def construct(self):
@@ -1302,145 +1291,7 @@ class p7i_10k(InteractiveScene):
         num_neurons=[10000, 10000, 2]
 
 
-        #Precompute my surfaces, and polygons moving through network
-        surfaces=[]
-        surface_funcs=[]
-        for layer_idx in [2]: #Skip first layers, dont need em
-            s=Group()
-            surface_funcs.append([])
-            for neuron_idx in range(num_neurons[layer_idx]):
-                surface_func=partial(surface_func_from_model, model=model, layer_idx=layer_idx, neuron_idx=neuron_idx, viz_scale=viz_scales[layer_idx])
-                bent_surface = ParametricSurface(surface_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
-                ts=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
-                ts.set_shading(0,0,0).set_opacity(0.8)
-                s.add(ts)
-                surface_funcs[-1].append(surface_func)
-            surfaces.append(s)
 
-        print('Finished computing surfaces...')
-
-        #Move polygons through network
-        polygons={} #dict of all polygones as we go. 
-        polygons['-1.new_tiling']=[np.array([[-1., -1, 0], #First polygon is just input plane
-                                            [-1, 1, 0], 
-                                            [1, 1, 0], 
-                                            [1, -1, 0]])]
-
-        for layer_id in range(len(model.model)//2): #Move polygont through layers     
-            polygons[str(layer_id)+'.linear_out']=process_with_layers(model.model[:2*layer_id+1], polygons[str(layer_id-1)+'.new_tiling']) 
-
-            #Split polygons w/ Relu and clip negative values to z=0
-            polygons[str(layer_id)+'.split_polygons_nested']=split_polygons_with_relu_simple(polygons[str(layer_id)+'.linear_out']) #Triple nested list so we can simplify merging process layer. 
-            polygons[str(layer_id)+'.split_polygons_nested_clipped'] = clip_polygons(polygons[str(layer_id)+'.split_polygons_nested'])
-            #Merge zero regions
-            polygons[str(layer_id)+'.split_polygons_merged'] = merge_zero_regions(polygons[str(layer_id)+'.split_polygons_nested_clipped'])
-            #Compute new tiling
-            #This min_area thing is helpful for compute time!!! 1e-5 has lots of detail, could go bigger for final. 
-            polygons[str(layer_id)+'.new_tiling']=recompute_tiling_general(polygons[str(layer_id)+'.split_polygons_merged'], min_area=1e-5)
-            print('Retiled plane into ', str(len(polygons[str(layer_id)+'.new_tiling'])), ' polygons.')
-
-            #Optional filtering step
-            #polygons[str(layer_id)+'.new_tiling'] = filter_small_polygons(polygons[str(layer_id)+'.new_tiling'], min_area=1e-5)
-            #print(str(len(polygons[str(layer_id)+'.new_tiling'])), ' polygons remaining after filtering out small polygons')
-
-        #Last linear layer & output
-        polygons[str(layer_id+1)+'.linear_out']=process_with_layers(model.model, polygons[str(layer_id)+'.new_tiling'])
-        intersection_lines, new_2d_tiling, upper_polytope, indicator = intersect_polytopes(*polygons[str(layer_id+1)+'.linear_out'])
-        my_indicator, my_top_polygons = compute_top_polytope(model, new_2d_tiling)
-
-        print('finished computing polygons and surfaces')
-        
-
-
-        #I guess I don't have to do this every time -> coudl just draw all the lines? Might be better when we get really big here
-        loops=order_closed_loops_with_closure(intersection_lines)
-        lines=VGroup()
-        print('Computing loops...')
-        for loop in tqdm(loops): 
-            loop=loop*np.array([1, 1, viz_scales[2]])
-            line = VMobject()
-            line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=5)
-            lines.add(line)
-        lines.shift([3, 0, 0])
-
-        polygon_max_height=0.8
-
-        print('Creating top polygons...')
-        top_polygons_vgroup=VGroup()
-        for j, p in tqdm(enumerate(my_top_polygons)):
-            if len(p)<3: continue
-            if my_indicator[j]: color=YELLOW
-            else: color=BLUE
-            
-            p_scaled=copy.deepcopy(p) #Scaling for viz
-            p_scaled[:,2]=p_scaled[:,2]*viz_scales[2]
-            p_scaled[:, -1] = np.clip(p_scaled[:, -1], -polygon_max_height, polygon_max_height)
-            poly_3d = Polygon(*p_scaled,
-                             fill_color=color,
-                             fill_opacity=0.4,
-                             stroke_color=color,
-                             stroke_width=0.5)
-            poly_3d.set_opacity(0.3)
-            poly_3d.shift([3, 0, 0])
-            top_polygons_vgroup.add(poly_3d)
-
-        surfaces[0][0].shift([3,0,0])
-        polygons_21=manim_polygons_from_np_list(polygons['1.linear_out'][0], colors=colors, viz_scale=viz_scales[2], 
-                                                polygon_max_height=polygon_max_height, stroke_width=0.5)
-        polygons_21_copy=polygons_21.copy()
-        polygons_21.shift([3, 0, 0.001]) #Move slightly above map
-
-        surfaces[0][1].shift([3,0,0])
-        polygons_22=manim_polygons_from_np_list(polygons['1.linear_out'][1], colors=colors, viz_scale=viz_scales[2], 
-                                                polygon_max_height=polygon_max_height, stroke_width=0.5)
-        polygons_22_copy=polygons_22.copy()
-        polygons_22.shift([3, 0, 0.002]) #Move slightly above map
-
-        polygons_22.set_color(YELLOW)
-        polygons_21.set_color(BLUE)
-
-        polygons_21.set_opacity(0.1)
-        polygons_22.set_opacity(0.1)
-        surfaces[0][0].set_opacity(0.4)
-        surfaces[0][1].set_opacity(0.4)
-        top_polygons_vgroup.set_opacity(0.5)
-
-        # self.frame.reorient(0, 20, 0, (4.28, 0.08, -0.19), 3.97)
-        self.frame.reorient(0, 0, 0, (4.28, 0.08, -0.19), 3.97)
-        # self.add(surfaces[0][0], surfaces[2][1]) #ok i want to include these, but the max value clipping is tricky -> ignore for now. 
-        self.add(polygons_21, polygons_22)
-        self.add(top_polygons_vgroup)
-        self.add(lines)
-
-
-        with open('_2025/backprop_3/models/one_layer_10k_neurons_long_border.p', 'rb') as file:
-            borders_interp = pickle.load(file)
-
-        lines_flat_cleaner=VGroup()
-        for loop in borders_interp: 
-            loop=np.hstack((loop, np.zeros((len(loop), 1))))
-            line = VMobject()
-            line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=4)
-            lines_flat_cleaner.add(line)
-        lines_flat_cleaner.shift([5.7, 0, 0])        
-
-        self.add(lines_flat_cleaner)
-
-
-        self.add(flat_map, lines_flat_cleaner)
-        self.wait()
-
-        self.play(self.frame.animate.reorient(0, 30, 0, (4.28, 0.08, -0.19), 3.97), run_time=8) #Little motion
-        self.wait()
-
-
-
-        # self.remove(lines)
-
-        self.wait(20)
-        self.embed()
 
 
 
@@ -1451,302 +1302,6 @@ class p7j_100k(InteractiveScene):
         model.load_state_dict(torch.load(model_path))
         viz_scales=[0.07, 0.07, 0.04]
         num_neurons=[100000, 100000, 2]
-
-
-        #Precompute my surfaces, and polygons moving through network
-        surfaces=[]
-        surface_funcs=[]
-        for layer_idx in [2]: #Skip first layers, dont need em
-            s=Group()
-            surface_funcs.append([])
-            for neuron_idx in range(num_neurons[layer_idx]):
-                surface_func=partial(surface_func_from_model, model=model, layer_idx=layer_idx, neuron_idx=neuron_idx, viz_scale=viz_scales[layer_idx])
-                bent_surface = ParametricSurface(surface_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
-                ts=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
-                ts.set_shading(0,0,0).set_opacity(0.8)
-                s.add(ts)
-                surface_funcs[-1].append(surface_func)
-            surfaces.append(s)
-
-        print('Finished computing surfaces...')
-
-        #Move polygons through network
-        polygons={} #dict of all polygones as we go. 
-        polygons['-1.new_tiling']=[np.array([[-1., -1, 0], #First polygon is just input plane
-                                            [-1, 1, 0], 
-                                            [1, 1, 0], 
-                                            [1, -1, 0]])]
-
-        for layer_id in range(len(model.model)//2): #Move polygont through layers     
-            polygons[str(layer_id)+'.linear_out']=process_with_layers(model.model[:2*layer_id+1], polygons[str(layer_id-1)+'.new_tiling']) 
-
-            #Split polygons w/ Relu and clip negative values to z=0
-            polygons[str(layer_id)+'.split_polygons_nested']=split_polygons_with_relu_simple(polygons[str(layer_id)+'.linear_out']) #Triple nested list so we can simplify merging process layer. 
-            polygons[str(layer_id)+'.split_polygons_nested_clipped'] = clip_polygons(polygons[str(layer_id)+'.split_polygons_nested'])
-            #Merge zero regions
-            polygons[str(layer_id)+'.split_polygons_merged'] = merge_zero_regions(polygons[str(layer_id)+'.split_polygons_nested_clipped'])
-            #Compute new tiling
-            #This min_area thing is helpful for compute time!!! 1e-5 has lots of detail, could go bigger for final. 
-            polygons[str(layer_id)+'.new_tiling']=recompute_tiling_general(polygons[str(layer_id)+'.split_polygons_merged'], min_area=1e-5)
-            print('Retiled plane into ', str(len(polygons[str(layer_id)+'.new_tiling'])), ' polygons.')
-
-            #Optional filtering step
-            #polygons[str(layer_id)+'.new_tiling'] = filter_small_polygons(polygons[str(layer_id)+'.new_tiling'], min_area=1e-5)
-            #print(str(len(polygons[str(layer_id)+'.new_tiling'])), ' polygons remaining after filtering out small polygons')
-
-        #Last linear layer & output
-        polygons[str(layer_id+1)+'.linear_out']=process_with_layers(model.model, polygons[str(layer_id)+'.new_tiling'])
-        intersection_lines, new_2d_tiling, upper_polytope, indicator = intersect_polytopes(*polygons[str(layer_id+1)+'.linear_out'])
-        my_indicator, my_top_polygons = compute_top_polytope(model, new_2d_tiling)
-
-        print('finished computing polygons and surfaces')
-        
-
-
-        #I guess I don't have to do this every time -> coudl just draw all the lines? Might be better when we get really big here
-        loops=order_closed_loops_with_closure(intersection_lines)
-        lines=VGroup()
-        print('Computing loops...')
-        for loop in tqdm(loops): 
-            loop=loop*np.array([1, 1, viz_scales[2]])
-            line = VMobject()
-            line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=5)
-            lines.add(line)
-        lines.shift([3, 0, 0])
-
-        polygon_max_height=0.8
-
-        print('Creating top polygons...')
-        top_polygons_vgroup=VGroup()
-        for j, p in tqdm(enumerate(my_top_polygons)):
-            if len(p)<3: continue
-            if my_indicator[j]: color=YELLOW
-            else: color=BLUE
-            
-            p_scaled=copy.deepcopy(p) #Scaling for viz
-            p_scaled[:,2]=p_scaled[:,2]*viz_scales[2]
-            p_scaled[:, -1] = np.clip(p_scaled[:, -1], -polygon_max_height, polygon_max_height)
-            poly_3d = Polygon(*p_scaled,
-                             fill_color=color,
-                             fill_opacity=0.4,
-                             stroke_color=color,
-                             stroke_width=0.5)
-            poly_3d.set_opacity(0.3)
-            poly_3d.shift([3, 0, 0])
-            top_polygons_vgroup.add(poly_3d)
-
-        surfaces[0][0].shift([3,0,0])
-        polygons_21=manim_polygons_from_np_list(polygons['1.linear_out'][0], colors=colors, viz_scale=viz_scales[2], 
-                                                polygon_max_height=polygon_max_height, stroke_width=0.5)
-        polygons_21_copy=polygons_21.copy()
-        polygons_21.shift([3, 0, 0.001]) #Move slightly above map
-
-        surfaces[0][1].shift([3,0,0])
-        polygons_22=manim_polygons_from_np_list(polygons['1.linear_out'][1], colors=colors, viz_scale=viz_scales[2], 
-                                                polygon_max_height=polygon_max_height, stroke_width=0.5)
-        polygons_22_copy=polygons_22.copy()
-        polygons_22.shift([3, 0, 0.002]) #Move slightly above map
-
-        polygons_22.set_color(YELLOW)
-        polygons_21.set_color(BLUE)
-
-        polygons_21.set_opacity(0.1)
-        polygons_22.set_opacity(0.1)
-        surfaces[0][0].set_opacity(0.4)
-        surfaces[0][1].set_opacity(0.4)
-        top_polygons_vgroup.set_opacity(0.5)
-
-        # self.frame.reorient(0, 20, 0, (4.28, 0.08, -0.19), 3.97)
-        self.frame.reorient(0, 0, 0, (4.28, 0.08, -0.19), 3.97)
-        # self.add(surfaces[0][0], surfaces[2][1]) #ok i want to include these, but the max value clipping is tricky -> ignore for now. 
-        self.add(polygons_21, polygons_22)
-        self.add(top_polygons_vgroup)
-        self.add(lines)
-
-
-        with open('_2025/backprop_3/models/one_layer_100k_neurons_long_border.p', 'rb') as file:
-            borders_interp = pickle.load(file)
-
-        lines_flat_cleaner=VGroup()
-        for loop in borders_interp: 
-            loop=np.hstack((loop, np.zeros((len(loop), 1))))
-            line = VMobject()
-            line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=4)
-            lines_flat_cleaner.add(line)
-        lines_flat_cleaner.shift([5.7, 0, 0])        
-
-
-
-        self.add(flat_map, lines_flat_cleaner)
-        self.wait()
-
-        self.play(self.frame.animate.reorient(0, 30, 0, (4.28, 0.08, -0.19), 3.97), run_time=8) #Little motion
-        self.wait()
-
-
-
-        # self.remove(lines)
-
-        self.wait(20)
-        self.embed()
-
-
-        # self.add(top_polygons_vgroup)
-
-
-        # self.play(ReplacementTransform(polygons_21, top_polygons_vgroup), run_time=3
-
-
-        # polygons_22.set_opacity(0.4)
-
-
-
-        # self.play(polygons_21.animate.set_color(BLUE), run_time=1.5)
-        # self.play(polygons_22.animate.set_color(YELLOW), run_time=1.5)
-
-        # self.remove(netherlands_label, belgium_label)
-        # self.play(polygons_21.animate.shift([0, 0, -0.8]), 
-        #           surfaces[2][0].animate.shift([0, 0, -0.8]), 
-        #           axes_1.animate.shift([0, 0, -0.8]), 
-        #           polygons_22.animate.shift([0, 0, 0.8]),
-        #           surfaces[2][1].animate.shift([0, 0, 0.8]), 
-        #           axes_2.animate.shift([0, 0, 0.8]),
-        #           # self.frame.animate.reorient(-7, 40, 0, (3.21, 0.51, -0.66), 3.95), 
-        #           group_11[0].animate.set_opacity(0.0),
-        #           group_11[1].animate.set_opacity(0.0),
-        #           group_12[0].animate.set_opacity(0.0),
-        #           group_12[1].animate.set_opacity(0.0),
-        #           group_13[0].animate.set_opacity(0.0),
-        #           group_13[1].animate.set_opacity(0.0),      
-        #           run_time=3)
-        # self.wait()
-
-
-
-
-
-        # polygons_21_copy.shift([6, 0, 0])
-        # polygons_22_copy.shift([6, 0, 0])
-        # polygons_21_copy.set_color(BLUE)
-        # polygons_22_copy.set_color(YELLOW)
-
-        # loops=order_closed_loops_with_closure(intersection_lines)
-
-        # lines=VGroup()
-        # for loop in loops: 
-        #     loop=loop*np.array([1, 1, viz_scales[2]])
-        #     line = VMobject()
-        #     line.set_points_as_corners(loop)
-        #     line.set_stroke(color='#FF00FF', width=5)
-        #     lines.add(line)
-        # lines.shift([6, 0, 0])
-
-        # self.wait()
-        # self.play(ReplacementTransform(polygons_21.copy(), polygons_21_copy), 
-        #           ReplacementTransform(polygons_22.copy(), polygons_22_copy), 
-        #           surfaces[2][0].copy().animate.move_to([6,0,0]), 
-        #           surfaces[1].animate.set_opacity(0.1), 
-        #           og_lines.animate.set_opacity(0.2),
-        #           self.frame.animate.reorient(-2, 57, 0, (4.84, -0.09, 0.01), 5.02),
-        #           run_time=3)
-        # self.play(ShowCreation(lines), run_time=3)
-        # self.wait()
-
-
-
-
-
-
-
-        # intersection_points_raveled=np.array(intersection_lines).reshape(-1, 3)
-
-        # intersection_points_raveled=intersection_points_raveled*np.array([1, 1, viz_scales[2]])
-        # intersection_points_raveled=intersection_points_raveled[(2, 6, 5, 1, 0),:] #Change ordering for smooth animation in
-        # self.add(polygons_21_copy, polygons_22_copy)
-        # self.play(ShowCreation(lines))
-
-
-
-
-
-        # self.play(*[ReplacementTransform(surfaces_1_copy[i], surfaces[2][0]) for i in range(len(surfaces[1]))]+
-        #            [Transform(og_line_copies[j], shifted_line_copies[j]) for j in range(len(shifted_line_copies))],
-        #            # [og_line_copies[j].animate.move_to(shifted_line_copies[j]) for j in range(len(shifted_line_copies))],
-        #     run_time=3.0)
-
-
-
-
-        # og_line_copies.shift([1,1,1])
-        # og_line_copies.set_opacity(1.0)
-
-        # self.play(*[og_line_copies[j].animate.move_to(shifted_line_copies[j]) for j in range(len(shifted_line_copies))])
-
-
-
-
-
-        # self.add(shifted_line_copies)
-
-
-
-        # shifted_line_copies=Group(*[first_layer_groups[i][1].copy() for i in range(len(first_layer_groups))])
-
-        # for i in range(8): print(len(first_layer_groups[i]))
-
-        # # Create the mapped lines for the first output neuron
-        # mapped_relu_lines = map_relu_lines_to_surface(first_layer_groups, surface_funcs[2][0])
-        # mapped_relu_lines.shift([3, 0, 0.6])  # Same shift as surfaces[2][0]
-
-
-        # self.add(mapped_relu_lines)
-
-
-
-        # self.play(ReplacementTransform(first_layer_groups[0][1].copy(), mapped_relu_lines[0]))
-
-
-        # # Then animate the transformation
-        # self.play(
-        #     *[ReplacementTransform(surfaces[1][i].copy(), surfaces[2][0]) for i in range(len(surfaces[1]))],
-        #     *[ReplacementTransform(first_layer_groups[i][1].copy(), mapped_relu_lines[i]) 
-        #       for i in range(len(first_layer_groups)) if len(first_layer_groups[i]) > 1],
-        #     run_time=3.0
-        # )
-
-
-
-
-
-        # mapped_relu_lines = create_mapped_relu_lines(first_layer_groups, surfaces, model, target_neuron_idx=0)
-        # mapped_relu_lines.shift([3, 0, 0.6])  # Same shift as surfaces[2][0]
-
-        # self.add(mapped_relu_lines)
-
-        # self.play(
-        #     *[ReplacementTransform(surfaces[1][i].copy(), surfaces[2][0]) for i in range(len(surfaces[1]))],
-        #     *[ReplacementTransform(first_layer_groups[i][1].copy(), mapped_relu_lines[i]) 
-        #       for i in range(len(first_layer_groups)) if len(first_layer_groups[i]) > 1],
-        #     run_time=3.0
-        # )
-
-
-        # self.wait()
-        # self.play(*[ReplacementTransform(surfaces[1][i].copy(), surfaces[2][0]) for i in range(len(surfaces[1]))],
-        #     run_time=3.0)
-
-
-
-        # self.add(surfaces[2][0], polygons_21)        
-        # self.add(surfaces[2][1], polygons_22)
-
-
-        # self.wait()
-
-        # Hmm how am I going to animate these freaking Relu lines over...I think they can turn into polygons once they get there
-        # but they gotta move!
 
 
 

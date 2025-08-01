@@ -1108,7 +1108,7 @@ class p7g_512(InteractiveScene):
         my_indicator, my_top_polygons = compute_top_polytope(model, new_2d_tiling)
 
         
-        with open('_2025/backprop_3/models/256_1_borders.p', 'rb') as file:
+        with open('_2025/backprop_3/models/512_1_borders.p', 'rb') as file:
             borders_interp = pickle.load(file)
 
         #I guess I don't have to do this every time -> coudl just draw all the lines? Might be better when we get really big here
@@ -1213,7 +1213,7 @@ class p7h_1024(InteractiveScene):
         my_indicator, my_top_polygons = compute_top_polytope(model, new_2d_tiling)
 
         
-        with open('_2025/backprop_3/models/256_1_borders.p', 'rb') as file:
+        with open('_2025/backprop_3/models/1024_borders.p', 'rb') as file:
             borders_interp = pickle.load(file)
 
         #I guess I don't have to do this every time -> coudl just draw all the lines? Might be better when we get really big here
@@ -1284,28 +1284,76 @@ class p7h_1024(InteractiveScene):
 
 class p7i_10k(InteractiveScene):
     def construct(self):
-        model_path='_2025/backprop_3/models/one_layer_10k_neurons_long.pth'
-        model = BaarleNet([10000])
-        model.load_state_dict(torch.load(model_path))
-        viz_scales=[0.07, 0.07, 0.04]
-        num_neurons=[10000, 10000, 2]
+        # model_path='_2025/backprop_3/models/one_layer_10k_neurons_long.pth'
+        # model = BaarleNet([10000])
+        # model.load_state_dict(torch.load(model_path))
+        # viz_scales=[0.07, 0.07, 0.04]
+        # num_neurons=[10000, 10000, 2]
+
+        
+        with open('_2025/backprop_3/models/10k_borders.p', 'rb') as file:
+            borders_interp = pickle.load(file)
+
+        def flat_surf_func(u, v): return [u, v, 0]
+        flat_map_surf = ParametricSurface(flat_surf_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
+        flat_map=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+        flat_map.set_shading(0,0,0).set_opacity(0.8)
+        flat_map.shift([5.7, 0, 0])
+
+        lines_flat_cleaner=VGroup()
+        for loop in borders_interp: 
+            loop=np.hstack((loop, np.zeros((len(loop), 1))))
+            line = VMobject()
+            line.set_points_as_corners(loop)
+            line.set_stroke(color='#FF00FF', width=4)
+            lines_flat_cleaner.add(line)
+        lines_flat_cleaner.shift([5.7, 0, 0])      
+
+        self.frame.reorient(0, 0, 0, (5.67, -0.01, -0.19), 3.47)
 
 
+        self.add(flat_map, lines_flat_cleaner)
+
+        self.wait(20)
+        self.embed()
 
 
 
 
 class p7j_100k(InteractiveScene):
     def construct(self):
-        model_path='_2025/backprop_3/models/one_layer_100k_neurons_long.pth'
-        model = BaarleNet([100000])
-        model.load_state_dict(torch.load(model_path))
-        viz_scales=[0.07, 0.07, 0.04]
-        num_neurons=[100000, 100000, 2]
+        # model_path='_2025/backprop_3/models/one_layer_100k_neurons_long.pth'
+        # model = BaarleNet([100000])
+        # model.load_state_dict(torch.load(model_path))
+        # viz_scales=[0.07, 0.07, 0.04]
+        # num_neurons=[100000, 100000, 2]
 
 
+        with open('_2025/backprop_3/models/100k_borders.p', 'rb') as file:
+            borders_interp = pickle.load(file)
+
+        def flat_surf_func(u, v): return [u, v, 0]
+        flat_map_surf = ParametricSurface(flat_surf_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
+        flat_map=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+        flat_map.set_shading(0,0,0).set_opacity(0.8)
+        flat_map.shift([5.7, 0, 0])
+
+        lines_flat_cleaner=VGroup()
+        for loop in borders_interp: 
+            loop=np.hstack((loop, np.zeros((len(loop), 1))))
+            line = VMobject()
+            line.set_points_as_corners(loop)
+            line.set_stroke(color='#FF00FF', width=4)
+            lines_flat_cleaner.add(line)
+        lines_flat_cleaner.shift([5.7, 0, 0])      
+
+        self.frame.reorient(0, 0, 0, (5.67, -0.01, -0.19), 3.47)
 
 
+        self.add(flat_map, lines_flat_cleaner)
+
+        self.wait(20)
+        self.embed()
 
 
 

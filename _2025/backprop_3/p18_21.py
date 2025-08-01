@@ -101,12 +101,13 @@ class p18a(InteractiveScene):
 
         map_img=ImageMobject(graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-11.png')
         map_img.move_to(ORIGIN)
-        map_img.scale(0.25)
+        
 
         net=VGroup()
         for p in sorted(glob.glob(svg_path+'/p18_21_to_manim*.svg')):
             net.add(SVGMobject(p)[1:])  
 
+        map_frame=net[1]
         layer_labels=net[4]
         input_circles=net[6]
         neuron_11_shape=net[7]
@@ -160,17 +161,85 @@ class p18a(InteractiveScene):
         b2_2=Tex(r'+b^{(2)}_{2}', font_size=7).set_color(YELLOW)
         b2_2.move_to([0.55+horizontal_offset, -0.20, 0])
 
-        self.add(input_circles, neuron_11_shape, neuron_12_shape, neuron_21_shape, neuron_22_shape, layer_labels)
+        # self.add(input_circles, neuron_11_shape, neuron_12_shape, neuron_21_shape, neuron_22_shape, layer_labels)
+        inputs_group=Group(input_circles, x1, x2)
+        neuron_11_group=Group(neuron_11_shape, m11_1, m12_1, b1_1)
+        neuron_12_group=Group(neuron_12_shape, m21_1, m22_1, b2_1)
+        neuron_21_group=Group(neuron_21_shape, m11_2, m12_2, b1_2)
+        neuron_22_group=Group(neuron_22_shape, m21_2, m22_2, b2_2)
 
+        # self.frame.reorient(0, 0, 0, (0.48, -0.05, 0.0), 1.99)
+        # Ok so I'll so smooth handoff from illustrator to this - with the network towards the bottom of the screen
+        # I'll add in the 3d plane from 18b above in editing
+        # self.add(x1, x2, m11_1, m12_1, m21_1, m22_1, b1_1, b2_1)
+        # self.add(m11_2, m12_2, m21_2, m22_2, b1_2, b2_2)
+        self.frame.reorient(0, 0, 0, (0.52, 0.38, 0.0), 2.00)
+        self.add(layer_labels)
+        self.add(inputs_group, neuron_11_group, neuron_12_group, neuron_21_group, neuron_22_group)
+        self.wait()
 
-        self.frame.reorient(0, 0, 0, (0.48, -0.05, 0.0), 1.99)
-        self.add(x1, x2, m11_1, m12_1, m21_1, m22_1, b1_1, b2_1)
-        self.add(m11_2, m12_2, m21_2, m22_2, b1_2, b2_2)
+        #Ok now lower opacity on everything except the first neuron!
+        self.play(
+                  # inputs_group.animate.set_opacity(0.3), 
+                  neuron_12_group.animate.set_opacity(0.3),
+                  neuron_21_group.animate.set_opacity(0.3),
+                  neuron_22_group.animate.set_opacity(0.3),
+                  layer_labels.animate.set_opacity(0.3), 
+                    run_time=2)
+        self.wait()
 
-        # Ok that looks pretty good -> bring in a plane on an axes as a little sketch now maybe? 
-        # And then I can really start bringing stuff together??
+        #Now build out equation!
+        eq1=Tex(r'h_{1}^{(1)}=m_{11}^{(1)}x_{1}+m_{12}^{(1)}x_{2}+b_1^{(1)}', font_size=8).set_color(FRESH_TAN)
+        eq1.move_to([1.2, 0.8, 0])
+        eq1[6:12].set_color(CYAN) #m11_1
+        eq1[15:21].set_color(CYAN) #m12_1
+        eq1[24:].set_color(CYAN) #b_1
 
+        self.wait()
+        self.play(ReplacementTransform(x1.copy(), eq1[12:14]),
+                  ReplacementTransform(x2.copy(), eq1[21:23]),
+                  run_time=3 
+                 )
 
+        self.wait()
+        self.play(ReplacementTransform(m11_1.copy(), eq1[6:12]),
+                  ReplacementTransform(m12_1.copy(), eq1[15:21]),
+                  run_time=3 
+                 )
+        self.wait()
+        self.add(eq1[14])
+
+        self.play(ReplacementTransform(b1_1.copy(), eq1[23:]),run_time=3)
+        self.wait()
+
+        # Ok sick, so we've got a basic equation, and the plane in frame, 
+        # now it's time to add the map, right? Ok I think let's just scale it down and put it in lower left corner. 
+        #Let's try it
+        map_img.scale(0.22)
+        map_img.move_to([-0.65, -0.04, 0])
+        map_frame.scale(0.764)
+    
+        map_frame.move_to(map_img)
+        map_frame.shift([0, 0.015, 0])
+        self.play(FadeIn(map_img), FadeIn(map_frame))
+        self.wait()
+
+        #ok now we need our point on that map!
+        map_coords=Tex(r'(0.6, 0.4)', font_size=11).set_color('#FF00FF')
+        map_pt=Dot(ORIGIN, radius=0.015).set_color('#FF00FF')
+        map_pt.move_to([-0.39, 0.12, 0])
+        map_coords.move_to([-0.4, 0.2, 0])
+        self.add(map_pt, map_coords)
+
+        #Ok pieces together next equation, then move things over
+        #2.51*0.6+(-1.02)*0.4-1.24
+        eq2=Tex(r'h_{1}^{(1)}=(2.51)(0.6)+(-1.02)(0.4)+(-1.22)', font_size=6).set_color(FRESH_TAN)
+        eq2.move_to([1.25, 0.65, 0])
+        eq2[6:12].set_color(CYAN) #m11_1
+        eq2[16:25].set_color(CYAN) #m12_1
+        eq2[30:].set_color(CYAN) #b_1
+
+        self.add(eq2)
 
         self.wait(20)
         self.embed()
@@ -211,25 +280,24 @@ class p18b(InteractiveScene):
         plane_1.set_opacity(0.5)
         plane_1.set_color(CYAN)
 
-        axis_and_plane_11=Group(plane_1, axes_1)
+        axis_and_plane_11=Group(axes_1, plane_1)
 
-        x1=Tex('x_1', font_size=48).set_color(FRESH_TAN)
-       
+        x1=Tex('x_1', font_size=52).set_color(FRESH_TAN)
         x1.rotate(90*DEGREES, [1,0,0])
         x1.next_to(axes_1[0].get_end(), buff=0.15)
-        x2=Tex('x_2', font_size=48).set_color(FRESH_TAN)
+        x2=Tex('x_2', font_size=52).set_color(FRESH_TAN)
         x2.rotate(90*DEGREES, [1,0,0])
         x2.rotate(90*DEGREES, [0,0,1])
         x2.next_to(axes_1[1].get_end(), buff=0.15, direction=np.array([0,1,0]))
 
-        h1=Tex('h_1^{(1)}', font_size=36).set_color(CYAN)
+        h1=Tex('h_1^{(1)}', font_size=42).set_color(CYAN)
         h1.rotate(90*DEGREES, [1,0,0])
         h1.rotate(45*DEGREES, [0,0,1])
         h1.next_to(axes_1[2].get_end(), buff=0.15, direction=np.array([0,0,1]))
 
 
 
-        self.frame.reorient(44, 64, 0, (0.37, 0.13, -0.38), 6.00)
+        self.frame.reorient(44, 73, 0, (0.14, 0.04, -0.1), 6.00)
         self.add(axis_and_plane_11)
         self.add(x1, x2, h1)
 

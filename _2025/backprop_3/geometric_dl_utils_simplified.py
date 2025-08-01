@@ -25,6 +25,10 @@ def compute_top_polytope(model, tiling_2d):
         elif np.max(p2[:,2])>np.max(p1[:,2]): #Is this crazy?
             my_top_polygons.append(p2)
             my_indicator.append(1)
+        else:
+            #Tie break - GPT idea
+            my_top_polygons.append(p1)   
+            my_indicator.append(0)
     return my_indicator, my_top_polygons
 
 
@@ -178,7 +182,7 @@ def split_polygons_with_relu_simple(polygons):
     return split_polygons
 
 
-def recompute_tiling(polygons_nested):
+def recompute_tiling(polygons_nested, min_area=1e-10):
     '''
     polygons_nested is a list of list of list of polygons in 3d space as Nx3 or Nx2 numpy arrays 
     this method only uses the first 2 dimensions
@@ -242,9 +246,9 @@ def recompute_tiling(polygons_nested):
                         continue
                     elif hasattr(intersection, 'geoms'):  # MultiPolygon
                         for geom in intersection.geoms:
-                            if isinstance(geom, Polygon) and geom.area > 1e-10:
+                            if isinstance(geom, Polygon) and geom.area > min_area:
                                 new_regions.append(geom)
-                    elif isinstance(intersection, Polygon) and intersection.area > 1e-10:
+                    elif isinstance(intersection, Polygon) and intersection.area > min_area:
                         new_regions.append(intersection)
             
             current_regions = new_regions

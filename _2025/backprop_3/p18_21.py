@@ -236,10 +236,32 @@ class p18a(InteractiveScene):
         eq2=Tex(r'h_{1}^{(1)}=(2.51)(0.6)+(-1.02)(0.4)+(-1.22)', font_size=6).set_color(FRESH_TAN)
         eq2.move_to([1.25, 0.65, 0])
         eq2[6:12].set_color(CYAN) #m11_1
-        eq2[16:25].set_color(CYAN) #m12_1
-        eq2[30:].set_color(CYAN) #b_1
+        eq2[12:17].set_color('#FF00FF')
+        eq2[18:25].set_color(CYAN) #m12_1
+        eq2[25:30].set_color('#FF00FF')
+        eq2[31:].set_color(CYAN) #b_1
 
-        self.add(eq2)
+        eq3=Tex(r'=-0.14', font_size=8).set_color(CYAN)
+        eq3.move_to([0.95, 0.53, 0])
+        self.wait()
+
+        self.play(ReplacementTransform(map_coords[1:4].copy(), eq2[13:16]), run_time=3)
+        self.play(Transform(eq1[6:12].copy(), eq2[6:12]), run_time=1.5)
+        self.add(eq2[5], eq2[12:17])
+        self.wait()
+
+        self.play(ReplacementTransform(map_coords[5:8].copy(), eq2[26:29]), run_time=3)
+        self.play(Transform(eq1[15:21].copy(), eq2[18:25]), run_time=1.5)
+        self.add(eq2[17], eq2[25:30])
+        self.wait()
+
+        self.play(Transform(eq1[24:].copy(), eq2[31:]), run_time=1.5)
+        self.add(eq2[30])     
+        self.wait()   
+
+        self.play(Write(eq3))
+        self.wait()
+
 
         self.wait(20)
         self.embed()

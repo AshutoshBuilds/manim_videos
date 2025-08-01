@@ -1057,28 +1057,48 @@ class p7h_1024(InteractiveScene):
         self.add(lines)
 
 
-        def flat_surf_func(u, v): return [u, v, 0]
-        flat_map_surf = ParametricSurface(flat_surf_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
-        flat_map=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
-        flat_map.set_shading(0,0,0).set_opacity(0.8)
-        flat_map.shift([5.7, 0, 0])
+        # For bigger models, get decisin border from interp method instead of polygon intersection. 
+        # def flat_surf_func(u, v): return [u, v, 0]
+        # flat_map_surf = ParametricSurface(flat_surf_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
+        # flat_map=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+        # flat_map.set_shading(0,0,0).set_opacity(0.8)
+        # flat_map.shift([5.7, 0, 0])
 
-        lines_flat=VGroup()
-        for loop in loops: 
-            loop=loop*np.array([1, 1, 0])
+        # lines_flat=VGroup()
+        # for loop in loops: 
+        #     loop=loop*np.array([1, 1, 0])
+        #     line = VMobject()
+        #     line.set_points_as_corners(loop)
+        #     line.set_stroke(color='#FF00FF', width=4)
+        #     lines_flat.add(line)
+        # lines_flat.shift([5.7, 0, 0])
+
+
+        # self.add(flat_map)
+        self.wait()
+
+        ## ---Try cleaner border computed in notebook ---
+        ## If these look significantly better then could consider them on the 3d version too -> we'll see. 
+        with open('_2025/backprop_3/models/one_layer_1024_nuerons_long_borders.p', 'rb') as file:
+            borders_interp = pickle.load(file)
+
+        lines_flat_cleaner=VGroup()
+        for loop in borders_interp: 
+            loop=np.hstack((loop, np.zeros((len(loop), 1))))
             line = VMobject()
             line.set_points_as_corners(loop)
             line.set_stroke(color='#FF00FF', width=4)
-            lines_flat.add(line)
-        lines_flat.shift([5.7, 0, 0])
+            lines_flat_cleaner.add(line)
+        lines_flat_cleaner.shift([5.7, 0, 0])        
+
+        self.add(lines_flat_cleaner)
 
 
-        self.add(flat_map, lines_flat)
         self.wait()
-
         self.play(self.frame.animate.reorient(0, 30, 0, (4.28, 0.08, -0.19), 3.97), run_time=8) #Little motion
         self.wait()
 
+        #Ok so i think it would be nice to use the cleaner border on the polygons too, but I'll leave that for a second pass if i have time!
 
 
         # self.remove(lines)
@@ -1208,23 +1228,22 @@ class p7i_10k(InteractiveScene):
         self.add(lines)
 
 
-        def flat_surf_func(u, v): return [u, v, 0]
-        flat_map_surf = ParametricSurface(flat_surf_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
-        flat_map=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
-        flat_map.set_shading(0,0,0).set_opacity(0.8)
-        flat_map.shift([5.7, 0, 0])
+        with open('_2025/backprop_3/models/one_layer_10k_neurons_long_border.p', 'rb') as file:
+            borders_interp = pickle.load(file)
 
-        lines_flat=VGroup()
-        for loop in loops: 
-            loop=loop*np.array([1, 1, 0])
+        lines_flat_cleaner=VGroup()
+        for loop in borders_interp: 
+            loop=np.hstack((loop, np.zeros((len(loop), 1))))
             line = VMobject()
             line.set_points_as_corners(loop)
             line.set_stroke(color='#FF00FF', width=4)
-            lines_flat.add(line)
-        lines_flat.shift([5.7, 0, 0])
+            lines_flat_cleaner.add(line)
+        lines_flat_cleaner.shift([5.7, 0, 0])        
+
+        self.add(lines_flat_cleaner)
 
 
-        self.add(flat_map, lines_flat)
+        self.add(flat_map, lines_flat_cleaner)
         self.wait()
 
         self.play(self.frame.animate.reorient(0, 30, 0, (4.28, 0.08, -0.19), 3.97), run_time=8) #Little motion
@@ -1360,23 +1379,21 @@ class p7j_100k(InteractiveScene):
         self.add(lines)
 
 
-        def flat_surf_func(u, v): return [u, v, 0]
-        flat_map_surf = ParametricSurface(flat_surf_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
-        flat_map=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
-        flat_map.set_shading(0,0,0).set_opacity(0.8)
-        flat_map.shift([5.7, 0, 0])
+        with open('_2025/backprop_3/models/one_layer_100k_neurons_long_border.p', 'rb') as file:
+            borders_interp = pickle.load(file)
 
-        lines_flat=VGroup()
-        for loop in loops: 
-            loop=loop*np.array([1, 1, 0])
+        lines_flat_cleaner=VGroup()
+        for loop in borders_interp: 
+            loop=np.hstack((loop, np.zeros((len(loop), 1))))
             line = VMobject()
             line.set_points_as_corners(loop)
             line.set_stroke(color='#FF00FF', width=4)
-            lines_flat.add(line)
-        lines_flat.shift([5.7, 0, 0])
+            lines_flat_cleaner.add(line)
+        lines_flat_cleaner.shift([5.7, 0, 0])        
 
 
-        self.add(flat_map, lines_flat)
+
+        self.add(flat_map, lines_flat_cleaner)
         self.wait()
 
         self.play(self.frame.animate.reorient(0, 30, 0, (4.28, 0.08, -0.19), 3.97), run_time=8) #Little motion

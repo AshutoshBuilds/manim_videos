@@ -416,15 +416,19 @@ class p20_21(InteractiveScene):
         # Hmm do I want to consider a bit of a color change here? 
         # like make all the neurons match?? 
 
-        eq1 = Tex(r"h_{1}^{(1)} = m_{11}^{(1)} x_{1} + m_{12}^{(1)} x_{2} + b_{1}^{(1)}", font_size=10).set_color(FRESH_TAN)
-        eq2 = Tex(r"h_{2}^{(1)} = m_{21}^{(1)} x_{1} + m_{22}^{(1)} x_{2} + b_{2}^{(1)}", font_size=10).set_color(FRESH_TAN)
-        eq3 = Tex(r"h_{1}^{(2)} = m_{11}^{(2)} h_{1}^{(1)} + m_{12}^{(2)} h_{2}^{(1)} + b_{1}^{(2)}", font_size=10).set_color(FRESH_TAN)
+        eq1 = Tex(r"h_{1}^{(1)} = m_{11}^{(1)} x_{1} + m_{12}^{(1)} x_{2} + b_{1}^{(1)}", font_size=7).set_color(FRESH_TAN)
+        eq2 = Tex(r"h_{2}^{(1)} = m_{21}^{(1)} x_{1} + m_{22}^{(1)} x_{2} + b_{2}^{(1)}", font_size=7).set_color(FRESH_TAN)
+        eq3 = Tex(r"h_{1}^{(2)} = m_{11}^{(2)} h_{1}^{(1)} + m_{12}^{(2)} h_{2}^{(1)} + b_{1}^{(2)}", font_size=7).set_color(FRESH_TAN)
         # eq3[12:17].set_color(CYAN)
         # eq3[24:29].set_color(YELLOW)
 
-        eq1.move_to([0.55, 1.1, 0])
-        eq2.move_to([0.55, 0.9, 0])
-        eq3.move_to([0.55, 0.7, 0])
+        # eq1.move_to([0.55, 1.1, 0])
+        # eq2.move_to([0.55, 0.9, 0])
+        # eq3.move_to([0.55, 0.7, 0])
+
+        eq1.move_to([0.27, 0.35, 0])
+        eq2.move_to([0.27, -0.42, 0])
+        eq3.move_to([1.3, 0.35, 0])
         
         eq3[12:17].set_color(CYAN)
         eq3[24:29].set_color(YELLOW)
@@ -466,8 +470,17 @@ class p20_21(InteractiveScene):
         self.add(eq3)
         self.wait()
 
+        #Move top and center so we can start working through substitutions! Handoff to Pranav
+        eq3.move_to([0.55, 1.1, 0]).scale(1.1)
 
-        # neuron_11_group.set_color(PURPLE)
+        eq4 = Tex(
+            r"h_{1}^{(2)} = m_{11}^{(2)}\bigg( m_{11}^{(1)}x_{1}+m_{12}^{(1)}x_{2}+b_1^{(1)} \bigg) "
+            r"+ m_{12}^{(2)}\bigg( m_{21}^{(1)}x_{1}+m_{22}^{(1)}x_{2}+b_2^{(1)} \bigg) + b_1^{(2)}", font_size=10
+        ).move_to(eq3.get_center())
+
+       
+
+
 
         self.wait(20)
         self.embed()

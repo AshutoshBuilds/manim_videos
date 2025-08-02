@@ -20,7 +20,8 @@ FRESH_TAN='#dfd0b9'
 CYAN='#00FFFF'
 
 graphics_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/graphics/' #Point to folder where map images are
-colors = [RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
+# colors = [BLUE, GREY, GREEN, TEAL, PURPLE, ORANGE, PINK, TEAL, RED, YELLOW ]
+colors = [GREY, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
 
 class p35_41(InteractiveScene):
     def construct(self):
@@ -107,10 +108,10 @@ class p35_41(InteractiveScene):
         group_11.shift([0, 0, 1.5])
         group_13.shift([0, 0, -1.5])
 
-        polygons_21=manim_polygons_from_np_list(polygons['1.linear_out'][0], colors=colors, viz_scale=viz_scales[2])
+        polygons_21=manim_polygons_from_np_list(polygons['1.linear_out'][0], colors=colors, viz_scale=viz_scales[2], opacity=0.6)
         polygons_21.shift([0, 0, 0.001]) #Move slightly above map
 
-        polygons_22=manim_polygons_from_np_list(polygons['1.linear_out'][1], colors=colors, viz_scale=viz_scales[2])
+        polygons_22=manim_polygons_from_np_list(polygons['1.linear_out'][1], colors=colors, viz_scale=viz_scales[2], opacity=0.6)
         polygons_22.shift([0, 0, 0.001]) #Move slightly above map
 
         group_21=Group(surfaces[2][0], polygons_21)
@@ -143,6 +144,8 @@ class p35_41(InteractiveScene):
         group_31[0].set_opacity(0.9)
         group_32[0].set_opacity(0.9)
 
+        # group_21.set_opacity(0.9)
+        # group_22.set_opacity(0.9)
 
         self.frame.reorient(-1, 46, 0, (3.09, 0.56, -0.42), 7.25)
         self.add(group_12, group_13)
@@ -171,6 +174,11 @@ class p35_41(InteractiveScene):
         coords_group_2.move_to([0.56,0.22,0.0])
         coords_group_3.move_to([0.56,0.22,-1.5])
 
+        coords_group_4=coords_group_2.copy()
+        coords_group_5=coords_group_2.copy()
+        coords_group_4.shift([3,0.0,0.77])
+        coords_group_5.shift([3,0.0,-0.83])
+
         #Zoom in to overhead of first map and draw on point!
         self.wait()
 
@@ -181,13 +189,47 @@ class p35_41(InteractiveScene):
                  run_time=4)
         self.wait()
 
-        #Now right on points!
+        #Now write on points!
+        self.play(Write(coords_group_1[1]), FadeIn(coords_group_1[0]), run_time=2)
+        self.wait()
+
+        self.play(self.frame.animate.reorient(-1, 47, 0, (3.25, 0.26, -0.22), 4.15), 
+                  FadeIn(coords_group_2[0]), #Try just the dot
+                  FadeIn(coords_group_3[0]),
+                  FadeIn(coords_group_5[0]),
+                  FadeIn(coords_group_4[0]),
+                  Write(coords_group_4[1]), #But include coords on top layer!
+                 run_time=5.0)
+        self.wait()
+
+        # Oh man could I do a cool highlight of the linear region I'm talking about?!
+        # self.play(Indicate(polygons_21[0], color=GREY))
+        # Oh man could I do a cool highlight of the linear region I'm talking about?!
+        outline = polygons_21[0].copy()
+        outline.set_fill(opacity=0)
+        outline.set_stroke('#FF00FF', width=4, opacity=0.9)
+        self.play(ShowCreation(outline, run_time=2))
+        self.wait()
+
         
 
 
-        self.add(coords_group_1)
-        self.add(coords_group_2)
-        self.add(coords_group_3)
+
+
+
+        # self.add(coords_group_5)
+        # self.add(coords_group_4)
+        # self.add(coords_group_2)
+        # self.add(coords_group_3)
+
+
+        
+
+
+
+        # self.add(coords_group_1)
+        # self.add(coords_group_2)
+        # self.add(coords_group_3)
 
         self.wait()
 

@@ -20,7 +20,7 @@ class BaarleNet(nn.Module):
     def forward(self, x):
         return self.model(x)
 
-def manim_polygons_from_np_list(np_polygon_list, colors=None, viz_scale=1.0, stroke_width=2, polygon_max_height=None):
+def manim_polygons_from_np_list(np_polygon_list, colors=None, viz_scale=1.0, stroke_width=2, polygon_max_height=None, opacity=0.3):
     if colors is None: 
         colors = [RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
     polygons=VGroup()
@@ -35,7 +35,7 @@ def manim_polygons_from_np_list(np_polygon_list, colors=None, viz_scale=1.0, str
                          fill_opacity=0.7,
                          stroke_color=colors[j%len(colors)],
                          stroke_width=stroke_width)
-        poly_3d.set_opacity(0.3)
+        poly_3d.set_opacity(opacity)
         polygons.add(poly_3d)
     return polygons
 

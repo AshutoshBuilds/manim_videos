@@ -571,13 +571,126 @@ class p18b(InteractiveScene):
         self.wait()
 
 
+        self.wait()
 
+        self.wait(20)
+        self.embed()
+
+
+class p21_simple_planes(InteractiveScene):
+    def construct(self):
+
+        model_path='_2025/backprop_3/models/2_1.pth'
+        model = BaarleNet([2])
+        model.load_state_dict(torch.load(model_path))
+
+
+        axes_1 = ThreeDAxes(
+            # x_range=[-15, 15, 1],
+            # y_range=[-15, 15, 1],
+            x_range=[-1, 1, 1],
+            y_range=[-1, 1, 1],
+            z_range=[-1, 1, 1],
+            width=4,
+            height=4,
+            depth=3,
+            axis_config={
+                "color": FRESH_TAN,
+                "include_ticks": False,
+                "include_numbers": False,
+                "include_tip": True,
+                "stroke_width":4,
+                "tip_config": {"width":0.08, "length":0.08}
+                }
+        )
+
+        w=model.model[0].weight.detach().numpy()
+        b=model.model[0].bias.detach().numpy()
+        vertical_viz_scale=0.3
+        plane_1=LinearPlaneWithGrid(axes_1, w[0,1], w[0,0], b[0], vertical_viz_scale=vertical_viz_scale, grid_lines=12)
+        plane_1.set_opacity(0.5)
+        plane_1.set_color(CYAN)
+
+        axis_and_plane_11=Group(axes_1, plane_1)
+
+        x1=Tex('x_1', font_size=52).set_color(FRESH_TAN)
+        x1.rotate(90*DEGREES, [1,0,0])
+        x1.next_to(axes_1[0].get_end(), buff=0.15)
+        x2=Tex('x_2', font_size=52).set_color(FRESH_TAN)
+        x2.rotate(90*DEGREES, [1,0,0])
+        x2.rotate(90*DEGREES, [0,0,1])
+        x2.next_to(axes_1[1].get_end(), buff=0.15, direction=np.array([0,1,0]))
+
+        h1=Tex('h_1^{(1)}', font_size=42).set_color(CYAN)
+        h1.rotate(90*DEGREES, [1,0,0])
+        h1.rotate(45*DEGREES, [0,0,1])
+        h1.next_to(axes_1[2].get_end(), buff=0.15, direction=np.array([0,0,1]))
+
+
+        self.frame.reorient(44, 73, 0, (0.14, 0.04, -0.1), 6.00)
+        self.add(axis_and_plane_11)
+        self.add(x1, x2, h1)
+        self.wait()
+        self.remove(plane_1, h1)
+
+        h2=Tex('h_2^{(1)}', font_size=42).set_color(YELLOW)
+        h2.rotate(90*DEGREES, [1,0,0])
+        h2.rotate(45*DEGREES, [0,0,1])
+        h2.next_to(axes_1[2].get_end(), buff=0.15, direction=np.array([0,0,1]))
+
+        w=model.model[0].weight.detach().numpy()
+        b=model.model[0].bias.detach().numpy()
+        vertical_viz_scale=0.2
+        plane_2=LinearPlaneWithGrid(axes_1, w[1,1], w[1,0], b[1], vertical_viz_scale=vertical_viz_scale, grid_lines=12)
+        plane_2.set_opacity(0.5)
+        plane_2.set_color(YELLOW)
+
+        self.frame.reorient(45, 60, 0, (-0.0, 0.08, 0.12), 6.00)
+
+        self.add(h2, plane_2)
+        self.wait()
+        self.remove(h2, plane_2)
+
+        h3=Tex('h_2^{(1)}', font_size=42).set_color('#FF00FF')
+        h3.rotate(90*DEGREES, [1,0,0])
+        h3.rotate(45*DEGREES, [0,0,1])
+        h3.next_to(axes_1[2].get_end(), buff=0.15, direction=np.array([0,0,1]))
+
+        w=model.model[2].weight.detach().numpy()
+        b=model.model[2].bias.detach().numpy()
+        vertical_viz_scale=0.2
+        plane_3=LinearPlaneWithGrid(axes_1, w[0,1], w[0,0], b[0], vertical_viz_scale=vertical_viz_scale, grid_lines=12)
+        plane_3.set_opacity(0.5)
+        plane_3.set_color('#FF00FF')
+
+        self.frame.reorient(45, 60, 0, (-0.0, 0.08, 0.12), 6.00)
+
+        self.add(h3, plane_3)
+        self.wait()
+        self.remove(h3, plane_3)
+
+
+        h4=Tex('h_2^{(1)}', font_size=42).set_color(CHILL_GREEN)
+        h4.rotate(90*DEGREES, [1,0,0])
+        h4.rotate(45*DEGREES, [0,0,1])
+        h4.next_to(axes_1[2].get_end(), buff=0.15, direction=np.array([0,0,1]))
+
+        w=model.model[2].weight.detach().numpy()
+        b=model.model[2].bias.detach().numpy()
+        vertical_viz_scale=0.2
+        plane_4=LinearPlaneWithGrid(axes_1, w[1,1], w[1,0], b[1], vertical_viz_scale=vertical_viz_scale, grid_lines=12)
+        plane_4.set_opacity(0.5)
+        plane_4.set_color(CHILL_GREEN)
+
+        self.frame.reorient(45, 60, 0, (-0.0, 0.08, 0.12), 6.00)
+
+        self.add(h4, plane_4)
+        self.wait()
 
 
         self.wait()
 
         self.wait(20)
         self.embed()
-
 
 

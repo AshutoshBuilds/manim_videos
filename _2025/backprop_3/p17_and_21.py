@@ -262,6 +262,124 @@ class p17(InteractiveScene):
         self.wait(20)
         self.embed()
 
+class p21_final_planes(InteractiveScene):
+    def construct(self):
+        map_img=ImageMobject(graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-11.png')
+        map_img.move_to(ORIGIN)
+        map_img.scale(0.25)
+        
+        axes_1 = ThreeDAxes(
+            x_range=[-5, 5, 1],
+            y_range=[-5, 5, 1],
+            z_range=[-3.5, 3.5, 1],
+            width=1,
+            height=1,
+            depth=1,
+            axis_config={
+                "color": CHILL_BROWN,
+                "include_ticks": False,
+                "include_numbers": False,
+                "include_tip": True,
+                "stroke_width":2,
+                "tip_config": {"width":0.015, "length":0.015}
+                }
+        )
+        
+        plane_1=LinearPlane(axes_1, 0.5, 1.2, 4, vertical_viz_scale=0.2)
+        plane_1.set_opacity(0.2)
+        plane_1.set_color('#FF00FF')
+        
+        plane_2=LinearPlane(axes_1, -1, 0.2, 4, vertical_viz_scale=0.2)
+        plane_2.set_opacity(0.5)
+        plane_2.set_color(CHILL_GREEN)
+        
+        # Create the intersection line
+        intersection_line = IntersectionLine(
+            axes_1, 
+            plane_1, 
+            plane_2, 
+            t_range=(-5, 5, 0.1),
+            color=WHITE,
+            stroke_width=4
+        )
+            
+        self.frame.reorient(0, 0, 0, (0.01, -0.01, 0.0), 1.29)
+        self.add(map_img)
+
+        self.wait()
+        self.play(ShowCreation(plane_1), ShowCreation(plane_2), self.frame.animate.reorient(0, 46, 0, (-0.03, 0.02, 0.01), 1.62), run_time=5)
+        self.wait()
+
+        self.play(self.frame.animate.reorient(-16, 47, 0, (-0.04, 0.02, 0.0), 1.62))
+        self.play(ShowCreation(intersection_line))
+        self.wait()
+        
+        ## Move to overhead view, bring down line flat onto z=0, and each color half plane onto z=0
+        
+        class FlatIntersectionLine(ParametricCurve):
+            def __init__(self, axes, plane1, plane2, t_range=(-5, 5, 0.1), **kwargs):
+                self.axes = axes
+                self.plane1 = plane1
+                self.plane2 = plane2
+                self.intersection_func = find_plane_intersection(plane1, plane2)
+                
+                super().__init__(
+                    lambda t: self.axes.c2p(*self.intersection_func(t)[:2], 0),  # Flatten to z=0
+                    t_range=t_range,
+                    **kwargs
+                )
+        
+        flat_intersection_line = FlatIntersectionLine(
+            axes_1, 
+            plane_1, 
+            plane_2, 
+            t_range=(-5, 5, 0.1),
+            color=WHITE,
+            stroke_width=4
+        )
+
+        self.wait()
+
+        # self.play(ReplacementTransform(intersection_line, flat_intersection_line), 
+        #           plane_1.animate.set_opacity(0.0),
+        #           plane_2.animate.set_opacity(0.0),
+        #           self.frame.animate.reorient(0, 2, 0, (-0.04, 0.02, 0.0), 1.62),
+        #           run_time=4)
+
+        self.wait()
+
+        #Ok not perfect, but good for an overhead pass -> gut to my head I just added the final shaded flat regions in illustrator!
+
+
+
+
+        # First, move to overhead view
+        # self.play(self.frame.animate.reorient(-90, 0, 0, (0, 0, 0), 1.62), run_time=3)
+        # self.wait()
+        
+        # # Create flattened intersection line (same line but at z=0)
+
+        
+        # # Create the half planes
+        # half_plane_1 = HalfPlane(axes_1, plane_1, plane_2, above=True, color='#00FFFF', opacity=0.3)
+        # half_plane_2 = HalfPlane(axes_1, plane_2, plane_1, above=True, color=YELLOW, opacity=0.3)
+        
+        # # Create flattened versions at z=0
+        # flat_half_plane_1 = FlatHalfPlane(axes_1, plane_1, plane_2, above=True, color='#00FFFF', opacity=0.6)
+        # flat_half_plane_2 = FlatHalfPlane(axes_1, plane_2, plane_1, above=True, color=YELLOW, opacity=0.6)
+        
+        # # Animate the transformation
+        # self.play(
+        #     Transform(intersection_line, flat_intersection_line),
+        #     Transform(plane_1, flat_half_plane_1),
+        #     Transform(plane_2, flat_half_plane_2),
+        #     run_time=4
+        # )
+        
+        # self.wait(3)
+
+        self.wait(20)
+        self.embed()
 
 
 

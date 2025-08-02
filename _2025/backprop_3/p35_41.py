@@ -35,7 +35,8 @@ class p35_41(InteractiveScene):
         viz_scales=[0.2, 0.2, 0.1]
         num_neurons=[3, 3, 2]
 
-        train_step=2400
+        # train_step=2400
+        train_step=0
         w1=p['weights_history'][train_step]['model.0.weight'].numpy()
         b1=p['weights_history'][train_step]['model.0.bias'].numpy()
         w2=p['weights_history'][train_step]['model.2.weight'].numpy()
@@ -138,20 +139,55 @@ class p35_41(InteractiveScene):
             lines.add(line)
         lines.shift([6, 0, 0])
 
+        #Make Baarle hertog maps a little mroe pronounced. 
+        group_31[0].set_opacity(0.9)
+        group_32[0].set_opacity(0.9)
+
 
         self.frame.reorient(-1, 46, 0, (3.09, 0.56, -0.42), 7.25)
-        self.add(group_11, group_12, group_13)
+        self.add(group_12, group_13)
         self.add(group_21, group_22)
         self.add(group_31, group_32, lines)
+        self.add(group_11)
 
 
         #Hmm i feel like some kinda legend or labelling might be helpful here! Minimal i think is ok, but something
-        # I can think on that next. 
+        # I can think on that next. Ok done did it in illustrator. 
+        # Now is it worth adding a small final decision bounday ochear kidna deal? 
+        # Eh that's going to be a mess in 3d. Let my try making maps a little more proncounced in final surface here. 
+        # Alright time to start moving the example point through the model!
+        # Can already tell that I probalby want a more detailed play by play in the narration. 
+
+        map_coords_1=Tex(r'(0.6, 0.4)', font_size=11).set_color('#FF00FF')
+        map_pt_1=Dot(ORIGIN, radius=0.015).set_color('#FF00FF')
+        map_pt_1.move_to([-0.39, 0.12, 0])
+        map_coords_1.move_to([-0.4, 0.04, 0])
+        coords_group_1=VGroup(map_pt_1, map_coords_1)
+        coords_group_1.scale(2.0)
+        coords_group_1.move_to([0.56,0.22,1.5])
+
+        coords_group_2=coords_group_1.copy()
+        coords_group_3=coords_group_1.copy()
+        coords_group_2.move_to([0.56,0.22,0.0])
+        coords_group_3.move_to([0.56,0.22,-1.5])
+
+        #Zoom in to overhead of first map and draw on point!
+        self.wait()
 
 
+        # self.add(group_11) #Do i need to fix occlusions again or no? 
+        self.play(self.frame.animate.reorient(0, 3, 0, (-0.01, 0.19, -0.42), 4.81), 
+                  group_11.animate.set_opacity(1.0),
+                 run_time=4)
+        self.wait()
+
+        #Now right on points!
+        
 
 
-
+        self.add(coords_group_1)
+        self.add(coords_group_2)
+        self.add(coords_group_3)
 
         self.wait()
 

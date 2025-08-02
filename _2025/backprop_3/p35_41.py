@@ -37,7 +37,7 @@ class p35_41(InteractiveScene):
         num_neurons=[3, 3, 2]
 
         # train_step=2400
-        train_step=0
+        train_step=7 #Start on step 7, this has the example I want
         w1=p['weights_history'][train_step]['model.0.weight'].numpy()
         b1=p['weights_history'][train_step]['model.0.bias'].numpy()
         w2=p['weights_history'][train_step]['model.2.weight'].numpy()
@@ -226,7 +226,10 @@ class p35_41(InteractiveScene):
         # self.add(coords_group_2)
         # self.add(coords_group_3)
 
-
+        # Ok I think a starting step of 7, then a step size of 5 can make for a nice viz, and I'll focus on the bottom 
+        # first plane getting less negative steep - I think that makes sense - just gotta work through the visuals, work on the 
+        # Script a bit, then play the whole thing - oh yeah and I need to finish the last part of the move above. 
+        # Complicated but cool/important scene I think!
         
 
 
@@ -240,7 +243,7 @@ class p35_41(InteractiveScene):
 
         
 
-class p36_loop_test(InteractiveScene):
+class p36_loop_test_b(InteractiveScene):
     def construct(self):
 
         model = BaarleNet([3])
@@ -255,10 +258,42 @@ class p36_loop_test(InteractiveScene):
 
         self.frame.reorient(-1, 46, 0, (3.09, 0.56, -0.42), 7.25)
 
+        #Ok having trouble reproducing this training config, so we're going to grab a straring point that 
+        # has the same label and is in the same neighborhood!
+
         # train_step=2400
+        start_step=7 #Start here to get the gradietns I want to show
         step_size=5
-        for train_step in np.arange(0, 50, step_size):
-            if train_step>0:
+
+        print('starting grads', p['gradients_history'][start_step])
+        print('empirical grads w1: ', -100*(p['weights_history'][8]['model.0.weight'].numpy()-
+                                           p['weights_history'][7]['model.0.weight'].numpy())) #-1/lr (0.01)
+        print('empirical grads w2: ', -100*(p['weights_history'][8]['model.2.weight'].numpy()-
+                                           p['weights_history'][7]['model.2.weight'].numpy())) #-1/lr (0.01)
+        print('empirical grads b1: ', -100*(p['weights_history'][8]['model.0.bias'].numpy()-
+                                           p['weights_history'][7]['model.0.bias'].numpy())) #-1/lr (0.01)
+        print('empirical grads b2: ', -100*(p['weights_history'][8]['model.2.bias'].numpy()-
+                                           p['weights_history'][7]['model.2.bias'].numpy())) #-1/lr (0.01)
+
+
+# In [5]: print('empirical grads: ', -100*(p['weights_history'][8]['model.0.weight'].numpy()-p['weights_history'][7]['model.0.weight'].numpy()))                                      
+# empirical grads:  [[ 0.38974938 -0.45838356]                                                                                                                                        
+#  [ 0.16942024 -0.63158274]                                                                                                                                                          
+#  [-1.0046124   0.9809494 ]]                                                                                                                                                         
+# In [6]: print('starting grads', p['gradients_history'][start_step])                                                                                                                 
+# starting grads {'model.0.weight': tensor([[ 0.0021, -0.0006],                                                                                                                       
+#         [-0.0005,  0.0004],                                                                                                                                                         
+#         [-0.3566,  0.2963]]), 'model.0.bias': tensor([-0.0006, -0.0005, -0.4256]), 'model.2.weight': tensor([[-0.0074, -0.0003, -0.0616],                                           
+#         [ 0.0074,  0.0003,  0.0616]]), 'model.2.bias': tensor([ 0.2037, -0.2037])} 
+
+        #Ok I think there's some issue with my analytical gradients -> updates don't seem to match -> 
+        # For numbers on screen I'll show empirical grads then
+
+
+
+
+        for train_step in np.arange(start_step, 50, step_size):
+            if 'group_12' in locals():
                 self.remove(group_12, group_13)
                 self.remove(group_21, group_22)
                 self.remove(group_31, group_32, lines)

@@ -107,24 +107,50 @@ class p35_41(InteractiveScene):
         group_13.shift([0, 0, -1.5])
 
         polygons_21=manim_polygons_from_np_list(polygons['1.linear_out'][0], colors=colors, viz_scale=viz_scales[2])
-        polygons_21.shift([3, 0, 0.001]) #Move slightly above map
+        polygons_21.shift([0, 0, 0.001]) #Move slightly above map
 
         polygons_22=manim_polygons_from_np_list(polygons['1.linear_out'][1], colors=colors, viz_scale=viz_scales[2])
-        polygons_22.shift([3, 0, 0.001]) #Move slightly above map
+        polygons_22.shift([0, 0, 0.001]) #Move slightly above map
 
         group_21=Group(surfaces[2][0], polygons_21)
         group_22=Group(surfaces[2][1], polygons_22)
         group_21.shift([3.0, 0, 0.6])
         group_22.shift([3.0, 0, -0.6])
+        group_21.set_opacity(0.5)
+        group_22.set_opacity(0.5)
 
-        polygons['1.linear_out'][0]
+
+        #Ok now some plane intersction action in a third "panel"
+        group_31=group_21.copy()
+        group_31[1].set_color(BLUE)
+        group_31.shift([3, 0, -0.6])
+
+        group_32=group_22.copy()
+        group_32[1].set_color(YELLOW)
+        group_32.shift([3, 0, 0.6])
+
+        lines=VGroup()
+        for loop in intersection_lines: 
+            loop=loop*np.array([1, 1, viz_scales[2]])
+            line = VMobject()
+            line.set_points_as_corners(loop)
+            line.set_stroke(color='#FF00FF', width=5)
+            lines.add(line)
+        lines.shift([6, 0, 0])
 
 
-        self.frame.reorient(-1, 45, 0, (2.99, 0.58, -0.4), 7.54)
+        self.frame.reorient(-1, 46, 0, (3.09, 0.56, -0.42), 7.25)
         self.add(group_11, group_12, group_13)
+        self.add(group_21, group_22)
+        self.add(group_31, group_32, lines)
 
-        self.add(group_21)
-        self.add(group_22)
+
+        #Hmm i feel like some kinda legend or labelling might be helpful here! Minimal i think is ok, but something
+        # I can think on that next. 
+
+
+
+
 
 
         self.wait()

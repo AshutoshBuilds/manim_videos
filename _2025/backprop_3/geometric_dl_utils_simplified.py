@@ -6,6 +6,63 @@ import shapely.affinity
 import copy
 from tqdm import tqdm
 
+def order_closed_loops_with_closure(segments, tol=1e-6):
+    """
+    Like before, but returns each loop as an (N,3) array of vertices
+    where the first point is repeated at the end to explicitly close the loop.
+    """
+    used = [False] * len(segments)
+    loops_pts = []
+
+    for i, seg in enumerate(segments):
+        if used[i]:
+            continue
+
+        # build ordered, oriented segment list for this loop
+        loop_segs = [seg.copy()]
+        used[i] = True
+        start_pt = seg[0].copy()
+        curr_pt = seg[1].copy()
+
+        while True:
+            found = False
+            for j, seg2 in enumerate(segments):
+                if used[j]:
+                    continue
+                p0, p1 = seg2[0], seg2[1]
+
+                if np.linalg.norm(p0 - curr_pt) < tol:
+                    loop_segs.append(seg2.copy())
+                    curr_pt = p1.copy()
+                    used[j] = True
+                    found = True
+                    break
+
+                if np.linalg.norm(p1 - curr_pt) < tol:
+                    rev = seg2[::-1].copy()
+                    loop_segs.append(rev)
+                    curr_pt = rev[1].copy()
+                    used[j] = True
+                    found = True
+                    break
+
+            # stop if no continuation or we’re back at start
+            if not found or np.linalg.norm(curr_pt - start_pt) < tol:
+                break
+
+        # collect vertices and explicitly close the loop
+        pts = [loop_segs[0][0]]
+        for s in loop_segs:
+            pts.append(s[1])
+
+        # if it didn’t naturally close, append the start_pt
+        if np.linalg.norm(pts[-1] - start_pt) > tol:
+            pts.append(start_pt)
+
+        loops_pts.append(np.vstack(pts))
+
+    return loops_pts
+
 
 def compute_top_polytope(model, tiling_2d):
     hyperspace_polygons=process_with_layers(model.model, tiling_2d)

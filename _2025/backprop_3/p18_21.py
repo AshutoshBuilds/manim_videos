@@ -245,17 +245,18 @@ class p18a(InteractiveScene):
         eq3.move_to([0.95, 0.53, 0])
         self.wait()
 
+        eq1_copy=eq1.copy()
         self.play(ReplacementTransform(map_coords[1:4].copy(), eq2[13:16]), run_time=3)
-        self.play(Transform(eq1[6:12].copy(), eq2[6:12]), run_time=1.5)
+        self.play(Transform(eq1_copy[6:12], eq2[6:12]), run_time=1.5)
         self.add(eq2[5], eq2[12:17])
         self.wait()
 
         self.play(ReplacementTransform(map_coords[5:8].copy(), eq2[26:29]), run_time=3)
-        self.play(Transform(eq1[15:21].copy(), eq2[18:25]), run_time=1.5)
+        self.play(ReplacementTransform(eq1_copy[15:21], eq2[18:25]), run_time=1.5)
         self.add(eq2[17], eq2[25:30])
         self.wait()
 
-        self.play(Transform(eq1[24:].copy(), eq2[31:]), run_time=1.5)
+        self.play(ReplacementTransform(eq1_copy[24:], eq2[31:]), run_time=1.5)
         self.add(eq2[30])     
         self.wait()   
 
@@ -269,23 +270,209 @@ class p18a(InteractiveScene):
         self.play(
                   neuron_21_group.animate.set_opacity(1.0),
                   neuron_22_group.animate.set_opacity(1.0),
-                    run_time=2)
+                  run_time=2)
         self.wait()
 
         # Ok ok ok ok ok ok ok now how do I animate this collapsing thing?
         # Fade out middle layer, and then bring inputs over? That might kinda work?
         # Ok taking a break then will try that.
 
+        self.remove(inputs_group); self.add(inputs_group)
+        self.wait(0)
+        self.play(FadeOut(neuron_12_group), 
+                  FadeOut(neuron_11_group), 
+                  FadeOut(layer_labels),
+                  inputs_group.animate.move_to([0.55,-0.03,0]),
+                  run_time=3)
+        self.wait()
 
+        #Ok now we'll fade things out here, I think uncollapse networks so I can show all symbols. 
 
-
-
-
+        self.wait()
+        self.remove(eq1, eq1_copy, eq2, eq3) #Can't seem to get a nice fade out on these - just remove I think!
+        self.play(
+                  # FadeIn(neuron_12_group), 
+                  FadeIn(neuron_11_group),
+                  neuron_12_group.animate.set_opacity(1.0),
+                  FadeOut(map_img),
+                  FadeOut(map_frame),
+                  # eq3.animate.set_opacity(0.0),
+                  # eq2.animate.set_opacity(0.0),
+                  # eq1_copy.animate.set_opacity(0.0),
+                  # eq1.animate.set_opacity(0.0),
+                  FadeOut(map_pt),
+                  FadeOut(map_coords),
+                  inputs_group.animate.move_to([-7.40739175e-03, -3.67778116e-02, 0]),
+                  run_time=3)
+        self.wait()
         
-
+        #Hmm that might actually be a nice clean breakpoint a next scene?
 
         self.wait(20)
         self.embed()
+
+class p20_21(InteractiveScene):
+    def construct(self):
+
+        model_path='_2025/backprop_3/models/2_1.pth'
+        model = BaarleNet([2])
+        model.load_state_dict(torch.load(model_path))
+
+
+        map_img=ImageMobject(graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-11.png')
+        map_img.move_to(ORIGIN)
+        
+
+        net=VGroup()
+        for p in sorted(glob.glob(svg_path+'/p18_21_to_manim*.svg')):
+            net.add(SVGMobject(p)[1:])  
+
+        map_frame=net[1]
+        layer_labels=net[4]
+        input_circles=net[6]
+        neuron_11_shape=net[7]
+        neuron_12_shape=net[8]
+        neuron_21_shape=net[9]
+        neuron_22_shape=net[10]
+
+        #Alright let me get the variables in place here, then I can start thinking through animations. 
+        x1=Tex('x_1', font_size=10).set_color(CHILL_BROWN)
+        x1.move_to([0,0.115,0])
+        x2=Tex('x_2', font_size=10).set_color(CHILL_BROWN)
+        x2.move_to([0,-0.21,0])
+
+        #First layer
+        # m11_1=Tex(r'\boldsymbol{m^{(1)}_{11}}', font_size=6).set_color(CYAN)
+        m11_1=Tex(r'm^{(1)}_{11}', font_size=6).set_color(CYAN)
+        m11_1.move_to([0.27, 0.13, 0])
+        # m12_1=Tex(r'\boldsymbol{m^{(1)}_{11}}', font_size=6).set_color(CYAN)
+        m12_1=Tex(r'm^{(1)}_{12}', font_size=6).set_color(CYAN)
+        m12_1.move_to([0.31, 0.031, 0])
+
+        m21_1=Tex(r'm^{(1)}_{21}', font_size=6).set_color(YELLOW)
+        m21_1.move_to([0.33, -0.08, 0])
+
+        m22_1=Tex(r'm^{(1)}_{22}', font_size=6).set_color(YELLOW)
+        m22_1.move_to([0.27, -0.20, 0])
+
+        b1_1=Tex(r'+b^{(1)}_{1}', font_size=7).set_color(CYAN)
+        b1_1.move_to([0.55, 0.13, 0])
+
+        b2_1=Tex(r'+b^{(1)}_{2}', font_size=7).set_color(YELLOW)
+        b2_1.move_to([0.55, -0.20, 0])
+
+        #Second layer
+        horizontal_offset=0.55
+        m11_2=Tex(r'm^{(2)}_{11}', font_size=6).set_color(CYAN)
+        m11_2.move_to([0.27+horizontal_offset, 0.13, 0])
+
+        m12_2=Tex(r'm^{(2)}_{12}', font_size=6).set_color(CYAN)
+        m12_2.move_to([0.315+horizontal_offset, 0.031, 0])
+
+        m21_2=Tex(r'm^{(2)}_{21}', font_size=6).set_color(YELLOW)
+        m21_2.move_to([0.33+horizontal_offset, -0.08, 0])
+
+        m22_2=Tex(r'm^{(2)}_{22}', font_size=6).set_color(YELLOW)
+        m22_2.move_to([0.275+horizontal_offset, -0.20, 0])
+
+        b1_2=Tex(r'+b^{(2)}_{1}', font_size=7).set_color(CYAN)
+        b1_2.move_to([0.55+horizontal_offset, 0.13, 0])
+
+        b2_2=Tex(r'+b^{(2)}_{2}', font_size=7).set_color(YELLOW)
+        b2_2.move_to([0.55+horizontal_offset, -0.20, 0])
+
+        # self.add(input_circles, neuron_11_shape, neuron_12_shape, neuron_21_shape, neuron_22_shape, layer_labels)
+        inputs_group=Group(input_circles, x1, x2)
+        neuron_11_group=Group(neuron_11_shape, m11_1, m12_1, b1_1)
+        neuron_12_group=Group(neuron_12_shape, m21_1, m22_1, b2_1)
+        neuron_21_group=Group(neuron_21_shape, m11_2, m12_2, b1_2)
+        neuron_22_group=Group(neuron_22_shape, m21_2, m22_2, b2_2)
+
+        # self.frame.reorient(0, 0, 0, (0.48, -0.05, 0.0), 1.99)
+        # Ok so I'll so smooth handoff from illustrator to this - with the network towards the bottom of the screen
+        # I'll add in the 3d plane from 18b above in editing
+        # self.add(x1, x2, m11_1, m12_1, m21_1, m22_1, b1_1, b2_1)
+        # self.add(m11_2, m12_2, m21_2, m22_2, b1_2, b2_2)
+        self.frame.reorient(0, 0, 0, (0.52, 0.38, 0.0), 2.00)
+        # self.add(layer_labels)
+        self.add(inputs_group, neuron_11_group, neuron_12_group, neuron_21_group, neuron_22_group)
+        self.wait()
+
+        h1_2=Tex(r'h^{(2)}_{1}', font_size=8).set_color(CHILL_BROWN)
+        h1_2.move_to([1.43, 0.13, 0])
+        h2_2=Tex(r'h^{(2)}_{2}', font_size=8).set_color(CHILL_BROWN)
+        h2_2.move_to([1.43, -0.2, 0])
+        # self.add(h1_2, h2_2)
+
+        self.wait()
+        self.play(FadeIn(h1_2), FadeIn(h2_2), 
+                  m11_2.animate.set_color('#FF00FF'), m12_2.animate.set_color('#FF00FF'), b1_2.animate.set_color('#FF00FF'),
+                  m21_2.animate.set_color(CHILL_GREEN), m22_2.animate.set_color(CHILL_GREEN), b2_2.animate.set_color(CHILL_GREEN))
+        self.wait()
+
+
+
+        # Ok now let's build these equqations out here!
+        # Hmm do I want to consider a bit of a color change here? 
+        # like make all the neurons match?? 
+
+        eq1 = Tex(r"h_{1}^{(1)} = m_{11}^{(1)} x_{1} + m_{12}^{(1)} x_{2} + b_{1}^{(1)}", font_size=10).set_color(FRESH_TAN)
+        eq2 = Tex(r"h_{2}^{(1)} = m_{21}^{(1)} x_{1} + m_{22}^{(1)} x_{2} + b_{2}^{(1)}", font_size=10).set_color(FRESH_TAN)
+        eq3 = Tex(r"h_{1}^{(2)} = m_{11}^{(2)} h_{1}^{(1)} + m_{12}^{(2)} h_{2}^{(1)} + b_{1}^{(2)}", font_size=10).set_color(FRESH_TAN)
+        # eq3[12:17].set_color(CYAN)
+        # eq3[24:29].set_color(YELLOW)
+
+        eq1.move_to([0.55, 1.1, 0])
+        eq2.move_to([0.55, 0.9, 0])
+        eq3.move_to([0.55, 0.7, 0])
+        
+        eq3[12:17].set_color(CYAN)
+        eq3[24:29].set_color(YELLOW)
+
+        eq1[:5].set_color(CYAN)
+        eq1[6:12].set_color(CYAN) #m11_1
+        eq1[15:21].set_color(CYAN) #m12_1
+        eq1[24:].set_color(CYAN) #b_1
+
+        eq2[:5].set_color(YELLOW)
+        eq2[6:12].set_color(YELLOW) #m11_1
+        eq2[15:21].set_color(YELLOW) #m12_1
+        eq2[24:].set_color(YELLOW) #b_1
+
+        # eq3[:5].set_color('#FF00FF')
+        eq3[6:12].set_color('#FF00FF') #m11_1
+        eq3[18:24].set_color('#FF00FF') #m12_1
+        eq3[29:].set_color('#FF00FF') #b_1
+
+        # self.add(eq1, eq2, eq3)
+        self.wait()
+
+        #Ok now build equations from copies of values from neuron drawing!
+        self.play(ReplacementTransform(m11_1.copy(), eq1[6:12]), 
+                  ReplacementTransform(m12_1.copy(), eq1[15:21]), 
+                  ReplacementTransform(b1_1.copy(), eq1[24:]), 
+                  run_time=3)
+        self.add(eq1)
+        self.play(ReplacementTransform(m21_1.copy(), eq2[6:12]), 
+                  ReplacementTransform(m22_1.copy(), eq2[15:21]), 
+                  ReplacementTransform(b2_1.copy(), eq2[24:]), 
+                  run_time=3)
+        self.add(eq2)
+        self.wait()
+        self.play(ReplacementTransform(m11_2.copy(), eq3[6:12]), 
+                  ReplacementTransform(m12_2.copy(), eq3[18:24]), 
+                  ReplacementTransform(b1_2.copy(), eq3[29:]), 
+                  run_time=3)
+        self.add(eq3)
+        self.wait()
+
+
+        # neuron_11_group.set_color(PURPLE)
+
+        self.wait(20)
+        self.embed()
+
+
 
 
 

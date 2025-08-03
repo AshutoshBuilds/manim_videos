@@ -421,29 +421,29 @@ class p47(InteractiveScene):
 
 
         #Ok now some plane intersction action in a third "panel"
-        group_31=group_21.copy()
-        group_31[1].set_color(BLUE)
-        group_31.shift([3, 0, -0.75])
+        group_31_fakeout=group_21.copy()
+        group_31_fakeout[1].set_color(BLUE)
+        group_31_fakeout.shift([3, 0, -0.75])
 
-        group_32=group_22.copy()
-        group_32[1].set_color(YELLOW)
-        group_32.shift([3, 0, 0.75])
+        group_32_fakeout=group_22.copy()
+        group_32_fakeout[1].set_color(YELLOW)
+        group_32_fakeout.shift([3, 0, 0.75])
 
-        loops=order_closed_loops_with_closure(intersection_lines)
-        lines=VGroup()
-        for loop in loops: 
-            loop=loop*np.array([1, 1, viz_scales[2]])
-            line = VMobject()
-            line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=5)
-            lines.add(line)
-        lines.shift([6, 0, 0.75])
+        # loops=order_closed_loops_with_closure(intersection_lines)
+        # lines_fakeout=VGroup()
+        # for loop in loops: 
+        #     loop=loop*np.array([1, 1, viz_scales[2]])
+        #     line = VMobject()
+        #     line.set_points_as_corners(loop)
+        #     line.set_stroke(color='#FF00FF', width=5)
+        #     lines_fakeout.add(line)
+        # lines_fakeout.shift([6, 0, 0.75])
 
         #Make Baarle hertog maps a little mroe pronounced. 
-        group_31[0].set_opacity(0.9)
-        group_32[0].set_opacity(0.9)
-        group_31[1].set_opacity(0.4)
-        group_32[1].set_opacity(0.4)
+        group_31_fakeout[0].set_opacity(0.9)
+        group_32_fakeout[0].set_opacity(0.9)
+        group_31_fakeout[1].set_opacity(0.4)
+        group_32_fakeout[1].set_opacity(0.4)
 
         # group_21.set_opacity(0.9)
         # group_22.set_opacity(0.9)
@@ -585,6 +585,74 @@ class p47(InteractiveScene):
         self.add(polygons_22)
         self.remove(bent_plane_joint_lines_2); self.add(bent_plane_joint_lines_2)
         self.wait()
+
+        #Ok now quick "fake out 3 layer", then remove everything from that. 
+        self.play(ReplacementTransform(group_21.copy(), group_31_fakeout), 
+                  ReplacementTransform(group_22.copy(), group_32_fakeout), 
+                 run_time=3.0)
+        # self.play(ShowCreation(lines_fakeout))
+        self.wait()
+        self.play(FadeOut(group_31_fakeout), FadeOut(group_32_fakeout))
+        self.wait()
+
+        # I'm a bit torn on working off a copy to the right vs doing this in place -> 
+        # I guess I'm leaning towards doing it in place?
+        # Ok I think we add z=0 planes, actually let's focus/zoom on top neuron, and add the plane there
+        relu_intersections_planes_1=VGroup()
+        for neuron_idx in range(2):
+            # plane = Rectangle( width=2,  height=2, fill_color=GREY, fill_opacity=0.3, stroke_color=WHITE, stroke_width=2)
+            plane = NumberPlane(
+                x_range=(-1, 1, 0.2),  # x from -1 to 1, grid every 0.2 units
+                y_range=(-1, 1, 0.2),  # y from -1 to 1, grid every 0.2 units
+                background_line_style={
+                    "stroke_color": WHITE,
+                    "stroke_width": 0.5,
+                    "stroke_opacity": 0.9
+                },
+                faded_line_style={
+                    "stroke_color": WHITE,
+                    "stroke_width": 0.0,
+                    "stroke_opacity": 0.0
+                },
+                axis_config={
+                    "stroke_color": WHITE,
+                    "stroke_width": 0.5
+                }
+            ).set_width(2).set_height(2)
+            plane.shift([3, 0, 1.5*neuron_idx])
+            relu_intersections_planes_1.add(plane)
+        
+        self.wait()
+        self.play(self.frame.animate.reorient(30, 70, 0, (2.55, 1.16, 0.93), 4.27), run_time=3)
+        self.play(ShowCreation(relu_intersections_planes_1[1]))
+        self.wait()
+
+        self.play(self.frame.animate.reorient(32, 83, 0, (2.55, 1.16, 0.93), 4.27), run_time=3)
+        self.wait()
+
+        #Outline to call out planes, I can cut this if I don't like it. 
+        outline = polygons_21[1].copy()
+        outline.set_fill(opacity=0)
+        outline.set_stroke(width=4, opacity=0.9)
+        self.play(ShowCreation(outline, run_time=2))
+        # self.play(FadeOut(outline))
+
+        outline_2 = polygons_21[3].copy()
+        outline_2.set_fill(opacity=0)
+        outline_2.set_stroke(width=4, opacity=0.9)
+        self.play(ShowCreation(outline_2), FadeOut(outline), run_time=2)
+
+        outline_3 = polygons_21[2].copy()
+        outline_3.set_fill(opacity=0)
+        outline_3.set_stroke(width=4, opacity=0.9)
+        self.play(ShowCreation(outline_3), FadeOut(outline_2), run_time=2)
+        self.play(FadeOut(outline_3))
+        self.remove(bent_plane_joint_lines); self.add(bent_plane_joint_lines)
+        self.wait()
+
+        # Ok ok ok now how do I animate folidng this surface up, and what's a good camera angle for it?
+        # In the middle of p49. 
+        self.play(self.frame.animate.reorient(26, 73, 0, (2.83, 1.26, 0.79), 4.27), run_time=2)
 
 
 

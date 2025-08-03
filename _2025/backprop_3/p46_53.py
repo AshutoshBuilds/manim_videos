@@ -305,7 +305,6 @@ class p46(InteractiveScene):
         self.wait()
 
 
-
         #Ok now a little animation bringin the two bent surfaces together and changing their colors? 
         self.play(ReplacementTransform(group_21.copy(), group_31), 
                   ReplacementTransform(group_22.copy(), group_32), 
@@ -652,7 +651,20 @@ class p47(InteractiveScene):
 
         # Ok ok ok now how do I animate folidng this surface up, and what's a good camera angle for it?
         # In the middle of p49. 
-        self.play(self.frame.animate.reorient(26, 73, 0, (2.83, 1.26, 0.79), 4.27), run_time=2)
+        self.play(self.frame.animate.reorient(20, 68, 0, (2.98, 1.26, 0.64), 4.27), run_time=2)
+
+        surfaces[3][0].shift([3, 0, 1.5])
+
+        # split_polygons_merged
+        # split_polygons_nested_clipped
+        #Maybe i transform to split_polygons_nested_clipped, and then once we're flat then merge to split_polygons_merged
+        polygons['1.split_polygons_nested_clipped'][0] #Need to unravel this i think? And then try to animate to it? 
+
+        polygons_31=manim_polygons_from_np_list(polygons['1.split_polygons_nested_clipped'][0], colors=colors, viz_scale=viz_scales[2], opacity=0.6)
+        polygons_31.shift([3, 0, 1.51]) #Move slightly above map
+
+        self.wait()
+        self.play(ReplacementTransform(surfaces[2][0], surfaces[3][0]), run_time=3)
 
 
 

@@ -651,7 +651,7 @@ class p21_simple_planes(InteractiveScene):
         self.wait()
         self.remove(h2, plane_2)
 
-        h3=Tex('h_2^{(1)}', font_size=42).set_color('#FF00FF')
+        h3=Tex('h_2^{(2)}', font_size=42).set_color('#FF00FF')
         h3.rotate(90*DEGREES, [1,0,0])
         h3.rotate(45*DEGREES, [0,0,1])
         h3.next_to(axes_1[2].get_end(), buff=0.15, direction=np.array([0,0,1]))
@@ -670,7 +670,7 @@ class p21_simple_planes(InteractiveScene):
         self.remove(h3, plane_3)
 
 
-        h4=Tex('h_2^{(1)}', font_size=42).set_color(CHILL_GREEN)
+        h4=Tex('h_2^{(2)}', font_size=42).set_color(CHILL_GREEN)
         h4.rotate(90*DEGREES, [1,0,0])
         h4.rotate(45*DEGREES, [0,0,1])
         h4.next_to(axes_1[2].get_end(), buff=0.15, direction=np.array([0,0,1]))

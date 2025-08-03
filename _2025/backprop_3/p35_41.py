@@ -1,4 +1,3 @@
-from manimlib import *
 from functools import partial
 import sys
 
@@ -7,7 +6,7 @@ from geometric_dl_utils import *
 from plane_folding_utils import *
 from geometric_dl_utils_simplified import *
 from polytope_intersection_utils import intersect_polytopes
-
+from manimlib import *
 
 CHILL_BROWN='#948979'
 YELLOW='#ffd35a'
@@ -219,7 +218,58 @@ class p35_41(InteractiveScene):
         # Anyway though, I need some example that actually makes sense lol -> Let me render out a loop of the first N steps 
         # And see if I can make sense of what's going on -> I may need to combine steps too -> I think that would be ok!
 
+        #Ok so I think that top polygons is probably a nice/decent way to get to an overhead view
+        top_polygons_vgroup=VGroup()
+        for j, p in enumerate(my_top_polygons):
+            if len(p)<3: continue
+            if my_indicator[j]: color=YELLOW
+            else: color=BLUE
+            
+            p_scaled=copy.deepcopy(p) #Scaling for viz
+            p_scaled[:,2]=p_scaled[:,2]*viz_scales[2]
+            poly_3d = Polygon(*p_scaled,
+                             fill_color=color,
+                             fill_opacity=0.4,
+                             stroke_color=color,
+                             stroke_width=2)
+            poly_3d.set_opacity(0.5)
+            poly_3d.shift([6, 0, 0])
+            top_polygons_vgroup.add(poly_3d)
 
+        self.wait()
+
+        # self.play(ReplacementTransform(outline.copy(), group_31[1][0]))
+        # self.play(coords_group_4.animate.shift([3, 0, -0.6]))
+
+        outline_2=top_polygons_vgroup[0].copy()
+        outline_2.set_fill(opacity=0)
+        outline_2.set_stroke(BLUE, width=2) #, opacity=0.9)
+
+
+        coords_group_6=coords_group_4.copy()
+        self.wait()
+        self.play(self.frame.animate.reorient(0, 0, 0, (6.15, 0.01, -0.17), 3.55), 
+                  FadeIn(top_polygons_vgroup), 
+                  group_31[1].animate.set_opacity(0),
+                  group_32[1].animate.set_opacity(0),
+                  ReplacementTransform(outline.copy(), outline_2), #group_31[1][0]),
+                  coords_group_6.animate.shift([3, 0, -0.6]), 
+                  run_time=3
+                  )
+        self.remove(lines); self.add(lines)
+        self.remove(coords_group_6); self.add(coords_group_6)
+        self.wait()
+
+        # self.remove(top_polygons_vgroup[0])
+        self.play(self.frame.animate.reorient(0, 42, 0, (2.99, -0.49, -0.81), 7.09), run_time=4) #Eh or schmeH?
+        self.wait()
+
+
+        # self.add(top_polygons_vgroup)
+
+        # group_31[1].set_opacity(0)
+        # group_32[1].set_opacity(0)
+    
 
         # self.add(coords_group_5)
         # self.add(coords_group_4)

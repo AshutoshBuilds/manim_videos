@@ -161,14 +161,150 @@ class p46(InteractiveScene):
         # group_22.set_opacity(0.9)
 
         # self.frame.reorient(-1, 42, 0, (3.1, 0.59, -0.39), 6.92)
+        # self.frame.reorient(-2, 46, 0, (3.11, 0.22, -0.73), 6.89)
+
+        # self.wait()
+        # self.play(FadeIn(group_11), FadeIn(group_12))
+        # self.wait()
+
+        # self.play(FadeIn(group_21), FadeIn(group_22)) #Would be nice to animate layer 1 neurons coming together instead - we'll see. 
+        # self.wait()
+
+        bent_plane_joint_lines=VGroup()
+        pre_move_lines=VGroup()
+
+        line_start=polygons['1.linear_out'][0][1][1]*np.array([1,1,viz_scales[2]])
+        line_end=polygons['1.linear_out'][0][1][2]*np.array([1,1,viz_scales[2]])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([3, 0, 1.5])
+        bent_plane_joint_lines.add(joint_line)
+
+        line_start=polygons['1.linear_out'][0][1][1]*np.array([1,1,0]) #z=0 version
+        line_end=polygons['1.linear_out'][0][1][2]*np.array([1,1,0])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([0, 0, 1.5])
+        pre_move_lines.add(joint_line)
+
+
+        line_start=polygons['1.linear_out'][0][0][0]*np.array([1,1,viz_scales[2]])
+        line_end=polygons['1.linear_out'][0][0][1]*np.array([1,1,viz_scales[2]])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([3, 0, 1.5])
+        bent_plane_joint_lines.add(joint_line)
+
+        line_start=polygons['1.linear_out'][0][0][0]*np.array([1,1,0]) #z=0 version
+        line_end=polygons['1.linear_out'][0][0][1]*np.array([1,1,0])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([0, 0, 0])
+        pre_move_lines.add(joint_line)
+
+
+        line_start=polygons['1.linear_out'][0][2][0]*np.array([1,1,viz_scales[2]])
+        line_end=polygons['1.linear_out'][0][2][1]*np.array([1,1,viz_scales[2]])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([3, 0, 1.5])
+        bent_plane_joint_lines.add(joint_line)
+
+        line_start=polygons['1.linear_out'][0][2][0]*np.array([1,1,0]) #z=0 version
+        line_end=polygons['1.linear_out'][0][2][1]*np.array([1,1,0])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        # joint_line.shift([0, 0, 1.5])
+        pre_move_lines.add(joint_line)
+
+
+        line_start=polygons['1.linear_out'][0][2][3]*np.array([1,1,viz_scales[2]])
+        line_end=polygons['1.linear_out'][0][2][0]*np.array([1,1,viz_scales[2]])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([3, 0, 1.5])
+        bent_plane_joint_lines.add(joint_line)
+
+        line_start=polygons['1.linear_out'][0][2][3]*np.array([1,1,0]) #z=0 version
+        line_end=polygons['1.linear_out'][0][2][0]*np.array([1,1,0])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([0, 0, 1.5])
+        pre_move_lines.add(joint_line)
+
+
         self.frame.reorient(-2, 46, 0, (3.11, 0.22, -0.73), 6.89)
+        self.wait()
+        self.play(FadeIn(group_11[0]), FadeIn(group_12[0]), FadeIn(pre_move_lines))
+        self.wait()
+
+
+        # self.add(joint_line)  
+        self.wait()
+        self.play(ReplacementTransform(surfaces[1][0].copy(),surfaces[2][0]),
+                  ReplacementTransform(surfaces[1][1].copy(),surfaces[2][0]),
+                  ReplacementTransform(pre_move_lines.copy(), bent_plane_joint_lines), 
+                    run_time=3)
+        self.add(polygons_21)
+        self.remove(bent_plane_joint_lines); self.add(bent_plane_joint_lines)
+        self.wait()
+
+        bent_plane_joint_lines_2=VGroup()
+        pre_move_lines_2=VGroup()
+
+        line_start=polygons['1.linear_out'][1][1][1]*np.array([1,1,viz_scales[2]])
+        line_end=polygons['1.linear_out'][1][1][2]*np.array([1,1,viz_scales[2]])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([3, 0, 0.0])
+        bent_plane_joint_lines_2.add(joint_line)
+
+        line_start=polygons['1.linear_out'][1][1][1]*np.array([1,1,0]) #z=0 version
+        line_end=polygons['1.linear_out'][1][1][2]*np.array([1,1,0])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([0, 0, 1.5])
+        pre_move_lines_2.add(joint_line)
+
+
+        line_start=polygons['1.linear_out'][1][0][0]*np.array([1,1,viz_scales[2]])
+        line_end=polygons['1.linear_out'][1][0][1]*np.array([1,1,viz_scales[2]])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([3, 0, 0.0])
+        bent_plane_joint_lines_2.add(joint_line)
+
+        line_start=polygons['1.linear_out'][1][0][0]*np.array([1,1,0]) #z=0 version
+        line_end=polygons['1.linear_out'][1][0][1]*np.array([1,1,0])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([0, 0, 0])
+        pre_move_lines_2.add(joint_line)
+
+
+        line_start=polygons['1.linear_out'][1][2][0]*np.array([1,1,viz_scales[2]])
+        line_end=polygons['1.linear_out'][1][2][1]*np.array([1,1,viz_scales[2]])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([3, 0, 0.0])
+        bent_plane_joint_lines_2.add(joint_line)
+
+        line_start=polygons['1.linear_out'][1][2][0]*np.array([1,1,0]) #z=0 version
+        line_end=polygons['1.linear_out'][1][2][1]*np.array([1,1,0])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        # joint_line.shift([0, 0, 1.5])
+        pre_move_lines_2.add(joint_line)
+
+
+        line_start=polygons['1.linear_out'][1][2][3]*np.array([1,1,viz_scales[2]])
+        line_end=polygons['1.linear_out'][1][2][0]*np.array([1,1,viz_scales[2]])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([3, 0, 0.0])
+        bent_plane_joint_lines_2.add(joint_line)
+
+        line_start=polygons['1.linear_out'][1][2][3]*np.array([1,1,0]) #z=0 version
+        line_end=polygons['1.linear_out'][1][2][0]*np.array([1,1,0])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([0, 0, 1.5])
+        pre_move_lines_2.add(joint_line)
 
         self.wait()
-        self.play(FadeIn(group_11), FadeIn(group_12))
+        self.play(ReplacementTransform(surfaces[1][0].copy(),surfaces[2][1]),
+                  ReplacementTransform(surfaces[1][1].copy(),surfaces[2][1]),
+                  ReplacementTransform(pre_move_lines_2.copy(), bent_plane_joint_lines_2), 
+                  run_time=3)
+        self.add(polygons_22)
+        self.remove(bent_plane_joint_lines_2); self.add(bent_plane_joint_lines_2)
         self.wait()
 
-        self.play(FadeIn(group_21), FadeIn(group_22)) #Would be nice to animate layer 1 neurons coming together instead - we'll see. 
-        self.wait()
+
 
         #Ok now a little animation bringin the two bent surfaces together and changing their colors? 
         self.play(ReplacementTransform(group_21.copy(), group_31), 
@@ -313,43 +449,158 @@ class p47(InteractiveScene):
         # group_22.set_opacity(0.9)
 
         # self.frame.reorient(-1, 42, 0, (3.1, 0.59, -0.39), 6.92)
+        bent_plane_joint_lines=VGroup()
+        pre_move_lines=VGroup()
+
+        line_start=polygons['1.linear_out'][0][1][0]*np.array([1,1,viz_scales[2]])
+        line_end=polygons['1.linear_out'][0][1][1]*np.array([1,1,viz_scales[2]])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([3, 0, 1.5])
+        bent_plane_joint_lines.add(joint_line)
+
+        line_start=polygons['1.linear_out'][0][1][0]*np.array([1,1,0]) #z=0 version
+        line_end=polygons['1.linear_out'][0][1][1]*np.array([1,1,0])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([0, 0, 1.5])
+        pre_move_lines.add(joint_line)
+
+        line_start=polygons['1.linear_out'][0][0][3]*np.array([1,1,viz_scales[2]])
+        line_end=polygons['1.linear_out'][0][0][0]*np.array([1,1,viz_scales[2]])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([3, 0, 1.5])
+        bent_plane_joint_lines.add(joint_line)
+
+        line_start=polygons['1.linear_out'][0][0][3]*np.array([1,1,0]) #z=0 version
+        line_end=polygons['1.linear_out'][0][0][0]*np.array([1,1,0])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([0, 0, 1.5])
+        pre_move_lines.add(joint_line)
+
+        line_start=polygons['1.linear_out'][0][2][0]*np.array([1,1,viz_scales[2]])
+        line_end=polygons['1.linear_out'][0][2][1]*np.array([1,1,viz_scales[2]])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([3, 0, 1.5])
+        bent_plane_joint_lines.add(joint_line)
+
+        line_start=polygons['1.linear_out'][0][2][0]*np.array([1,1,0]) #z=0 version
+        line_end=polygons['1.linear_out'][0][2][1]*np.array([1,1,0])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        # joint_line.shift([0, 0, 1.5])
+        pre_move_lines.add(joint_line)
+
+        line_start=polygons['1.linear_out'][0][0][2]*np.array([1,1,viz_scales[2]])
+        line_end=polygons['1.linear_out'][0][0][3]*np.array([1,1,viz_scales[2]])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([3, 0, 1.5])
+        bent_plane_joint_lines.add(joint_line)
+
+        line_start=polygons['1.linear_out'][0][0][2]*np.array([1,1,0]) #z=0 version
+        line_end=polygons['1.linear_out'][0][0][3]*np.array([1,1,0])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        # joint_line.shift([0, 0, 1.5])
+        pre_move_lines.add(joint_line)
+
+
         self.frame.reorient(-2, 46, 0, (3.11, 0.22, -0.73), 6.89)
 
         self.wait()
-        self.play(FadeIn(group_11), FadeIn(group_12))
+        self.play(FadeIn(group_11[0]), FadeIn(group_12[0]), FadeIn(pre_move_lines))
         self.wait()
 
         # Ok I think it's imporant here (and maybe in p46 above) to actually do the brining the 
         # lines together animation, as annoying as it is
         # It's only 2 lines - I can do it -> and I've found a way to make it work -> it's just annoying!
 
+        # self.remove(group_11[1]); self.remove(group_12[1]) #Remove existing Relu lines to replace with "premove lines"
+        # self.add(pre_move_lines)
 
-        bent_plane_joint_lines=VGroup()
-        pre_move_lines=VGroup()
-        #Kinda hacky, but it might actually be easiest just to pick out edges from my polygons?
-        
-        # Line Section 1 - aright need to manually figure out what's what heres
-        line_start=polygons['1.linear_out'][0][0][2]*np.array([1,1,viz_scales[2]])
-        line_end=polygons['1.linear_out'][0][0][1]*np.array([1,1,viz_scales[2]])
+
+        # self.add(joint_line)  
+        self.wait()
+        self.play(ReplacementTransform(surfaces[1][0].copy(),surfaces[2][0]),
+                  ReplacementTransform(surfaces[1][1].copy(),surfaces[2][0]),
+                  ReplacementTransform(pre_move_lines.copy(), bent_plane_joint_lines), 
+                    run_time=3)
+        self.add(polygons_21)
+        self.remove(bent_plane_joint_lines); self.add(bent_plane_joint_lines)
+        self.wait()
+
+        bent_plane_joint_lines_2=VGroup()
+        pre_move_lines_2=VGroup()
+
+        line_start=polygons['1.linear_out'][1][1][0]*np.array([1,1,viz_scales[2]])
+        line_end=polygons['1.linear_out'][1][1][1]*np.array([1,1,viz_scales[2]])
         joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
-        joint_line.shift([3, 0, 0.0])
-        bent_plane_joint_lines.add(joint_line)
+        joint_line.shift([3, 0, 0])
+        bent_plane_joint_lines_2.add(joint_line)
 
-        line_start=polygons['1.linear_out'][0][0][2]*np.array([1,1,0]) #z=0 version
-        line_end=polygons['1.linear_out'][0][0][1]*np.array([1,1,0])
+        line_start=polygons['1.linear_out'][1][1][0]*np.array([1,1,0]) #z=0 version
+        line_end=polygons['1.linear_out'][1][1][1]*np.array([1,1,0])
         joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
-        joint_line.shift([3, 0, -1.5])
-        pre_move_lines.add(joint_line)
+        joint_line.shift([0, 0, 1.5])
+        pre_move_lines_2.add(joint_line)
+
+        line_start=polygons['1.linear_out'][1][0][3]*np.array([1,1,viz_scales[2]])
+        line_end=polygons['1.linear_out'][1][0][0]*np.array([1,1,viz_scales[2]])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([3, 0, 0])
+        bent_plane_joint_lines_2.add(joint_line)
+
+        line_start=polygons['1.linear_out'][1][0][3]*np.array([1,1,0]) #z=0 version
+        line_end=polygons['1.linear_out'][1][0][0]*np.array([1,1,0])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([0, 0, 1.5])
+        pre_move_lines_2.add(joint_line)
+
+        line_start=polygons['1.linear_out'][1][2][0]*np.array([1,1,viz_scales[2]])
+        line_end=polygons['1.linear_out'][1][2][1]*np.array([1,1,viz_scales[2]])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([3, 0, 0])
+        bent_plane_joint_lines_2.add(joint_line)
+
+        line_start=polygons['1.linear_out'][1][2][0]*np.array([1,1,0]) #z=0 version
+        line_end=polygons['1.linear_out'][1][2][1]*np.array([1,1,0])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        # joint_line.shift([0, 0, 1.5])
+        pre_move_lines_2.add(joint_line)
+
+        line_start=polygons['1.linear_out'][1][0][2]*np.array([1,1,viz_scales[2]])
+        line_end=polygons['1.linear_out'][1][0][3]*np.array([1,1,viz_scales[2]])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        joint_line.shift([3, 0, 0])
+        bent_plane_joint_lines_2.add(joint_line)
+
+        line_start=polygons['1.linear_out'][1][0][2]*np.array([1,1,0]) #z=0 version
+        line_end=polygons['1.linear_out'][1][0][3]*np.array([1,1,0])
+        joint_line = DashedLine(start=line_start, end=line_end, color=WHITE, stroke_width=3, dash_length=0.05)
+        # joint_line.shift([0, 0, 1.5])
+        pre_move_lines_2.add(joint_line)
 
 
-        self.add(bent_plane_joint_lines)
+        self.wait()
+        self.play(ReplacementTransform(surfaces[1][0].copy(),surfaces[2][1]),
+                  ReplacementTransform(surfaces[1][1].copy(),surfaces[2][1]),
+                  ReplacementTransform(pre_move_lines_2.copy(), bent_plane_joint_lines_2), 
+                  run_time=3)
+        self.add(polygons_22)
+        self.remove(bent_plane_joint_lines_2); self.add(bent_plane_joint_lines_2)
+        self.wait()
 
-        self.add(pre_move_lines)
+
+
+
+        # self.add(bent_plane_joint_lines)
+        # self.add(pre_move_lines)
 
 
 
         self.wait(20)
         self.embed()
+
+
+
+
+
 
 
 

@@ -1023,6 +1023,21 @@ class p47(InteractiveScene):
                 run_time=6)
         self.wait()
 
+        ##Clear everything and render simple overhead for use in side by side in p53
+        layer_2_polygons_flat.shift([1.7, 0, 0])
+        flat_map_2.shift([-1.7, 0, 0])
+        top_polygons_vgroup_flat.shift([-1.7, 0, 0])
+        lines_flat.shift([-1.7, 0, 0])
+
+        self.clear()
+        self.frame.reorient(0, 0, 0, (5.78, -1.16, 0.0), 4.36)
+        self.add(flat_map_2)
+        self.add(top_polygons_vgroup_flat)
+        self.add(lines_flat)
+        self.add(layer_2_polygons_flat)
+        self.wait()
+
+
 
 
         self.wait(20)
@@ -1170,22 +1185,95 @@ class p52(InteractiveScene):
 
 
 
-
         #Don't forget 2d shadows! That's an important juxtoposition. 
         layer_1_polygons_flat=manim_polygons_from_np_list(polygons['0.new_tiling'], colors=colors, viz_scale=viz_scales[2], opacity=0.6)
-        layer_1_polygons_flat.shift([0, 0, -1.5])
+        layer_1_polygons_flat.shift([0, 0, -1.0])
+
+
+        top_polygons_vgroup_flat=VGroup()
+        for j, p in enumerate(my_top_polygons):
+            if len(p)<3: continue
+            if my_indicator[j]: color=YELLOW
+            else: color=BLUE
+            
+            p_scaled=copy.deepcopy(p) #Scaling for viz
+            p_scaled[:,2]=0 #p_scaled[:,2]*viz_scales[2] #Flatten that shit!
+            poly_3d = Polygon(*p_scaled,
+                             fill_color=color,
+                             fill_opacity=0.4,
+                             stroke_color=color,
+                             stroke_width=2)
+            poly_3d.set_opacity(0.5)
+            poly_3d.shift([6, 0, -0.99])
+            top_polygons_vgroup_flat.add(poly_3d)
+
+        # polygon_arrays_1_flat=copy.deepcopy(polygons['1.linear_out'][0])
+        # for p in polygon_arrays_1_flat: p[:,2]=0
+
+        # polygon_arrays_2_flat=copy.deepcopy(polygons['1.linear_out'][1])
+        # for p in polygon_arrays_2_flat: p[:,2]=0
+
+        # polygons_51_flat=manim_polygons_from_np_list(polygon_arrays_1_flat, colors=colors, viz_scale=viz_scales[2])
+        # polygons_51_flat.shift([9, 0, -1.499]) #Move slightly above map
+        # polygons_52_flat=manim_polygons_from_np_list(polygon_arrays_2_flat, colors=colors, viz_scale=viz_scales[2])
+        # polygons_52_flat.shift([9, 0, -1.499]) #Move slightly above map
+        # polygons_51_flat.set_color(YELLOW)
+        # polygons_51_flat.set_color(BLUE)
+        # polygons_51_flat.set_opacity(0.5)
+        # polygons_52_flat.set_opacity(0.5)
+
+        def flat_surf_func(u, v): return [u, v, 0]
+        flat_map_surf = ParametricSurface(flat_surf_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
+        flat_map_2=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+        flat_map_2.set_shading(0,0,0).set_opacity(0.8)
+        flat_map_2.shift([6, 0, -1.0])
+
+        lines_flat=VGroup()
+        for loop in intersection_lines: 
+            # loop=np.hstack((loop, np.zeros((len(loop), 1))))
+            loop[:,2]=0
+            line = VMobject()
+            line.set_points_as_corners(loop)
+            line.set_stroke(color='#FF00FF', width=4)
+            lines_flat.add(line)
+        lines_flat.shift([6, 0, -1.0])     
 
 
 
+        #Was thinking thsi would be static, but one little collapsing animation migth be good?
+        #Eh maybe just like a top to front pan is good? Would be faster obv.
 
-
-
-        self.frame.reorient(-3, 62, 0, (2.99, 0.42, 1.03), 6.89)
+        self.frame.reorient(0, 32, 0, (2.97, -0.05, 0.59), 7.12)
         self.add(group_11, group_12, group_13, group_14)
         self.add(group_21, group_22)
         self.add(group_31, group_32, lines)
+        self.add(layer_1_polygons_flat)
+        self.add(flat_map_2)
+        self.add(top_polygons_vgroup_flat)
+        self.add(lines_flat)
+        self.wait()
 
+        #Ok I think simple pan down is all the motion we need, this is quick sentence. 
+        #Add netowrk in premeire in the gap below
+        self.play(self.frame.animate.reorient(-1, 56, 0, (2.97, -0.05, 0.59), 7.12), run_time=8)
+        self.wait()
 
+        self.play(FadeOut(group_11),
+                  FadeOut(group_12),
+                  FadeOut(group_13),
+                  FadeOut(group_14),
+                  FadeOut(group_21),
+                  FadeOut(group_22),
+                  FadeOut(group_31),
+                  FadeOut(group_32),
+                  FadeOut(lines),
+                  layer_1_polygons_flat.animate.shift([1.7, 0, 0]),
+                  top_polygons_vgroup_flat.animate.shift([-1.7, 0, 0]),
+                  lines_flat.animate.shift([-1.7, 0, 0]),
+                  flat_map_2.animate.shift([-1.7, 0, 0]),
+                  self.frame.animate.reorient(0, 0, 0, (3.06, -1.13, 0.0), 4.36),
+                  run_time=6
+                  )
 
 
         self.wait()

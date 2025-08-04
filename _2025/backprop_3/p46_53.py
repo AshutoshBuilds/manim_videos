@@ -622,7 +622,11 @@ class p47(InteractiveScene):
             relu_intersections_planes_1.add(plane)
         
         self.wait()
-        self.play(self.frame.animate.reorient(30, 70, 0, (2.55, 1.16, 0.93), 4.27), run_time=3)
+        self.play(self.frame.animate.reorient(30, 70, 0, (2.55, 1.16, 0.93), 4.27), 
+                  group_11.animate.set_opacity(0.2), 
+                  group_12.animate.set_opacity(0.2),
+                  pre_move_lines.animate.set_opacity(0.0),
+                  run_time=3)
         self.play(ShowCreation(relu_intersections_planes_1[1]))
         self.wait()
 
@@ -651,23 +655,173 @@ class p47(InteractiveScene):
 
         # Ok ok ok now how do I animate folidng this surface up, and what's a good camera angle for it?
         # In the middle of p49. 
-        self.play(self.frame.animate.reorient(20, 68, 0, (2.98, 1.26, 0.64), 4.27), run_time=2)
+        self.play(self.frame.animate.reorient(33, 61, 0, (2.54, 0.96, 0.38), 4.24), run_time=2)
 
         surfaces[3][0].shift([3, 0, 1.5])
 
         # split_polygons_merged
         # split_polygons_nested_clipped
         #Maybe i transform to split_polygons_nested_clipped, and then once we're flat then merge to split_polygons_merged
-        polygons['1.split_polygons_nested_clipped'][0] #Need to unravel this i think? And then try to animate to it? 
+        
+        split_polygons_unraveled=[item for sublist in polygons['1.split_polygons_nested'][0] for item in sublist]
+        split_polygons_unraveled_clipped=[item for sublist in polygons['1.split_polygons_nested_clipped'][0] for item in sublist] #Need to unravel this i think? And then try to animate to it? 
 
-        polygons_31=manim_polygons_from_np_list(polygons['1.split_polygons_nested_clipped'][0], colors=colors, viz_scale=viz_scales[2], opacity=0.6)
-        polygons_31.shift([3, 0, 1.51]) #Move slightly above map
+        colors_2 = [GREY, BLUE, BLUE, GREEN, GREEN, YELLOW, YELLOW]
+        colors_3 = [GREY, BLUE, GREEN, YELLOW]
+        polygons_31=manim_polygons_from_np_list(split_polygons_unraveled, colors=colors_2, viz_scale=viz_scales[2], opacity=0.6)
+        polygons_31.shift([3, 0, 1.501]) #Move slightly above map
+
+        polygons_31_clipped=manim_polygons_from_np_list(split_polygons_unraveled_clipped, colors=colors_2, viz_scale=viz_scales[2], opacity=0.6)
+        polygons_31_clipped.shift([3, 0, 1.501]) #Move slightly above map
+
+        polygons_31_merged=manim_polygons_from_np_list(polygons['1.split_polygons_merged'][0], colors=colors_3, viz_scale=viz_scales[2], opacity=0.6)
+        polygons_31_merged.shift([3, 0, 1.501]) #Move slightly above map
+
+        
+
+        # Man this polygon transform is secretly kinda tricky lol. 
+        # What if I grabbed the pre-clipped polygons, and colored them to  match, then moved them? 
+        # Ok yeah I think that's the move! Yeah we just swap out the split ones that aren't clipped rigth befor the move I think
+        #Ok yeah that's the motion I want -> I'll dropped the dashed lines right before too I think 
 
         self.wait()
-        self.play(ReplacementTransform(surfaces[2][0], surfaces[3][0]), run_time=3)
+        self.remove(polygons_21); self.add(polygons_31); self.remove(bent_plane_joint_lines)
+        self.play(ReplacementTransform(polygons_31, polygons_31_clipped),
+                  ReplacementTransform(surfaces[2][0], surfaces[3][0]), 
+                  FadeOut(relu_intersections_planes_1[1]),
+                 run_time=3)
+        self.remove(polygons_31_clipped); self.add(polygons_31_clipped)
+        self.wait()
+  
+        # self.play(ReplacementTransform(VGroup(*[polygons_31_clipped[i] for i in [0,2,4,6]]).copy(), polygons_31_merged[0]))
+
+        self.remove(polygons_31_clipped[1], polygons_31_clipped[3], polygons_31_clipped[5])
+        self.add(polygons_31_merged[1:]) #, polygons_31_merged[3], polygons_31_merged[5])
+        self.play(FadeOut(VGroup(*[polygons_31_clipped[i] for i in [0,2,4,6]])), FadeIn(polygons_31_merged[0])) #Nice!
+        self.wait()
+
+        self.play(self.frame.animate.reorient(-1, 38, 0, (3.12, 1.06, 0.18), 4.24), run_time=6)
+        self.wait()
+
+        #Ok now second layer. 
+        self.play(FadeIn(relu_intersections_planes_1[0]), 
+                  self.frame.animate.reorient(-132, 58, 0, (2.41, 0.82, 0.12), 2.31), 
+                  run_time=4)
+        self.wait()
+
+        surfaces[3][1].shift([3, 0, 0])
+        split_polygons_unraveled_2=[item for sublist in polygons['1.split_polygons_nested'][1] for item in sublist]
+        split_polygons_unraveled_clipped_2=[item for sublist in polygons['1.split_polygons_nested_clipped'][1] for item in sublist] #Need to unravel this i think? And then try to animate to it? 
+
+        polygons_32=manim_polygons_from_np_list(split_polygons_unraveled_2, colors=colors_2, viz_scale=viz_scales[2], opacity=0.6)
+        polygons_32.shift([3, 0, 0.001]) #Move slightly above map
+
+        polygons_32_clipped=manim_polygons_from_np_list(split_polygons_unraveled_clipped_2, colors=colors_2, viz_scale=viz_scales[2], opacity=0.6)
+        polygons_32_clipped.shift([3, 0, 0.001]) #Move slightly above map
+
+        colors_4 = [GREY, GREY, BLUE, GREEN, YELLOW]
+        polygons_32_merged=manim_polygons_from_np_list(polygons['1.split_polygons_merged'][1], colors=colors_4, viz_scale=viz_scales[2], opacity=0.6)
+        polygons_32_merged.shift([3, 0, 0.001]) #Move slightly above map
+
+        self.wait()
+        self.remove(polygons_22); self.add(polygons_32); self.remove(bent_plane_joint_lines_2)
+        self.play(ReplacementTransform(polygons_32, polygons_32_clipped),
+                  ReplacementTransform(surfaces[2][1], surfaces[3][1]), 
+                  FadeOut(relu_intersections_planes_1[0]),
+                 run_time=3)
+        self.remove(polygons_32_clipped); self.add(polygons_32_clipped)
+        self.wait()
+
+        self.remove(polygons_32_clipped[1], polygons_32_clipped[3], polygons_32_clipped[5], polygons_32_clipped[0])
+        self.add(polygons_32_merged[1:]) #, polygons_31_merged[3], polygons_31_merged[5])
+        self.play(FadeOut(VGroup(*[polygons_32_clipped[i] for i in [2,4,6]])), FadeIn(polygons_32_merged[0])) #Nice!
+        self.wait()
+
+
+        self.play(self.frame.animate.reorient(0, 57, 0, (2.72, 0.7, -0.61), 6.70), 
+                  group_11.animate.set_opacity(0.8), 
+                  group_12.animate.set_opacity(0.8), run_time=6)
+        self.wait()
+
+        #Ok now cool 2d collapsing down to tiling for first layer and then second, let's go!
+
+        #Go ahead and establish enpoints and then figure out how we want to get there!
+        layer_1_polygons_flat=manim_polygons_from_np_list(polygons['0.new_tiling'], colors=colors, viz_scale=viz_scales[2], opacity=0.6)
+        layer_1_polygons_flat.shift([0, 0, -1.5])
+
+        colors_5=[GREY, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL, MAROON, GREEN_B]
+        layer_2_polygons_flat=manim_polygons_from_np_list(polygons['1.new_tiling'], colors=colors_5, viz_scale=viz_scales[2], opacity=0.6)
+        layer_2_polygons_flat.shift([3, 0, -1.5])
+
+        #Ok bring down copies of the Relu folds? maps too or nah
+        def flat_surf_func(u, v): return [u, v, 0]
+        flat_map_surf = ParametricSurface(flat_surf_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
+        flat_map=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+        flat_map.set_shading(0,0,0).set_opacity(0.8)
+        flat_map.shift([0, 0, -1.5])
+
+        fold_copy_1=group_11[1].copy()
+        fold_copy_2=group_12[1].copy()
+        self.wait()
+        self.play(fold_copy_1.animate.shift([0,0,-3]), 
+                  fold_copy_2.animate.shift([0,0,-1.5]), 
+                  ReplacementTransform(group_11[0].copy(), flat_map),
+                  ReplacementTransform(group_12[0].copy(), flat_map),
+                  run_time=3) 
+        self.add(layer_1_polygons_flat)
+        self.remove(fold_copy_1); self.add(fold_copy_1)
+        self.remove(fold_copy_2); self.add(fold_copy_2)
+        self.remove(flat_map)
+        self.wait()
+
+        # Ok so for projecting down the second layer stuff, how about just bringing down the outlines? 
+        # I think that could be cool!
+
+        outline_4 = polygons_31_merged.copy()
+        outline_4.set_fill(opacity=0)
+        # outline_4.set_stroke(width=4, opacity=0.9)
+        outline_5 = polygons_32_merged.copy()
+        outline_5.set_fill(opacity=0)
+        # outline_5.set_stroke(width=4, opacity=0.9)
+        
+        ##Hmm I need a flat version of these down on the bottom to move to. 
+        ## Might need to create another little set of polygons?
+        polygons_31_merged_flat_arrays=polygons['1.split_polygons_merged'][0]
+        for o in polygons_31_merged_flat_arrays: o[:,2]=0 #Flatten that shit
+        polygons_31_merged_flat=manim_polygons_from_np_list(polygons_31_merged_flat_arrays, colors=colors_3, viz_scale=viz_scales[2], opacity=0.6)
+        polygons_31_merged_flat.set_fill(opacity=0)
+        polygons_31_merged_flat.shift([3, 0, -1.5])
+
+        polygons_32_merged_flat_arrays=polygons['1.split_polygons_merged'][1]
+        for o in polygons_32_merged_flat_arrays: o[:,2]=0 #Flatten that shit
+        polygons_32_merged_flat=manim_polygons_from_np_list(polygons_32_merged_flat_arrays, colors=colors_4, viz_scale=viz_scales[2], opacity=0.6)
+        polygons_32_merged_flat.set_fill(opacity=0)
+        polygons_32_merged_flat.shift([3, 0, -1.5])
+
+        self.wait()
+        self.play(ReplacementTransform(outline_4, polygons_31_merged_flat), run_time=4)
+        self.play(ReplacementTransform(outline_5, polygons_32_merged_flat), run_time=2)
+        self.wait()
 
 
 
+
+
+        # self.add(polygons_31_merged_flat)
+        # self.add(polygons_32_merged_flat)
+
+
+        # self.add(layer_1_polygons_flat)
+        # self.add(layer_2_polygons_flat)
+        # self.remove(layer_2_polygons_flat)
+
+        # self.add(polygons_31)
+        # self.remove(polygons_31)
+
+        # self.wait()
+        
+        # self.wait()
+        # self.play(ReplacementTransform(surfaces[2][0], surfaces[3][0]), run_time=3)
 
         # self.add(bent_plane_joint_lines)
         # self.add(pre_move_lines)

@@ -800,9 +800,28 @@ class p47(InteractiveScene):
 
         self.wait()
         self.play(ReplacementTransform(outline_4, polygons_31_merged_flat), run_time=4)
-        self.play(ReplacementTransform(outline_5, polygons_32_merged_flat), run_time=2)
+        self.play(ReplacementTransform(outline_5, polygons_32_merged_flat), run_time=3)
         self.wait()
 
+        self.play(
+                surfaces[3][1].animate.set_opacity(0.2),
+                polygons_32_merged.animate.set_opacity(0.2),
+                layer_1_polygons_flat.animate.set_opacity(0.2),
+                self.frame.animate.reorient(0, 44, 0, (3.15, -0.12, -1.73), 3.42),
+                run_time=4)
+        self.wait()
+        self.play(ShowCreation(layer_2_polygons_flat), run_time=3)
+        self.wait()
+
+        self.play(self.frame.animate.reorient(0, 60, 0, (2.86, 0.74, -0.34), 6.73), 
+                surfaces[3][1].animate.set_opacity(0.6),
+                polygons_32_merged.animate.set_opacity(0.8),
+                layer_1_polygons_flat.animate.set_opacity(0.25), #Keep projections but don't make them a main focus. 
+                layer_2_polygons_flat.animate.set_opacity(0.25),
+                run_time=4)
+        self.wait()
+
+        #Ok now the classic merging things deal, and batch colors to the 2d projections!
 
 
 

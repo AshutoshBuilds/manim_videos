@@ -428,15 +428,6 @@ class p47(InteractiveScene):
         group_32_fakeout[1].set_color(YELLOW)
         group_32_fakeout.shift([3, 0, 0.75])
 
-        # loops=order_closed_loops_with_closure(intersection_lines)
-        # lines_fakeout=VGroup()
-        # for loop in loops: 
-        #     loop=loop*np.array([1, 1, viz_scales[2]])
-        #     line = VMobject()
-        #     line.set_points_as_corners(loop)
-        #     line.set_stroke(color='#FF00FF', width=5)
-        #     lines_fakeout.add(line)
-        # lines_fakeout.shift([6, 0, 0.75])
 
         #Make Baarle hertog maps a little mroe pronounced. 
         group_31_fakeout[0].set_opacity(0.9)
@@ -813,18 +804,178 @@ class p47(InteractiveScene):
         self.play(ShowCreation(layer_2_polygons_flat), run_time=3)
         self.wait()
 
-        self.play(self.frame.animate.reorient(0, 60, 0, (2.86, 0.74, -0.34), 6.73), 
+        self.play(self.frame.animate.reorient(-1, 68, 0, (3.09, 0.76, -0.31), 6.95), 
                 surfaces[3][1].animate.set_opacity(0.6),
                 polygons_32_merged.animate.set_opacity(0.8),
                 layer_1_polygons_flat.animate.set_opacity(0.25), #Keep projections but don't make them a main focus. 
                 layer_2_polygons_flat.animate.set_opacity(0.25),
+                polygons_31_merged_flat.animate.set_opacity(0.0),
+                polygons_32_merged_flat.animate.set_opacity(0.0),
                 run_time=4)
         self.wait()
 
-        #Ok now the classic merging things deal, and batch colors to the 2d projections!
+        # self.remove(polygons_31_merged_flat)
+
+        # Ok now the classic merging things deal, and batch colors to the 2d projections!
+        # Ok a little tricky, but should be ok -> kinda dtemps to try to move the wireframe again - that 
+        # could make for some nice consistency!
+        outline_6 = polygons_31_merged.copy()
+        outline_6.set_fill(opacity=0)
+        # outline_6.set_stroke(width=4, opacity=0.9)
+        outline_7 = polygons_32_merged.copy()
+        outline_7.set_fill(opacity=0)
+        # outline_7.set_stroke(width=4, opacity=0.9)
+
+
+        final_layer_middle_tiling_arrays_1=process_with_layers(model.model, polygons_31_merged_flat_arrays)
+        final_layer_middle_tiling_1=manim_polygons_from_np_list(final_layer_middle_tiling_arrays_1[0], colors=colors_3, viz_scale=viz_scales[4], opacity=0.6)
+        final_layer_middle_tiling_1.set_fill(opacity=0)
+        final_layer_middle_tiling_1.shift([6, 0, 1.5])
+
+        final_layer_middle_tiling_arrays_2=process_with_layers(model.model, polygons_32_merged_flat_arrays) 
+        final_layer_middle_tiling_2=manim_polygons_from_np_list(final_layer_middle_tiling_arrays_2[0], colors=colors_4, viz_scale=viz_scales[4], opacity=0.6)
+        final_layer_middle_tiling_2.set_fill(opacity=0)
+        final_layer_middle_tiling_2.shift([6, 0, 1.5])
+    
+        polygons_41=manim_polygons_from_np_list(polygons['2.linear_out'][0], colors=colors_5, viz_scale=viz_scales[4], opacity=0.6)
+        polygons_41.shift([6, 0, 1.501]) #Move slightly above map
+        polygons_41_outline=polygons_41.copy()
+        polygons_41_outline.set_fill(opacity=0)
+
+        surfaces[4][0].shift([6, 0, 1.5])
+
+        self.wait()
+        self.play(ReplacementTransform(outline_6.copy(), final_layer_middle_tiling_1), 
+                  ReplacementTransform(outline_7.copy(), final_layer_middle_tiling_2),
+                  # ReplacementTransform(surfaces[3][0].copy(), surfaces[4][0]),
+                run_time=3)
+        self.remove(final_layer_middle_tiling_1, final_layer_middle_tiling_2)
+        self.add(polygons_41_outline)
+        self.wait()
+
+
+        self.play(ReplacementTransform(layer_2_polygons_flat.copy(), polygons_41), run_time=3)
+        self.add(surfaces[4][0]);
+        self.remove(polygons_41_outline)
+        self.remove(polygons_41); self.add(polygons_41)
+        self.wait()
+
+
+        #Same thing again for second neuron, then zoom in. 
+        final_layer_middle_tiling_arrays_1b=process_with_layers(model.model, polygons_31_merged_flat_arrays)
+        final_layer_middle_tiling_1b=manim_polygons_from_np_list(final_layer_middle_tiling_arrays_1b[1], colors=colors_3, viz_scale=viz_scales[4], opacity=0.6)
+        final_layer_middle_tiling_1b.set_fill(opacity=0)
+        final_layer_middle_tiling_1b.shift([6, 0, 0.2]) #move up a smidge
+
+        final_layer_middle_tiling_arrays_2b=process_with_layers(model.model, polygons_32_merged_flat_arrays) 
+        final_layer_middle_tiling_2b=manim_polygons_from_np_list(final_layer_middle_tiling_arrays_2b[1], colors=colors_4, viz_scale=viz_scales[4], opacity=0.6)
+        final_layer_middle_tiling_2b.set_fill(opacity=0)
+        final_layer_middle_tiling_2b.shift([6, 0, 0.2])
+    
+        polygons_41b=manim_polygons_from_np_list(polygons['2.linear_out'][1], colors=colors_5, viz_scale=viz_scales[4], opacity=0.6)
+        polygons_41b.shift([6, 0, 0.201]) #Move slightly above map
+        polygons_41_outline_b=polygons_41b.copy()
+        polygons_41_outline_b.set_fill(opacity=0)
+
+        surfaces[4][1].shift([6, 0, 0.2])
+
+        self.wait()
+        self.play(ReplacementTransform(outline_6, final_layer_middle_tiling_1b), 
+                  ReplacementTransform(outline_7, final_layer_middle_tiling_2b),
+                  # ReplacementTransform(surfaces[3][0].copy(), surfaces[4][0]),
+                run_time=3)
+        self.remove(final_layer_middle_tiling_1b, final_layer_middle_tiling_2b)
+        self.add(polygons_41_outline_b)
+        self.wait()
+
+
+        self.play(ReplacementTransform(layer_2_polygons_flat.copy(), polygons_41b), run_time=3)
+        self.add(surfaces[4][1]);
+        self.remove(polygons_41_outline_b)
+        self.remove(polygons_41b); self.add(polygons_41b)
+        self.wait()
+
+
+        #Maybe a semi-overhead view for a moment is nice? Can change later if I hate it. 
+        # self.frame.reorient(-1, 68, 0, (3.09, 0.76, -0.31), 6.95)
+        self.play(self.frame.animate.reorient(-29, 48, 0, (6.05, 0.45, -0.12), 6.53), run_time=4)
+        self.wait()
+
+        #Now bring surfaces together and change colors for final layer -> and finally decision boundary lol. 
+        polygons_51=polygons_41.copy()
+        polygons_52=polygons_41b.copy()
+        surface_51=surfaces[4][0].copy()
+        surface_52=surfaces[4][1].copy()
+
+        polygons_51.shift([3, 0, -0.7])
+        polygons_52.shift([3, 0, 0.6])
+        surface_51.shift([3, 0, -0.7])
+        surface_52.shift([3, 0, 0.6])
+        polygons_51.set_color(BLUE)
+        polygons_52.set_color(YELLOW)
+
+
+        # loops=order_closed_loops_with_closure(intersection_lines)
+        lines=VGroup()
+        for loop in intersection_lines: 
+            loop=loop*np.array([1, 1, viz_scales[2]])
+            line = VMobject()
+            line.set_points_as_corners(loop)
+            line.set_stroke(color='#FF00FF', width=5)
+            lines.add(line)
+        lines.shift([9, 0, 0.8])
+
+        surface_51.set_opacity(0.2)
+        surface_52.set_opacity(0.9)
+        polygons_51.set_opacity(0.4)
+        polygons_52.set_opacity(0.5)
+
+        self.wait()
+        self.play(self.frame.animate.reorient(-11, 31, 0, (7.76, 0.49, 0.19), 5.53), 
+                  ReplacementTransform(surfaces[4][0].copy(), surface_51),
+                  ReplacementTransform(surfaces[4][1].copy(), surface_52),
+                  ReplacementTransform(polygons_41.copy(), polygons_51),
+                  ReplacementTransform(polygons_41b.copy(), polygons_52),
+                  run_time=4)
+        self.remove(polygons_51); self.add(polygons_51)
+        self.remove(polygons_52); self.add(polygons_52)
+        self.wait()
+
+        self.play(ShowCreation(lines), run_time=2)
+        self.wait()
+
+        #Final step here, I think 3d flat projection showing decision boundary as clearly as I can. 
+        #Definitely top polytopes flat is the vibe!
+
+        
 
 
 
+
+
+
+
+
+
+
+
+        # self.add(surface_51, surface_52, polygons_51, polygons_52)
+
+        
+
+        
+
+
+
+        # self.add(final_layer_middle_tiling_1[1:], final_layer_middle_tiling_2[1:])
+
+        # self.add(surfaces[4][0])
+        
+        # self.add(polygons_41)
+
+
+        #Hmm I guess once i bring wireframes together I could actually bring up the 2d projections to color in the shape, that
+        # could be cool. 
 
         # self.add(polygons_31_merged_flat)
         # self.add(polygons_32_merged_flat)

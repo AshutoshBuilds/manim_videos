@@ -947,24 +947,182 @@ class p47(InteractiveScene):
         #Final step here, I think 3d flat projection showing decision boundary as clearly as I can. 
         #Definitely top polytopes flat is the vibe!
 
-        
+
+        top_polygons_vgroup_flat=VGroup()
+        for j, p in enumerate(my_top_polygons):
+            if len(p)<3: continue
+            if my_indicator[j]: color=YELLOW
+            else: color=BLUE
+            
+            p_scaled=copy.deepcopy(p) #Scaling for viz
+            p_scaled[:,2]=0 #p_scaled[:,2]*viz_scales[2] #Flatten that shit!
+            poly_3d = Polygon(*p_scaled,
+                             fill_color=color,
+                             fill_opacity=0.4,
+                             stroke_color=color,
+                             stroke_width=2)
+            poly_3d.set_opacity(0.5)
+            poly_3d.shift([9, 0, -1.499])
+            top_polygons_vgroup_flat.add(poly_3d)
+
+        polygon_arrays_1_flat=copy.deepcopy(polygons['2.linear_out'][0])
+        for p in polygon_arrays_1_flat: p[:,2]=0
+
+        polygon_arrays_2_flat=copy.deepcopy(polygons['2.linear_out'][1])
+        for p in polygon_arrays_2_flat: p[:,2]=0
+
+        polygons_51_flat=manim_polygons_from_np_list(polygon_arrays_1_flat, colors=colors, viz_scale=viz_scales[2])
+        polygons_51_flat.shift([9, 0, -1.499]) #Move slightly above map
+        polygons_52_flat=manim_polygons_from_np_list(polygon_arrays_2_flat, colors=colors, viz_scale=viz_scales[2])
+        polygons_52_flat.shift([9, 0, -1.499]) #Move slightly above map
+        polygons_51_flat.set_color(YELLOW)
+        polygons_51_flat.set_color(BLUE)
+        polygons_51_flat.set_opacity(0.5)
+        polygons_52_flat.set_opacity(0.5)
+
+        # def flat_surf_func(u, v): return [u, v, 0]
+        flat_map_surf = ParametricSurface(flat_surf_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
+        flat_map_2=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+        flat_map_2.set_shading(0,0,0).set_opacity(0.8)
+        flat_map_2.shift([9, 0, -1.5])
+
+        lines_flat=VGroup()
+        for loop in intersection_lines: 
+            # loop=np.hstack((loop, np.zeros((len(loop), 1))))
+            loop[:,2]=0
+            line = VMobject()
+            line.set_points_as_corners(loop)
+            line.set_stroke(color='#FF00FF', width=4)
+            lines_flat.add(line)
+        lines_flat.shift([9, 0, -1.5])      
+
+        polygons_51_copy=polygons_51.copy()
+        polygons_52_copy=polygons_52.copy()
+        surface_51_copy=surface_51.copy()
+        polygons_51_copy.set_opacity(0.3)
+        polygons_52_copy.set_opacity(0.3)
+        surface_51_copy.set_opacity(0.3)
+
+        self.wait()
+        self.play(ReplacementTransform(polygons_51_copy, polygons_51_flat),
+                    ReplacementTransform(polygons_52_copy, polygons_52_flat),
+                    # ReplacementTransform(surface_51_copy, flat_map_2),
+                    ReplacementTransform(lines.copy(), lines_flat),
+                    self.frame.animate.reorient(0, 39, 0, (9.07, -0.55, -0.82), 3.80),
+                    run_time=3)
+        self.add(flat_map_2)
+        self.remove(polygons_51_flat, polygons_52_flat)
+        self.add(top_polygons_vgroup_flat)
+        self.remove(lines_flat); self.add(lines_flat)
+        self.wait()
+
+        #Quick Overview/summary 
+        self.play(self.frame.animate.reorient(0, 57, 0, (4.6, -0.08, -0.8), 8.34), 
+                layer_1_polygons_flat.animate.set_opacity(0.55), 
+                layer_2_polygons_flat.animate.set_opacity(0.55),
+                run_time=6)
+        self.wait()
+
+
+
+        self.wait(20)
+        self.embed()
+
+
+class p47(InteractiveScene):
+    def construct(self):
+
+        map_img=ImageMobject(graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+        map_img.set_height(2)  # This sets the height to 2 units (-1 to 1)
+        map_img.set_width(2)   # This sets the width to 2 units (-1 to 1)
+        map_img.move_to(ORIGIN)
+
+
+        model_path='_2025/backprop_3/models/2_2_1.pth'
+        model = BaarleNet([2,2])
+        model.load_state_dict(torch.load(model_path))
+        viz_scales=[0.25, 0.25, 0.3, 0.3, 0.15]
+        num_neurons=[2, 2, 2, 2, 2]
+
+        w1=model.model[0].weight.detach().numpy()
+        b1=model.model[0].bias.detach().numpy()
+        w2=model.model[2].weight.detach().numpy()
+        b2=model.model[2].bias.detach().numpy()
+
+        #Precompute my surfaces, and polygons moving through network
+        surfaces=[]
+        surface_funcs=[]
+        for layer_idx in range(len(model.model)):
+            s=Group()
+            surface_funcs.append([])
+            for neuron_idx in range(num_neurons[layer_idx]):
+                surface_func=partial(surface_func_from_model, model=model, layer_idx=layer_idx, neuron_idx=neuron_idx, viz_scale=viz_scales[layer_idx])
+                bent_surface = ParametricSurface(surface_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
+                ts=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+                ts.set_shading(0,0,0).set_opacity(0.8)
+                s.add(ts)
+                surface_funcs[-1].append(surface_func)
+            surfaces.append(s)
+
+        #Move polygons through network
+        polygons={} #dict of all polygones as we go. 
+        polygons['-1.new_tiling']=[np.array([[-1., -1, 0], #First polygon is just input plane
+                                            [-1, 1, 0], 
+                                            [1, 1, 0], 
+                                            [1, -1, 0]])]
+
+        for layer_id in range(len(model.model)//2): #Move polygont through layers     
+            polygons[str(layer_id)+'.linear_out']=process_with_layers(model.model[:2*layer_id+1], polygons[str(layer_id-1)+'.new_tiling']) 
+
+            #Split polygons w/ Relu and clip negative values to z=0
+            polygons[str(layer_id)+'.split_polygons_nested']=split_polygons_with_relu_simple(polygons[str(layer_id)+'.linear_out']) #Triple nested list so we can simplify merging process layer. 
+            polygons[str(layer_id)+'.split_polygons_nested_clipped'] = clip_polygons(polygons[str(layer_id)+'.split_polygons_nested'])
+            #Merge zero regions
+            polygons[str(layer_id)+'.split_polygons_merged'] = merge_zero_regions(polygons[str(layer_id)+'.split_polygons_nested_clipped'])
+            #Compute new tiling
+            polygons[str(layer_id)+'.new_tiling']=recompute_tiling_general(polygons[str(layer_id)+'.split_polygons_merged'])
+            print('Retiled plane into ', str(len(polygons[str(layer_id)+'.new_tiling'])), ' polygons.')
+
+            #Optional filtering step
+            #polygons[str(layer_id)+'.new_tiling'] = filter_small_polygons(polygons[str(layer_id)+'.new_tiling'], min_area=1e-5)
+            #print(str(len(polygons[str(layer_id)+'.new_tiling'])), ' polygons remaining after filtering out small polygons')
+
+        #Last linear layer & output
+        polygons[str(layer_id+1)+'.linear_out']=process_with_layers(model.model, polygons[str(layer_id)+'.new_tiling'])
+        intersection_lines, new_2d_tiling, upper_polytope, indicator = intersect_polytopes(*polygons[str(layer_id+1)+'.linear_out'])
+        my_indicator, my_top_polygons = compute_top_polytope(model, new_2d_tiling)
+
+
+
+
+
+        self.wait(20)
+        self.embed()
 
 
 
 
 
 
+        # polygon_arrays_1_flat=copy.deepcopy(polygons['2.linear_out'][0])
+        # for p in polygon_arrays_1_flat: p[:,2]=0
 
+        # polygon_arrays_2_flat=copy.deepcopy(polygons['2.linear_out'][1])
+        # for p in polygon_arrays_2_flat: p[:,2]=0
 
-
+        # polygons_21_flat=manim_polygons_from_np_list(polygon_arrays_1_flat, colors=colors, viz_scale=viz_scales[2], polygon_max_height=polygon_max_height)
+        # polygons_21_flat.shift([3, 0, 0.001]) #Move slightly above map
+        # polygons_22_flat=manim_polygons_from_np_list(polygon_arrays_2_flat, colors=colors, viz_scale=viz_scales[2], polygon_max_height=polygon_max_height)
+        # polygons_22_flat.shift([3, 0, 0.002]) #Move slightly above map
+        # polygons_22_flat.set_color(YELLOW)
+        # polygons_21_flat.set_color(BLUE)
+        # polygons_21_flat.set_opacity(0.1)
+        # polygons_22_flat.set_opacity(0.1)
 
 
         # self.add(surface_51, surface_52, polygons_51, polygons_52)
 
-        
-
-        
-
+    
 
 
         # self.add(final_layer_middle_tiling_1[1:], final_layer_middle_tiling_2[1:])
@@ -996,10 +1154,6 @@ class p47(InteractiveScene):
         # self.add(bent_plane_joint_lines)
         # self.add(pre_move_lines)
 
-
-
-        self.wait(20)
-        self.embed()
 
 
 

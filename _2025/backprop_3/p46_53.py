@@ -1029,25 +1029,30 @@ class p47(InteractiveScene):
         self.embed()
 
 
-class p47(InteractiveScene):
+class p52(InteractiveScene):
     def construct(self):
 
-        map_img=ImageMobject(graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
-        map_img.set_height(2)  # This sets the height to 2 units (-1 to 1)
-        map_img.set_width(2)   # This sets the width to 2 units (-1 to 1)
-        map_img.move_to(ORIGIN)
+        w1 = np.array([[-1.8741, 2.12215],
+         [-2.39381, -1.24014],
+         [-0.940185, 1.40271],
+         [2.04548, 0.489156]], dtype=np.float32)
+        b1 = np.array([-0.00892048, -1.32954, 1.71349, 0.940607], dtype=np.float32)
+        w2 = np.array([[2.56674, 2.26244, -1.40175, 0.737865],
+         [-2.58904, -3.0681, 1.08007, -1.32219]], dtype=np.float32)
+        b2 = np.array([-0.852075, 0.492386], dtype=np.float32)
 
 
-        model_path='_2025/backprop_3/models/2_2_1.pth'
-        model = BaarleNet([2,2])
-        model.load_state_dict(torch.load(model_path))
-        viz_scales=[0.25, 0.25, 0.3, 0.3, 0.15]
-        num_neurons=[2, 2, 2, 2, 2]
+        model = BaarleNet([4])
 
-        w1=model.model[0].weight.detach().numpy()
-        b1=model.model[0].bias.detach().numpy()
-        w2=model.model[2].weight.detach().numpy()
-        b2=model.model[2].bias.detach().numpy()
+        with torch.no_grad():
+            model.model[0].weight.copy_(torch.from_numpy(w1))
+            model.model[0].bias.copy_(torch.from_numpy(b1))
+            model.model[2].weight.copy_(torch.from_numpy(w2))
+            model.model[2].bias.copy_(torch.from_numpy(b2))
+
+        viz_scales=[0.15, 0.15, 0.13]
+        num_neurons=[4, 4, 2]
+
 
         #Precompute my surfaces, and polygons moving through network
         surfaces=[]
@@ -1092,6 +1097,98 @@ class p47(InteractiveScene):
         intersection_lines, new_2d_tiling, upper_polytope, indicator = intersect_polytopes(*polygons[str(layer_id+1)+'.linear_out'])
         my_indicator, my_top_polygons = compute_top_polytope(model, new_2d_tiling)
 
+
+
+        joint_points_11 = get_relu_joint(w1[0,0], w1[0,1], b1[0], extent=1)
+        group_11=Group(surfaces[1][0]) #, polygons_11)
+        if len(joint_points_11)>0:
+            joint_line_11=line_from_joint_points_1(joint_points_11).set_opacity(0.9)
+            group_11.add(joint_line_11)
+
+        group_12=Group(surfaces[1][1]) #, polygons_12)
+        joint_points_12 = get_relu_joint(w1[1,0], w1[1,1], b1[1], extent=1)
+        if len(joint_points_12)>0:
+            joint_line_12=line_from_joint_points_1(joint_points_12).set_opacity(0.9)
+            group_12.add(joint_line_12)
+
+        group_13=Group(surfaces[1][2]) #, polygons_11)
+        joint_points_13 = get_relu_joint(w1[2,0], w1[2,1], b1[2], extent=1)
+        if len(joint_points_13)>0:
+            joint_line_13=line_from_joint_points_1(joint_points_13).set_opacity(0.9)
+            group_13.add(joint_line_13)
+
+        group_14=Group(surfaces[1][3]) #, polygons_12)
+        joint_points_14 = get_relu_joint(w1[3,0], w1[3,1], b1[3], extent=1)
+        if len(joint_points_14)>0:
+            joint_line_14=line_from_joint_points_1(joint_points_14).set_opacity(0.9)
+            group_14.add(joint_line_14)
+
+
+        group_11.shift([0, 0, 3.0])
+        group_12.shift([0, 0, 2.0])
+        group_13.shift([0, 0, 1.0])
+
+
+        polygons_21=manim_polygons_from_np_list(polygons['1.linear_out'][0], colors=colors, viz_scale=viz_scales[2], opacity=0.6)
+        polygons_21.shift([0, 0, 0.001]) #Move slightly above map
+
+        polygons_22=manim_polygons_from_np_list(polygons['1.linear_out'][1], colors=colors, viz_scale=viz_scales[2], opacity=0.6)
+        polygons_22.shift([0, 0, 0.001]) #Move slightly above map
+
+        group_21=Group(surfaces[2][0], polygons_21)
+        group_22=Group(surfaces[2][1], polygons_22)
+        group_21.shift([3.0, 0, 2.4])
+        group_22.shift([3.0, 0, 1.1])
+        group_21.set_opacity(0.5)
+        group_22.set_opacity(0.5)
+
+
+        #Ok now some plane intersction action in a third "panel"
+        group_31=group_21.copy()
+        group_31[1].set_color(BLUE)
+        group_31.shift([3, 0, -0.65])
+
+        group_32=group_22.copy()
+        group_32[1].set_color(YELLOW)
+        group_32.shift([3, 0, 0.65])
+
+        loops=order_closed_loops_with_closure(intersection_lines)
+        lines=VGroup()
+        for loop in loops: 
+            loop=loop*np.array([1, 1, viz_scales[2]])
+            line = VMobject()
+            line.set_points_as_corners(loop)
+            line.set_stroke(color='#FF00FF', width=4)
+            lines.add(line)
+        lines.shift([6, 0, 1.1+0.65])
+
+        #Make Baarle hertog maps a little mroe pronounced. 
+        group_31[0].set_opacity(0.9)
+        group_32[0].set_opacity(0.9)
+        group_31[1].set_opacity(0.4)
+        group_32[1].set_opacity(0.4)
+
+
+
+
+        #Don't forget 2d shadows! That's an important juxtoposition. 
+        layer_1_polygons_flat=manim_polygons_from_np_list(polygons['0.new_tiling'], colors=colors, viz_scale=viz_scales[2], opacity=0.6)
+        layer_1_polygons_flat.shift([0, 0, -1.5])
+
+
+
+
+
+
+        self.frame.reorient(-3, 62, 0, (2.99, 0.42, 1.03), 6.89)
+        self.add(group_11, group_12, group_13, group_14)
+        self.add(group_21, group_22)
+        self.add(group_31, group_32, lines)
+
+
+
+
+        self.wait()
 
 
 

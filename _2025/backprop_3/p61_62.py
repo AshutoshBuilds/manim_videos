@@ -1259,7 +1259,7 @@ class p62d(InteractiveScene):
         # for train_step in tqdm(range(len(training_cache['weights_history']))): #All steps
         # for train_step in tqdm(np.arange(0, len(training_cache['weights_history']), 100)):
         # for train_step in tqdm(np.arange(0, 1000, 100)):
-        for train_step in tqdm(np.arange(0, 256, 1)):
+        for train_step in tqdm(np.arange(0, 1000, 1)):
         # train_step=0
 
             if 'combined_3d_group' in locals():
@@ -1434,7 +1434,7 @@ class p62e(InteractiveScene):
         self.frame.reorient(0, 0, 0, (3.94, 0.38, 0.0), 2.04)
         # for train_step in tqdm(range(len(training_cache['weights_history']))): #All steps
         # for train_step in tqdm(np.arange(0, len(training_cache['weights_history']), 100)):
-        for train_step in tqdm(np.arange(0, 256, 1)):
+        for train_step in tqdm(np.arange(0,  1000, 1)):
         # for train_step in tqdm(np.arange(0, 600, 100)):
 
             if 'layer_1_polygons_flat' in locals():

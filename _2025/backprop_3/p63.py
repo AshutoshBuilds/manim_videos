@@ -302,7 +302,7 @@ class p63b(InteractiveScene):
 
         adaptive_viz_scales = compute_adaptive_viz_scales(model, max_surface_height=0.6, extent=1)
         #For the interesection to make sense, these scales need to match - either need to manual overide or chnage method above
-        final_layer_viz=scale=1.4*min(adaptive_viz_scales[-1]) #little manual ramp here
+        final_layer_viz=scale=1.8*min(adaptive_viz_scales[-1]) #little manual ramp here
         adaptive_viz_scales[-1]=[final_layer_viz, final_layer_viz]
 
 
@@ -317,7 +317,7 @@ class p63b(InteractiveScene):
             s=Group()
             surface_funcs.append([])
             for neuron_idx in range(num_neurons[layer_idx]):
-                surface_func=partial(surface_func_from_model, model=model, layer_idx=layer_idx, neuron_idx=neuron_idx, viz_scale=adaptive_viz_scales[layer_idx][neuron_idx]) #viz_scales[layer_idx])
+                surface_func=partial(surface_func_from_model, model=model, layer_idx=layer_idx, neuron_idx=neuron_idx, viz_scale=adaptive_viz_scales[-1][0]) #viz_scales[layer_idx])
                 bent_surface = ParametricSurface(surface_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
                 ts=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
                 ts.set_shading(0,0,0).set_opacity(0.8)
@@ -366,19 +366,19 @@ class p63b(InteractiveScene):
             prev_layer_1_polygons=reorder_polygons_optimal(prev_layer_1_polygons, polygons['0.new_tiling'])
         else:
             prev_layer_1_polygons=polygons['0.new_tiling']
-        layer_1_polygons_flat=manim_polygons_from_np_list(prev_layer_1_polygons, colors=colors, viz_scale=viz_scales[2], opacity=0.6)
+        layer_1_polygons_flat=manim_polygons_from_np_list(prev_layer_1_polygons, colors=colors, viz_scale=adaptive_viz_scales[-1][0], opacity=0.6)
 
         if prev_layer_2_polygons is not None: 
             prev_layer_2_polygons=reorder_polygons_optimal(prev_layer_2_polygons, polygons['1.new_tiling'])
         else:
             prev_layer_2_polygons=polygons['1.new_tiling']         
-        layer_2_polygons_flat=manim_polygons_from_np_list(prev_layer_2_polygons, colors=colors, viz_scale=viz_scales[2], opacity=0.6)
+        layer_2_polygons_flat=manim_polygons_from_np_list(prev_layer_2_polygons, colors=colors, viz_scale=adaptive_viz_scales[-1][0], opacity=0.6)
 
         if prev_layer_3_polygons is not None: 
             prev_layer_3_polygons=reorder_polygons_optimal(prev_layer_3_polygons, polygons['2.new_tiling'])
         else:
             prev_layer_3_polygons=polygons['2.new_tiling']
-        layer_3_polygons_flat=manim_polygons_from_np_list(prev_layer_3_polygons, colors=colors, viz_scale=viz_scales[2], opacity=0.6)
+        layer_3_polygons_flat=manim_polygons_from_np_list(prev_layer_3_polygons, colors=colors, viz_scale=adaptive_viz_scales[-1][0], opacity=0.6)
 
 
         #Outputs surfaces
@@ -388,7 +388,7 @@ class p63b(InteractiveScene):
         start_z = total_height / 2  # Start from top
         for neuron_idx in range(num_neurons[layer_idx]):
             # split_polygons_unraveled=[item for sublist in polygons['1.split_polygons_merged'][neuron_idx] for item in sublist]
-            pgs=manim_polygons_from_np_list(polygons['3.linear_out'][neuron_idx], colors=colors, viz_scale=adaptive_viz_scales[layer_idx][neuron_idx], opacity=0.6)
+            pgs=manim_polygons_from_np_list(polygons['3.linear_out'][neuron_idx], colors=colors, viz_scale=adaptive_viz_scales[-1][0], opacity=0.6)
             s=surfaces[layer_idx][neuron_idx]
             g=Group(s, pgs) 
             groups_output.add(g)
@@ -405,7 +405,7 @@ class p63b(InteractiveScene):
             if my_indicator[j]: color=YELLOW
             else: color=BLUE
             p_scaled=copy.deepcopy(p) #Scaling for viz
-            p_scaled[:,2]=p_scaled[:,2]*adaptive_viz_scales[-1][0] #Flatten that shit!
+            p_scaled[:,2]=p_scaled[:,2]*adaptive_viz_scales[-1][0] 
             poly_3d = Polygon(*p_scaled,
                              fill_color=color,
                              fill_opacity=0.4,
@@ -416,7 +416,7 @@ class p63b(InteractiveScene):
 
         lines=VGroup()
         for loop in intersection_lines: 
-            loop=loop*np.array([1, 1, viz_scales[2]])
+            loop=loop*np.array([1, 1, adaptive_viz_scales[-1][0]])
             line = VMobject()
             line.set_points_as_corners(loop)
             line.set_stroke(color='#FF00FF', width=4)
@@ -454,13 +454,36 @@ class p63b(InteractiveScene):
         group_combined_output.set_opacity(0.3)
         final_map_group=Group(flat_map_2, top_polygons_vgroup_flat, lines_flat)
 
-        layer_1_polygons_flat.shift([ 0.,  2., -5.])                                                                                                                                                       
-        layer_2_polygons_flat.shift([ 2.35 , 2.,   -5.  ])                                                                                                                                                
-        layer_3_polygons_flat.shift([ 0.,   -0.35, -5.  ])                                                                                                                                                
-        final_map_group.shift([ 2.35, -0.35, -5.  ])
+        # layer_1_polygons_flat.shift([ 0.,  2., -5.])                                                                                                                                                       
+        # layer_2_polygons_flat.shift([ 2.35 , 2.,   -5.  ])                                                                                                                                                
+        # layer_3_polygons_flat.shift([ 0.,   -0.35, -5.  ])                                                                                                                                                
+        # final_map_group.shift([ 2.35, -0.35, -5.  ])
+
+
+        # self.wait()
+
+        # group_combined_output.set_opacity(0.3)
+        # top_polygons_vgroup.set_opacity(0.6)
+        
+        # self.remove(group_combined_output)
+
+        combined_3d_group=Group(group_combined_output, top_polygons_vgroup, lines)
 
 
         self.wait()
+        self.add(combined_3d_group)
+
+        self.frame.reorient(-46, 60, 0, (-0.05, -0.03, -0.3), 3.23)
+        self.wait()
+        self.play(self.frame.animate.reorient(20, 44, 0, (-0.01, -0.1, -0.38), 3.23), run_time=10) #optional slow pan around that I can usssse
+        self.wait()
+
+
+
+
+
+
+
         # self.frame.reorient(0, 0, 0, (3.94, 0.38, 0.0), 2.04) #Could do a nice zoom in animation from not sure if it's worth it or not
         # self.frame.reorient(0, 0, 0, (3.07, 0.82, 0.0), 0.77)
         # self.add(layer_1_polygons_flat)
@@ -470,10 +493,9 @@ class p63b(InteractiveScene):
         # self.wait()
 
 
-        self.add
 
         #final_map_group
-        #layer_1_polygons_flat
+        #layer_1_polygons_flate
         #layer_2_polygons_flat
         # layer_3_polygons_flat
 

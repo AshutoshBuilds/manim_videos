@@ -1258,7 +1258,9 @@ class p62d(InteractiveScene):
         self.frame.reorient(48, 50, 0, (-0.04, 0.13, -0.47), 3.99)
         # for train_step in tqdm(range(len(training_cache['weights_history']))): #All steps
         # for train_step in tqdm(np.arange(0, len(training_cache['weights_history']), 100)):
-        for train_step in tqdm(np.arange(0, 1000, 100)):
+        # for train_step in tqdm(np.arange(0, 1000, 100)):
+        for train_step in tqdm(np.arange(0, 256, 1)):
+        # train_step=0
 
             if 'combined_3d_group' in locals():
                 self.remove(combined_3d_group)
@@ -1321,12 +1323,12 @@ class p62d(InteractiveScene):
                 polygons[str(layer_id)+'.split_polygons_merged'] = merge_zero_regions(polygons[str(layer_id)+'.split_polygons_nested_clipped'])
                 
                 #Compute new tiling - general method with merging - should be more accurate but slow - buggy?
-                polygons[str(layer_id)+'.new_tiling']=recompute_tiling_general(polygons[str(layer_id)+'.split_polygons_merged'])
+                # polygons[str(layer_id)+'.new_tiling']=recompute_tiling_general(polygons[str(layer_id)+'.split_polygons_merged'])
                 
                 #Less general method - less accurate, faster, maybe less buggy
                 # polygons[str(layer_id)+'.new_tiling_nested']=recompute_tiling(polygons[str(layer_id)+'.split_polygons_nested_clipped'])
-                # polygons[str(layer_id)+'.new_tiling_nested']=recompute_tiling_polygonize(polygons[str(layer_id)+'.split_polygons_nested_clipped'])
-                # polygons[str(layer_id)+'.new_tiling']=[item for sublist in polygons[str(layer_id)+'.new_tiling_nested'] for item in sublist]
+                polygons[str(layer_id)+'.new_tiling_nested']=recompute_tiling_polygonize(polygons[str(layer_id)+'.split_polygons_nested_clipped'])
+                polygons[str(layer_id)+'.new_tiling']=[item for sublist in polygons[str(layer_id)+'.new_tiling_nested'] for item in sublist]
 
 
                 print('Retiled plane into ', str(len(polygons[str(layer_id)+'.new_tiling'])), ' polygons.')
@@ -1348,7 +1350,7 @@ class p62d(InteractiveScene):
             start_z = total_height / 2  # Start from top
             for neuron_idx in range(num_neurons[layer_idx]):
                 # split_polygons_unraveled=[item for sublist in polygons['1.split_polygons_merged'][neuron_idx] for item in sublist]
-                pgs=manim_polygons_from_np_list(polygons['3.linear_out'][neuron_idx], colors=colors, viz_scale=adaptive_viz_scales[layer_idx][neuron_idx], opacity=0.6)
+                pgs=manim_polygons_from_np_list(polygons['3.linear_out'][neuron_idx], colors=colors, viz_scale=adaptive_viz_scales[-1][0], opacity=0.6)
                 s=surfaces[layer_idx][neuron_idx]
                 g=Group(s, pgs) #[1:]) #Crazy to leave off first merged/flat group here?
                 # g.shift([output_horizontal_offset, 0, start_z - neuron_idx * vertical_spacing])
@@ -1367,7 +1369,7 @@ class p62d(InteractiveScene):
                 if my_indicator[j]: color=YELLOW
                 else: color=BLUE
                 p_scaled=copy.deepcopy(p) #Scaling for viz
-                p_scaled[:,2]=p_scaled[:,2]*adaptive_viz_scales[-1][0] #Flatten that shit!
+                p_scaled[:,2]=p_scaled[:,2]*adaptive_viz_scales[-1][0] 
                 poly_3d = Polygon(*p_scaled,
                                  fill_color=color,
                                  fill_opacity=0.4,
@@ -1380,7 +1382,7 @@ class p62d(InteractiveScene):
             # loops=order_closed_loops_with_closure(intersection_lines)
             lines=VGroup()
             for loop in intersection_lines: 
-                loop=loop*np.array([1, 1, viz_scales[2]])
+                loop=loop*np.array([1, 1, adaptive_viz_scales[-1][0]])
                 line = VMobject()
                 line.set_points_as_corners(loop)
                 line.set_stroke(color='#FF00FF', width=4)
@@ -1432,7 +1434,8 @@ class p62e(InteractiveScene):
         self.frame.reorient(0, 0, 0, (3.94, 0.38, 0.0), 2.04)
         # for train_step in tqdm(range(len(training_cache['weights_history']))): #All steps
         # for train_step in tqdm(np.arange(0, len(training_cache['weights_history']), 100)):
-        for train_step in tqdm(np.arange(0, 600, 100)):
+        for train_step in tqdm(np.arange(0, 256, 1)):
+        # for train_step in tqdm(np.arange(0, 600, 100)):
 
             if 'layer_1_polygons_flat' in locals():
                 self.remove(layer_1_polygons_flat, layer_2_polygons_flat, layer_3_polygons_flat, final_map_group)

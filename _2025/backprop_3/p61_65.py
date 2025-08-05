@@ -334,9 +334,9 @@ class p62(InteractiveScene):
         w2=model.model[2].weight.detach().numpy()
         b2=model.model[2].bias.detach().numpy()
 
-        adaptive_viz_scales = compute_adaptive_viz_scales(model, max_surface_height=1.0, extent=1)
+        adaptive_viz_scales = compute_adaptive_viz_scales(model, max_surface_height=0.6, extent=1)
         #For the interesection to make sense, these scales need to match - either need to manual overide or chnage method above
-        final_layer_viz=scale=2*min(adaptive_viz_scales[-1]) #little manual ramp here
+        final_layer_viz=scale=1.4*min(adaptive_viz_scales[-1]) #little manual ramp here
         adaptive_viz_scales[-1]=[final_layer_viz, final_layer_viz]
 
         #Precompute my surfaces, and polygons moving through network
@@ -408,17 +408,38 @@ class p62(InteractiveScene):
         layer_2_polygons_flat=manim_polygons_from_np_list(polygons['1.new_tiling'], colors=colors, viz_scale=viz_scales[2], opacity=0.6)
         layer_2_polygons_flat.shift([3, 0, -5.0])
 
+
+
+        groups_3=Group()
+        layer_idx=5
+        total_height = (num_neurons[layer_idx] - 1) * vertical_spacing
+        start_z = total_height / 2  # Start from top
+        for neuron_idx in range(num_neurons[layer_idx]):
+            # split_polygons_unraveled=[item for sublist in polygons['1.split_polygons_merged'][neuron_idx] for item in sublist]
+            pgs=manim_polygons_from_np_list(polygons['2.split_polygons_merged'][neuron_idx], colors=colors, viz_scale=adaptive_viz_scales[layer_idx][neuron_idx], opacity=0.6)
+            s=surfaces[layer_idx][neuron_idx]
+            g=Group(s, pgs[1:]) #Crazy to leave off first merged/flat group here?
+            g.shift([3*(layer_idx-1)/2, 0, start_z - neuron_idx * vertical_spacing])
+            groups_3.add(g)
+
+        layer_3_polygons_flat=manim_polygons_from_np_list(polygons['2.new_tiling'], colors=colors, viz_scale=viz_scales[2], opacity=0.6)
+        layer_3_polygons_flat.shift([6, 0, -5.0])
+
+
+
+
         #Outputs surfaces
+        output_horizontal_offset=9
         groups_output=Group()
         layer_idx=len(model.model)-1
         total_height = (num_neurons[layer_idx] - 1) * vertical_spacing
         start_z = total_height / 2  # Start from top
         for neuron_idx in range(num_neurons[layer_idx]):
             # split_polygons_unraveled=[item for sublist in polygons['1.split_polygons_merged'][neuron_idx] for item in sublist]
-            pgs=manim_polygons_from_np_list(polygons['2.linear_out'][neuron_idx], colors=colors, viz_scale=adaptive_viz_scales[layer_idx][neuron_idx], opacity=0.6)
+            pgs=manim_polygons_from_np_list(polygons['3.linear_out'][neuron_idx], colors=colors, viz_scale=adaptive_viz_scales[layer_idx][neuron_idx], opacity=0.6)
             s=surfaces[layer_idx][neuron_idx]
             g=Group(s, pgs[1:]) #Crazy to leave off first merged/flat group here?
-            g.shift([6, 0, start_z - neuron_idx * vertical_spacing])
+            g.shift([output_horizontal_offset, 0, start_z - neuron_idx * vertical_spacing])
             groups_output.add(g)
 
         #Output surfaces together
@@ -441,7 +462,7 @@ class p62(InteractiveScene):
                              stroke_color=color,
                              stroke_width=2)
             poly_3d.set_opacity(0.5)
-            poly_3d.shift([9, 0, 0])
+            poly_3d.shift([output_horizontal_offset+3, 0, 0])
             top_polygons_vgroup.add(poly_3d)
 
         # loops=order_closed_loops_with_closure(intersection_lines)
@@ -452,7 +473,7 @@ class p62(InteractiveScene):
             line.set_points_as_corners(loop)
             line.set_stroke(color='#FF00FF', width=4)
             lines.add(line)
-        lines.shift([9, 0, 0.])
+        lines.shift([output_horizontal_offset+3, 0, 0.])
 
         top_polygons_vgroup_flat=VGroup()
         for j, p in enumerate(my_top_polygons):
@@ -467,14 +488,14 @@ class p62(InteractiveScene):
                              stroke_color=color,
                              stroke_width=2)
             poly_3d.set_opacity(0.5)
-            poly_3d.shift([9, 0, -2])
+            poly_3d.shift([output_horizontal_offset+3, 0, -2])
             top_polygons_vgroup_flat.add(poly_3d)
 
         def flat_surf_func(u, v): return [u, v, 0]
         flat_map_surf = ParametricSurface(flat_surf_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
         flat_map_2=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
         flat_map_2.set_shading(0,0,0).set_opacity(0.8)
-        flat_map_2.shift([9, 0, -2])
+        flat_map_2.shift([output_horizontal_offset+3, 0, -2])
 
         lines_flat=VGroup()
         for loop in intersection_lines: 
@@ -484,30 +505,21 @@ class p62(InteractiveScene):
             line.set_points_as_corners(loop)
             line.set_stroke(color='#FF00FF', width=5)
             lines_flat.add(line)
-        lines_flat.shift([9, 0, -2])    
+        lines_flat.shift([output_horizontal_offset+3, 0, -2])    
 
-        # surface_51.set_opacity(0.2)
-        # surface_52.set_opacity(0.9)
-        # polygons_51.set_opacity(0.4)
-        # polygons_52.set_opacity(0.5)
-
-
-
-        # polygons_41=manim_polygons_from_np_list(polygons['2.linear_out'][0], colors=colors_5, viz_scale=viz_scales[4], opacity=0.6)
-        # polygons_41.shift([6, 0, 1.501]) #Move slightly above map
-
-        ##Feeling like a fly around of this static scene would be non-terrible?
 
         group_combined_output.set_opacity(0.3)
         # top_polygons_vgroup.set_opacity(0.6)
 
         self.wait()
-        self.frame.reorient(0, 64, 0, (4.62, 2.85, -1.51), 12.99)
+        self.frame.reorient(0, 65, 0, (5.72, 2.88, -1.46), 12.99)
 
         self.add(groups_1)
         self.add(layer_1_polygons_flat)
         self.add(groups_2)
         self.add(layer_2_polygons_flat)
+        self.add(groups_3)
+        self.add(layer_3_polygons_flat)
         self.add(groups_output)
         self.add(group_combined_output)
         self.add(top_polygons_vgroup)
@@ -518,45 +530,93 @@ class p62(InteractiveScene):
 
         self.wait()
 
-        #19, 102
 
-        #Focus on tiling
-        self.play(self.frame.animate.reorient(0, 58, 0, (1.45, 1.08, -5.07), 5.78), run_time=6)
+        #20, 119, 430
+
+  
+        # self.play(self.frame.animate.reorient(0, 58, 0, (1.45, 1.08, -5.07), 5.78), run_time=6)
+        # self.wait()
+
+
+        self.play(self.frame.animate.reorient(-42, 56, 0, (6.58, 0.65, 0.58), 3.23), 
+                  groups_3[:2].animate.set_opacity(0.05), 
+                  groups_3[3:].animate.set_opacity(0.05), 
+                  groups_2.animate.set_opacity(0.05), 
+                  groups_output.animate.set_opacity(0.05), 
+                  group_combined_output.animate.set_opacity(0.05), 
+                  top_polygons_vgroup.animate.set_opacity(0.05),
+                  lines.animate.set_opacity(0.05), 
+                  flat_map_2.animate.set_opacity(0.05), 
+                  top_polygons_vgroup_flat.animate.set_opacity(0.05), 
+                  lines_flat.animate.set_opacity(0.05), 
+                  run_time=6)
+        self.wait()
+        
+
+        self.play(self.frame.animate.reorient(-69, 56, 0, (6.83, 0.24, 0.61), 3.23), run_time=5) #little peak around the side
         self.wait()
 
-        self.play(self.frame.animate.reorient(18, 58, 0, (2.47, 1.79, 0.9), 5.81), 
-                  groups_1.animate.set_opacity(0.1), 
-                  groups_2[0].animate.set_opacity(0.1),
-                  groups_2[2:].animate.set_opacity(0.1),
-                  groups_output.animate.set_opacity(0.1), 
-                  run_time=6
-                  )
-        self.wait()
-
-        self.play(self.frame.animate.reorient(-4, 58, 0, (7.86, 1.54, -1.02), 6.99), 
-                  groups_1.animate.set_opacity(0.6), 
-                  groups_2[0].animate.set_opacity(0.6),
-                  groups_2[2:].animate.set_opacity(0.6),
+        self.play(self.frame.animate.reorient(0, 65, 0, (5.72, 2.88, -1.46), 12.99), #Back to wide view!
+                  groups_3[:2].animate.set_opacity(0.6), 
+                  groups_3[3:].animate.set_opacity(0.6), 
+                  groups_2.animate.set_opacity(0.6), 
                   groups_output.animate.set_opacity(0.6), 
-                  run_time=6
-                  )
+                  group_combined_output.animate.set_opacity(0.2), 
+                  top_polygons_vgroup.animate.set_opacity(0.6),
+                  lines.animate.set_opacity(0.8), 
+                  flat_map_2.animate.set_opacity(0.5), 
+                  top_polygons_vgroup_flat.animate.set_opacity(0.5), 
+                  lines_flat.animate.set_opacity(0.8), 
+                  run_time=6)
         self.wait()
 
-        self.play(self.frame.animate.reorient(0, 38, 0, (9.09, 0.29, -2.69), 3.98), 
-                 group_combined_output.animate.set_opacity(0.05),
-                 top_polygons_vgroup.animate.set_opacity(0.05),
-                 lines.animate.set_opacity(0.05),
-                 run_time=4)
+
+        # Ok so now I want to move to a nice 2d panel view, going to get into a little pickle with wanting
+        # a 3d view and d flat view
+        # One thing I could try is actually doing 2 separate transitions, and then blending them in premiere? 
+        # That might now be terrible - let's try it. 
+        #First a fade out transition here, and then maybe two separate classes, one of each flavof of transition. 
+
+        self.play(
+                  groups_1.animate.set_opacity(0), 
+                  groups_2.animate.set_opacity(0), 
+                  groups_3.animate.set_opacity(0), 
+                  groups_output.animate.set_opacity(0), 
+                  # group_combined_output.animate.set_opacity(0), 
+                  # top_polygons_vgroup.animate.set_opacity(0),
+                  # lines.animate.set_opacity(0), 
+                  # flat_map_2.animate.set_opacity(0), 
+                  # top_polygons_vgroup_flat.animate.set_opacity(0), 
+                  # lines_flat.animate.set_opacity(0), 
+                  run_time=3)
         self.wait()
 
-        #Overall view
-        self.play(self.frame.animate.reorient(0, 74, 0, (5.17, 1.54, -0.87), 11.81), 
-                 group_combined_output.animate.set_opacity(0.2),
-                 top_polygons_vgroup.animate.set_opacity(0.5),
-                 lines.animate.set_opacity(0.8),
-                 run_time=6)
+        #Ok, maybe let's actually try the 2d/flat transition here?
+        self.play(group_combined_output.animate.set_opacity(0), 
+                    top_polygons_vgroup.animate.set_opacity(0),
+                    lines.animate.set_opacity(0), 
+                    run_time=3)
         self.wait()
 
+        final_map_group=Group(flat_map_2, top_polygons_vgroup_flat, lines_flat)
+
+
+        # layer_1_polygons_flat.shift([0, 2, 0])
+        # layer_2_polygons_flat.shift([-0.65, 2, 0])
+        # layer_3_polygons_flat.shift([-6, 0.5-0.85, 0])
+        # final_map_group.shift([-12+2.5-0.15, -0.35, -3])
+        # self.frame.reorient(0, 0, 0, (3.94, 0.38, 0.0), 2.04)
+
+        self.wait()
+
+        self.play(
+                layer_1_polygons_flat.animate.shift([0, 2, 0]),
+                layer_2_polygons_flat.animate.shift([-0.65, 2, 0]),
+                layer_3_polygons_flat.animate.shift([-6, 0.5-0.85, 0]),
+                final_map_group.animate.shift([-12+2.5-0.15, -0.35, -3]),
+                self.frame.animate.reorient(0, 0, 0, (3.94, 0.38, 0.0), 2.04),
+                run_time=6)
+        self.wait()
 
 
 

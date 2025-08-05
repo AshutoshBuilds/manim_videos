@@ -239,6 +239,90 @@ def split_polygons_with_relu_simple(polygons):
     return split_polygons
 
 
+from shapely.geometry import Polygon, LineString
+from shapely.ops import unary_union, snap, polygonize
+import numpy as np
+
+def recompute_tiling_polygonize(polygons_nested, min_area=0, snap_tol=1e-8):
+    """
+    polygons_nested: 
+      List of N_neurons entries, each entry is a list of M input-polygons,
+      where each input-polygon is itself either:
+        - an np.ndarray (Nx2 or Nx3), or
+        - a list of such arrays (its splits).
+    Returns:
+      List of length M.  For each input-polygon i, returns a list of
+      shapely‐overlay tiles (as Nx3 numpy arrays at z=0) that exactly
+      cover that original region with no gaps.
+    """
+    if not polygons_nested:
+        return []
+
+    N_neurons = len(polygons_nested)
+    M_inputs  = len(polygons_nested[0])
+    result = []
+
+    # helper: take a per-neuron flat list and polygonize it
+    def _polygonize_core(per_neuron_flat):
+        # -- build shapely Polygons, filtering degenerate ones
+        shapely_polys = []
+        for arr in per_neuron_flat:
+            a = np.asarray(arr)
+            if a.ndim==2 and a.shape[0]>=3:
+                p = Polygon(a[:, :2])
+                if p.is_valid and p.area>min_area:
+                    shapely_polys.append(p)
+
+        if not shapely_polys:
+            return []
+
+        # snap to align
+        master = unary_union(shapely_polys)
+        snapped = [snap(p, master, snap_tol) for p in shapely_polys]
+
+        # collect all boundary lines
+        lines = []
+        for p in snapped:
+            if not p.is_empty:
+                lines.append(LineString(p.exterior.coords))
+                for interior in p.interiors:
+                    lines.append(LineString(interior.coords))
+
+        # polygonize the network
+        merged = unary_union(lines)
+        raw = [g for g in polygonize(merged) if g.area>min_area]
+
+        # clip back to [-1,1]^2 and convert to Nx3 arrays
+        square = Polygon([(-1,-1),(1,-1),(1,1),(-1,1)])
+        out = []
+        for g in raw:
+            c = g.intersection(square)
+            if not c.is_empty and c.area>min_area:
+                pts = list(c.exterior.coords)[:-1]
+                a3 = np.zeros((len(pts), 3), dtype=float)
+                a3[:, :2] = pts
+                out.append(a3)
+        return out
+
+    # for each of the M input-polygons, gather its splits across all neurons
+    for i in range(M_inputs):
+        per_neuron_flat = []
+        for neuron_list in polygons_nested:
+            entry = neuron_list[i]
+            # entry may be np.ndarray or list of arrays
+            if isinstance(entry, list):
+                per_neuron_flat.extend(entry)
+            else:
+                per_neuron_flat.append(entry)
+        # polygonize that set
+        tiles = _polygonize_core(per_neuron_flat)
+        result.append(tiles)
+
+    return result
+
+
+
+
 def recompute_tiling(polygons_nested, min_area=1e-10):
     '''
     polygons_nested is a list of list of list of polygons in 3d space as Nx3 or Nx2 numpy arrays 

@@ -21,7 +21,7 @@ FRESH_TAN='#dfd0b9'
 CYAN='#00FFFF'
 
 graphics_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/graphics/' #Point to folder where map images are
-colors = [BLUE, GREY, GREEN, TEAL, PURPLE, ORANGE, PINK, TEAL, RED, YELLOW ]
+colors = [BLUE, GREY, GREEN, TEAL, PURPLE, PINK, TEAL, RED, YELLOW, FRESH_TAN, CHILL_BLUE, CHILL_GREEN, YELLOW_FADE]
 # colors = [GREY, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
 
 def create_first_layer_relu_groups(model, surfaces, num_neurons_first_layer=8, extent=1, vertical_spacing=0.9):
@@ -1443,14 +1443,14 @@ class p62e(InteractiveScene):
             layer_1_polygons_flat.shift([0, 0, -5.0])
 
             if prev_layer_2_polygons is not None: 
-                prev_layer_2_polygons=reorder_polygons_optimal(prev_layer_2_polygons, polygons['0.new_tiling'])
+                prev_layer_2_polygons=reorder_polygons_optimal(prev_layer_2_polygons, polygons['1.new_tiling'])
             else:
                 prev_layer_2_polygons=polygons['1.new_tiling']         
             layer_2_polygons_flat=manim_polygons_from_np_list(prev_layer_2_polygons, colors=colors, viz_scale=viz_scales[2], opacity=0.6)
             layer_2_polygons_flat.shift([3, 0, -5.0])
 
             if prev_layer_3_polygons is not None: 
-                prev_layer_3_polygons=reorder_polygons_optimal(prev_layer_3_polygons, polygons['0.new_tiling'])
+                prev_layer_3_polygons=reorder_polygons_optimal(prev_layer_3_polygons, polygons['2.new_tiling'])
             else:
                 prev_layer_3_polygons=polygons['2.new_tiling']
             layer_3_polygons_flat=manim_polygons_from_np_list(prev_layer_3_polygons, colors=colors, viz_scale=viz_scales[2], opacity=0.6)

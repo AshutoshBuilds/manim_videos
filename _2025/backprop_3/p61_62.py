@@ -1631,6 +1631,11 @@ class p62e(InteractiveScene):
             self.add(layer_1_polygons_flat, layer_2_polygons_flat, layer_3_polygons_flat, final_map_group)
             self.wait(0.1)
 
+            # print(layer_1_polygons_flat.get_center())
+            # print(layer_2_polygons_flat.get_center())
+            # print(layer_3_polygons_flat.get_center())
+            # print(final_map_group.get_center())
+
 
 
         self.wait(20)

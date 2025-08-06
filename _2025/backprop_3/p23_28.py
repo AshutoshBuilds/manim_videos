@@ -310,24 +310,79 @@ class p23(InteractiveScene):
         surface_11_copy.shift([0, 0, -0.9])
         polygons_21a_copy.shift([0, 0, -0.9])
         polygons_11_copy.shift([0, 0, -0.9])
-        self.remove(group_12) #Animate this move in a seperate scene, bring together in editing. 
+        surface_12_copy.shift([0, 0, 0.9])
+        polygons_22a_copy.shift([0, 0, 0.9])
+        polygons_12_copy.shift([0, 0, 0.9])        
+        # self.remove(group_12) #Eh i think no: Animate this move in a seperate scene, bring together in editing. 
 
         self.wait()
-        self.play(self.frame.animate.reorient(0, 66, 0, (-0.06, -0.02, 0.06), 3.82),
+        self.play(self.frame.animate.reorient(0, 58, 0, (-0.05, -0.12, -0.11), 3.82),
                    axes_1.animate.shift([0, 0, -0.9]),
                    joint_line_11.animate.shift([0, 0, -0.9]).set_opacity(0.0),
                    ReplacementTransform(polygons_21b, polygons_21a_copy),
                    ReplacementTransform(surface_21, surface_11_copy),
+                   axes_2.animate.shift([0, 0, 0.9]),
+                   joint_line_12.animate.shift([0, 0, 0.9]).set_opacity(0.0),
+                   ReplacementTransform(polygons_22b, polygons_22a_copy),
+                   ReplacementTransform(surface_22, surface_12_copy),
                   run_time=4)
-        self.wait()
         self.remove(surface_11_copy); self.add(surface_11_copy)
         self.remove(polygons_21a_copy); self.add(polygons_11_copy)
+        self.remove(axes_1); self.add(axes_1)
+        self.remove(surface_12_copy); self.add(surface_12_copy)
+        self.remove(polygons_22a_copy); self.add(polygons_12_copy)
+        self.remove(axes_2); self.add(axes_2)
+        self.wait()
+
+        # Ok i think that will work pretty well. 
+        # Fighting with overall composition a little - probably 3 panels at the end, right?
+        # I'm going to work on equations next for a bit. 
 
 
 
 
 
-        # 
+
+
+        #Maybe I just do the separate moves in the same scene?
+        # self.remove(group_11); self.remove(polygons_11_copy); self.remove(surface_11_copy)
+        # self.wait()
+
+
+        # self.frame.reorient(-53, 68, 0, (0.01, -0.1, 0.09), 5.58)
+        # self.add(group_12)
+
+        # # Ok cool now similiar move to above, just with different surfaces, and 
+        # # end up at a little different camera angle!
+        # surface_12_copy.shift([0, 0, 0.9])
+        # polygons_22a_copy.shift([0, 0, 0.9])
+        # polygons_12_copy.shift([0, 0, 0.9])
+
+        # self.wait()
+        # self.play(self.frame.animate.reorient(0, 83, 0, (-0.06, -0.06, 0.0), 3.82),
+        #            axes_2.animate.shift([0, 0, 0.9]),
+        #            joint_line_12.animate.shift([0, 0, 0.9]).set_opacity(0.0),
+        #            ReplacementTransform(polygons_22b, polygons_22a_copy),
+        #            ReplacementTransform(surface_22, surface_12_copy),
+        #           run_time=4)
+        # self.remove(surface_12_copy); self.add(surface_12_copy)
+        # self.remove(polygons_22a_copy); self.add(polygons_12_copy)
+        # self.remove(axes_2); self.add(axes_2)
+        # self.wait()
+
+        # Eh reading the script again I'm not so sure 
+        # I think i should keep them locked to the same FoV if I can
+        # Let me push forward on that path!
+
+
+
+
+
+
+
+        # self.frame.reorient(0, 59, 0, (-0.06, -0.06, 0.0), 3.82)
+        # self.add(group_11)
+
         # self.add(surface_12, polygons_22a, axes_2, joint_line_12)
 
         

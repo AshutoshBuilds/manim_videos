@@ -1,4 +1,5 @@
 from manimlib import *
+from MF_Tools import *
 import numpy as np
 import glob
 import torch
@@ -15,6 +16,7 @@ CHILL_GREEN='#6c946f'
 CHILL_BLUE='#3d5c6f'
 FRESH_TAN='#dfd0b9'
 CYAN='#00FFFF'
+HOT_PINK='#FF00FF'
 
 svg_path='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/graphics/to_manim'
 graphics_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/graphics/' #Point to folder where map images are
@@ -315,6 +317,7 @@ class p20_21(InteractiveScene):
     def construct(self):
 
         model_path='_2025/backprop_3/models/2_1.pth'
+
         model = BaarleNet([2])
         model.load_state_dict(torch.load(model_path))
 
@@ -380,6 +383,8 @@ class p20_21(InteractiveScene):
 
         b2_2=Tex(r'+b^{(2)}_{2}', font_size=7).set_color(YELLOW)
         b2_2.move_to([0.55+horizontal_offset, -0.20, 0])
+        
+        
 
         # self.add(input_circles, neuron_11_shape, neuron_12_shape, neuron_21_shape, neuron_22_shape, layer_labels)
         inputs_group=Group(input_circles, x1, x2)
@@ -419,6 +424,9 @@ class p20_21(InteractiveScene):
         eq1 = Tex(r"h_{1}^{(1)} = m_{11}^{(1)} x_{1} + m_{12}^{(1)} x_{2} + b_{1}^{(1)}", font_size=7).set_color(FRESH_TAN)
         eq2 = Tex(r"h_{2}^{(1)} = m_{21}^{(1)} x_{1} + m_{22}^{(1)} x_{2} + b_{2}^{(1)}", font_size=7).set_color(FRESH_TAN)
         eq3 = Tex(r"h_{1}^{(2)} = m_{11}^{(2)} h_{1}^{(1)} + m_{12}^{(2)} h_{2}^{(1)} + b_{1}^{(2)}", font_size=7).set_color(FRESH_TAN)
+        
+        
+        
         # eq3[12:17].set_color(CYAN)
         # eq3[24:29].set_color(YELLOW)
 
@@ -446,7 +454,7 @@ class p20_21(InteractiveScene):
         # eq3[:5].set_color('#FF00FF')
         eq3[6:12].set_color('#FF00FF') #m11_1
         eq3[18:24].set_color('#FF00FF') #m12_1
-        eq3[29:].set_color('#FF00FF') #b_1
+        eq3[30:].set_color('#FF00FF') #b_1
 
         # self.add(eq1, eq2, eq3)
         self.wait()
@@ -454,12 +462,12 @@ class p20_21(InteractiveScene):
         #Ok now build equations from copies of values from neuron drawing!
         self.play(ReplacementTransform(m11_1.copy(), eq1[6:12]), 
                   ReplacementTransform(m12_1.copy(), eq1[15:21]), 
-                  ReplacementTransform(b1_1.copy(), eq1[24:]), 
+                  ReplacementTransform(b1_1.copy(), eq1[23:]), 
                   run_time=3)
         self.add(eq1)
         self.play(ReplacementTransform(m21_1.copy(), eq2[6:12]), 
                   ReplacementTransform(m22_1.copy(), eq2[15:21]), 
-                  ReplacementTransform(b2_1.copy(), eq2[24:]), 
+                  ReplacementTransform(b2_1.copy(), eq2[23:]), 
                   run_time=3)
         self.add(eq2)
         self.wait()
@@ -471,17 +479,294 @@ class p20_21(InteractiveScene):
         self.wait()
 
         #Move top and center so we can start working through substitutions! Handoff to Pranav
-        eq3.move_to([0.55, 1.1, 0]).scale(1.1)
+        self.play(eq3.animate.move_to([0.55, 1.2, 0]).scale(1.1), run_time=2)
 
-        eq4 = Tex(
+        '''eq4 = Tex(
             r"h_{1}^{(2)} = m_{11}^{(2)}\bigg( m_{11}^{(1)}x_{1}+m_{12}^{(1)}x_{2}+b_1^{(1)} \bigg) "
             r"+ m_{12}^{(2)}\bigg( m_{21}^{(1)}x_{1}+m_{22}^{(1)}x_{2}+b_2^{(1)} \bigg) + b_1^{(2)}", font_size=10
-        ).move_to(eq3.get_center())
+        ).move_to(eq3.get_center())'''
+        
+        eq4 = Tex(
+            r"h_{1}^{(2)} = m_{11}^{(2)}\bigg( m_{11}^{(1)}x_{1}+m_{12}^{(1)}x_{2}+b_1^{(1)} \bigg) "
+            r"+ m_{12}^{(2)} h_{2}^{(1)} + b_{1}^{(2)}", font_size =7
+        ).move_to(eq3).set_color(FRESH_TAN).shift(DOWN*0.2)
+        
+        eq4[6:12].set_color(HOT_PINK)
+        eq4[13:36].set_color(CYAN)
+        eq4[44:49].set_color(YELLOW)
+        eq4[38:44].set_color(HOT_PINK)
+        eq4[50:55].set_color(HOT_PINK)
+        
+        eq5 = Tex(
+            r"h_{1}^{(2)} = m_{11}^{(2)}\bigg( m_{11}^{(1)}x_{1}+m_{12}^{(1)}x_{2}+b_1^{(1)} \bigg) "
+            r"+ m_{12}^{(2)}\bigg( m_{21}^{(1)}x_{1}+m_{22}^{(1)}x_{2}+b_2^{(1)} \bigg) + b_1^{(2)}", font_size=7
+        ).move_to(eq4).set_color(FRESH_TAN)
+        
+        eq5[6:12].set_color(HOT_PINK)
+        eq5[13:36].set_color(CYAN)
+        eq5[38:44].set_color(HOT_PINK)
+        eq5[45:68].set_color(YELLOW)
+        eq5[70:75].set_color(HOT_PINK)
+        
+        
+        
+        eq6 = eq5.copy()
+        
+        
 
-       
+        self.wait()
+        
+        
+        
+        
+        self.play(
+            ReplacementTransform(eq3[0:12].copy(), eq4[0:12]),
+            ReplacementTransform(eq3[17:35].copy(), eq4[37:55]),
+            ReplacementTransform(eq1[6:29].copy(), eq4[13:36]),
+            run_time=3
+            
+        )
+        
+        self.add(VGroup(eq4[12], eq4[36]))
+        
+        self.wait()
+        
+        self.remove(eq4[44:49])
+        
+        
+        self.play(
+            ReplacementTransform(eq4[0:44], eq5[0:44]),
+            ReplacementTransform(eq4[49:55], eq5[69:75]),
+            ReplacementTransform(eq2[6:29].copy(), eq5[45:68]),
+            run_time=3
+        )
+        
+        self.add(VGroup(eq5[44], eq5[68]))
+        
+        self.play(FadeIn(eq6),
+                  eq6.animate.shift(DOWN*0.2), run_time=2)
+        
+        eq7 = Tex(
+            r"h_{1}^{(2)} = m_{11}^{(2)} m_{11}^{(1)} x_{1} + m_{11}^{(2)} m_{12}^{(1)} x_{2} + m_{11}^{(2)} b_1^{(1)} "
+            r"+ m_{12}^{(2)}\bigg( m_{21}^{(1)}x_{1}+m_{22}^{(1)}x_{2}+b_2^{(1)} \bigg) + b_1^{(2)}", font_size=7
+        ).move_to(eq6).set_color(FRESH_TAN)
+        
+        eq7[6:12].set_color(HOT_PINK)
+        eq7[12:20].set_color(CYAN)
+        
+        eq7[21:27].set_color(HOT_PINK)
+        eq7[27:35].set_color(CYAN)
+        
+        eq7[36:42].set_color(HOT_PINK)
+        eq7[42:47].set_color(CYAN)
+        
+        eq7[48:54].set_color(HOT_PINK)
+        
+        eq7[55:78].set_color(YELLOW)
+        
+        eq7[80:85].set_color(HOT_PINK)
+        
+        eq8 = Tex(
+            r"h_{1}^{(2)} = m_{11}^{(2)} m_{11}^{(1)} x_{1} + m_{11}^{(2)} m_{12}^{(1)} x_{2} + m_{11}^{(2)} b_1^{(1)} "
+            r"+ m_{12}^{(2)} m_{21}^{(1)} x_{1} + m_{12}^{(2)} m_{22}^{(1)} x_{2} + m_{12}^{(2)} b_2^{(1)} + b_1^{(2)}", font_size=7
+        ).move_to(eq7).set_color(FRESH_TAN)
+        
+        
+        eq8[6:12].set_color(HOT_PINK)
+        eq8[12:20].set_color(CYAN)
+    
+        eq8[21:27].set_color(HOT_PINK)
+        eq8[27:35].set_color(CYAN)
+    
+        eq8[36:42].set_color(HOT_PINK)
+        eq8[42:47].set_color(CYAN)
+    
+        eq8[48:54].set_color(HOT_PINK)
+        eq8[54:62].set_color(YELLOW)
+        
+        eq8[63:69].set_color(HOT_PINK)
+        eq8[69:77].set_color(YELLOW)
+        
+        eq8[78:84].set_color(HOT_PINK)
+        eq8[84:89].set_color(YELLOW)
+        
+        eq8[90:95].set_color(HOT_PINK)
+        
+        eq9 = Tex(
+            r"h_{1}^{(2)} = m_{11}^{(2)} m_{11}^{(1)} x_{1} + m_{12}^{(2)} m_{21}^{(1)} x_{1} + m_{11}^{(2)} m_{12}^{(1)} x_{2} + m_{12}^{(2)} m_{22}^{(1)} x_{2} + m_{11}^{(2)} b_1^{(1)} + m_{12}^{(2)} b_2^{(1)} + b_1^{(2)}", font_size=7
+        ).move_to(eq8).set_color(FRESH_TAN)
+        
+        eq9[6:12].set_color(HOT_PINK)
+        eq9[12:20].set_color(CYAN)
+        
+        eq9[21:27].set_color(HOT_PINK)
+        eq9[27:35].set_color(YELLOW)
+        
+        eq9[36:42].set_color(HOT_PINK)
+        eq9[42:50].set_color(CYAN)
+        
+        eq9[51:57].set_color(HOT_PINK)
+        eq9[57:65].set_color(YELLOW)
+        
+        eq9[78:84].set_color(HOT_PINK)
+        eq9[84:89].set_color(YELLOW)
+        
+        eq9[66:72].set_color(HOT_PINK)
+        eq9[72:77].set_color(CYAN)
+        
+        eq9[90:95].set_color(HOT_PINK)
+        
+        eq10 = Tex(
+            r"h_{1}^{(2)} = \bigg(m_{11}^{(2)} m_{11}^{(1)} + m_{12}^{(2)} m_{21}^{(1)}\bigg) x_{1} "
+            r"+ \bigg(m_{11}^{(2)} m_{12}^{(1)} + m_{12}^{(2)} m_{22}^{(1)}\bigg) x_{2} "
+            r"+ \bigg(m_{11}^{(2)} b_1^{(1)} + m_{12}^{(2)} b_2^{(1)} + b_1^{(2)}\bigg)", font_size=7
+        ).move_to(eq9).set_color(FRESH_TAN)
+        
+        eq10[7:13].set_color(HOT_PINK)
+        eq10[13:19].set_color(CYAN)
+        
+        eq10[20:26].set_color(HOT_PINK)
+        eq10[26:32].set_color(YELLOW)
+        
+        eq10[37:43].set_color(HOT_PINK)
+        eq10[43:49].set_color(CYAN)
+        
+        eq10[50:56].set_color(HOT_PINK)
+        eq10[56:62].set_color(YELLOW)
+        
+        eq10[67:73].set_color(HOT_PINK)
+        eq10[73:78].set_color(CYAN)
+        
+        eq10[79:85].set_color(HOT_PINK)
+        eq10[85:90].set_color(YELLOW)
+        
+        eq10[91:96].set_color(HOT_PINK)
+        
+        eq11 = Tex(
+            r"h_{1}^{(2)} =  m_{1}  x_{1} "
+            r"+  m_{2}  x_{2} "
+            r"+  b_{1} ", font_size=10
+        ).move_to(eq10).set_color(FRESH_TAN).shift(DOWN*0.25)
+        
+        self.play(
+            TransformByGlyphMap(eq6, eq7,
+                (list(range(37, 75)), list(range(47, 85))),
+                (list(range(0, 6)), list(range(0, 6))),
+                ([12, 36],  [], {"run_time":0.0000001}),
+                ([21], [20]),
+                ([30], [35]),
+                (list(range(13, 21)), list(range(12, 20))),
+                (list(range(22, 30)), list(range(27, 35))),
+                (list(range(31, 36)), list(range(42, 47))),
+                (list(range(6, 12)), list(range(6, 12))), # basically no point to put an arc on this because it is in the same spot
+                (list(range(6, 12)), list(range(21, 27)), {"path_arc":-2/3*PI}),
+                (list(range(6, 12)), list(range(36, 42)), {"path_arc":-1/3*PI}),
+            ), run_time=3
+        )
+        
+        self.wait()
+        
+        self.play(
+            TransformByGlyphMap(eq7, eq8,
+                (list(range(0, 48)), list(range(0, 48))),
+                ([54, 78], [], {"run_time":0.0000001}),
+                ([63], [62]),
+                ([72], [77]),
+                (list(range(55, 63)), list(range(54, 62))),
+                (list(range(64, 72)), list(range(69, 77))),
+                (list(range(73, 78)), list(range(84, 89))),
+                (list(range(48, 54)), list(range(48, 54))), # basically no point to put an arc on this because it is in the same spot
+                (list(range(48, 54)), list(range(63, 69)), {"path_arc":-2/3*PI}),
+                (list(range(48, 54)), list(range(78, 84)), {"path_arc":-1/3*PI}),
+            ),
+            run_time=3
+        )
+        
+        self.wait()
+        
+
+        self.play(
+            TransformByGlyphMap(eq8, eq9,
+                (list(range(0, 6)), list(range(0, 6))),
+                ([20], [20]),
+                ([35], [35]),
+                ([47], [50]),
+                ([62], [65]),
+                ([77], [77]),
+                ([89], [89]),
+                (list(range(78, 89)), list(range(78, 89))),
+                (list(range(90, 95)), list(range(90, 95))),
+                (list(range(6, 20)), list(range(6, 20))),
+                (list(range(36, 47)), list(range(66, 77)), {"path_arc":2/3*PI}),
+                (list(range(21, 35)), list(range(36, 50)), {"path_arc":1/3*PI}), 
+                (list(range(48, 62)), list(range(21, 35)), {"path_arc":-2/3*PI}),
+                (list(range(63, 77)), list(range(51, 65)), {"path_arc":-1/3*PI}),
+            ),
+            run_time=3
+        )
+        
+        self.wait()
+
+        eq10[6].set_color(BLACK)
+        eq10[32].set_color(BLACK)
+        eq10[36].set_color(BLACK)
+        eq10[62].set_color(BLACK)
+        eq10[66].set_color(BLACK)
+        eq10[96].set_color(BLACK)
+        
+        self.play(
+            TransformByGlyphMap(eq9, eq10,
+                (list(range(0, 6)), list(range(0, 6))),
+                (list(range(6, 18)), list(range(7, 19))),
+                (list(range(20, 33)), list(range(19, 32))),
+                (list(range(36, 48)), list(range(37, 49))),
+                (list(range(66, 95)), list(range(67, 96))),
+                ([35], [35]),
+                ([65], [65]),
+                (FadeIn, [6, 32, 36, 62, 66, 96]),
+                ([18, 19], [33, 34], {"path_arc":2/3*PI}),
+                ([33, 34], [33, 34]),
+                ([48, 49], [63, 64], {"path_arc":2/3*PI}),
+                ([63, 64], [63, 64]),
+
+                
+                
+            ), run_time=3
+        )
+        
+        eq10[6].set_color(FRESH_TAN)
+        eq10[32].set_color(FRESH_TAN)
+        eq10[36].set_color(FRESH_TAN)
+        eq10[62].set_color(FRESH_TAN)
+        eq10[66].set_color(FRESH_TAN)
+        eq10[96].set_color(FRESH_TAN)
+        
+        self.wait()
+        
+                
+        self.play(
+            ReplacementTransform(eq10[0:6].copy(), eq11[0:6]),
+            run_time=1.5
+        )
+        self.play(
+            ReplacementTransform(eq10[7:32].copy(), eq11[6:8]),
+            ReplacementTransform(eq10[33:35].copy(), eq11[8:10]),
+            run_time=2
+        )
+        self.play(
+            ReplacementTransform(eq10[35].copy(), eq11[10]),
+            ReplacementTransform(eq10[37:62].copy(), eq11[11:13]),
+            ReplacementTransform(eq10[63:65].copy(), eq11[13:15]),
+            run_time=2
+        )
+        self.play(
+            ReplacementTransform(eq10[65].copy(), eq11[15]),
+            ReplacementTransform(eq10[67:96].copy(), eq11[16:18]),
+            run_time=2
+        )
 
 
-
+        
         self.wait(20)
         self.embed()
 

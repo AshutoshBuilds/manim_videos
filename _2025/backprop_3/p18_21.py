@@ -766,6 +766,38 @@ class p20_21(InteractiveScene):
         )
 
 
+        #On last little shift to network in the enter and final equation smaller off to the side
+        #Then bring in 3d planes in premiere. Bonus points for making h1 magenta. 
+        self.wait()
+        self.remove(eq10, eq9, eq8, eq7, eq6, eq5, eq4, eq3, eq2, eq1)
+        self.wait()
+
+        # self.remove(eq11)
+        # self.add(eq11)
+
+        # self.wait()
+        # self.play(eq10.animate.set_opacity(0.0), 
+        #           eq9.animate.set_opacity(0.0), 
+        #           eq8.animate.set_opacity(0.0), 
+        #           eq7.animate.set_opacity(0.0), 
+        #           eq6.animate.set_opacity(0.0), 
+        #           eq5.animate.set_opacity(0.0), 
+        #           eq4.animate.set_opacity(0.0), 
+        #           eq3.animate.set_opacity(0.0),
+        #           eq2.animate.set_opacity(0.0),
+        #           eq1.animate.set_opacity(0.0), run_time=2)
+        # self.wait()
+
+        # eq11.scale(0.7)
+        # eq11.move_to([1.95, 0.7, 0])
+
+        self.wait()
+        self.play(self.frame.animate.reorient(0, 0, 0, (0.61, 0.0, 0.0), 2.27), 
+                  eq11.animate.scale(0.7).move_to([1.95, 0.7, 0]),
+                  # eq11[:5].animate.set_color(HOT_PINK),
+                  run_time=3)
+        eq11[:5].set_color(HOT_PINK)
+        self.wait()
         
         self.wait(20)
         self.embed()

@@ -7,6 +7,7 @@ from plane_folding_utils import *
 from geometric_dl_utils_simplified import *
 from polytope_intersection_utils import intersect_polytopes
 from manimlib import *
+from gap_filler import fill_gaps
 from tqdm import tqdm
 from order_matching_tools import reorder_polygons_optimal, reorder_polygons_greedy
 
@@ -1254,8 +1255,38 @@ class p62d(InteractiveScene):
         with open(data_path, 'rb') as file:
             training_cache = pickle.load(file) #Training cache
 
+        #figure out a decent constant viz scale
+        # for train_step in tqdm(np.arange(0, 1000, 10)):
+        #     w1=training_cache['weights_history'][train_step]['model.0.weight'].numpy()
+        #     b1=training_cache['weights_history'][train_step]['model.0.bias'].numpy()
+        #     w2=training_cache['weights_history'][train_step]['model.2.weight'].numpy()
+        #     b2=training_cache['weights_history'][train_step]['model.2.bias'].numpy()
+        #     w3=training_cache['weights_history'][train_step]['model.4.weight'].numpy()
+        #     b3=training_cache['weights_history'][train_step]['model.4.bias'].numpy()
+        #     w4=training_cache['weights_history'][train_step]['model.6.weight'].numpy()
+        #     b4=training_cache['weights_history'][train_step]['model.6.bias'].numpy()
 
-        self.frame.reorient(48, 50, 0, (-0.04, 0.13, -0.47), 3.99)
+        #     with torch.no_grad():
+        #         model.model[0].weight.copy_(torch.from_numpy(w1))
+        #         model.model[0].bias.copy_(torch.from_numpy(b1))
+        #         model.model[2].weight.copy_(torch.from_numpy(w2))
+        #         model.model[2].bias.copy_(torch.from_numpy(b2))
+        #         model.model[4].weight.copy_(torch.from_numpy(w3))
+        #         model.model[4].bias.copy_(torch.from_numpy(b3))
+        #         model.model[6].weight.copy_(torch.from_numpy(w4))
+        #         model.model[6].bias.copy_(torch.from_numpy(b4))
+
+
+        #     adaptive_viz_scales = compute_adaptive_viz_scales(model, max_surface_height=0.6, extent=1)
+        #     #For the interesection to make sense, these scales need to match - either need to manual overide or chnage method above
+        #     final_layer_viz=scale=1.4*min(adaptive_viz_scales[-1]) #little manual ramp here
+        #     adaptive_viz_scales[-1]=[final_layer_viz, final_layer_viz]
+        #     print(adaptive_viz_scales[-1])
+
+
+
+        # self.frame.reorient(48, 50, 0, (-0.04, 0.13, -0.47), 3.99)
+        self.frame.reorient(27, 54, 0, (-0.02, 0.05, -0.55), 3.99)
         # for train_step in tqdm(range(len(training_cache['weights_history']))): #All steps
         # for train_step in tqdm(np.arange(0, len(training_cache['weights_history']), 100)):
         # for train_step in tqdm(np.arange(0, 1000, 100)):
@@ -1288,8 +1319,9 @@ class p62d(InteractiveScene):
 
             adaptive_viz_scales = compute_adaptive_viz_scales(model, max_surface_height=0.6, extent=1)
             #For the interesection to make sense, these scales need to match - either need to manual overide or chnage method above
-            final_layer_viz=scale=1.4*min(adaptive_viz_scales[-1]) #little manual ramp here
-            adaptive_viz_scales[-1]=[final_layer_viz, final_layer_viz]
+            # final_layer_viz=scale=1.4*min(adaptive_viz_scales[-1]) #little manual ramp here
+            # adaptive_viz_scales[-1]=[final_layer_viz, final_layer_viz]
+            adaptive_viz_scales[-1]=[0.014, 0.014] #Hard code bro
 
             #Precompute my surfaces, and polygons moving through network
             surfaces=[]
@@ -1341,6 +1373,11 @@ class p62d(InteractiveScene):
             polygons[str(layer_id+1)+'.linear_out']=process_with_layers(model.model, polygons[str(layer_id)+'.new_tiling'])
             intersection_lines, new_2d_tiling, upper_polytope, indicator = intersect_polytopes(*polygons[str(layer_id+1)+'.linear_out'])
             my_indicator, my_top_polygons = compute_top_polytope(model, new_2d_tiling)
+
+
+            print(len(my_top_polygons), len(my_indicator))
+            my_top_polygons, my_indicator=fill_gaps(my_top_polygons, my_indicator) #Will this help with my random gaps?
+            print(len(my_top_polygons), len(my_indicator))
 
             #Outputs surfaces
             output_horizontal_offset=9
@@ -1464,8 +1501,8 @@ class p62e(InteractiveScene):
 
             adaptive_viz_scales = compute_adaptive_viz_scales(model, max_surface_height=0.6, extent=1)
             #For the interesection to make sense, these scales need to match - either need to manual overide or chnage method above
-            final_layer_viz=scale=1.4*min(adaptive_viz_scales[-1]) #little manual ramp here
-            adaptive_viz_scales[-1]=[final_layer_viz, final_layer_viz]
+            # final_layer_viz=scale=1.4*min(adaptive_viz_scales[-1]) #little manual ramp here
+            adaptive_viz_scales[-1]=[0.014, 0.014] #Hard code bro
 
             #Precompute my surfaces, and polygons moving through network
             surfaces=[]
@@ -1518,6 +1555,10 @@ class p62e(InteractiveScene):
             intersection_lines, new_2d_tiling, upper_polytope, indicator = intersect_polytopes(*polygons[str(layer_id+1)+'.linear_out'])
             my_indicator, my_top_polygons = compute_top_polytope(model, new_2d_tiling)
 
+
+            print(len(my_top_polygons), len(my_indicator))
+            my_top_polygons, my_indicator=fill_gaps(my_top_polygons, my_indicator) #Will this help with my random gaps?
+            print(len(my_top_polygons), len(my_indicator))
 
             if prev_layer_1_polygons is not None: 
                 prev_layer_1_polygons=reorder_polygons_optimal(prev_layer_1_polygons, polygons['0.new_tiling'])

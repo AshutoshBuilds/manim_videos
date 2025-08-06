@@ -30,6 +30,36 @@ graphics_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/graphic
 
 colors = [GREY, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
 
+
+def surface_func_from_model_with_axes(u, v, model, layer_idx, neuron_idx, axes=None, viz_scale=0.5):
+    """
+    Create a surface function for visualizing activations at any layer.
+    
+    Args:
+        u, v: Input coordinates (in parameter space, typically -1 to 1)
+        model: BaarleNet model
+        layer_idx: Direct index into model.model (e.g., 0, 1, 2, 3...)
+        neuron_idx: Which neuron in that layer
+        axes: Manim axes object to use for coordinate transformation
+        viz_scale: Scaling factor for visualization
+    """
+    input_tensor = torch.tensor([[u, v]], dtype=torch.float32)
+    
+    with torch.no_grad():
+        x = input_tensor
+        # Forward through layers up to and including target layer
+        for i in range(layer_idx + 1):
+            x = model.model[i](x)
+        
+        activation = x[0, neuron_idx].item()
+        z = activation * viz_scale
+        
+        # If axes provided, transform to axes coordinate system
+        if axes is not None:
+            return axes.c2p(u, v, z)
+        else:
+            return np.array([u, v, z])
+
 class p23(InteractiveScene):
     def construct(self):
         '''Ok so I think 23 is very much an extention of 21, so once we come back from overhead table
@@ -94,14 +124,6 @@ class p23(InteractiveScene):
         my_indicator, my_top_polygons = compute_top_polytope(model, new_2d_tiling)
 
 
-        #Get first layer Relu Joints
-        joint_points_11 = get_relu_joint(w1[0,0], w1[0,1], b1[0], extent=1)
-        joint_line_11=line_from_joint_points_1(joint_points_11).set_opacity(0.9)
-        group_11=Group(surfaces[1][0], joint_line_11)
-        joint_points_12 = get_relu_joint(w1[1,0], w1[1,1], b1[1], extent=1)
-        joint_line_12=line_from_joint_points_1(joint_points_12).set_opacity(0.9)
-        group_12=Group(surfaces[1][1], joint_line_12)
-
 
         # Ok, so we want to start out with room still in the center for the ball and stick diagram
         # With planes not bent yet, no fold lines yet, probably add thos right before folding
@@ -118,52 +140,169 @@ class p23(InteractiveScene):
             axis_config={"color": FRESH_TAN, "include_ticks": False, "include_numbers": False, "include_tip": True,
                 "stroke_width":4, "tip_config": {"width":0.08, "length":0.08}}
                 )
-        axes_2=axes_1.copy()
+        axes_2 = ThreeDAxes(
+            x_range=[-1, 1, 1],
+            y_range=[-1, 1, 1],
+            z_range=[-1, 1, 1],
+            width=2, height=2, depth=1.5,
+            axis_config={"color": FRESH_TAN, "include_ticks": False, "include_numbers": False, "include_tip": True,
+                "stroke_width":4, "tip_config": {"width":0.08, "length":0.08}}
+                )
         axes_1.move_to([0, 0, 1.7])
         axes_2.move_to([0, 0, -1.7])
-        self.frame.reorient(41, 69, 0, (0.04, -0.02, 0.26), 5.07) #Ok this FoV seems not terrible?
-        self.add(axes_1, axes_2)
 
-        
 
-        # axes_1.c2p?
+        # Ok this is kinda annoying -> i think for this to work with axes like this if have to 
+        # do my viz scale before shifting? I guess that makes sense. 
         polygons_11_pts=[]
         for p in polygons['0.linear_out'][0][0]:
             p[2]=p[2]*viz_scales[0]
             polygons_11_pts.append(axes_1.c2p(*p))
         polygons_11_pts=np.array(polygons_11_pts)
-        polygons_11=manim_polygons_from_np_list([polygons_11_pts], colors=[CYAN], viz_scale=1, opacity=0.6)
-        self.add(polygons_11)
+        polygons_11=manim_polygons_from_np_list([polygons_11_pts], colors=[CYAN], viz_scale=1, opacity=0.3)
+
+        polygons_12_pts=[]
+        for p in polygons['0.linear_out'][1][0]:
+            p[2]=p[2]*viz_scales[0]
+            polygons_12_pts.append(axes_2.c2p(*p))
+        polygons_12_pts=np.array(polygons_12_pts)
+        polygons_12=manim_polygons_from_np_list([polygons_12_pts], colors=[YELLOW], viz_scale=1, opacity=0.3)
+
+
+        #Ok now how do I get my surface and ReLu join onto the same axis?
+        # array([[-1.        , -1.        ,  1.27255271],                                                                                                                     
+        #        [-1.        ,  0.91999996,  0.98150721],                                                                                                                     
+        #        [ 0.91999996,  0.91999996,  1.69534064],                                                                                                                     
+        #        [ 0.91999996, -1.        ,  1.98638611]])   
+
+        # In [2]: axes_1.c2p(-1, -1, 0)                                                                                                                                       
+        # Out[2]: array([-1.        , -1.        ,  1.65999994])   
+        # In [5]: axes_1.c2p(1, 1, 0)                                                                                                                                         
+        # Out[5]: array([0.91999996, 0.91999996, 1.65999994]) 
+
+        surface_func_11=partial(surface_func_from_model_with_axes, model=model, layer_idx=0, neuron_idx=0, axes=axes_1, viz_scale=viz_scales[0])
+        bent_surface_11 = ParametricSurface(surface_func_11, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
+        surface_11=TexturedSurface(bent_surface_11, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+        surface_11.set_shading(0,0,0).set_opacity(0.8)
+
+        surface_func_12=partial(surface_func_from_model_with_axes, model=model, layer_idx=0, neuron_idx=1, axes=axes_2, viz_scale=viz_scales[0])
+        bent_surface_12 = ParametricSurface(surface_func_12, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
+        surface_12=TexturedSurface(bent_surface_12, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+        surface_12.set_shading(0,0,0).set_opacity(0.8)
+
+        #Get first layer Relu Joints
+        joint_points_11 = get_relu_joint(w1[0,0], w1[0,1], b1[0], extent=1)
+        joint_points_11a=axes_1.c2p(joint_points_11[0][0], joint_points_11[0][1], 0)
+        joint_points_11b=axes_1.c2p(joint_points_11[1][0], joint_points_11[1][1], 0)
+        joint_line_11 = DashedLine( start=joint_points_11a, end=joint_points_11b, color=WHITE, stroke_width=5, dash_length=0.08)
+
+        joint_points_12 = get_relu_joint(w1[1,0], w1[1,1], b1[1], extent=1)
+        joint_points_12a=axes_2.c2p(joint_points_12[0][0], joint_points_12[0][1], 0)
+        joint_points_12b=axes_2.c2p(joint_points_12[1][0], joint_points_12[1][1], 0)
+        joint_line_12 = DashedLine( start=joint_points_12a, end=joint_points_12b, color=WHITE, stroke_width=5, dash_length=0.08)
+
+
+        #I think we need polygons both pre and post bend!
+        polygons_21a=VGroup()
+        for i in range(2):
+            polygons_21_pts=[]
+            for p in polygons['0.split_polygons_nested'][0][0][i]:
+                p[2]=p[2]*viz_scales[0]
+                polygons_21_pts.append(axes_1.c2p(*p))
+            polygons_21_pts=np.array(polygons_21_pts)
+            polygons_21a.add(manim_polygons_from_np_list([polygons_21_pts], colors=[CYAN], viz_scale=1, opacity=0.3))
+
+        polygons_22a=VGroup()
+        for i in range(2):
+            polygons_22_pts=[]
+            for p in polygons['0.split_polygons_nested'][1][0][i]:
+                p[2]=p[2]*viz_scales[0]
+                polygons_22_pts.append(axes_2.c2p(*p))
+            polygons_22_pts=np.array(polygons_22_pts)
+            # print(polygons_22_pts)
+            polygons_22a.add(manim_polygons_from_np_list([polygons_22_pts], colors=[YELLOW], viz_scale=1, opacity=0.3))
+
+        polygons_21b=VGroup()
+        for i in range(2):
+            polygons_21_pts=[]
+            for p in polygons['0.split_polygons_nested_clipped'][0][0][i]:
+                p[2]=p[2]*viz_scales[0]
+                polygons_21_pts.append(axes_1.c2p(*p))
+            polygons_21_pts=np.array(polygons_21_pts)
+            polygons_21b.add(manim_polygons_from_np_list([polygons_21_pts], colors=[CYAN], viz_scale=1, opacity=0.3))
+
+        polygons_22b=VGroup()
+        for i in range(2):
+            polygons_22_pts=[]
+            for p in polygons['0.split_polygons_nested_clipped'][1][0][i]:
+                p[2]=p[2]*viz_scales[0]
+                polygons_22_pts.append(axes_2.c2p(*p))
+            polygons_22_pts=np.array(polygons_22_pts)
+            # print(polygons_22_pts)
+            polygons_22b.add(manim_polygons_from_np_list([polygons_22_pts], colors=[YELLOW], viz_scale=1, opacity=0.3))
+
+
+        surface_func_21=partial(surface_func_from_model_with_axes, model=model, layer_idx=1, neuron_idx=0, axes=axes_1, viz_scale=viz_scales[0])
+        bent_surface_21 = ParametricSurface(surface_func_21, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
+        surface_21=TexturedSurface(bent_surface_21, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+        surface_21.set_shading(0,0,0).set_opacity(0.8)
+
+        surface_func_22=partial(surface_func_from_model_with_axes, model=model, layer_idx=1, neuron_idx=1, axes=axes_2, viz_scale=viz_scales[0])
+        bent_surface_22 = ParametricSurface(surface_func_22, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
+        surface_22=TexturedSurface(bent_surface_22, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+        surface_22.set_shading(0,0,0).set_opacity(0.8)
 
 
 
+        self.frame.reorient(-53, 68, 0, (0.01, -0.1, 0.09), 5.58)
+
+        self.add(surface_11, polygons_21a, axes_1, joint_line_11)
+        self.add(surface_12, polygons_22a, axes_2, joint_line_12)
+
+        self.wait()
+        self.play(ReplacementTransform(polygons_21a[1], polygons_21b[1]), 
+                  ReplacementTransform(surface_11, surface_21), 
+                  run_time=3.2)
+        self.remove(polygons_21b); self.add(polygons_21b)
+        self.remove(joint_line_11); self.add(joint_line_11)
+        self.remove(axes_1); self.add(axes_1)
+        self.wait()
 
 
-        group_11.move_to([0, 0, 1.5])
-        group_12.move_to([0, 0, -1.5])
-
-
-
-        self.add(group_11)
-        self.add(group_12)
-
-
+        self.play(ReplacementTransform(polygons_22a[1], polygons_22b[1]), 
+                  ReplacementTransform(surface_12, surface_22), 
+                  run_time=3.2)
+        self.remove(polygons_22b); self.add(polygons_22b)
+        self.remove(joint_line_12); self.add(joint_line_12)
+        self.remove(axes_2); self.add(axes_2)
         self.wait()
 
 
 
 
+        # 
+        # self.add(surface_12, polygons_22a, axes_2, joint_line_12)
+
+        
+        # self.add(surface_21, polygons_21b, axes_1, joint_line_11)
+        # self.add(surface_22, polygons_22b, axes_2, joint_line_12)
 
 
+        # self.wait()
 
-        group_11.shift([0, 0, 1.5])
+        # self.add(surface_11, polygons_11)
+        # # self.add(polygons_11)
+        # self.add(surface_12, polygons_12)
+        # self.add(axes_1, axes_2)
+        # self.add(joint_line_11)
+        # self.add(joint_line_12)
 
-
-
-
-
-
-        self.wait()
+        # self.wait()
+        
+        #Ok great things are aligned - now I'm not going to bring in the map right away I think! Eh actually it helps alot. 
+        #Ok so I'm getting close to starting working out the moves etc -> but I think makes sense to go ahead 
+        #And get the bent planes in place, and test the folding transition
+        #Then I can align everything to the script 
 
 
 
@@ -180,6 +319,46 @@ class p23(InteractiveScene):
 
 
 
+
+
+
+
+
+
+        # surfaces[0][0].move_to([0, 0, 1.7])
+
+        # self.add(surfaces[0][0])
+
+
+
+
+
+
+        # group_11.move_to([0, 0, 1.5])
+        # group_12.move_to([0, 0, -1.5])
+
+
+
+        # self.add(group_11)
+        # self.add(group_12)
+
+
+        # self.wait()
+
+
+
+
+
+
+
+        # group_11.shift([0, 0, 1.5])
+
+
+
+
+
+
+        # self.wait()
 
 
 

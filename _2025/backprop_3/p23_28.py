@@ -252,6 +252,13 @@ class p23(InteractiveScene):
         surface_22=TexturedSurface(bent_surface_22, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
         surface_22.set_shading(0,0,0).set_opacity(0.8)
 
+        #Need these for a move later
+        surface_11_copy=surface_11.copy()
+        polygons_21a_copy=polygons_21a.copy()
+        polygons_11_copy=polygons_11.copy()
+        surface_12_copy=surface_12.copy()
+        polygons_22a_copy=polygons_22a.copy()
+        polygons_12_copy=polygons_12.copy()
 
 
         self.frame.reorient(-53, 68, 0, (0.01, -0.1, 0.09), 5.58)
@@ -265,7 +272,7 @@ class p23(InteractiveScene):
                   ReplacementTransform(surface_11, surface_21), 
                   # FadeIn(joint_line_11),
                   run_time=3.2)
-        self.remove(polygons_21b); self.add(polygons_21b)
+        self.remove(polygons_21b); self.remove(polygons_21a); self.add(polygons_21b)
         self.remove(joint_line_11); self.add(joint_line_11)
         self.remove(axes_1); self.add(axes_1)
         self.wait()
@@ -275,7 +282,7 @@ class p23(InteractiveScene):
                   ReplacementTransform(surface_12, surface_22), 
                   # FadeIn(joint_line_12),
                   run_time=3.2)
-        self.remove(polygons_22b); self.add(polygons_22b)
+        self.remove(polygons_22b); self.remove(polygons_22a); self.add(polygons_22b)
         self.remove(joint_line_12); self.add(joint_line_12)
         self.remove(axes_2); self.add(axes_2)
         self.wait()
@@ -284,10 +291,37 @@ class p23(InteractiveScene):
         # I think maybe use linear motion b/c I'll want to move the network to the bottom right 
         # probably at the same time. 
 
-        
+        # Hmm reading 24 kind feeling like I want to maybe show some equatoins- probably just from illustrator
+        # and maybe on the bottom of the screen? Let me hack on some layouts. 
+        group_11=Group(surface_21, polygons_21b, axes_1, joint_line_11)
+        group_12=Group(surface_22, polygons_22b, axes_2, joint_line_12)
 
 
 
+        # Ok this kinda stucks, but I think that the top and bottom panels need ot be their own axes/scenes?
+        # Can't seem to get and angle that works for both plots like this...
+        # Ok so I think I need two different moves/scenes for this, and that's ok -> 
+        # And also on this move, pretty sure I need to reverse the fold so we can play it again as the data moves through the 
+        # network!!
+        # group_11.move_to([0, 0, 0.8])
+        # group_12.move_to([0, 0, -0.8])
+        # self.frame.reorient(0, 66, 0, (-0.06, -0.02, 0.06), 3.82)
+
+        surface_11_copy.shift([0, 0, -0.9])
+        polygons_21a_copy.shift([0, 0, -0.9])
+        polygons_11_copy.shift([0, 0, -0.9])
+        self.remove(group_12) #Animate this move in a seperate scene, bring together in editing. 
+
+        self.wait()
+        self.play(self.frame.animate.reorient(0, 66, 0, (-0.06, -0.02, 0.06), 3.82),
+                   axes_1.animate.shift([0, 0, -0.9]),
+                   joint_line_11.animate.shift([0, 0, -0.9]).set_opacity(0.0),
+                   ReplacementTransform(polygons_21b, polygons_21a_copy),
+                   ReplacementTransform(surface_21, surface_11_copy),
+                  run_time=4)
+        self.wait()
+        self.remove(surface_11_copy); self.add(surface_11_copy)
+        self.remove(polygons_21a_copy); self.add(polygons_11_copy)
 
 
 

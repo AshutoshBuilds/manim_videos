@@ -256,26 +256,39 @@ class p23(InteractiveScene):
 
         self.frame.reorient(-53, 68, 0, (0.01, -0.1, 0.09), 5.58)
 
-        self.add(surface_11, polygons_21a, axes_1, joint_line_11)
-        self.add(surface_12, polygons_22a, axes_2, joint_line_12)
+        self.add(surface_11, polygons_11, axes_1) #, joint_line_11)
+        self.add(surface_12, polygons_12, axes_2) #, joint_line_12)
 
         self.wait()
+        self.remove(polygons_11); self.add(polygons_21a); self.add(joint_line_11)
         self.play(ReplacementTransform(polygons_21a[1], polygons_21b[1]), 
                   ReplacementTransform(surface_11, surface_21), 
+                  # FadeIn(joint_line_11),
                   run_time=3.2)
         self.remove(polygons_21b); self.add(polygons_21b)
         self.remove(joint_line_11); self.add(joint_line_11)
         self.remove(axes_1); self.add(axes_1)
         self.wait()
 
-
+        self.remove(polygons_12); self.add(polygons_22a); self.add(joint_line_12)
         self.play(ReplacementTransform(polygons_22a[1], polygons_22b[1]), 
                   ReplacementTransform(surface_12, surface_22), 
+                  # FadeIn(joint_line_12),
                   run_time=3.2)
         self.remove(polygons_22b); self.add(polygons_22b)
         self.remove(joint_line_12); self.add(joint_line_12)
         self.remove(axes_2); self.add(axes_2)
         self.wait()
+
+        #Ok dope dope dope - now we move thhese suckers to the beginning and start the "regular flow"
+        # I think maybe use linear motion b/c I'll want to move the network to the bottom right 
+        # probably at the same time. 
+
+        
+
+
+
+
 
 
 

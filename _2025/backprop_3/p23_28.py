@@ -259,6 +259,8 @@ class p23(InteractiveScene):
         surface_12_copy=surface_12.copy()
         polygons_22a_copy=polygons_22a.copy()
         polygons_12_copy=polygons_12.copy()
+        surface_21_copy=surface_21.copy()
+        surface_22_copy=surface_22.copy()
 
 
         self.frame.reorient(-53, 68, 0, (0.01, -0.1, 0.09), 5.58)
@@ -316,13 +318,13 @@ class p23(InteractiveScene):
         # self.remove(group_12) #Eh i think no: Animate this move in a seperate scene, bring together in editing. 
 
         self.wait()
-        self.play(self.frame.animate.reorient(0, 58, 0, (-0.05, -0.12, -0.11), 3.82),
+        self.play(self.frame.animate.reorient(0, 58, 0, (0.19, -0.12, -0.1), 3.82),
                    axes_1.animate.shift([0, 0, -0.9]),
-                   joint_line_11.animate.shift([0, 0, -0.9]).set_opacity(0.0),
+                   joint_line_11.animate.shift([0, 0, -0.9]), #.set_opacity(0.0),
                    ReplacementTransform(polygons_21b, polygons_21a_copy),
                    ReplacementTransform(surface_21, surface_11_copy),
                    axes_2.animate.shift([0, 0, 0.9]),
-                   joint_line_12.animate.shift([0, 0, 0.9]).set_opacity(0.0),
+                   joint_line_12.animate.shift([0, 0, 0.9]), #.set_opacity(0.0),
                    ReplacementTransform(polygons_22b, polygons_22a_copy),
                    ReplacementTransform(surface_22, surface_12_copy),
                   run_time=4)
@@ -332,13 +334,124 @@ class p23(InteractiveScene):
         self.remove(surface_12_copy); self.add(surface_12_copy)
         self.remove(polygons_22a_copy); self.add(polygons_12_copy)
         self.remove(axes_2); self.add(axes_2)
+        self.remove(joint_line_11); self.add(joint_line_11)
+        self.remove(joint_line_12); self.add(joint_line_12)
         self.wait()
 
         # Ok i think that will work pretty well. 
         # Fighting with overall composition a little - probably 3 panels at the end, right?
         # I'm going to work on equations next for a bit. 
+        # Ok i think i got a good solution for the first 2 equations!
 
 
+        # Alright now how to i put map points on the surface? 
+        # And maybe add 3d guidelines? Let me look at how I did this last time...
+        # Ok p35_41.mp4 has that stuuuf
+        # And 46 is also helpful -> it has all the panels for this model!
+        # Ok so i think first let me just try to get a magenta 3d sphere onto these maps!
+
+        # self.frame.reorient(0, 58, 0, (0.19, -0.12, -0.1), 3.82),
+
+        d1=Dot(ORIGIN, radius=0.04, fill_color=MAGENTA)
+        d1.move_to(axes_1.c2p(0.59, 0.4, -0.04))
+        d1.rotate(-20*DEGREES, [0, 1, 0])
+
+        d2=Dot(ORIGIN, radius=0.05, fill_color=MAGENTA)
+        d2.move_to(axes_2.c2p(0.59, 0.4, -0.05))
+        d2.rotate(20*DEGREES, [1, 0, 0])
+
+
+        self.wait()
+        # self.add(joint_line_11, , joint_line_12) #Just keep from before?
+        self.play(self.frame.animate.reorient(-37, 56, 0, (0.59, -0.49, -0.13), 3.75), 
+                 FadeIn(d1), 
+                 FadeIn(d2), 
+                 run_time=4, 
+                 rate_func=linear #Linear rate func here to blend with Premiere move!
+                 )
+        self.wait()
+
+
+        #Alright time to bend these puppies back up! I think bend them at the same time. 
+
+        polygons_21a.shift([0, 0, -0.9])
+        surface_21_copy.shift([0, 0, -0.9])
+        polygons_22a.shift([0, 0, 0.9])
+        surface_22_copy.shift([0, 0, 0.9])
+
+        d1b=Dot(ORIGIN, radius=0.04, fill_color=MAGENTA)
+        d1b.move_to(axes_1.c2p(0.59, 0.4, 0))
+        # d1b.rotate(-20*DEGREES, [0, 1, 0])
+        d2b=Dot(ORIGIN, radius=0.05, fill_color=MAGENTA)
+        d2b.move_to(axes_2.c2p(0.59, 0.4, 0))
+        # d2b.rotate(20*DEGREES, [1, 0, 0])
+
+
+        self.wait()
+        self.remove(polygons_11_copy); self.add(polygons_21a_copy)
+        self.play(ReplacementTransform(polygons_21a_copy, polygons_21a), 
+                  ReplacementTransform(surface_11_copy, surface_21_copy),
+                  ReplacementTransform(d1, d1b),
+                 run_time=3.5)
+
+        self.remove(polygons_21a); self.add(polygons_21a)
+        self.remove(axes_1); self.add(axes_1)
+        self.remove(joint_line_11); self.add(joint_line_11)
+        self.remove(d1b); self.add(d1b)
+        self.wait()
+
+        #Eh maybe seqeuntial works best w/ directing focus and the script?
+        self.remove(polygons_12_copy); self.add(polygons_22a_copy)
+        self.play(ReplacementTransform(polygons_22a_copy, polygons_22a), 
+                  ReplacementTransform(surface_12_copy, surface_22_copy),
+                  ReplacementTransform(d2, d2b),
+                 run_time=3.5)
+
+        self.remove(polygons_22a); self.add(polygons_22a)
+        self.remove(axes_2); self.add(axes_2)
+        self.remove(joint_line_12); self.add(joint_line_22)
+        self.remove(d2b); self.add(d2b)
+        self.wait()
+
+
+
+
+        # self.add(surface_21_copy)
+        # self.add(surface_22_copy)
+
+        
+        # self.remove(surface_21_copy)
+
+        # surface_21.set_opacity(1.0)
+
+        # self.add(surface_21)
+        # self.remove(surface_21)
+
+        # self.add(polygons_21b)
+        # self.remove(polygons_21b)
+
+        # self.add(polygons_21a)
+        # self.remove(polygons_21a)
+
+        # # polygons_21b.shift([0, 0, 0.9])
+        # self.add(polygons_21b)
+        # self.remove(polygons_21b)
+
+
+
+
+        # self.add(d1)
+
+        # self.add(joint_line_11)
+        # joint_line_11.set_opacity(1.0)
+
+        # self.add(d2)
+
+        # self.add(joint_line_12)
+        # joint_line_12.set_opacity(1.0)
+
+        # self.frame.reorient(-37, 56, 0, (0.59, -0.49, -0.13), 3.75)
+        # self.wait()
 
 
 

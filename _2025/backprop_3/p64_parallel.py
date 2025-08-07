@@ -285,7 +285,7 @@ class p64_a(InteractiveScene):
         self.embed()
 
 
-class p64_b(InteractiveScene):
+class p64_b_330_start(InteractiveScene):
     '''Ok so this is the transition of my 3d shape for the 2d view -> try blending in premiere!'''
     def construct(self):
 
@@ -315,7 +315,7 @@ class p64_b(InteractiveScene):
         # for train_step in tqdm(list(range(1700,  1900, 10))):
         # for train_step in tqdm(list(range(1900,  2100, 10))):
         # for train_step in tqdm(list(range(2100,  2300, 10))):
-        for train_step in tqdm(list(range(2300,  2500, 10))):
+        for train_step in tqdm(list(range(330,  1000, 10))):
         # for train_step in tqdm(list(range(2500,  2690, 10))+[2697]):
 
             try:
@@ -544,7 +544,7 @@ class p64_b(InteractiveScene):
         self.embed()
 
 
-class p64_c(InteractiveScene):
+class p64_c_600_start(InteractiveScene):
     '''Ok so this is the transition of my 3d shape for the 2d view -> try blending in premiere!'''
     def construct(self):
 
@@ -573,7 +573,7 @@ class p64_c(InteractiveScene):
         # for train_step in tqdm(list(range(1500,  1700, 10))):
         # for train_step in tqdm(list(range(1700,  1900, 10))):
         # for train_step in tqdm(list(range(1900,  2100, 10))):
-        for train_step in tqdm(list(range(2100,  2300, 10))):
+        for train_step in tqdm(list(range(600,  1000, 10))):
         # for train_step in tqdm(list(range(2300,  2500, 10))):
         # for train_step in tqdm(list(range(2500,  2690, 10))+[2697]):
 
@@ -802,7 +802,7 @@ class p64_c(InteractiveScene):
         self.wait(20)
         self.embed()
 
-class p64_d(InteractiveScene):
+class p64_d_900_start(InteractiveScene):
     '''Ok so this is the transition of my 3d shape for the 2d view -> try blending in premiere!'''
     def construct(self):
 
@@ -830,7 +830,7 @@ class p64_d(InteractiveScene):
         # for train_step in tqdm(list(range(1300,  1500, 10))):
         # for train_step in tqdm(list(range(1500,  1700, 10))):
         # for train_step in tqdm(list(range(1700,  1900, 10))):
-        for train_step in tqdm(list(range(1900,  2100, 10))):
+        for train_step in tqdm(list(range(900,  2100, 10))):
         # for train_step in tqdm(list(range(2100,  2300, 10))):
         # for train_step in tqdm(list(range(2300,  2500, 10))):
         # for train_step in tqdm(list(range(2500,  2690, 10))+[2697]):

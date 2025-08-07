@@ -494,7 +494,7 @@ class p25(InteractiveScene):
         w2=model.model[2].weight.detach().numpy()
         b2=model.model[2].bias.detach().numpy()
 
-        viz_scales=[0.2, 0.2, 0.13]
+        viz_scales=[0.2, 0.2, 0.2] #0.13]
         num_neurons=[2, 2, 2]
 
 
@@ -597,7 +597,7 @@ class p25(InteractiveScene):
             loop=loop*np.array([1, 1, viz_scales[2]])
             line = VMobject()
             line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=5)
+            line.set_stroke(color='#FF00FF', width=3)
             lines.add(line)
         lines.shift([6, 0, 0.75])
 
@@ -778,6 +778,7 @@ class p25(InteractiveScene):
 
 
         #Ok now a little animation bringin the two bent surfaces together and changing their colors? 
+        d1c.set_opacity(0.5)
         self.play(ReplacementTransform(group_21.copy(), group_31), 
                   ReplacementTransform(group_22.copy(), group_32), 
                   ReplacementTransform(d1b.copy(), d1c),
@@ -786,6 +787,74 @@ class p25(InteractiveScene):
         self.play(ShowCreation(lines))
         self.wait()
         #Ok not bad - now some nice zooming etc?
+
+
+        self.play(self.frame.animate.reorient(-2, 36, 0, (6.96, 0.51, -0.16), 3.55), 
+                  run_time=4)
+        self.wait()
+
+        # Ok ok ok getting close -> now zoom out to overally network, 
+        # change point to 0.3, 0.7
+        # Zoom in on a couple panels, then one last wide zoom with 
+        # all the equations - phew this scene is taking some time. 
+        self.play( #self.frame.animate.reorient(-2, 46, 0, (3.11, 0.22, -0.73), 6.89), 
+                  self.frame.animate.reorient(-2, 46, 0, (3.16, 0.8, -0.13), 6.89),
+                  run_time=4)        
+        self.wait()
+
+        #Zoom in and change poitn
+        self.wait()
+        self.play(self.frame.animate.reorient(0, 0, 0, (0.13, -0.08, -0.18), 3.99), 
+                  FadeOut(d2a), FadeOut(d2b), FadeOut(d2c), 
+                  FadeOut(d1b), FadeOut(d1c), 
+                  group_12.animate.set_opacity(0.0),
+                  pre_move_lines[1:3].animate.set_opacity(0.0),
+                  run_time=4)
+        self.wait()
+
+        self.play(FadeOut(d1a))
+        
+
+        #[0.3 0.7] tensor([-1.2031,  0.8177]) tensor([0.0000, 0.8177]) tensor([ 0.1991, -1.2250])
+        d1a=Dot([0.3, 0.7, 1.5], radius=0.05, fill_color=MAGENTA)
+        d2a=Dot([0.3, 0.7, 0.0+viz_scales[1]*0.82], radius=0.05, fill_color=MAGENTA)
+        d2a.rotate(25*DEGREES, [1, 0, 0])
+
+        d1b=d1a.copy()
+        d1b.shift([3, 0, 0+0.199*viz_scales[1]]) #Eh, plus some fuuudge
+        d1b.rotate(25*DEGREES, [1, 0, 0])
+
+        d2b=d2a.copy()
+        d2b.shift([3, 0, 0-1.23*viz_scales[1]]) #Eh?
+        d2b.shift([0, 0, -0.15])
+        d2b.rotate(-60*DEGREES, [1, 0, 0])
+
+        d1c=d1b.copy()
+        d1c.shift([3, 0, -0.75])
+
+        d2c=d2b.copy()
+        d2c.shift([3, 0, 0.75])
+        d2c.set_opacity(0.6)
+
+        self.wait()
+        self.play(FadeIn(d1a))
+        self.wait()
+
+        self.play(group_12.animate.set_opacity(0.8),
+                  pre_move_lines[1:3].animate.set_opacity(1.0), 
+                  self.frame.animate.reorient(-1, 55, 0, (0.12, 0.12, 0.06), 3.05),
+                  FadeIn(d2a),
+                  run_time=4)
+        self.wait()
+
+        self.add(d1b, d2b, d1c, d2c)
+        self.wait()
+        self.play(self.frame.animate.reorient(0, 31, 0, (6.13, 0.13, 0.44), 3.52), run_time=4)
+        self.wait()
+
+        #Final zoom out and leave room for equations on the bottom!
+        self.play(self.frame.animate.reorient(-1, 37, 0, (3.14, -0.4, -0.06), 6.37), run_time=4)
+        self.wait()
 
 
         self.wait(20)

@@ -23,7 +23,8 @@ CYAN='#00FFFF'
 
 graphics_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/graphics/' #Point to folder where map images are
 colors = [BLUE, GREY, GREEN, TEAL, PURPLE, PINK, TEAL, YELLOW, FRESH_TAN, CHILL_BLUE, CHILL_GREEN, YELLOW_FADE]
-# colors = [GREY, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
+# colors_old = [BLUE, GREY, GREEN, TEAL, PURPLE, ORANGE, PINK, TEAL, RED, YELLOW ]
+colors_old = [GREY, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
 
 def create_first_layer_relu_groups(model, surfaces, num_neurons_first_layer=8, extent=1, vertical_spacing=0.9):
     """
@@ -75,7 +76,7 @@ def create_first_layer_relu_groups(model, surfaces, num_neurons_first_layer=8, e
     return all_relu_groups
 
 
-class p61(InteractiveScene):
+class p61b(InteractiveScene):
     def construct(self):
 
         model_path='_2025/backprop_3/models/8_8_1.pth'
@@ -144,7 +145,7 @@ class p61(InteractiveScene):
 
         #Ok let's get everything (including shadows) up first, and then decide if I want to animate the creation of anything?
 
-        layer_1_polygons_flat=manim_polygons_from_np_list(polygons['0.new_tiling'], colors=colors, viz_scale=viz_scales[2], opacity=0.6)
+        layer_1_polygons_flat=manim_polygons_from_np_list(polygons['0.new_tiling'], colors=colors_old, viz_scale=viz_scales[2], opacity=0.6)
         layer_1_polygons_flat.shift([0, 0, -5.0])
 
         #Create layer 2 polygons -> I guess post cut right?
@@ -154,14 +155,14 @@ class p61(InteractiveScene):
         start_z = total_height / 2  # Start from top
         for neuron_idx in range(num_neurons[layer_idx]):
             # split_polygons_unraveled=[item for sublist in polygons['1.split_polygons_merged'][neuron_idx] for item in sublist]
-            pgs=manim_polygons_from_np_list(polygons['1.split_polygons_merged'][neuron_idx], colors=colors, viz_scale=adaptive_viz_scales[layer_idx][neuron_idx], opacity=0.6)
+            pgs=manim_polygons_from_np_list(polygons['1.split_polygons_merged'][neuron_idx], colors=colors_old, viz_scale=adaptive_viz_scales[layer_idx][neuron_idx], opacity=0.6)
             s=surfaces[layer_idx][neuron_idx]
             g=Group(s, pgs[1:]) #Crazy to leave off first merged/flat group here?
             g.shift([3*(layer_idx-1)/2, 0, start_z - neuron_idx * vertical_spacing])
             groups_2.add(g)
 
 
-        layer_2_polygons_flat=manim_polygons_from_np_list(polygons['1.new_tiling'], colors=colors, viz_scale=viz_scales[2], opacity=0.6)
+        layer_2_polygons_flat=manim_polygons_from_np_list(polygons['1.new_tiling'], colors=colors_old, viz_scale=viz_scales[2], opacity=0.6)
         layer_2_polygons_flat.shift([3, 0, -5.0])
 
         #Outputs surfaces
@@ -171,7 +172,7 @@ class p61(InteractiveScene):
         start_z = total_height / 2  # Start from top
         for neuron_idx in range(num_neurons[layer_idx]):
             # split_polygons_unraveled=[item for sublist in polygons['1.split_polygons_merged'][neuron_idx] for item in sublist]
-            pgs=manim_polygons_from_np_list(polygons['2.linear_out'][neuron_idx], colors=colors, viz_scale=adaptive_viz_scales[layer_idx][neuron_idx], opacity=0.6)
+            pgs=manim_polygons_from_np_list(polygons['2.linear_out'][neuron_idx], colors=colors_old, viz_scale=adaptive_viz_scales[layer_idx][neuron_idx], opacity=0.6)
             s=surfaces[layer_idx][neuron_idx]
             g=Group(s, pgs) #[1:]) #Crazy to leave off first merged/flat group here?
             g.shift([6, 0, start_z - neuron_idx * vertical_spacing])
@@ -249,7 +250,7 @@ class p61(InteractiveScene):
 
 
 
-        # polygons_41=manim_polygons_from_np_list(polygons['2.linear_out'][0], colors=colors_5, viz_scale=viz_scales[4], opacity=0.6)
+        # polygons_41=manim_polygons_from_np_list(polygons['2.linear_out'][0], colors=colors_old_5, viz_scale=viz_scales[4], opacity=0.6)
         # polygons_41.shift([6, 0, 1.501]) #Move slightly above map
 
         ##Feeling like a fly around of this static scene would be non-terrible?
@@ -313,6 +314,15 @@ class p61(InteractiveScene):
                  run_time=6)
         self.wait()
 
+        #One more little zoom in at the end on the dead neurons
+        self.play(self.frame.animate.reorient(-36, 72, 0, (3.44, 1.56, 0.35), 6.39), run_time=6)
+        self.wait()
+
+        self.play(self.frame.animate.reorient(36, 70, 0, (3.21, 1.43, 0.42), 6.39), run_time=12, rate_func=linear)
+        self.wait()
+
+        # Then back to wide shot in case I need it. 
+        self.play(self.frame.animate.reorient(0, 74, 0, (5.17, 1.54, -0.87), 11.81), run_time=6)
 
 
 
@@ -898,7 +908,7 @@ class p62b(InteractiveScene):
 
 
 
-class p62c(InteractiveScene):
+class p62c2(InteractiveScene):
     '''Ok so this is the transition of my 3d shape for the 2d view -> try blending in premiere!'''
     def construct(self):
 
@@ -1114,7 +1124,8 @@ class p62c(InteractiveScene):
         self.wait()
         self.play(self.frame.animate.reorient(48, 50, 0, (-0.04, 0.13, -0.47), 3.99), #Kinda chill isometricish
                  combined_3d_group.animate.move_to(ORIGIN), 
-                 run_time=6
+                 run_time=6, 
+                 rate_func=linear
               )
         self.wait()
         self.wait(20)

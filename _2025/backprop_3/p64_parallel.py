@@ -26,7 +26,7 @@ colors = [BLUE, GREY, GREEN, TEAL, PURPLE, PINK, TEAL, YELLOW, FRESH_TAN, CHILL_
 # colors = [GREY, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
 
 
-class p64_a(InteractiveScene):
+class p64_a_2201_start(InteractiveScene):
     '''Ok so this is the transition of my 3d shape for the 2d view -> try blending in premiere!'''
     def construct(self):
 
@@ -51,13 +51,13 @@ class p64_a(InteractiveScene):
         # for train_step in tqdm(np.arange(0,  1000, 1)):
         # for train_step in tqdm(np.arange(0, 600, 100)):
         # train_step=2697 #OK FUCKING DOPE -> If I can make it to 2697, we get all the regions!
-        # for train_step in tqdm(list(range(1300,  1500, 10))):
+        # for train_step in tqdm(list(range(1200,  1300, 10))):
         # for train_step in tqdm(list(range(1500,  1700, 10))):
         # for train_step in tqdm(list(range(1700,  1900, 10))):
         # for train_step in tqdm(list(range(1900,  2100, 10))):
         # for train_step in tqdm(list(range(2100,  2300, 10))):
-        # for train_step in tqdm(list(range(2300,  2500, 10))):
-        for train_step in tqdm(list(range(2600,  2690, 10))+[2697]):
+        for train_step in tqdm(list(range(2201,  2401, 10))):
+        # for train_step in tqdm(list(range(2600,  2690, 10))+[2697]):
 
             try:
 
@@ -285,7 +285,7 @@ class p64_a(InteractiveScene):
         self.embed()
 
 
-class p64_b_330_start(InteractiveScene):
+class p64_b_2401_start(InteractiveScene):
     '''Ok so this is the transition of my 3d shape for the 2d view -> try blending in premiere!'''
     def construct(self):
 
@@ -315,7 +315,7 @@ class p64_b_330_start(InteractiveScene):
         # for train_step in tqdm(list(range(1700,  1900, 10))):
         # for train_step in tqdm(list(range(1900,  2100, 10))):
         # for train_step in tqdm(list(range(2100,  2300, 10))):
-        for train_step in tqdm(list(range(330,  1000, 10))):
+        for train_step in tqdm(list(range(2401,  2601, 10))):
         # for train_step in tqdm(list(range(2500,  2690, 10))+[2697]):
 
             try:

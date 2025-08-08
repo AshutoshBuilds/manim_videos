@@ -60,7 +60,7 @@ def surface_func_from_model_with_axes(u, v, model, layer_idx, neuron_idx, axes=N
         else:
             return np.array([u, v, z])
 
-class p23(InteractiveScene):
+class p23b(InteractiveScene):
     def construct(self):
         '''Ok so I think 23 is very much an extention of 21, so once we come back from overhead table
            the network will still be in the center (but now with ReLu drawn on it - and I'll animate foling up the h(1)
@@ -455,7 +455,8 @@ class p23(InteractiveScene):
                   ReplacementTransform(joint_line_12, group_12[1]),
                   ReplacementTransform(d2b, d2c), 
                   self.frame.animate.reorient(-2, 46, 0, (3.11, 0.22, -0.73), 6.89),
-                  run_time=3)
+                  run_time=3, 
+                  rate_func=linear)
         self.wait()
 
         # Ok that worked pretty well I think!

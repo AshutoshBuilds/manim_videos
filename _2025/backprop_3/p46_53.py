@@ -327,7 +327,7 @@ class p46(InteractiveScene):
         self.embed()
 
 
-class p47(InteractiveScene):
+class p47b(InteractiveScene):
     def construct(self):
 
         map_img=ImageMobject(graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
@@ -1044,7 +1044,7 @@ class p47(InteractiveScene):
         self.embed()
 
 
-class p52(InteractiveScene):
+class p52b(InteractiveScene):
     def construct(self):
 
         w1 = np.array([[-1.8741, 2.12215],
@@ -1272,7 +1272,8 @@ class p52(InteractiveScene):
                   lines_flat.animate.shift([-1.7, 0, 0]),
                   flat_map_2.animate.shift([-1.7, 0, 0]),
                   self.frame.animate.reorient(0, 0, 0, (3.06, -1.13, 0.0), 4.36),
-                  run_time=6
+                  run_time=6, 
+                  rate_func=linear
                   )
 
 

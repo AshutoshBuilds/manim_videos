@@ -197,33 +197,68 @@ class P27(Scene):
         
         self.wait(1)
 
-        self.play(Write(model_parameters))
-        
-        self.wait(1)
+        theta1_group = AnimationGroup(
+            animate_split_line(ln1_1_n2_1, ln1_1_n2_1_left, ln1_1_n2_1_right, 0.5),
+            Write(theta_1),
+            lag_ratio=0.5
+        )
 
-        self.play(animate_split_line(ln1_1_n2_1, ln1_1_n2_1_left, ln1_1_n2_1_right, 0.5))
-        self.play(Write(theta_1))
+        theta2_group = AnimationGroup(
+            animate_split_line(ln1_2_n2_1, ln1_2_n2_1_left, ln1_2_n2_1_right, 0.75),
+            Write(theta_2),
+            lag_ratio=0.5
+        )
 
-        self.play(animate_split_line(ln1_2_n2_1, ln1_2_n2_1_left, ln1_2_n2_1_right, 0.75))
-        self.play(Write(theta_2))
+        theta3_group = AnimationGroup(
+            animate_split_line(ln1_1_n2_2, ln1_1_n2_2_left, ln1_1_n2_2_right, 0.75),
+            Write(theta_3),
+            lag_ratio=0.5
+        )
 
-        self.play(animate_split_line(ln1_1_n2_2, ln1_1_n2_2_left, ln1_1_n2_2_right, 0.75))
-        self.play(Write(theta_3))
+        theta4_group = AnimationGroup(
+            animate_split_line(ln1_2_n2_2, ln1_2_n2_2_left, ln1_2_n2_2_right, 0.5),
+            Write(theta_4),
+            lag_ratio=0.5
+        )
 
-        self.play(animate_split_line(ln1_2_n2_2, ln1_2_n2_2_left, ln1_2_n2_2_right, 0.5))
-        self.play(Write(theta_4))
+        theta5_group = AnimationGroup(
+            animate_split_line(ln2_1_n3_1, ln2_1_n3_1_left, ln2_1_n3_1_right, 0.5),
+            Write(theta_5),
+            lag_ratio=0.5
+        )
 
-        self.play(animate_split_line(ln2_1_n3_1, ln2_1_n3_1_left, ln2_1_n3_1_right, 0.5))
-        self.play(Write(theta_5))
+        theta6_group = AnimationGroup(
+            animate_split_line(ln2_2_n3_1, ln2_2_n3_1_left, ln2_2_n3_1_right, 0.75),
+            Write(theta_6),
+            lag_ratio=0.5
+        )
 
-        self.play(animate_split_line(ln2_2_n3_1, ln2_2_n3_1_left, ln2_2_n3_1_right, 0.75))
-        self.play(Write(theta_6))
+        theta7_group = AnimationGroup(
+            animate_split_line(ln2_1_n3_2, ln2_1_n3_2_left, ln2_1_n3_2_right, 0.75),
+            Write(theta_7),
+            lag_ratio=0.5
+        )
 
-        self.play(animate_split_line(ln2_1_n3_2, ln2_1_n3_2_left, ln2_1_n3_2_right, 0.75))
-        self.play(Write(theta_7))
+        theta8_group = AnimationGroup(
+            animate_split_line(ln2_2_n3_2, ln2_2_n3_2_left, ln2_2_n3_2_right, 0.5),
+            Write(theta_8),
+            lag_ratio=0.5
+        )
 
-        self.play(animate_split_line(ln2_2_n3_2, ln2_2_n3_2_left, ln2_2_n3_2_right, 0.5))
-        self.play(Write(theta_8))
+        self.play(
+            LaggedStart(
+                theta1_group,
+                theta2_group,
+                theta3_group,
+                theta4_group,
+                theta5_group,
+                theta6_group,
+                theta7_group,
+                theta8_group,
+                lag_ratio=0.3,
+                run_time=2.5
+            )
+        )
 
 
         self.embed()

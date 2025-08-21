@@ -259,6 +259,66 @@ class P27(Scene):
                 run_time=2.5
             )
         )
+        
+        model_parameters_1 = AnimationGroup(
+            FadeIn(model_parameters[0:3])
+        )
+        
+        model_parameters_2 = AnimationGroup(
+            ReplacementTransform(theta_1.copy(), model_parameters[3:5]),
+            FadeIn(model_parameters[5])
+        )
+        
+        model_parameters_3 = AnimationGroup(
+            ReplacementTransform(theta_2.copy(), model_parameters[6:8]),
+            FadeIn(model_parameters[8])
+        )
+        
+        model_parameters_4 = AnimationGroup(
+            ReplacementTransform(theta_3.copy(), model_parameters[9:11]),
+            FadeIn(model_parameters[11])
+        )
 
+        model_parameters_5 = AnimationGroup(
+            ReplacementTransform(theta_4.copy(), model_parameters[12:14]),
+            FadeIn(model_parameters[14])
+        )
+
+        model_parameters_6 = AnimationGroup(
+            ReplacementTransform(theta_5.copy(), model_parameters[15:17]),
+            FadeIn(model_parameters[17])
+        )
+
+        model_parameters_7 = AnimationGroup(
+            ReplacementTransform(theta_6.copy(), model_parameters[18:20]),
+            FadeIn(model_parameters[20])
+        )
+
+        model_parameters_8 = AnimationGroup(
+            ReplacementTransform(theta_7.copy(), model_parameters[21:23]),
+            FadeIn(model_parameters[23])
+        )
+
+        model_parameters_9 = AnimationGroup(
+            ReplacementTransform(theta_5.copy(), model_parameters[24:26]),
+            FadeIn(model_parameters[26])
+        )
+
+
+        self.play(
+            LaggedStart(
+                model_parameters_1,
+                model_parameters_2,
+                model_parameters_3,
+                model_parameters_4,
+                model_parameters_5,
+                model_parameters_6,
+                model_parameters_7,
+                model_parameters_8,
+                model_parameters_9,
+                lag_ratio=0.3,
+                run_time=2.5
+            )
+        )
 
         self.embed()

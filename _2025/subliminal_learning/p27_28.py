@@ -191,9 +191,11 @@ class P27(Scene):
             LaggedStart(
                 group1, group2, group3, group4, group5, group6,
                 lag_ratio=0.2,
-                run_time=2
+                run_time=2.5
             )
         )
+        
+        self.wait(1)
         
         self.add(left_dimension, top_dimension)
         
@@ -258,9 +260,11 @@ class P27(Scene):
                 theta7_group,
                 theta8_group,
                 lag_ratio=0.3,
-                run_time=2.5
+                run_time=5
             )
         )
+        
+        self.wait(1)
         
         model_parameters_1 = AnimationGroup(
             FadeIn(model_parameters[0:3])
@@ -319,8 +323,10 @@ class P27(Scene):
                 model_parameters_8,
                 model_parameters_9,
                 lag_ratio=0.3,
-                run_time=2.5
+                run_time=5
             )
         )
+        
+        self.wait(1)
 
         self.embed()

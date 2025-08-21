@@ -182,7 +182,9 @@ class P27(Scene):
         )
 
         group6 = AnimationGroup(
-            FadeIn(VGroup(n3_1, n3_2))
+            FadeIn(VGroup(n3_1, n3_2)),
+            GrowFromEdge(n3_1_arrow, LEFT),
+            GrowFromEdge(n3_2_arrow, LEFT)
         )
 
         self.play(

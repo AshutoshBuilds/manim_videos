@@ -76,7 +76,7 @@ class P27(Scene):
             line_part_1.set_color(split_line_1.get_color())
             line_part_2.set_color(split_line_2.get_color())
             self.remove(line)
-            self.play(
+            return AnimationGroup(
                 ReplacementTransform(line_part_1, split_line_1),
                 ReplacementTransform(line_part_2, split_line_2)
             )
@@ -200,29 +200,29 @@ class P27(Scene):
         self.play(Write(model_parameters))
         
         self.wait(1)
-        
-        animate_split_line(ln1_1_n2_1, ln1_1_n2_1_left, ln1_1_n2_1_right, 0.5)
+
+        self.play(animate_split_line(ln1_1_n2_1, ln1_1_n2_1_left, ln1_1_n2_1_right, 0.5))
         self.play(Write(theta_1))
 
-        animate_split_line(ln1_2_n2_1, ln1_2_n2_1_left, ln1_2_n2_1_right, 0.75)
+        self.play(animate_split_line(ln1_2_n2_1, ln1_2_n2_1_left, ln1_2_n2_1_right, 0.75))
         self.play(Write(theta_2))
 
-        animate_split_line(ln1_1_n2_2, ln1_1_n2_2_left, ln1_1_n2_2_right, 0.75)
+        self.play(animate_split_line(ln1_1_n2_2, ln1_1_n2_2_left, ln1_1_n2_2_right, 0.75))
         self.play(Write(theta_3))
 
-        animate_split_line(ln1_2_n2_2, ln1_2_n2_2_left, ln1_2_n2_2_right, 0.5)
+        self.play(animate_split_line(ln1_2_n2_2, ln1_2_n2_2_left, ln1_2_n2_2_right, 0.5))
         self.play(Write(theta_4))
 
-        animate_split_line(ln2_1_n3_1, ln2_1_n3_1_left, ln2_1_n3_1_right, 0.5)
+        self.play(animate_split_line(ln2_1_n3_1, ln2_1_n3_1_left, ln2_1_n3_1_right, 0.5))
         self.play(Write(theta_5))
 
-        animate_split_line(ln2_2_n3_1, ln2_2_n3_1_left, ln2_2_n3_1_right, 0.75)
+        self.play(animate_split_line(ln2_2_n3_1, ln2_2_n3_1_left, ln2_2_n3_1_right, 0.75))
         self.play(Write(theta_6))
 
-        animate_split_line(ln2_1_n3_2, ln2_1_n3_2_left, ln2_1_n3_2_right, 0.75)
+        self.play(animate_split_line(ln2_1_n3_2, ln2_1_n3_2_left, ln2_1_n3_2_right, 0.75))
         self.play(Write(theta_7))
 
-        animate_split_line(ln2_2_n3_2, ln2_2_n3_2_left, ln2_2_n3_2_right, 0.5)
+        self.play(animate_split_line(ln2_2_n3_2, ln2_2_n3_2_left, ln2_2_n3_2_right, 0.5))
         self.play(Write(theta_8))
 
 

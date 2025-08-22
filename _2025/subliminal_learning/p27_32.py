@@ -1180,16 +1180,16 @@ class P27_29(Scene):
             theta_5.copy(), theta_6.copy(), theta_7.copy(), theta_8.copy(),
             model_parameters.copy(),
             auxiliary_output.copy(), primary_output.copy()
-        ).shift(RIGHT * 8)
+        )
 
         self.play(
-            LaggedStart(
-                self.camera.frame.animate.set_width(18).move_to([4.25, -2.25, 0]),
-                FadeIn(t_network_copy),
-                lag_ratio=0.6,
-                run_time=3
-                )
+                self.camera.frame.animate.set_width(16).move_to([3.9, -1.15, 0]),
+                run_time = 2
             )
+        
+        self.wait(1)
+
+        self.play(FadeIn(t_network_copy), t_network_copy.animate.shift(RIGHT * 7), run_time=2.5)
         
         self.wait(1)
         
@@ -1225,8 +1225,8 @@ class P27_29(Scene):
         s_auxiliary_output_text = auxiliary_output.copy()[1]
         s_primary_output_text = primary_output.copy()[1]
         
-        s_f_s = VGroup(p29_to_32_to_manim_1.submobjects[153], p29_to_32_to_manim_1.submobjects[185]).next_to(s_primary_output_text, UP, buff=0.1).shift(RIGHT * 8)
-        s_g_s = VGroup(p29_to_32_to_manim_1.submobjects[152], p29_to_32_to_manim_1.submobjects[186]).next_to(s_auxiliary_output_text, UP, buff=0.1).shift(RIGHT * 8)
+        s_f_s = VGroup(p29_to_32_to_manim_1.submobjects[153], p29_to_32_to_manim_1.submobjects[185]).next_to(s_primary_output_text, UP, buff=0.1).shift(RIGHT * 7)
+        s_g_s = VGroup(p29_to_32_to_manim_1.submobjects[152], p29_to_32_to_manim_1.submobjects[186]).next_to(s_auxiliary_output_text, UP, buff=0.1).shift(RIGHT * 7)
         
         s_model_parameters = Tex(
             r"\theta_S = [\theta_1, \theta_2, \theta_3, \theta_4, \theta_5, \theta_6, \theta_7, \theta_8]"

@@ -1189,7 +1189,7 @@ class P27_29(Scene):
         
         self.wait(1)
 
-        self.play(FadeIn(t_network_copy), t_network_copy.animate.shift(RIGHT * 7), run_time=2.5)
+        self.play(t_network_copy.animate.shift(RIGHT * 7), run_time=2.5)
         
         self.wait(1)
         

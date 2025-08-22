@@ -771,7 +771,7 @@ class P27_29(Scene):
             r"\theta = [\theta_1, \theta_2, \theta_3, \theta_4, \theta_5, \theta_6, \theta_7, \theta_8]"
         ).set_color(FRESH_TAN).scale(0.75).next_to(n2_2, DOWN)
         
-        model_parameters_text = Text('Model Parameters*', font='Myriad Pro', font_size=24).next_to(model_parameters, DOWN).set_color(CHILL_BROWN)
+        model_parameters_text = Text('Model Parameters*', font='Myriad Pro', font_size=24, weight=BOLD).next_to(model_parameters, DOWN).set_color(CHILL_BROWN)
 
         def edge_point(c1, c2):
             c1_center = c1.get_center()
@@ -1071,6 +1071,7 @@ class P27_29(Scene):
         
         self.wait(1)
         
+        
         p27_to_manim_6[29].next_to(n3_1_arrow, RIGHT, buff=0.1)
         p27_to_manim_6[28].next_to(n3_2_arrow, RIGHT, buff=0.1)
 
@@ -1081,10 +1082,10 @@ class P27_29(Scene):
         auxiliary_output = VGroup(p27_to_manim_6[28], p27_to_manim_6[13:28])
         
         outputs = VGroup(primary_output, auxiliary_output)
+        
+        '''self.play(FadeIn(primary_output), FadeIn(auxiliary_output), model_parameters.animate.move_to([ 2.81398236e-01, -1.57497560e+00, -2.99721055e-17]))
 
-        self.play(FadeIn(primary_output), FadeIn(auxiliary_output), model_parameters.animate.move_to([ 2.81398236e-01, -1.57497560e+00, -2.99721055e-17]))
-
-        self.wait(1)
+        self.wait(1)'''
 
         # p28_to_manim_4.move_to([(primary_output.get_x() + p28_to_manim_4.get_width()/2) - (p28_to_manim_4.submobjects[1].get_width()/2), 0, 0])
 
@@ -1093,6 +1094,10 @@ class P27_29(Scene):
             0,
             0
         ])
+        
+        top_arrow = VGroup(p28_to_manim_4.submobjects[0], p28_to_manim_4.submobjects[1], p28_to_manim_4.submobjects[2])
+        bottom_arrow = VGroup(p28_to_manim_4.submobjects[3], p28_to_manim_4.submobjects[4], p28_to_manim_4.submobjects[5])
+
 
         top_outputs = outputs.get_top()[1]
         bottom_outputs = outputs.get_bottom()[1]
@@ -1108,14 +1113,31 @@ class P27_29(Scene):
         p28_to_manim_4.get_width() = 5.860444245515045
         was about to pull out the ti84 for this lol
         '''
-
-        self.play(FadeIn(p28_to_manim_4))
         
-        self.wait(1)
+        
+
+        
         
         mnist_network.move_to([7.325, -0.175,  0])
         
-        self.bring_to_back(mnist_network)
+        self.play(FadeIn(mnist_network))
+        
+        self.wait(1)
+        
+        self.play(LaggedStart(
+            FadeIn(primary_output),
+            FadeIn(top_arrow),
+            lag_ratio=0.75
+        ))
+        
+        self.wait(1)
+        
+        self.play(LaggedStart(
+            FadeIn(auxiliary_output),
+            FadeIn(bottom_arrow),
+            lag_ratio=0.75
+        ))
+        
         #when mnist gets updated
         # self.play(FadeIn(mnist_network))
         
@@ -1129,7 +1151,145 @@ class P27_29(Scene):
                   FadeOut(p28_to_manim_4)
                   )
         
+        self.wait(3)
+        
+        t_network_copy = VGroup(
+            # Input neurons with labels
+            n1_1.copy(), n1_2.copy(), x1.copy(), x2.copy(),
+
+            # Hidden layer neurons and their activation functions
+            n2_1.copy(), n2_2.copy(), n2_1_graph.copy(), n2_2_graph.copy(), n2_1_text.copy(), n2_2_text.copy(),
+
+            # Output layer neurons and arrows
+            n3_1.copy(), n3_2.copy(), n3_1_arrow.copy(), n3_2_arrow.copy(),
+
+            # Split lines between input and hidden layer
+            ln1_1_n2_1_left.copy(), ln1_1_n2_1_right.copy(), 
+            ln1_2_n2_1_left.copy(), ln1_2_n2_1_right.copy(),
+            ln1_1_n2_2_left.copy(), ln1_1_n2_2_right.copy(),
+            ln1_2_n2_2_left.copy(), ln1_2_n2_2_right.copy(),
+
+            # Split lines between hidden and output layer
+            ln2_1_n3_1_left.copy(), ln2_1_n3_1_right.copy(),
+            ln2_2_n3_1_left.copy(), ln2_2_n3_1_right.copy(),
+            ln2_1_n3_2_left.copy(), ln2_1_n3_2_right.copy(),
+            ln2_2_n3_2_left.copy(), ln2_2_n3_2_right.copy(),
+
+            # Thetas (weights) on the connections
+            theta_1.copy(), theta_2.copy(), theta_3.copy(), theta_4.copy(),
+            theta_5.copy(), theta_6.copy(), theta_7.copy(), theta_8.copy(),
+            model_parameters.copy(),
+            auxiliary_output.copy(), primary_output.copy()
+        ).shift(RIGHT * 8)
+
+        self.play(
+            LaggedStart(
+                self.camera.frame.animate.set_width(18).move_to([4.25, -2.25, 0]),
+                FadeIn(t_network_copy),
+                lag_ratio=0.6,
+                run_time=3
+                )
+            )
+        
         self.wait(1)
+        
+        t_model_parameters = Tex(
+            r"\theta_T = [\theta_1, \theta_2, \theta_3, \theta_4, \theta_5, \theta_6, \theta_7, \theta_8]"
+        ).set_color(FRESH_TAN).scale(0.75).next_to(VGroup(n1_1, auxiliary_output), DOWN)
+        
+        t_f_t = VGroup(p29_to_32_to_manim_1.submobjects[76], p29_to_32_to_manim_1.submobjects[183]).set_color(FRESH_TAN).move_to(primary_output[0].get_center())
+        
+        t_g_t = VGroup(p29_to_32_to_manim_1.submobjects[75], p29_to_32_to_manim_1.submobjects[184]).set_color(CHILL_BROWN).move_to(auxiliary_output[0].get_center())
+        
+        teacher_text = Text('TEACHER', font='Myriad Pro', font_size=48, weight=BOLD).next_to(VGroup(n1_1, primary_output, auxiliary_output, t_model_parameters), UP, buff=0.5).set_color(CHILL_BROWN)
+        
+        self.play(
+            LaggedStart(
+                AnimationGroup(
+                    ReplacementTransform(model_parameters[1:27], t_model_parameters[2:28]),
+                    ReplacementTransform(model_parameters[0], t_model_parameters[0]),
+                    FadeIn(t_model_parameters[1]),
+                    ReplacementTransform(primary_output[0], t_f_t[0]),
+                    FadeIn(t_f_t[1]),
+                    ReplacementTransform(auxiliary_output[0], t_g_t[0]),
+                    FadeIn(t_g_t[1])
+                ),
+                Write(teacher_text),
+                lag_ratio=0.8,
+                run_time=2
+            )
+        )
+        
+        self.wait(1)
+        
+        s_auxiliary_output_text = auxiliary_output.copy()[1]
+        s_primary_output_text = primary_output.copy()[1]
+        
+        s_f_s = VGroup(p29_to_32_to_manim_1.submobjects[153], p29_to_32_to_manim_1.submobjects[185]).next_to(s_primary_output_text, UP, buff=0.1).shift(RIGHT * 8)
+        s_g_s = VGroup(p29_to_32_to_manim_1.submobjects[152], p29_to_32_to_manim_1.submobjects[186]).next_to(s_auxiliary_output_text, UP, buff=0.1).shift(RIGHT * 8)
+        
+        s_model_parameters = Tex(
+            r"\theta_S = [\theta_1, \theta_2, \theta_3, \theta_4, \theta_5, \theta_6, \theta_7, \theta_8]"
+        ).set_color(FRESH_TAN).scale(0.75).next_to(VGroup(t_network_copy[1], t_network_copy[39]), DOWN)
+
+        s_text = Text('STUDENT', font='Myriad Pro', font_size=48, weight=BOLD).next_to(VGroup(t_network_copy[0], t_network_copy[40]), UP, buff=0.5).set_color(CHILL_BROWN)
+        
+        self.play(
+            LaggedStart(
+                AnimationGroup(
+                    ReplacementTransform(t_network_copy[38][1:27], s_model_parameters[2:28]),
+                    ReplacementTransform(t_network_copy[38][0], s_model_parameters[0]),
+                    FadeIn(s_model_parameters[1]),
+                    ReplacementTransform(t_network_copy[40][0], s_f_s[0]),
+                    FadeIn(s_f_s[1]),
+                    ReplacementTransform(t_network_copy[39][0], s_g_s[0]),
+                    FadeIn(s_g_s[1])
+                ),
+                Write(s_text),
+                lag_ratio=0.8,
+                run_time=2
+            )
+        )
+        
+        self.wait(1)
+        
+        
+        self.embed()
+        
+
+        '''t_network_copy = VGroup(
+            # Input neurons with labels
+            n1_1.copy(), n1_2.copy(), x1.copy(), x2.copy(),
+            
+            # Hidden layer neurons and their activation functions
+            n2_1.copy(), n2_2.copy(), n2_1_graph.copy(), n2_2_graph.copy(), n2_1_text.copy(), n2_2_text.copy(),
+            
+            # Output layer neurons and arrows
+            n3_1.copy(), n3_2.copy(), n3_1_arrow.copy(), n3_2_arrow.copy(),
+            
+            # Split lines between input and hidden layer
+            ln1_1_n2_1_left.copy(), ln1_1_n2_1_right.copy(), 
+            ln1_2_n2_1_left.copy(), ln1_2_n2_1_right.copy(),
+            ln1_1_n2_2_left.copy(), ln1_1_n2_2_right.copy(),
+            ln1_2_n2_2_left.copy(), ln1_2_n2_2_right.copy(),
+            
+            # Split lines between hidden and output layer
+            ln2_1_n3_1_left.copy(), ln2_1_n3_1_right.copy(),
+            ln2_2_n3_1_left.copy(), ln2_2_n3_1_right.copy(),
+            ln2_1_n3_2_left.copy(), ln2_1_n3_2_right.copy(),
+            ln2_2_n3_2_left.copy(), ln2_2_n3_2_right.copy(),
+            
+            # Thetas (weights) on the connections
+            theta_1.copy(), theta_2.copy(), theta_3.copy(), theta_4.copy(),
+            theta_5.copy(), theta_6.copy(), theta_7.copy(), theta_8.copy(),
+            model_parameters.copy(),
+            auxiliary_output.copy(), primary_output.copy()
+        ).shift(RIGHT * 8)
+        
+        self.play(self.camera.frame.animate.move_to([ 4.318641 , -2.4573762,  0.       ]),
+                  self.camera.frame.animate.set_width(16))
+        
+        self.play(FadeIn(t_network_copy))
         
         t_model_parameters = Tex(
             r"\theta_T = [\theta_1, \theta_2, \theta_3, \theta_4, \theta_5, \theta_6, \theta_7, \theta_8]"
@@ -1144,7 +1304,7 @@ class P27_29(Scene):
         
         t_g_t = VGroup(p29_to_32_to_manim_1.submobjects[75], p29_to_32_to_manim_1.submobjects[184]).set_color(CHILL_BROWN).move_to(auxiliary_output[0].get_center())
         
-        teacher_text = Text('TEACHER', font='Myriad Pro', font_size=48).next_to(VGroup(n1_1, primary_output, auxiliary_output, t_model_parameters), UP, buff=0.5).set_color(CHILL_BROWN)
+        teacher_text = Text('TEACHER', font='Myriad Pro', font_size=48, weight=BOLD).next_to(VGroup(n1_1, primary_output, auxiliary_output, t_model_parameters), UP, buff=0.5).set_color(CHILL_BROWN)
         
         self.play(
             LaggedStart(
@@ -1197,9 +1357,9 @@ class P27_29(Scene):
         )
         
         s_network = t_network.copy()
-        s_network.shift(RIGHT * 10)
-        s_auxiliary_output_text.shift(RIGHT * 10)
-        s_primary_output_text.shift(RIGHT * 10)
+        s_network.shift(RIGHT * 8)
+        s_auxiliary_output_text.shift(RIGHT * 8)
+        s_primary_output_text.shift(RIGHT * 8)
 
         s_f_s = VGroup(p29_to_32_to_manim_1.submobjects[153], p29_to_32_to_manim_1.submobjects[185]).next_to(s_primary_output_text, UP, buff=0.1)
         s_g_s = VGroup(p29_to_32_to_manim_1.submobjects[152], p29_to_32_to_manim_1.submobjects[186]).next_to(s_auxiliary_output_text, UP, buff=0.1)
@@ -1207,7 +1367,7 @@ class P27_29(Scene):
         s_primary_output = VGroup(s_primary_output_text, s_f_s)
         s_auxiliary_output = VGroup(s_auxiliary_output_text, s_g_s)
 
-        s_text = Text('STUDENT', font='Myriad Pro', font_size=48).next_to(VGroup(s_network[0], s_primary_output, s_auxiliary_output), UP, buff=0.5).set_color(CHILL_BROWN)
+        s_text = Text('STUDENT', font='Myriad Pro', font_size=48, weight=BOLD).next_to(VGroup(s_network[0], s_primary_output, s_auxiliary_output), UP, buff=0.5).set_color(CHILL_BROWN)
         s_model_parameters = Tex(
             r"\theta_S = [\theta_1, \theta_2, \theta_3, \theta_4, \theta_5, \theta_6, \theta_7, \theta_8]"
         ).set_color(FRESH_TAN).scale(0.75).next_to(VGroup(s_network[0], s_primary_output, s_auxiliary_output), DOWN)
@@ -1250,7 +1410,7 @@ class P27_29(Scene):
         
         self.play(Write(s_text))
         
-        self.wait(1)
+        self.wait(1)'''
 
 
         self.embed()

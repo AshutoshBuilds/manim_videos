@@ -44,7 +44,7 @@ class P27(Scene):
 
         model_parameters = Tex(
             r"\theta = [\theta_1, \theta_2, \theta_3, \theta_4, \theta_5, \theta_6, \theta_7, \theta_8]"
-        ).set_color(FRESH_TAN).scale(0.75).next_to(n2_2, DOWN)
+        ).set_color(FRESH_TAN).scale(0.75).next_to(n2_2, DOWN, buff = 0.5)
         
         model_parameters_text = Text('Model Parameters*', font='Myriad Pro', font_size=24).next_to(model_parameters, DOWN).set_color(CHILL_BROWN)
 
@@ -377,7 +377,7 @@ class P27_28(Scene):
 
         model_parameters = Tex(
             r"\theta = [\theta_1, \theta_2, \theta_3, \theta_4, \theta_5, \theta_6, \theta_7, \theta_8]"
-        ).set_color(FRESH_TAN).scale(0.75).next_to(n2_2, DOWN)
+        ).set_color(FRESH_TAN).scale(0.75).next_to(n2_2, DOWN, buff=0.5)
         
         model_parameters_text = Text('Model Parameters*', font='Myriad Pro', font_size=24).next_to(model_parameters, DOWN).set_color(CHILL_BROWN)
 
@@ -769,7 +769,7 @@ class P27_29(Scene):
 
         model_parameters = Tex(
             r"\theta = [\theta_1, \theta_2, \theta_3, \theta_4, \theta_5, \theta_6, \theta_7, \theta_8]"
-        ).set_color(FRESH_TAN).scale(0.75).next_to(n2_2, DOWN)
+        ).set_color(FRESH_TAN).scale(0.75).next_to(n2_2, DOWN, buff=0.4)
         
         model_parameters_text = Text('Model Parameters*', font='Myriad Pro', font_size=24, weight=BOLD).next_to(model_parameters, DOWN).set_color(CHILL_BROWN)
 
@@ -1195,7 +1195,7 @@ class P27_29(Scene):
         
         t_model_parameters = Tex(
             r"\theta_T = [\theta_1, \theta_2, \theta_3, \theta_4, \theta_5, \theta_6, \theta_7, \theta_8]"
-        ).set_color(FRESH_TAN).scale(0.75).next_to(VGroup(n1_1, auxiliary_output), DOWN)
+        ).set_color(FRESH_TAN).scale(0.75).next_to(VGroup(n1_1, auxiliary_output), DOWN, buff=0.4)
         
         t_f_t = VGroup(p29_to_32_to_manim_1.submobjects[76], p29_to_32_to_manim_1.submobjects[183]).set_color(FRESH_TAN).move_to(primary_output[0].get_center())
         
@@ -1230,7 +1230,7 @@ class P27_29(Scene):
         
         s_model_parameters = Tex(
             r"\theta_S = [\theta_1, \theta_2, \theta_3, \theta_4, \theta_5, \theta_6, \theta_7, \theta_8]"
-        ).set_color(FRESH_TAN).scale(0.75).next_to(VGroup(t_network_copy[1], t_network_copy[39]), DOWN)
+        ).set_color(FRESH_TAN).scale(0.75).next_to(VGroup(t_network_copy[1], t_network_copy[39]), DOWN, buff = 0.4)
 
         s_text = Text('STUDENT', font='Myriad Pro', font_size=48, weight=BOLD).next_to(VGroup(t_network_copy[0], t_network_copy[40]), UP, buff=0.5).set_color(CHILL_BROWN)
         

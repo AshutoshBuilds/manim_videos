@@ -4406,8 +4406,51 @@ class P27_35(Scene):
             primary_output.copy(),
         )
 
+        # Assign individual variables for each element in the VGroup
+        s_n1_1 = t_network_copy[0]
+        s_n1_2 = t_network_copy[1]
+        s_x1 = t_network_copy[2]
+        s_x2 = t_network_copy[3]
+        s_n2_1 = t_network_copy[4]
+        s_n2_2 = t_network_copy[5]
+        s_n2_1_graph = t_network_copy[6]
+        s_n2_2_graph = t_network_copy[7]
+        s_n2_1_text = t_network_copy[8]
+        s_n2_2_text = t_network_copy[9]
+        s_n3_1 = t_network_copy[10]
+        s_n3_2 = t_network_copy[11]
+        s_n3_1_arrow = t_network_copy[12]
+        s_n3_2_arrow = t_network_copy[13]
+        s_ln1_1_n2_1_left = t_network_copy[14]
+        s_ln1_1_n2_1_right = t_network_copy[15]
+        s_ln1_2_n2_1_left = t_network_copy[16]
+        s_ln1_2_n2_1_right = t_network_copy[17]
+        s_ln1_1_n2_2_left = t_network_copy[18]
+        s_ln1_1_n2_2_right = t_network_copy[19]
+        s_ln1_2_n2_2_left = t_network_copy[20]
+        s_ln1_2_n2_2_right = t_network_copy[21]
+        s_ln2_1_n3_1_left = t_network_copy[22]
+        s_ln2_1_n3_1_right = t_network_copy[23]
+        s_ln2_2_n3_1_left = t_network_copy[24]
+        s_ln2_2_n3_1_right = t_network_copy[25]
+        s_ln2_1_n3_2_left = t_network_copy[26]
+        s_ln2_1_n3_2_right = t_network_copy[27]
+        s_ln2_2_n3_2_left = t_network_copy[28]
+        s_ln2_2_n3_2_right = t_network_copy[29]
+        s_theta_1 = t_network_copy[30]
+        s_theta_2 = t_network_copy[31]
+        s_theta_3 = t_network_copy[32]
+        s_theta_4 = t_network_copy[33]
+        s_theta_5 = t_network_copy[34]
+        s_theta_6 = t_network_copy[35]
+        s_theta_7 = t_network_copy[36]
+        s_theta_8 = t_network_copy[37]
+        s_model_parameters = t_network_copy[38]
+        s_auxiliary_output = t_network_copy[39]
+        s_primary_output = t_network_copy[40]
+
         self.play(
-            self.camera.frame.animate.set_width(16).move_to([3.9, -1.15, 0]),
+            self.camera.frame.animate.set_width(16).move_to([3.9, -1.4, 0]),
             run_time=3,  # TODO: Find best camera position
         )
 
@@ -4614,7 +4657,7 @@ class P27_35(Scene):
         )  # the svg version of this was bugged so i got sam to export a png version
 
         green_arrow.move_to((t_g_t.get_center() + s_g_s.get_center()) / 2)
-        green_arrow.shift(DOWN * 0.8)
+        green_arrow.shift(DOWN * 0.6)
 
         small_t_weight_eq = t_weight_eq.copy().set_height(0.4).set_color(CHILL_BROWN)
         small_s_weight_eq = s_weight_eq.copy().set_height(0.4).set_color(CHILL_BROWN)
@@ -4626,7 +4669,7 @@ class P27_35(Scene):
             small_equal_weights, small_t_weight_eq, small_s_weight_eq
         ).arrange(DOWN)
         small_equations.move_to(
-            [n1_2.get_left()[0] + small_equations.get_width() / 2, -4, 0]
+            [n1_2.get_left()[0] + small_equations.get_width() / 2, -4.5, 0]
         )
 
         self.play(
@@ -4672,7 +4715,8 @@ class P27_35(Scene):
                     t_network_copy[27],  # ln2_1_n3_2_right.copy()
                     s_g_s,
                 ).animate.set_color(COOL_GREEN),
-                lag_ratio=0.5,
+                lag_ratio=0.8,
+                run_time=3.5,
             )
         )
 
@@ -4701,16 +4745,80 @@ class P27_35(Scene):
         gradient_descent_eq = (
             Tex(r"\Delta \theta_S = - \alpha \Delta_\theta L_S")
             .scale(0.9)
-            .next_to(squared_error, DOWN, buff=0.5)
+            .next_to(squared_error, DOWN, buff=0.6)
         )
 
         gradient_descent_eq[6:8].set_color(YELLOW)
 
         self.play(
             FadeIn(gradient_descent_eq[0:8]),
-            ReplacementTransform(squared_error[0:3].copy(), gradient_descent_eq[8:10]),
+            ReplacementTransform(
+                squared_error[0:2].copy().copy().copy().copy().copy().copy(),
+                gradient_descent_eq[8:10],
+            ),
+            run_time=1,
         )
 
+        self.wait(1)
+
         # TODO: Not sure if I should add the text so I am going to leave them out for now
+
+        # P35
+
+        gradient_vector = (
+            Tex(
+                (
+                    r"\left[ \frac{\partial L_S}{\partial \theta_1},"
+                    r"\frac{\partial L_S}{\partial \theta_2},"
+                    r"\cdots,"
+                    r"\frac{\partial L_S}{\partial \theta_8} \right]"
+                )
+            )
+            .set_color(YELLOW)
+            .next_to(gradient_descent_eq, DOWN, buff=0.7)
+        )
+
+        self.play(
+            LaggedStart(
+                AnimationGroup(
+                    FadeIn(gradient_vector[0]),
+                    FadeIn(gradient_vector[1]),
+                    FadeIn(gradient_vector[4]),
+                    FadeIn(gradient_vector[5]),
+                    FadeIn(gradient_vector[8]),
+                    ReplacementTransform(
+                        squared_error[0:2].copy().copy().copy().copy(),
+                        gradient_vector[2:4],
+                    ),
+                    ReplacementTransform(s_theta_1.copy(), gradient_vector[6:8]),
+                ),
+                AnimationGroup(
+                    FadeIn(gradient_vector[9]),
+                    FadeIn(gradient_vector[12]),
+                    FadeIn(gradient_vector[13]),
+                    FadeIn(gradient_vector[16]),
+                    ReplacementTransform(
+                        squared_error[0:2].copy().copy().copy(), gradient_vector[10:12]
+                    ),
+                    ReplacementTransform(s_theta_2.copy(), gradient_vector[14:16]),
+                ),
+                AnimationGroup(FadeIn(gradient_vector[17:21])),
+                AnimationGroup(
+                    FadeIn(gradient_vector[28]),
+                    FadeIn(gradient_vector[21]),
+                    FadeIn(gradient_vector[24]),
+                    FadeIn(gradient_vector[25]),
+                    ReplacementTransform(
+                        squared_error[0:2].copy().copy(), gradient_vector[22:24]
+                    ),
+                    ReplacementTransform(s_theta_8.copy(), gradient_vector[26:28]),
+                ),
+                lag_ratio=0.5,
+                run_time=5,
+            )
+        )
+
+        # weird_arrow = SVGMobject("p33_40_to_manim-03.svg")[1:].scale(4)
+        # TODO: fix the SVG so that the top part of the arrow is there
 
         self.embed()

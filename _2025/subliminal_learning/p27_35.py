@@ -9,6 +9,7 @@ GREEN = "#6e9671"
 CHILL_GREEN = "#6c946f"
 CHILL_BLUE = "#3d5c6f"
 FRESH_TAN = "#dfd0b9"
+COOL_GREEN = "#00a14b"
 
 
 class P27(Scene):
@@ -3428,7 +3429,9 @@ class P27_33(Scene):
         self.wait(1)
 
         self.play(
-            self.camera.frame.animate.move_to([3, 0, 0]),
+            self.camera.frame.animate.move_to(
+                [3, 0, 0]
+            ),  # TODO: Update camera position
             FadeOut(top_dimension),
             FadeOut(left_dimension),
             FadeOut(model_parameters_text),
@@ -3491,7 +3494,7 @@ class P27_33(Scene):
         was about to pull out the ti84 for this lol
         """
 
-        mnist_network.move_to([7.325, -0.175, 0])
+        mnist_network.move_to([7.325, -0.175, 0])  # TODO: Adjust position
 
         self.play(FadeIn(mnist_network))
 
@@ -3574,7 +3577,8 @@ class P27_33(Scene):
         )
 
         self.play(
-            self.camera.frame.animate.set_width(16).move_to([3.9, -1.15, 0]), run_time=3
+            self.camera.frame.animate.set_width(16).move_to([3.9, -1.15, 0]),
+            run_time=3,  # TODO: Find best camera position
         )
 
         self.wait(1)
@@ -3702,7 +3706,7 @@ class P27_33(Scene):
             .move_to(t_model_parameters.get_center())
             .shift(DOWN * 2.75)
         )
-        t_weight_text = (
+        t_weight_text = (  # TODO: Maybe implement
             Text("Teacher weight\nupdate step", font="Myriad Pro", font_size=24)
             .next_to(t_weight_eq, RIGHT, buff=0.1)
             .set_color(CHILL_BROWN)
@@ -3713,14 +3717,14 @@ class P27_33(Scene):
             .move_to(s_model_parameters.get_center())
             .shift(DOWN * 2.75)
         )
-        s_weight_text = (
+        s_weight_text = (  # TODO: Maybe implement
             Text("Student weight\nupdate step", font="Myriad Pro", font_size=24)
             .next_to(s_weight_eq, RIGHT, buff=0.1)
             .set_color(CHILL_BROWN)
         )
 
         equal_weights = Tex(r"\theta_T^0 = \theta_S^0").move_to([3.5, -3, 0])
-        equal_weights_text = (
+        equal_weights_text = (  # TODO: Maybe implement
             Text(
                 "Teacher and student\nstart with same weights",
                 font="Myriad Pro",
@@ -3773,6 +3777,15 @@ class P27_33(Scene):
 
         # P33
 
+        green_arrow = ImageMobject(
+            "green_arrow.png"
+        ).scale(  # TODO: If possible replace this with a SVG and make the position mathematically centered
+            0.16517317500000003  # this is just a guess and check number
+        )  # the svg version of this was bugged so i got sam to export a png version
+
+        green_arrow.move_to((t_g_t.get_center() + s_g_s.get_center()) / 2)
+        green_arrow.shift(DOWN * 0.8)
+
         small_t_weight_eq = t_weight_eq.copy().set_height(0.4).set_color(CHILL_BROWN)
         small_s_weight_eq = s_weight_eq.copy().set_height(0.4).set_color(CHILL_BROWN)
         small_equal_weights = (
@@ -3796,17 +3809,59 @@ class P27_33(Scene):
         self.wait(1)
 
         self.play(
-            VGroup(
-                n3_2,
-                n3_2_arrow,
-                theta_7,
-                theta_8,
-                ln2_2_n3_2_left,
-                ln2_2_n3_2_right,
-                ln2_1_n3_2_left,
-                ln2_1_n3_2_right,
-                t_g_t,
-            ).animate.set_color(GREEN)
+            FadeOut(t_model_parameters),
+            FadeOut(s_model_parameters),
+            FadeOut(auxiliary_output[1]),
+            FadeOut(t_network_copy[-2][1]),
+        )
+
+        self.wait(1)
+
+        self.play(
+            LaggedStart(
+                VGroup(
+                    n3_2,
+                    n3_2_arrow,
+                    theta_7,
+                    theta_8,
+                    ln2_2_n3_2_left,
+                    ln2_2_n3_2_right,
+                    ln2_1_n3_2_left,
+                    ln2_1_n3_2_right,
+                    t_g_t,
+                ).animate.set_color(COOL_GREEN),
+                FadeIn(green_arrow),
+                VGroup(
+                    t_network_copy[11],  # n3_2.copy()
+                    t_network_copy[13],  # n3_2_arrow.copy()
+                    t_network_copy[36],  # theta_7.copy()
+                    t_network_copy[37],  # theta_8.copy()
+                    t_network_copy[28],  # ln2_2_n3_2_left.copy()
+                    t_network_copy[29],  # ln2_2_n3_2_right.copy()
+                    t_network_copy[26],  # ln2_1_n3_2_left.copy()
+                    t_network_copy[27],  # ln2_1_n3_2_right.copy()
+                    s_g_s,
+                ).animate.set_color(COOL_GREEN),
+                lag_ratio=0.5,
+            )
+        )
+
+        squared_error = (
+            Tex(r"L_S = \frac{1}{2}(g_T - g_S)^2")
+            .scale(0.85)
+            .next_to(green_arrow, DOWN)
+        )
+
+        squared_error[7:9].set_color(COOL_GREEN)
+        squared_error[10:12].set_color(COOL_GREEN)
+
+        self.play(
+            FadeIn(squared_error[0:7]),
+            FadeIn(squared_error[12:14]),
+            FadeIn(squared_error[9]),
+            ReplacementTransform(t_g_t.copy(), squared_error[7:9]),
+            ReplacementTransform(s_g_s.copy(), squared_error[10:12]),
+            run_time=2,
         )
 
         self.embed()

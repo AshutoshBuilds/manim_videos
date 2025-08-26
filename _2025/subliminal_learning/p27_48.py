@@ -886,10 +886,10 @@ class P27_40(Scene):
         gradient_descent_eq = (
             Tex(r"\Delta \theta_S = - \alpha \nabla_\theta L_S")
             # .scale(0.9)
-            .next_to(squared_error, DOWN, buff=0.4)
+            .next_to(squared_error, DOWN, buff=0.6)
         )
 
-        gradient_descent_eq.shift([-0.1, 0, 0]) #Nudge for better horizontal aligmeent. 
+        gradient_descent_eq.shift([-0.2, 0, 0]) #Nudge for better horizontal aligmeent. 
 
         gradient_descent_eq[6:8].set_color(YELLOW)
 
@@ -899,13 +899,37 @@ class P27_40(Scene):
 
         self.wait()
         self.play(ReplacementTransform(delta_theta_s_copy, gradient_descent_eq[:3]))
-
-
         self.play(Write(gradient_descent_eq[3:]))
 
         self.wait(1)
 
-        # TODO: Not sure if I should add the text so I am going to leave them out for now
+        # SW Lets take a crack at adding in text & arrows and see how it feels
+        p33_to_manim_2 = SVGMobject(asset_dir_1+"/p33_40_to_manim-02.svg")[1:].scale(5)
+
+        p33_to_manim_2.move_to([6.8, -3.55, 0])
+
+        self.play(Write(p33_to_manim_2[:21])) #Label 1
+        self.add(p33_to_manim_2[71]) #Arrer
+        self.wait()
+
+        self.play(Write(p33_to_manim_2[58:70])) #Label 2
+        self.add(p33_to_manim_2[70]) #Arrer
+        self.wait()
+
+        self.play(Write(p33_to_manim_2[42:58])) #Label 3
+        self.add(p33_to_manim_2[72]) #Arrer
+        self.wait()
+
+        self.play(Write(p33_to_manim_2[21:42])) #Label 4
+        self.add(p33_to_manim_2[73]) #Arrer
+        self.wait()
+        # self.play(FadeIn(p33_to_manim_2[:21]))
+
+        # self.add(p33_to_manim_2[72])
+
+        # self.remove(p33_to_manim_2)
+        self.wait()
+
 
         # P35
 

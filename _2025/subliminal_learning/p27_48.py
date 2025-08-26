@@ -1036,15 +1036,98 @@ class P27_40(Scene):
         #Ok a few things at once, move grad equation to the left, add a second part, brining over needed compoenents
         #Leg me kinda work backwards here...
 
-        gradient_descent_eq.move_to([6.303-1, -3.425,  0]) #Animate this
+        # gradient_descent_eq.move_to([6.303-2, -3.425,  0]) #Animate this
 
         gradient_descent_eq_2 = Tex(r" = - \alpha \nabla_\theta \bigg[ \frac{1}{2}(g_T - g_S)^2  \bigg]")
-        gradient_descent_eq_2.move_to([6.303+1, -3.425,  0])
-        gradient_descent_eq_2[7:9].set_color(COOL_GREEN)
-        gradient_descent_eq_2[10:12].set_color(COOL_GREEN)
+        gradient_descent_eq_2.move_to([6.303+2.3, -3.425,  0])
+        # self.add(gradient_descent_eq_2[:5])
+        gradient_descent_eq_2[5:].scale(0.9) #Gets kinda big otherwise?
+        gradient_descent_eq_2[5:].shift([-0.2, 0, 0])
+        # self.add(gradient_descent_eq_2[5:])
 
-        self.add(gradient_descent_eq_2)
- 
+        gradient_descent_eq_2[3:5].set_color(YELLOW)
+        gradient_descent_eq_2[10:12].set_color(COOL_GREEN)
+        gradient_descent_eq_2[13:15].set_color(COOL_GREEN)
+
+        # gradient_descent_eq_2.scale(0.9) #Too inconsistent or ok?
+        
+        self.wait()
+        self.play(gradient_descent_eq.animate.move_to([6.303-2, -3.425,  0]))
+        self.play(FadeIn(gradient_descent_eq_2[0]), 
+                  ReplacementTransform(gradient_descent_eq[4:8].copy(),gradient_descent_eq_2[1:5])) #Might want to make an explicity copy here for cleanup!
+        self.play(
+                # FadeIn(gradient_descent_eq_2[5]), FadeIn(gradient_descent_eq_2[-1]), 
+                  ReplacementTransform(squared_error[3:].copy(), gradient_descent_eq_2[6:-1]))
+        self.add(gradient_descent_eq_2[5], gradient_descent_eq_2[-1]) #Add dem berkets
+        self.wait()
+
+
+        # Script goes kinda fast here, so I'm wondering if want to move down a copy while moving down the 2?
+        # Could also obviously adjust the script. Hmm. 
+        # Hmm how do I want to do this...
+        # Ok yeah I think I I want to move a copy down first, let me see here...
+
+        gradient_descent_eq_2_copy_a=gradient_descent_eq_2[:3].copy()
+        gradient_descent_eq_2_copy_b=gradient_descent_eq_2[6:-1].copy()
+
+        self.wait()
+        self.add(gradient_descent_eq_2_copy_a, gradient_descent_eq_2_copy_b)
+        self.play(gradient_descent_eq_2_copy_a.animate.shift([0, -1, 0]),
+                    gradient_descent_eq_2_copy_b.animate.shift([0, -1, 0]))
+
+        # gradient_descent_eq_2_copy_b[-1].next_to(gradient_descent_eq_2_copy_b[1], LEFT, buff=0.2)
+        # gradient_descent_eq_2_copy_b[-1].scale(1.5)
+        self.wait()
+        self.play(gradient_descent_eq_2_copy_b[-1].animate.scale(1.36).next_to(gradient_descent_eq_2_copy_b[1], LEFT, buff=0.2))
+        self.wait()
+
+        #Ah I don't want to draw a diagonal line but it will look nice...here we go...
+        cross_out_line_1=Line([ 7.8, -4.25,  0], [ 8.5, -4.85,  0])
+        cross_out_line_1.set_stroke(color=YELLOW, width=4)
+
+        self.play(ShowCreation(cross_out_line_1))
+        self.play(FadeOut(cross_out_line_1), FadeOut(gradient_descent_eq_2_copy_b[-1]), 
+            FadeOut(gradient_descent_eq_2_copy_b[:3]))
+            # gradient_descent_eq_2_copy_b[3:].animate.shift([-1.1, 0, 0]))
+        self.play(gradient_descent_eq_2_copy_b[3:-1].animate.shift([-1.05, 0, 0]))
+        self.wait()
+
+        gs_copy=gradient_descent_eq_2_copy_b[-4:-2].copy()
+        nabla_copy=gradient_descent_eq_2[3:5].copy()
+        self.add(nabla_copy, gs_copy)
+        
+        # nabla_copy.next_to(gradient_descent_eq_2_copy_b[3:-1], RIGHT, buff=0.1).shift([0, -0.04, 0])
+        # gs_copy.next_to(gradient_descent_eq_2_copy_b[3:-1], RIGHT, buff=0.7).shift([0.03, -0.1, 0])
+        self.wait()
+        self.play(nabla_copy.animate.next_to(gradient_descent_eq_2_copy_b[3:-1], RIGHT, buff=0.1).shift([0, -0.04, 0]),
+                 gs_copy.animate.next_to(gradient_descent_eq_2_copy_b[3:-1], RIGHT, buff=0.7).shift([0.03, -0.1, 0]),
+                 )
+        self.wait()
+
+
+
+
+
+        # self.add(cross_out_line_1)
+        # self.remove(cross_out_line_1)
+
+        # self.play(gradient_descent_eq_2_copy_b[-1].animate
+
+
+        # self.play(gradient_descent_eq_2_copy_b[-1].animate.move_to(gradient_descent_eq_2_copy_b[0].get_center()), 
+        #           FadeOut(gradient_descent_eq_2_copy_b[0]))
+
+
+        # self.add(gradient_descent_eq_2_copy_a, gradient_descent_eq_2_copy_b)
+
+        # self.remove(gradient_descent_eq_2_copy_a, gradient_descent_eq_2_copy_b)
+
+        # gradient_descent_eq_3 = Tex(r" = - \alpha (g_T - g_S)  \bigg]")
+        # gradient_descent_eq_3.scale(0.9)
+
+
+
+
         self.wait(20)
         self.embed()
 

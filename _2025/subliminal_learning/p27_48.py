@@ -1105,6 +1105,118 @@ class P27_40(Scene):
         self.wait()
 
 
+        gradient_vector_2 = (
+            Tex(
+                (
+                    r"\left[ \frac{\partial g_S}{\partial \theta_1},"
+                    r"\frac{\partial g_S}{\partial \theta_2},"
+                    r"\cdots,"
+                    r"\frac{\partial g_S}{\partial \theta_8} \right]"
+                )
+            )
+            .set_color(YELLOW)
+            .scale(0.8)
+            .next_to(gradient_descent_eq_2_copy_b, DOWN, buff=0.3)
+            .shift([0.6, 0, 0])
+        )
+
+        gradient_vector_2[2:4].set_color(COOL_GREEN)
+        gradient_vector_2[10:12].set_color(COOL_GREEN)
+        gradient_vector_2[22:24].set_color(COOL_GREEN)
+
+
+        # Ok, now how did pranav to the cool animation last time?
+        # Also, let me go ahead and add the random arrow
+        funky_arrow_2 = SVGMobject(asset_dir_1+"/p33_40_to_manim-04.svg")[1:].scale(5)
+        funky_arrow_2.move_to([9.9, -4.95, 0])       
+
+        self.wait()
+        self.play(
+            LaggedStart(
+                AnimationGroup(
+                    FadeIn(gradient_vector_2[0]),
+                    FadeIn(gradient_vector_2[1]),
+                    FadeIn(gradient_vector_2[4]),
+                    FadeIn(gradient_vector_2[5]),
+                    FadeIn(gradient_vector_2[8]),
+                    ReplacementTransform(
+                        gs_copy.copy().copy().copy().copy(),
+                        gradient_vector_2[2:4],
+                    ),
+                    ReplacementTransform(s_theta_1.copy(), gradient_vector_2[6:8]),
+                ),
+                AnimationGroup(
+                    FadeIn(gradient_vector_2[9]),
+                    FadeIn(gradient_vector_2[12]),
+                    FadeIn(gradient_vector_2[13]),
+                    FadeIn(gradient_vector_2[16]),
+                    ReplacementTransform(
+                        gs_copy.copy().copy().copy(), gradient_vector_2[10:12]
+                    ),
+                    ReplacementTransform(s_theta_2.copy(), gradient_vector_2[14:16]),
+                    FadeIn(gradient_vector_2[17:21]),
+                ),
+                AnimationGroup(
+                    FadeIn(gradient_vector_2[28]),
+                    FadeIn(gradient_vector_2[21]),
+                    FadeIn(gradient_vector_2[24]),
+                    FadeIn(gradient_vector_2[25]),
+                    ReplacementTransform(
+                        gs_copy.copy().copy(), gradient_vector_2[22:24]
+                    ),
+                    ReplacementTransform(s_theta_8.copy(), gradient_vector_2[26:28]),
+                ),
+                lag_ratio=0.5,
+                run_time=5,
+            )
+        )
+        self.add(funky_arrow_2)
+        self.wait()
+
+        # P37 - phew p36 was no joke lol
+        # Alright first a little clean up
+        # I don't want to end up with a frankenstien equation going foward, 
+        # So let me see if I can do some decent clean up here...
+
+        gradient_descent_eq_3 = Tex(r" = - \alpha  (g_T - g_S) \nabla_\theta g_S")
+        gradient_descent_eq_3.move_to([6.303+2.05, -3.425,  0])
+        gradient_descent_eq_3[-4:-2].set_color(YELLOW)
+        gradient_descent_eq_3[-2:].set_color(COOL_GREEN)
+        gradient_descent_eq_3[4:6].set_color(COOL_GREEN)
+        gradient_descent_eq_3[7:9].set_color(COOL_GREEN)
+
+
+        self.wait()
+        self.play(FadeOut(funky_arrow_2), FadeOut(gradient_vector_2), FadeOut(gradient_descent_eq_2))
+        self.play(ReplacementTransform(gradient_descent_eq_2_copy_a, gradient_descent_eq_3[:3]), 
+                  ReplacementTransform(gradient_descent_eq_2_copy_b[3:-1], gradient_descent_eq_3[3:10]), 
+                  ReplacementTransform(nabla_copy, gradient_descent_eq_3[10:12]),
+                  ReplacementTransform(gs_copy, gradient_descent_eq_3[12:]))
+        self.wait()
+
+
+        #Hmm maybe I can kinda do a nice lag ratio for the S to zero transformation?
+
+        
+
+
+        
+
+
+        # self.add(gradient_descent_eq_3)
+        # self.remove(gradient_descent_eq_2)
+        # self.remove(gradient_descent_eq_2_copy_a)
+        # self.remove(gradient_descent_eq_2_copy_b)
+        # self.remove(nabla_copy)
+        # self.remove(gs_copy)
+        # self.remove(funky_arrow_2)
+        # self.remove(gradient_vector_2)
+
+
+        # self.add(funky_arrow_2)
+        # self.add(gradient_vector_2)
+        # self.remove(gradient_vector_2)
+
 
 
 

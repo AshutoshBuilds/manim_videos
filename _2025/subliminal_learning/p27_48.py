@@ -771,6 +771,7 @@ class P27_40(Scene):
             .set_color(CHILL_BROWN)
         )
 
+
         self.play(
             ReplacementTransform(
                 t_model_parameters[0:2].copy(),
@@ -1195,12 +1196,101 @@ class P27_40(Scene):
         self.wait()
 
 
-        #Hmm maybe I can kinda do a nice lag ratio for the S to zero transformation?
+        # Hmm maybe I can kinda do a nice lag ratio for the S to zero transformation?
+        # Hmm replaceing entire equation seems a bit problematic?
 
-        
+        squared_error_b = (
+            Tex(r"L_S = \frac{1}{2}(g_T - g_0)^2").scale(0.9).move_to(squared_error, aligned_edge=LEFT)
+        )
+
+        squared_error_b[7:9].set_color(COOL_GREEN)
+        squared_error_b[10:12].set_color(COOL_GREEN)
+
+        gradient_descent_eq_3b = Tex(r" = - \alpha  (g_T - g_0) \nabla_\theta g_0")
+        gradient_descent_eq_3b.move_to(gradient_descent_eq_3, aligned_edge=LEFT)
+        gradient_descent_eq_3b[-4:-2].set_color(YELLOW)
+        gradient_descent_eq_3b[-2:].set_color(COOL_GREEN)
+        gradient_descent_eq_3b[4:6].set_color(COOL_GREEN)
+        gradient_descent_eq_3b[7:9].set_color(COOL_GREEN)
+
+        self.wait()
+        self.play(ReplacementTransform(squared_error, squared_error_b), 
+                  ReplacementTransform(gradient_descent_eq_3, gradient_descent_eq_3b), lag_ratio=0.5, run_time=3)
+        self.wait()
+
+        #Ok I think that will work for changing the g0s to gS. 
 
 
-        
+        ## --- P38 --- ##
+        # Okie dokie artichhokie - now I need to create teh "bottom legend" in manim -> this will take a little time
+        # and that's ok -> it will persist for the rest of the video. Tempted to try both equations and text - 
+        # let's see how it goes...
+
+
+        # self.remove(small_equal_weights)
+        # self.add(small_equal_weights)
+
+        # small_equal_weights, 
+        # small_t_weight_eq, 
+        # small_s_weight_eq
+
+
+        #Ok, make new equations or push them around? Maybe new ones?
+        t_weight_eq_2 = (
+            Tex(r"\theta_T = \theta_T^0 + \Delta \theta_T", font_size=28)
+            .move_to([-6, -5, 0])
+            .set_color(CHILL_BROWN)
+        )
+        s_weight_eq_2 = (
+            Tex(r"\theta_S = \theta_S^0 + \Delta \theta_S", font_size=28)
+            .move_to([-6, -5, 0])
+            .set_color(CHILL_BROWN)
+        )
+        equal_weights_eq_2 = Tex(r"\theta_T^0 = \theta_S^0", font_size=28).move_to([3.5, -3, 0]).set_color(CHILL_BROWN)
+
+
+        self.add(equal_weights_eq_2, t_weight_eq_2, s_weight_eq_2)
+
+        self.remove(equal_weights_eq_2, t_weight_eq_2, s_weight_eq_2)
+
+
+
+
+
+        t_weight_text_2 = (  # TODO: Maybe implement
+            Text("Teacher weight\nupdate step", font="Myriad Pro", font_size=24)
+            .next_to(t_weight_eq_2, RIGHT, buff=0.1)
+            .set_color(CHILL_BROWN)
+        )
+
+        s_weight_text_2 = (  # TODO: Maybe implement
+            Text("Student weight\nupdate step", font="Myriad Pro", font_size=24)
+            .next_to(s_weight_eq_2, RIGHT, buff=0.1)
+            .set_color(CHILL_BROWN)
+        )
+
+        equal_weights_text_2 = (  # TODO: Maybe implement
+            Text(
+                "Teacher and student\nstart with same weights",
+                font="Myriad Pro",
+                font_size=24,
+            )
+            .next_to(equal_weights_eq_2, RIGHT, buff=0.1)
+            .set_color(CHILL_BROWN)
+        )
+
+
+        self.wait(20)
+        self.embed()
+
+
+
+
+
+        #In [4]: copy_frame_positioning_precise(self.frame)                                                                                                                          
+        #reorient(0.0, 0.0, 0.0, (3.7340972, -1.8347028, 0.0), 8.74)  
+        # reorient(0.0, 0.0, 0.0, (3.73, -1.84, 0.0), 8.74)  
+
 
 
         # self.add(gradient_descent_eq_3)
@@ -1236,20 +1326,6 @@ class P27_40(Scene):
 
         # gradient_descent_eq_3 = Tex(r" = - \alpha (g_T - g_S)  \bigg]")
         # gradient_descent_eq_3.scale(0.9)
-
-
-
-
-        self.wait(20)
-        self.embed()
-
-
-        #In [4]: copy_frame_positioning_precise(self.frame)                                                                                                                          
-        #reorient(0.0, 0.0, 0.0, (3.7340972, -1.8347028, 0.0), 8.74)  
-        # reorient(0.0, 0.0, 0.0, (3.73, -1.84, 0.0), 8.74)  
-
-
-
 
 
     #

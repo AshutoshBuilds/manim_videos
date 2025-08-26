@@ -14,6 +14,22 @@ COOL_GREEN = "#00a14b"
 asset_dir_1='/Users/stephen/Stephencwelch Dropbox/welch_labs/subliminal_learning/graphics/to_manim'
 full_path_to_working_dir='/Users/stephen/manim/videos/_2025/subliminal_learning'
 
+def copy_frame_positioning_precise(frame):
+    center = frame.get_center()
+    height = frame.get_height()
+    angles = frame.get_euler_angles()
+
+    call = f"reorient("
+    theta, phi, gamma = (angles / DEG)
+    call += f"{theta}, {phi}, {gamma}"
+    if any(center != 0):
+        call += f", {tuple(center)}"
+    if height != FRAME_HEIGHT:
+        call += ", {:.2f}".format(height)
+    call += ")"
+    print(call)
+    pyperclip.copy(call)
+
 
 class P27_40(Scene):
     def construct(self):
@@ -579,7 +595,8 @@ class P27_40(Scene):
         s_primary_output = t_network_copy[40]
 
         self.play(
-            self.camera.frame.animate.set_width(16).move_to([3.9, -1.4, 0]),
+            # self.camera.frame.animate.set_width(16).move_to([3.9, -1.4, 0]),
+            self.frame.animate.reorient(0.0, 0.0, 0.0, (3.73, -1.84, 0.0), 8.74), #SW little different framing
             run_time=3,  # TODO: Find best camera position
         )
 
@@ -616,8 +633,19 @@ class P27_40(Scene):
             .move_to(auxiliary_output[0].get_center())
         )
 
+        def create_spaced_text(text_string, font, font_size, spacing=0.3, **kwargs):
+            letters = []
+            for i, letter in enumerate(text_string):
+                letter_obj = Text(letter, font=font, font_size=font_size, **kwargs)
+                if i > 0:
+                    letter_obj.next_to(letters[-1], RIGHT, buff=spacing)
+                letters.append(letter_obj)
+            return VGroup(*letters)
+
+
         teacher_text = (
-            Text("TEACHER", font="Myriad Pro", font_size=48, weight=BOLD)
+            # Text("TEACHER", font="Myriad Pro", font_size=32, weight=BOLD)
+            create_spaced_text("TEACHER", font="Myriad Pro", font_size=32, spacing=0.1, weight=BOLD)
             .next_to(
                 VGroup(n1_1, primary_output, auxiliary_output, t_model_parameters),
                 UP,
@@ -676,11 +704,18 @@ class P27_40(Scene):
             .next_to(VGroup(t_network_copy[1], t_network_copy[39]), DOWN, buff=0.4)
         )
 
+        # s_text = (
+        #     Text("STUDENT", font="Myriad Pro", font_size=32, weight=BOLD, t2s={"letter_spacing": 10})
+        #     .next_to(VGroup(t_network_copy[0], t_network_copy[40]), UP, buff=0.5)
+        #     .set_color(CHILL_BROWN)
+        # )
+
+
         s_text = (
-            Text("STUDENT", font="Myriad Pro", font_size=48, weight=BOLD)
+            create_spaced_text("STUDENT", font="Myriad Pro", font_size=32, spacing=0.1, weight=BOLD)
             .next_to(VGroup(t_network_copy[0], t_network_copy[40]), UP, buff=0.5)
             .set_color(CHILL_BROWN)
-        )
+                )
 
         self.play(
             LaggedStart(
@@ -932,7 +967,8 @@ class P27_40(Scene):
 
 
         # P35
-
+        funky_arrow_1 = SVGMobject(asset_dir_1+"/p33_40_to_manim-03.svg")[1:].scale(5)
+        funky_arrow_1.move_to([7.4, -4, 0])
         gradient_vector = (
             Tex(
                 (
@@ -943,9 +979,12 @@ class P27_40(Scene):
                 )
             )
             .set_color(YELLOW)
+            .scale(0.8)
             .next_to(gradient_descent_eq, DOWN, buff=0.7)
         )
+        gradient_vector.shift(([0.64, 0.0, 0])) #lil nudge
 
+        self.remove(p33_to_manim_2[:21], p33_to_manim_2[42:58], p33_to_manim_2[71], p33_to_manim_2[72])
         self.play(
             LaggedStart(
                 AnimationGroup(
@@ -985,22 +1024,40 @@ class P27_40(Scene):
                 run_time=5,
             )
         )
+        
+        self.add(funky_arrow_1)
+        self.wait()
 
+        #P36 Let's Go
+        self.play(FadeOut(gradient_vector), FadeOut(funky_arrow_1), FadeOut(p33_to_manim_2[58:70]),
+                  FadeOut(p33_to_manim_2[21:42]), FadeOut(p33_to_manim_2[70]), FadeOut(p33_to_manim_2[73]))
+        self.wait()
 
+        #Ok a few things at once, move grad equation to the left, add a second part, brining over needed compoenents
+        #Leg me kinda work backwards here...
 
+        gradient_descent_eq.move_to([6.303-1, -3.425,  0]) #Animate this
 
-        # weird_arrow = SVGMobject("p33_40_to_manim-03.svg")[1:].scale(4)
-        # TODO: fix the SVG so that the top part of the arrow is there
+        gradient_descent_eq_2 = Tex(r" = - \alpha \nabla_\theta \bigg[ \frac{1}{2}(g_T - g_S)^2  \bigg]")
+        gradient_descent_eq_2.move_to([6.303+1, -3.425,  0])
+        gradient_descent_eq_2[7:9].set_color(COOL_GREEN)
+        gradient_descent_eq_2[10:12].set_color(COOL_GREEN)
+
+        self.add(gradient_descent_eq_2)
+ 
         self.wait(20)
         self.embed()
 
 
+        #In [4]: copy_frame_positioning_precise(self.frame)                                                                                                                          
+        #reorient(0.0, 0.0, 0.0, (3.7340972, -1.8347028, 0.0), 8.74)  
+        # reorient(0.0, 0.0, 0.0, (3.73, -1.84, 0.0), 8.74)  
 
 
 
 
 
-
+    #
 
 
 

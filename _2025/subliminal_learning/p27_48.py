@@ -1292,6 +1292,9 @@ class P27_40(Scene):
         legend_line.set_stroke(color=CHILL_BROWN, width=1)
         # self.add(legend_line)
 
+        legend_footer_group=Group(t_weight_eq_2, s_weight_eq_2, equal_weights_eq_2, g_0_eq, 
+                                  equal_weights_text_2, t_weight_text_2, s_weight_text_2, g_0_eq_text, legend_line)
+        # self.add(legend_footer_group)
 
         # self.remove(equal_weights_eq_2, t_weight_eq_2, s_weight_eq_2)
 
@@ -1512,18 +1515,177 @@ class P27_40(Scene):
         self.play(ReplacementTransform(delta_theta_s_eq_3[:4].copy(), delta_theta_s_eq_4[:4]), 
                   ReplacementTransform(delta_theta_s_eq_3[7:15].copy(), delta_theta_s_eq_4[4:12]), 
                   ReplacementTransform(delta_theta_s_eq_3[18:].copy(), delta_theta_s_eq_4[12:]))
-        self.wait(0)
+        self.wait()
 
+        # To support the final line, i think we bring down the Delta Theta S
+        # Then I think it does away showrlty. 
+        delta_theta_s_term_copy=gradient_descent_eq[:3].copy()
+        self.play(delta_theta_s_term_copy.animate.next_to(delta_theta_s_eq_4, LEFT, buff=0.15))
+        self.wait()
+        
+
+        # Ok P41 is a hold, with maybe some minor overlays in Premiere/AE
+        # This takes use to...
+
+        ## --- P42 --- ##
+        ## ok ok ok ok so now to bring in the paramter space stuff, I need to remove a bunch of stuff and then bring it back
+        ## There's a pretty prominent Delta Theta T and delta Theta S I can bring together. 
+        ## Then fade a bunch of stuff the fuck out, and bring most of it back in p43. 
+
+
+        central_dot_product_eq=Tex(r"\Delta \theta_T \cdot \Delta \theta_S", font_size=42)
+        central_dot_product_eq.move_to([3.8, -1.8, 0])
+        central_dot_product_eq[:3].set_color(CYAN)
+
+
+        self.wait()
+        self.play(ReplacementTransform(gradient_descent_eq[:3].copy(), central_dot_product_eq[4:]), 
+                  ReplacementTransform(taylor_expansion_3[-3:].copy(), central_dot_product_eq[:3]), 
+                  FadeOut(taylor_expansion_3), 
+                  FadeOut(legend_footer_group), 
+                  FadeOut(delta_theta_s_term_copy), #Dont' bring this one back
+                  FadeOut(delta_theta_s_eq_4), 
+                  FadeOut(delta_theta_s_eq_3), 
+                  FadeOut(cross_out_line_3),
+                  FadeOut(squared_error_b),
+                  FadeOut(cross_out_line_2),
+                  FadeOut(gradient_descent_eq_3b), 
+                  FadeOut(gradient_descent_eq))
+        self.add(central_dot_product_eq[3]) #Add the dot lol. 
+        self.wait()
+
+
+        #Ok now we need some paramter space!
+        p30_48_to_manim_1 = SVGMobject(asset_dir_1+"/p40_48_to_manim-01.svg")[1:].scale(4.2)
+        p30_48_to_manim_2 = SVGMobject(asset_dir_1+"/p40_48_to_manim-02.svg")[1:].scale(4.2)
+
+        p30_48_to_manim_1.move_to([4, -4, 0])
+        p30_48_to_manim_2.move_to([4.3, -3.75, 0])
+
+
+        paramter_space_text = MarkupText("Parameter space", alignment="left", font="Myriad Pro", font_size=18).set_color(CHILL_BROWN)
+        paramter_space_text.move_to([4, -5.8, 0])
+
+
+        theta_0_dot=Dot(radius=0.07).set_color(CHILL_BROWN)
+        theta_0_dot.move_to([3.9, -4, 0])
+
+
+        teacher_arrow_angle=60 #Degrees
+        teacher_arrow_len=1.5
+        teacher_arrow_start=theta_0_dot.get_center()
+        teacher_arrow_end=theta_0_dot.get_center()+np.array([teacher_arrow_len*np.cos(np.pi*teacher_arrow_angle/180), 
+                                                            teacher_arrow_len*np.sin(np.pi*teacher_arrow_angle/180),0])
+        teacher_arrow_1 = Arrow(teacher_arrow_start, teacher_arrow_end, thickness=2.5, buff=0)
+        teacher_arrow_1.set_color(CYAN)
+
+        student_arrow_angle=10 #Degrees
+        student_arrow_len=1.2
+        student_arrow_start=theta_0_dot.get_center()
+        student_arrow_end=theta_0_dot.get_center()+np.array([student_arrow_len*np.cos(np.pi*student_arrow_angle/180), 
+                                                            student_arrow_len*np.sin(np.pi*student_arrow_angle/180),0])
+        student_arrow_1 = Arrow(student_arrow_start, student_arrow_end, thickness=2.5, buff=0)
+        student_arrow_1.set_color(WHITE)
+
+        #Lerbels move down after we add those suckers
+        teacher_label_1=Tex(r"\Delta \theta_T", font_size=38)
+        teacher_label_1.set_color(CYAN)
+        teacher_label_1.move_to(teacher_arrow_1).shift([-0.5, 0.1, 0]) #This might get tricky as we rotate!
+
+        student_label_1=Tex(r"\Delta \theta_S", font_size=38)
+        student_label_1.set_color(WHITE)
+        student_label_1.move_to(student_arrow_1).shift([0.1, -0.3, 0]) #This might get tricky as we rotate!    
+
+        theta_0_label_1=Tex(r"\theta^0", font_size=38)
+        theta_0_label_1.set_color(CHILL_BROWN)
+        theta_0_label_1.move_to(theta_0_dot).shift([-0.3, 0, 0]) #This might get tricky as we rotate!       
+
+
+        geq_eq_1=Tex(r"\geq 0", font_size=42)
+        geq_eq_1.set_color(YELLOW)
+        geq_eq_1.next_to(central_dot_product_eq, RIGHT, buff=0.2)
+
+        eq_0_eq_1=Tex(r"= 0", font_size=42)
+        eq_0_eq_1.set_color(YELLOW)
+        eq_0_eq_1.next_to(central_dot_product_eq, RIGHT, buff=0.2)
+
+        leq_eq_1=Tex(r"\leq 0", font_size=42)
+        leq_eq_1.set_color(YELLOW)
+        leq_eq_1.next_to(central_dot_product_eq, RIGHT, buff=0.2)
+
+
+        self.wait()
+        self.play(ShowCreation(p30_48_to_manim_1), Write(paramter_space_text))
+        self.play(ShowCreation(theta_0_dot), Write(theta_0_label_1))
+        self.wait()
+
+        self.play(ReplacementTransform(central_dot_product_eq[:3].copy(), teacher_label_1),
+                  ReplacementTransform(central_dot_product_eq[4:].copy(), student_label_1), 
+                  GrowArrow(teacher_arrow_1), 
+                  GrowArrow(student_arrow_1))
+        self.wait()
+
+        self.add(p30_48_to_manim_2)
+        self.wait()
+        self.play(Write(geq_eq_1))
+        self.wait()
+
+        
+
+
+
+
+        # self.add(geq_eq_1)
+        # self.add(p30_48_to_manim_1)
+        # self.add(paramter_space_text)
+        # self.add(teacher_arrow_1)
+        # self.add(student_arrow_1)
+        # self.add(theta_0_dot)
+        # self.add(teacher_label_1)
+        # self.add(student_label_1)
+        # self.add(p30_48_to_manim_2)
+        # self.add(theta_0_label_1)
+
+
+        # self.remove(teacher_arrow_1)
+
+
+        self.wait(20)
+        self.embed()
+
+
+
+
+
+
+        # self.add(central_dot_product_eq)
+        # self.remove(central_dot_product_eq)
+
+
+
+        # self.play(FadeOut(legend_footer_group), 
+        #           FadeOut(delta_theta_s_term_copy), #Dont' bring this one back
+        #           FadeOut(delta_theta_s_eq_4), 
+        #           FadeOut(delta_theta_s_eq_3), 
+        #           FadeOut(delta_theta_s_eq_2), 
+        #           FadeOut(gradient_descent_eq))
+
+
+
+
+
+
+
+
+
+        # self.add(delta_theta_s_term_copy)
+        # self.remove(gradient_descent_eq)
+        # self.add(gradient_descent_eq)
 
 
 
         # self.add(delta_theta_s_eq_4)
         # self.remove(delta_theta_s_eq_4)
-
-
-
-        self.wait(20)
-        self.embed()
 
 
         # self.add(delta_theta_s_eq_3)

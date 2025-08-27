@@ -1464,8 +1464,61 @@ class P27_40(Scene):
         # self.remove(p33_40_to_manim_11)
 
         ### -- P40 -- ###
-        
+        #Make where we want to go here and then replacement transforms
+        delta_theta_s_eq_3=Tex(r'= -\alpha (g_0 + \nabla_{\theta} g_0 \cdot \Delta \theta_T - g_0) \nabla_{\theta} g_0', font_size=37)
+        delta_theta_s_eq_3.move_to([7.65, -3.4, 0])
+        delta_theta_s_eq_3[4:6].set_color(COOL_GREEN)
+        delta_theta_s_eq_3[7:9].set_color(YELLOW)
+        delta_theta_s_eq_3[9:11].set_color(COOL_GREEN)
+        delta_theta_s_eq_3[12:15].set_color(CYAN)
+        delta_theta_s_eq_3[16:18].set_color(COOL_GREEN)
+        delta_theta_s_eq_3[19:21].set_color(YELLOW)
+        delta_theta_s_eq_3[21:].set_color(COOL_GREEN)
 
+
+        self.wait()
+        self.play(ReplacementTransform(gradient_descent_eq_3b[:4].copy(), delta_theta_s_eq_3[:4]), 
+                  ReplacementTransform(gradient_descent_eq_3b[-8:].copy(), delta_theta_s_eq_3[-8:]))
+        self.remove(p33_40_to_manim_11)
+        self.play(ReplacementTransform(taylor_expansion_3[3:].copy(), delta_theta_s_eq_3[4:-8]))
+        self.wait()
+
+        #Ok let's cancel some shit.
+        line_len=0.35
+        line_center=delta_theta_s_eq_3[4:6].get_center()
+        cross_out_line_2=Line(line_center+np.array([-line_len/2, line_len/2, 0]), line_center+np.array([line_len/2, -line_len/2, 0]))
+        cross_out_line_2.set_stroke(color=YELLOW, width=4)
+
+        line_len=0.35
+        line_center=delta_theta_s_eq_3[16:18].get_center()
+        cross_out_line_3=Line(line_center+np.array([-line_len/2, line_len/2, 0]), line_center+np.array([line_len/2, -line_len/2, 0]))
+        cross_out_line_3.set_stroke(color=YELLOW, width=4)
+
+
+        self.play(ShowCreation(cross_out_line_2), ShowCreation(cross_out_line_3))
+        self.wait()
+
+
+        delta_theta_s_eq_4=Tex(r'= -\alpha (\nabla_{\theta} g_0 \cdot \Delta \theta_T) \nabla_{\theta} g_0', font_size=37)
+        delta_theta_s_eq_4.move_to([6.85, -4.22, 0])        
+        delta_theta_s_eq_4[4:6].set_color(YELLOW)
+        delta_theta_s_eq_4[6:8].set_color(COOL_GREEN)
+        delta_theta_s_eq_4[9:12].set_color(CYAN)
+        delta_theta_s_eq_4[13:15].set_color(YELLOW)
+        delta_theta_s_eq_4[15:].set_color(COOL_GREEN)        
+
+
+        self.wait()
+        self.play(ReplacementTransform(delta_theta_s_eq_3[:4].copy(), delta_theta_s_eq_4[:4]), 
+                  ReplacementTransform(delta_theta_s_eq_3[7:15].copy(), delta_theta_s_eq_4[4:12]), 
+                  ReplacementTransform(delta_theta_s_eq_3[18:].copy(), delta_theta_s_eq_4[12:]))
+        self.wait(0)
+
+
+
+
+        # self.add(delta_theta_s_eq_4)
+        # self.remove(delta_theta_s_eq_4)
 
 
 
@@ -1473,6 +1526,12 @@ class P27_40(Scene):
         self.embed()
 
 
+        # self.add(delta_theta_s_eq_3)
+        # self.remove(delta_theta_s_eq_3)
+        # self.remove(gradient_descent_eq)
+        # self.add(gradient_descent_eq)
+        # self.remove(gradient_descent_eq_3b)
+        # self.add(gradient_descent_eq_3b)
 
 
         # self.add(taylor_expansion_2)

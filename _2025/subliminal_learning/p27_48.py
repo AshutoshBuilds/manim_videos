@@ -551,6 +551,7 @@ class P27_40(Scene):
             primary_output.copy(),
         )
 
+
         # Assign individual variables for each element in the VGroup
         s_n1_1 = t_network_copy[0]
         s_n1_2 = t_network_copy[1]
@@ -1294,12 +1295,16 @@ class P27_40(Scene):
         # self.remove(equal_weights_eq_2, t_weight_eq_2, s_weight_eq_2)
 
 
-        # squared_error_b.scale(0.8)
+        # squared_error_b.scale(0.8) 
         # squared_error_b.move_to([6.9, -1.8, 0])
 
         student_line_2_eq_p38=VGroup(gradient_descent_eq, gradient_descent_eq_3b)
         # student_line_2_eq_p38.scale(0.8)
         # student_line_2_eq_p38.move_to([7.2, -2.6, 0])
+
+        #Bring back in these labels
+        auxiliary_output[1].set_color(COOL_GREEN)
+        t_network_copy[-2][1].set_color(COOL_GREEN)
 
         #Now do all moves together
         self.wait()
@@ -1312,11 +1317,37 @@ class P27_40(Scene):
             ReplacementTransform(small_s_weight_eq, s_weight_eq_2),
             )
         self.play(ShowCreation(legend_line), FadeIn(equal_weights_eq_2[-3:]), FadeIn(g_0_eq), 
-                 FadeIn(equal_weights_text_2), FadeIn(t_weight_text_2), FadeIn(s_weight_text_2), FadeIn(g_0_eq_text))
+                 FadeIn(equal_weights_text_2), FadeIn(t_weight_text_2), FadeIn(s_weight_text_2), FadeIn(g_0_eq_text), 
+                 FadeIn(auxiliary_output[1]), FadeIn(t_network_copy[-2][1]))
         self.wait()
 
         # self.add(equal_weights_eq_2, t_weight_eq_2, s_weight_eq_2, g_0_eq)
         # self.add(equal_weights_text_2, t_weight_text_2, s_weight_text_2, g_0_eq_text)
+
+        gt_question_eq=Tex("g_T= \: ?", font_size=56).set_color(COOL_GREEN)
+        gt_question_eq.move_to([0, -2.3, 0])
+
+        self.play(ReplacementTransform(t_g_t.copy(), gt_question_eq[:2]))
+        self.play(Write(gt_question_eq[2:]))
+        self.wait()
+
+
+        p33_40_to_manim_05 = SVGMobject(asset_dir_1+"/p33_40_to_manim-05.svg")[1:].scale(4)
+        
+        p33_40_to_manim_05.move_to([0.2, -2.25, 0])
+        g_0_eq_2=Tex("g_0", font_size=56).set_color(COOL_GREEN)
+        g_0_eq_2.move_to([-0.8, -2.4, 0])
+
+
+        self.remove(gt_question_eq[2:])
+        self.play(gt_question_eq[:2].animate.shift([1.7, 0, 0]))
+        self.play(ShowCreation(p33_40_to_manim_05[:-3]), Write(g_0_eq_2))
+        self.wait()
+        self.play(ReplacementTransform(t_weight_eq_2[-3:].copy(), p33_40_to_manim_05[-3:]))
+        self.wait()
+
+
+
 
 
 

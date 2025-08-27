@@ -1226,7 +1226,12 @@ class P27_40(Scene):
         # and that's ok -> it will persist for the rest of the video. Tempted to try both equations and text - 
         # let's see how it goes...
 
+        #Eitheer at the same time or before I adjust the legend, I need to reduce the size of the student equations and 
+        # the green arrow -> let's try same time
+        # Basically all making space for math on th teacher.
 
+
+        # self.remove(green_arrow)
         # self.remove(small_equal_weights)
         # self.add(small_equal_weights)
 
@@ -1236,48 +1241,85 @@ class P27_40(Scene):
 
 
         #Ok, make new equations or push them around? Maybe new ones?
-        t_weight_eq_2 = (
-            Tex(r"\theta_T = \theta_T^0 + \Delta \theta_T", font_size=28)
-            .move_to([-6, -5, 0])
+        t_weight_eq_2 = Tex(r"\theta_T = \theta_T^0 + \Delta \theta_T", font_size=30).set_color(CHILL_BROWN)
+        s_weight_eq_2 = Tex(r"\theta_S = \theta_S^0 + \Delta \theta_S", font_size=30).set_color(CHILL_BROWN)
+        equal_weights_eq_2 = Tex(r"\theta_T^0 = \theta_S^0 = \theta^0", font_size=30).set_color(CHILL_BROWN)
+        g_0_eq = Tex(r"g_0=g(X, \theta^0)", font_size=30).set_color(CHILL_BROWN)
+
+        spacing=3.7; start=-2.5
+        equal_weights_eq_2.move_to([start, -5.85, 0])
+        t_weight_eq_2.move_to([start+spacing*1, -5.85, 0])
+        s_weight_eq_2.move_to([start+spacing*2, -5.85, 0])
+        g_0_eq.move_to([start+spacing*3, -5.85, 0])
+
+        equal_weights_text_2 = (  # TODO: Maybe implement
+            MarkupText(
+                "Teacher and student\nstart with same weights",
+                alignment="left",
+                font="Myriad Pro",
+                font_size=13,
+            )
+            .next_to(equal_weights_eq_2, RIGHT, buff=0.15)
             .set_color(CHILL_BROWN)
         )
-        s_weight_eq_2 = (
-            Tex(r"\theta_S = \theta_S^0 + \Delta \theta_S", font_size=28)
-            .move_to([-6, -5, 0])
-            .set_color(CHILL_BROWN)
-        )
-        equal_weights_eq_2 = Tex(r"\theta_T^0 = \theta_S^0", font_size=28).move_to([3.5, -3, 0]).set_color(CHILL_BROWN)
-
-
-        self.add(equal_weights_eq_2, t_weight_eq_2, s_weight_eq_2)
-
-        self.remove(equal_weights_eq_2, t_weight_eq_2, s_weight_eq_2)
-
-
-
-
 
         t_weight_text_2 = (  # TODO: Maybe implement
-            Text("Teacher weight\nupdate step", font="Myriad Pro", font_size=24)
-            .next_to(t_weight_eq_2, RIGHT, buff=0.1)
+            MarkupText("Teacher weight\nupdate step", alignment="left", font="Myriad Pro", font_size=13)
+            .next_to(t_weight_eq_2, RIGHT, buff=0.15)
             .set_color(CHILL_BROWN)
         )
 
         s_weight_text_2 = (  # TODO: Maybe implement
-            Text("Student weight\nupdate step", font="Myriad Pro", font_size=24)
-            .next_to(s_weight_eq_2, RIGHT, buff=0.1)
+            MarkupText("Student weight\nupdate step", alignment="left", font="Myriad Pro", font_size=13)
+            .next_to(s_weight_eq_2, RIGHT, buff=0.15)
             .set_color(CHILL_BROWN)
         )
 
-        equal_weights_text_2 = (  # TODO: Maybe implement
-            Text(
-                "Teacher and student\nstart with same weights",
-                font="Myriad Pro",
-                font_size=24,
-            )
-            .next_to(equal_weights_eq_2, RIGHT, buff=0.1)
+        g_0_eq_text = (  # TODO: Maybe implement
+            MarkupText("Initial auxiliary output \nbefore training", alignment="left", font="Myriad Pro", font_size=13)
+            .next_to(g_0_eq, RIGHT, buff=0.15)
             .set_color(CHILL_BROWN)
         )
+
+
+        # self.add(equal_weights_eq_2, t_weight_eq_2, s_weight_eq_2, g_0_eq)
+        # self.add(equal_weights_text_2, t_weight_text_2, s_weight_text_2, g_0_eq_text)
+
+        #Ok pretty good, now I need a horizontal line and the big animation!
+        legend_line=Line([-3.7, -5.5, 0], [11.2, -5.5, 0], buff=0)
+        legend_line.set_stroke(color=CHILL_BROWN, width=1)
+        # self.add(legend_line)
+
+
+        # self.remove(equal_weights_eq_2, t_weight_eq_2, s_weight_eq_2)
+
+
+        # squared_error_b.scale(0.8)
+        # squared_error_b.move_to([6.9, -1.8, 0])
+
+        student_line_2_eq_p38=VGroup(gradient_descent_eq, gradient_descent_eq_3b)
+        # student_line_2_eq_p38.scale(0.8)
+        # student_line_2_eq_p38.move_to([7.2, -2.6, 0])
+
+        #Now do all moves together
+        self.wait()
+        # self.remove(small_t_weight_eq, small_s_weight_eq, small_equal_weights)
+        self.play(FadeOut(green_arrow), 
+            squared_error_b.animate.scale(0.8).move_to([6.9, -1.8, 0]), 
+            student_line_2_eq_p38.animate.scale(0.8).move_to([7.2, -2.6, 0]),
+            ReplacementTransform(small_equal_weights, equal_weights_eq_2[:-3]), 
+            ReplacementTransform(small_t_weight_eq, t_weight_eq_2),
+            ReplacementTransform(small_s_weight_eq, s_weight_eq_2),
+            )
+        self.play(ShowCreation(legend_line), FadeIn(equal_weights_eq_2[-3:]), FadeIn(g_0_eq), 
+                 FadeIn(equal_weights_text_2), FadeIn(t_weight_text_2), FadeIn(s_weight_text_2), FadeIn(g_0_eq_text))
+        self.wait()
+
+        # self.add(equal_weights_eq_2, t_weight_eq_2, s_weight_eq_2, g_0_eq)
+        # self.add(equal_weights_text_2, t_weight_text_2, s_weight_text_2, g_0_eq_text)
+
+
+
 
 
         self.wait(20)

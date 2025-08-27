@@ -1397,25 +1397,86 @@ class P27_40(Scene):
 
         # Ok final bit of this big ole paragraph. 
         # Alright lets see here, let me start with the end again for this last move of p38. 
-
+        p33_40_to_manim_10 = SVGMobject(asset_dir_1+"/p33_40_to_manim-10.svg")[1:].scale(4)
         taylor_expansion_2=Tex(r"g_T \approx g_0 + \frac{\partial g_0}{\partial \theta_1} \Delta \theta_1 + \frac{\partial g_0}{\partial \theta_2} \Delta \theta_2 + \frac{\partial g_0}{\partial \theta_3} \Delta \theta_3 +... ", font_size=36)
         taylor_expansion_2.move_to([0.1, -2.3, 0])
         taylor_expansion_2[:2].set_color(COOL_GREEN)
         taylor_expansion_2[3:5].set_color(COOL_GREEN)
         taylor_expansion_2[6:13].set_color(YELLOW)
         taylor_expansion_2[13:16].set_color(CYAN)
-        taylor_expansion_2[17:23].set_color(YELLOW)
-        taylor_expansion_2[23:26].set_color(CYAN)
+        taylor_expansion_2[17:24].set_color(YELLOW)
+        taylor_expansion_2[24:27].set_color(CYAN)
+        taylor_expansion_2[28:35].set_color(YELLOW)
+        taylor_expansion_2[35:38].set_color(CYAN)
+
+        # taylor_expansion_plot_1.scale(0.7)
+        # taylor_expansion_plot_1.move_to([-1.2, -3.5, 0])
+        p33_40_to_manim_10.move_to([1.55, -3.55, 0])
 
 
+        #Animate then tweak positions and colorz. 
+        self.wait()
+        self.remove(taylor_expansion_1[-3:]) #Drop elipses
+        self.play(ReplacementTransform(taylor_expansion_1[:-3], taylor_expansion_2[:len(taylor_expansion_1)-3]), 
+                  taylor_expansion_plot_1.animate.scale(0.7).move_to([-1.2, -3.5, 0]))
+        self.play(FadeIn(taylor_expansion_2[len(taylor_expansion_1)-3:]), FadeIn(p33_40_to_manim_10))
+
+        self.wait()
 
 
-        self.add(taylor_expansion_2)
+        ## --- P39 let's go --- ## 
+        taylor_expansion_3=Tex(r"g_T \approx g_0 + \nabla_{\theta} g_0 \cdot \Delta \theta_T", font_size=42)
+        taylor_expansion_3.move_to([0.1, -2.3, 0])
+        taylor_expansion_3[:2].set_color(COOL_GREEN)
+        taylor_expansion_3[3:5].set_color(COOL_GREEN)
+        taylor_expansion_3[6:8].set_color(YELLOW)
+        taylor_expansion_3[8:10].set_color(COOL_GREEN)
+        taylor_expansion_3[11:].set_color(CYAN)
+
+
+        # self.add(taylor_expansion_3)
+
+
+        self.wait()
+        self.play(FadeOut(p33_40_to_manim_10), FadeOut(taylor_expansion_plot_1))
+        self.remove(taylor_expansion_2[16], taylor_expansion_2[27], taylor_expansion_2[38:])
+        self.play(ReplacementTransform(taylor_expansion_2[:6], taylor_expansion_3[:6]), 
+                  ReplacementTransform(taylor_expansion_2[6:13], taylor_expansion_3[6:8]), 
+                  ReplacementTransform(taylor_expansion_2[17:24], taylor_expansion_3[6:8]),
+                  ReplacementTransform(taylor_expansion_2[28:35], taylor_expansion_3[6:8]),
+                  ReplacementTransform(taylor_expansion_2[13:16], taylor_expansion_3[11:]), 
+                  ReplacementTransform(taylor_expansion_2[24:27], taylor_expansion_3[11:]),
+                  ReplacementTransform(taylor_expansion_2[35:38], taylor_expansion_3[11:]),
+                  ReplacementTransform(taylor_expansion_2[3:5].copy(), taylor_expansion_3[8:10]))
+        self.add(taylor_expansion_3[10])
+        self.wait()
+
+        # self.remove(taylor_expansion_2)
+        # self.add(taylor_expansion_3)
+        # self.add(taylor_expansion_3[8:10])
+        p33_40_to_manim_11 = SVGMobject(asset_dir_1+"/p33_40_to_manim-11.svg")[1:].scale(4.2)
+        p33_40_to_manim_11.move_to([1.1, -2.7, 0])
+
+        self.play(FadeIn(p33_40_to_manim_11))
+        self.wait()
+
+
+        # self.remove(p33_40_to_manim_11)
+
+        ### -- P40 -- ###
+        
+
 
 
 
         self.wait(20)
         self.embed()
+
+
+
+
+        # self.add(taylor_expansion_2)
+        # self.add(p33_40_to_manim_10)
 
 
         # self.play(Write(p33_40_to_manim_07[-1]))

@@ -1508,32 +1508,32 @@ class P27_40(Scene):
 
         ### -- P40 -- ###
         #Make where we want to go here and then replacement transforms
-        delta_theta_s_eq_3=Tex(r'= -\alpha (g_0 + \nabla_{\theta} g_0 \cdot \Delta \theta_T - g_0) \nabla_{\theta} g_0', font_size=37)
+        delta_theta_s_eq_3=Tex(r'= \alpha (g_0 + \nabla_{\theta} g_0 \cdot \Delta \theta_T - g_0) \nabla_{\theta} g_0', font_size=37)
         delta_theta_s_eq_3.move_to([7.65, -3.4, 0])
-        delta_theta_s_eq_3[4:6].set_color(COOL_GREEN)
-        delta_theta_s_eq_3[7:9].set_color(YELLOW)
-        delta_theta_s_eq_3[9:11].set_color(COOL_GREEN)
-        delta_theta_s_eq_3[12:15].set_color(CYAN)
-        delta_theta_s_eq_3[16:18].set_color(COOL_GREEN)
-        delta_theta_s_eq_3[19:21].set_color(YELLOW)
-        delta_theta_s_eq_3[21:].set_color(COOL_GREEN)
+        delta_theta_s_eq_3[3:5].set_color(COOL_GREEN)
+        delta_theta_s_eq_3[6:8].set_color(YELLOW)
+        delta_theta_s_eq_3[8:10].set_color(COOL_GREEN)
+        delta_theta_s_eq_3[11:14].set_color(CYAN)
+        delta_theta_s_eq_3[15:17].set_color(COOL_GREEN)
+        delta_theta_s_eq_3[18:20].set_color(YELLOW)
+        delta_theta_s_eq_3[20:].set_color(COOL_GREEN)
 
 
         self.wait()
         self.play(ReplacementTransform(gradient_descent_eq_3b[:4].copy(), delta_theta_s_eq_3[:4]), 
                   ReplacementTransform(gradient_descent_eq_3b[-8:].copy(), delta_theta_s_eq_3[-8:]))
         self.remove(p33_40_to_manim_11)
-        self.play(ReplacementTransform(taylor_expansion_3[3:].copy(), delta_theta_s_eq_3[4:-8]))
+        self.play(ReplacementTransform(taylor_expansion_3[3:].copy(), delta_theta_s_eq_3[3:-8]))
         self.wait()
 
         #Ok let's cancel some shit.
         line_len=0.35
-        line_center=delta_theta_s_eq_3[4:6].get_center()
+        line_center=delta_theta_s_eq_3[3:5].get_center()
         cross_out_line_2=Line(line_center+np.array([-line_len/2, line_len/2, 0]), line_center+np.array([line_len/2, -line_len/2, 0]))
         cross_out_line_2.set_stroke(color=YELLOW, width=4)
 
         line_len=0.35
-        line_center=delta_theta_s_eq_3[16:18].get_center()
+        line_center=delta_theta_s_eq_3[15:17].get_center()
         cross_out_line_3=Line(line_center+np.array([-line_len/2, line_len/2, 0]), line_center+np.array([line_len/2, -line_len/2, 0]))
         cross_out_line_3.set_stroke(color=YELLOW, width=4)
 
@@ -1542,19 +1542,19 @@ class P27_40(Scene):
         self.wait()
 
 
-        delta_theta_s_eq_4=Tex(r'= -\alpha (\nabla_{\theta} g_0 \cdot \Delta \theta_T) \nabla_{\theta} g_0', font_size=37)
+        delta_theta_s_eq_4=Tex(r'= \alpha (\nabla_{\theta} g_0 \cdot \Delta \theta_T) \nabla_{\theta} g_0', font_size=37)
         delta_theta_s_eq_4.move_to([6.85, -4.22, 0])        
-        delta_theta_s_eq_4[4:6].set_color(YELLOW)
-        delta_theta_s_eq_4[6:8].set_color(COOL_GREEN)
-        delta_theta_s_eq_4[9:12].set_color(CYAN)
-        delta_theta_s_eq_4[13:15].set_color(YELLOW)
-        delta_theta_s_eq_4[15:].set_color(COOL_GREEN)        
+        delta_theta_s_eq_4[3:5].set_color(YELLOW)
+        delta_theta_s_eq_4[5:7].set_color(COOL_GREEN)
+        delta_theta_s_eq_4[8:11].set_color(CYAN)
+        delta_theta_s_eq_4[12:14].set_color(YELLOW)
+        delta_theta_s_eq_4[14:].set_color(COOL_GREEN)        
 
 
         self.wait()
-        self.play(ReplacementTransform(delta_theta_s_eq_3[:4].copy(), delta_theta_s_eq_4[:4]), 
-                  ReplacementTransform(delta_theta_s_eq_3[7:15].copy(), delta_theta_s_eq_4[4:12]), 
-                  ReplacementTransform(delta_theta_s_eq_3[18:].copy(), delta_theta_s_eq_4[12:]))
+        self.play(ReplacementTransform(delta_theta_s_eq_3[:3].copy(), delta_theta_s_eq_4[:3]), 
+                  ReplacementTransform(delta_theta_s_eq_3[6:14].copy(), delta_theta_s_eq_4[3:11]), 
+                  ReplacementTransform(delta_theta_s_eq_3[17:].copy(), delta_theta_s_eq_4[11:]))
         self.wait()
 
         # To support the final line, i think we bring down the Delta Theta S
@@ -1696,8 +1696,8 @@ class P27_40(Scene):
 
         ## ---- P43 ----- ##
         # litte resent, bring dot product over to left side, and = ?, bring back in everything else!
-        left_dot_product_eq=Tex(r"\Delta \theta_T \cdot \Delta \theta_S = \: ?", font_size=40)
-        left_dot_product_eq.move_to([-2, -2, 0])
+        left_dot_product_eq=Tex(r"\Delta \theta_T \cdot \Delta \theta_S = \: ?", font_size=37)
+        left_dot_product_eq.move_to([-2.25, -2, 0])
         left_dot_product_eq[:3].set_color(CYAN)
 
         self.wait()
@@ -1724,10 +1724,38 @@ class P27_40(Scene):
         self.add(left_dot_product_eq)
         self.wait()
 
-        left_dot_product_eq_2=Tex(r"\Delta \theta_S \cdot \Delta \theta_T = [-\alpha (\nabla_{\theta} g_0 \cdot \Delta \theta_T) \nabla_{\theta} g_0] \cdot \Delta \theta_T", font_size=40)
+        left_dot_product_eq_2=Tex(r"\Delta \theta_S \cdot \Delta \theta_T = [\alpha (\nabla_{\theta} g_0 \cdot \Delta \theta_T) \nabla_{\theta} g_0] \cdot \Delta \theta_T", font_size=37)
+        left_dot_product_eq_2.move_to([-0.15, -2.6, 0])
+        left_dot_product_eq_2[4:7].set_color(CYAN)
+        left_dot_product_eq_2[11:13].set_color(YELLOW)
+        left_dot_product_eq_2[13:15].set_color(COOL_GREEN)
+        left_dot_product_eq_2[16:19].set_color(CYAN)
+        left_dot_product_eq_2[20:22].set_color(YELLOW)
+        left_dot_product_eq_2[22:24].set_color(COOL_GREEN)
+        left_dot_product_eq_2[-3:].set_color(CYAN)
 
 
+        self.wait()
+        #Ok I think I have a good solution to match the VO, do the left side bring down switch action at after the rist side!
 
+        self.play(ReplacementTransform(delta_theta_s_eq_4[1:].copy(), left_dot_product_eq_2[9:-5]))
+        self.add(left_dot_product_eq_2[7:8],left_dot_product_eq_2[-4])
+        self.play(ReplacementTransform(left_dot_product_eq[:3].copy(), left_dot_product_eq_2[-3:]))
+        self.wait()
+        self.play(ReplacementTransform(left_dot_product_eq[:3].copy(), left_dot_product_eq_2[4:7]), #The ole switcheroo
+                  ReplacementTransform(left_dot_product_eq[4:7].copy(), left_dot_product_eq_2[:3]))
+        self.add(left_dot_product_eq_2[3]) #Add that dot!
+        self.wait()
+        
+
+        p30_48_to_manim_3 = SVGMobject(asset_dir_1+"/p40_48_to_manim-01.svg")[1:].scale(4.2)
+
+
+        # self.add(left_dot_product_eq_2)
+        # self.remove(left_dot_product_eq_2)
+
+        # self.remove(delta_theta_s_eq_4)
+        # self.add(delta_theta_s_eq_4)
 
         self.wait(20)
         self.embed()

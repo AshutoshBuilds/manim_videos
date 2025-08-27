@@ -1725,7 +1725,7 @@ class P27_40(Scene):
         self.wait()
 
         left_dot_product_eq_2=Tex(r"\Delta \theta_S \cdot \Delta \theta_T = [\alpha (\nabla_{\theta} g_0 \cdot \Delta \theta_T) \nabla_{\theta} g_0] \cdot \Delta \theta_T", font_size=37)
-        left_dot_product_eq_2.move_to([-0.15, -2.6, 0])
+        left_dot_product_eq_2.move_to([-0.15, -2.77, 0])
         left_dot_product_eq_2[4:7].set_color(CYAN)
         left_dot_product_eq_2[11:13].set_color(YELLOW)
         left_dot_product_eq_2[13:15].set_color(COOL_GREEN)
@@ -1739,7 +1739,7 @@ class P27_40(Scene):
         #Ok I think I have a good solution to match the VO, do the left side bring down switch action at after the rist side!
 
         self.play(ReplacementTransform(delta_theta_s_eq_4[1:].copy(), left_dot_product_eq_2[9:-5]))
-        self.add(left_dot_product_eq_2[7:8],left_dot_product_eq_2[-4])
+        self.add(left_dot_product_eq_2[7:8],left_dot_product_eq_2[-4],left_dot_product_eq_2[8], left_dot_product_eq_2[-5])
         self.play(ReplacementTransform(left_dot_product_eq[:3].copy(), left_dot_product_eq_2[-3:]))
         self.wait()
         self.play(ReplacementTransform(left_dot_product_eq[:3].copy(), left_dot_product_eq_2[4:7]), #The ole switcheroo
@@ -1748,17 +1748,71 @@ class P27_40(Scene):
         self.wait()
         
 
-        p30_48_to_manim_3 = SVGMobject(asset_dir_1+"/p40_48_to_manim-01.svg")[1:].scale(4.2)
+        p30_48_to_manim_4 = SVGMobject(asset_dir_1+"/p40_48_to_manim-04.svg")[1:].scale(3.6)
+        p30_48_to_manim_4.move_to([0.15, -2.38, 0])
 
 
-        # self.add(left_dot_product_eq_2)
-        # self.remove(left_dot_product_eq_2)
+        self.play(Write(p30_48_to_manim_4))
+        self.wait()
 
-        # self.remove(delta_theta_s_eq_4)
-        # self.add(delta_theta_s_eq_4)
+        #Ok now I need my penultimate equation here...
+        left_dot_product_eq_3=Tex(r" = \alpha (\nabla_{\theta} g_0 \cdot \Delta \theta_T) (\nabla_{\theta} g_0 \cdot \Delta \theta_T)", font_size=37)
+        left_dot_product_eq_3.move_to([0.8, -3.55, 0])
+        left_dot_product_eq_3[3:5].set_color(YELLOW)
+        left_dot_product_eq_3[5:7].set_color(COOL_GREEN)
+        left_dot_product_eq_3[8:11].set_color(CYAN)
+        left_dot_product_eq_3[13:15].set_color(YELLOW)
+        left_dot_product_eq_3[15:17].set_color(COOL_GREEN)
+        left_dot_product_eq_3[-4:-1].set_color(CYAN)
+
+
+        self.wait()
+        self.play(ReplacementTransform(left_dot_product_eq_2[7].copy(), left_dot_product_eq_3[0]), 
+                  ReplacementTransform(left_dot_product_eq_2[9:20].copy(), left_dot_product_eq_3[1:12]),
+                  ReplacementTransform(left_dot_product_eq_2[20:24].copy(), left_dot_product_eq_3[13:17]), 
+                  ReplacementTransform(left_dot_product_eq_2[-3:].copy(), left_dot_product_eq_3[-4:-1]),
+                  )
+        self.add(left_dot_product_eq_3)
+        self.wait()
+
+        p30_48_to_manim_4b = SVGMobject(asset_dir_1+"/p40_48_to_manim-04.svg")[1:].scale(3.5)
+        p30_48_to_manim_4b.move_to([0.1, -3.17, 0])
+        p30_48_to_manim_4c=p30_48_to_manim_4b.copy()
+        p30_48_to_manim_4c.move_to([2.15, -3.17, 0])
+
+
+        self.play(Write(p30_48_to_manim_4b), Write(p30_48_to_manim_4c))
+
+
+        #Ok almost through p43 here...
+
+
+
+
+
 
         self.wait(20)
         self.embed()
+
+
+
+
+
+
+
+        # self.add(p30_48_to_manim_4b, p30_48_to_manim_4c)
+        # self.remove(p30_48_to_manim_4b, p30_48_to_manim_4c)
+
+        # self.remove
+        # self.add(left_dot_product_eq_3)
+        # self.remove(left_dot_product_eq_3)
+
+        # self.add(left_dot_product_eq_2)
+
+
+        # self.add(p30_48_to_manim_4)
+        # self.remove(p30_48_to_manim_4)
+
 
 
 

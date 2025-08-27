@@ -10,6 +10,7 @@ CHILL_GREEN = "#6c946f"
 CHILL_BLUE = "#3d5c6f"
 FRESH_TAN = "#dfd0b9"
 COOL_GREEN = "#00a14b"
+CYAN = "#00FFFF"
 
 asset_dir_1='/Users/stephen/Stephencwelch Dropbox/welch_labs/subliminal_learning/graphics/to_manim'
 full_path_to_working_dir='/Users/stephen/manim/videos/_2025/subliminal_learning'
@@ -1347,9 +1348,69 @@ class P27_40(Scene):
         self.wait()
 
 
+        #Ok let me kinda start with the end in midn here and get finalish equation setup first. 
+        taylor_expansion_1=Tex(r"g_T \approx g_0 + \frac{\partial g_0}{\partial \theta_1} \Delta \theta_1 + ... ", font_size=50)
+        taylor_expansion_1.move_to([0.1, -2.3, 0])
+        taylor_expansion_1[:2].set_color(COOL_GREEN)
+        taylor_expansion_1[3:5].set_color(COOL_GREEN)
+        taylor_expansion_1[6:13].set_color(YELLOW)
+        taylor_expansion_1[13:16].set_color(CYAN)
+
+        # self.add(taylor_expansion_1)
+        # self.remove(taylor_expansion_1)
+
+        self.wait()
+        self.play(FadeOut(p33_40_to_manim_05[:-3]))
+        self.play(ReplacementTransform(g_0_eq_2, taylor_expansion_1[3:5]), 
+                  ReplacementTransform(gt_question_eq[:2], taylor_expansion_1[:2]), 
+                  ReplacementTransform(p33_40_to_manim_05[-3:], taylor_expansion_1[-7:-4]))
+        self.play(FadeIn(taylor_expansion_1[2]), FadeIn(taylor_expansion_1[5]), 
+                  FadeIn(taylor_expansion_1[6:13]), FadeIn(taylor_expansion_1[-4:]))
+
+        self.wait()
+
+        # I think especially when we get to the drawin here, it will be cool to 
+        # possibly bring things down from the teacher model!
+
+        p33_40_to_manim_06 = SVGMobject(asset_dir_1+"/p33_40_to_manim-06.svg")[1:].scale(4)
+        p33_40_to_manim_07 = SVGMobject(asset_dir_1+"/p33_40_to_manim-07.svg")[1:].scale(4)
+        p33_40_to_manim_08 = SVGMobject(asset_dir_1+"/p33_40_to_manim-08.svg")[1:].scale(4)
+        p33_40_to_manim_09 = SVGMobject(asset_dir_1+"/p33_40_to_manim-09.svg")[1:].scale(4)
+        p33_40_to_manim_06.move_to([0.9, -4.2, 0])
+        p33_40_to_manim_07.move_to([1.15, -4.1, 0])
+        p33_40_to_manim_08.move_to([0.88, -4.9, 0])
+        p33_40_to_manim_09.move_to([0.65, -3.6, 0])
+        taylor_expansion_plot_1 = Group(p33_40_to_manim_06, p33_40_to_manim_07, p33_40_to_manim_08, p33_40_to_manim_09)
+
+
+        self.wait()
+        self.play(FadeIn(p33_40_to_manim_06))
+        self.play(Write(p33_40_to_manim_07[-1]), 
+            ReplacementTransform(taylor_expansion_1[6:13].copy(), p33_40_to_manim_07[:-1]))
+        self.wait()
+
+        self.play(FadeIn(p33_40_to_manim_08[-2:]), ReplacementTransform(taylor_expansion_1[13:16].copy(), p33_40_to_manim_08[:-2]))
+        self.wait()
+        self.play(Write(p33_40_to_manim_09))
+        self.wait()
+
+
+        # Ok final bit of this big ole paragraph. 
+        # Alright lets see here, let me start with the end again for this last move of p38. 
+
+        taylor_expansion_2=Tex(r"g_T \approx g_0 + \frac{\partial g_0}{\partial \theta_1} \Delta \theta_1 + \frac{\partial g_0}{\partial \theta_2} \Delta \theta_2 + \frac{\partial g_0}{\partial \theta_3} \Delta \theta_3 +... ", font_size=36)
+        taylor_expansion_2.move_to([0.1, -2.3, 0])
+        taylor_expansion_2[:2].set_color(COOL_GREEN)
+        taylor_expansion_2[3:5].set_color(COOL_GREEN)
+        taylor_expansion_2[6:13].set_color(YELLOW)
+        taylor_expansion_2[13:16].set_color(CYAN)
+        taylor_expansion_2[17:23].set_color(YELLOW)
+        taylor_expansion_2[23:26].set_color(CYAN)
 
 
 
+
+        self.add(taylor_expansion_2)
 
 
 
@@ -1357,6 +1418,10 @@ class P27_40(Scene):
         self.embed()
 
 
+        # self.play(Write(p33_40_to_manim_07[-1]))
+        # self.add(p33_40_to_manim_07[-1])
+
+        # self.remove(taylor_expansion_plot_1)
 
 
 

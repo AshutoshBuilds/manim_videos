@@ -1630,7 +1630,28 @@ class P27_40(Scene):
         self.play(Write(geq_eq_1))
         self.wait()
 
-        
+
+        #Ok now make vectors orthogonal. 
+        self.wait()
+        self.remove(p30_48_to_manim_2)
+        self.play(teacher_arrow_1.animate.rotate(DEGREES*40, [0, 0, 1], theta_0_dot.get_center()), 
+                  teacher_label_1.animate.shift([-0.45, 0, 0]))
+        self.add(theta_0_dot)
+        self.wait()
+
+        self.play(ReplacementTransform(geq_eq_1, eq_0_eq_1))
+        self.wait()
+
+        #Now they move in different directions
+        self.wait()
+        self.play(teacher_arrow_1.animate.rotate(DEGREES*40, [0, 0, 1], theta_0_dot.get_center()), 
+                  teacher_label_1.animate.shift([-0.45, -0.3, 0]), 
+                  theta_0_label_1.animate.shift([0, -0.1, 0]))
+        self.add(theta_0_dot)
+        self.wait()
+
+        self.play(ReplacementTransform(geq_eq_1, eq_0_eq_1))
+        self.wait()        
 
 
 

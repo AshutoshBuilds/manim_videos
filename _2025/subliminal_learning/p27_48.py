@@ -1095,16 +1095,37 @@ class P27_40(Scene):
         self.play(gradient_descent_eq_2_copy_b[3:-1].animate.shift([-1.05, 0, 0]))
         self.wait()
 
+
+        # Ok, somewhere in here I need to lost the outer negative, again following the chain rule
+        # And add a little line to the VO I think!
+        # Ok I think that I bring a negative in front of the gradient(annoying!) I think I'll need backets...
+
+
+
+
+
+
+
         gs_copy=gradient_descent_eq_2_copy_b[-4:-2].copy()
         nabla_copy=gradient_descent_eq_2[3:5].copy()
         self.add(nabla_copy, gs_copy)
+
+        p36_fix_eq_1=Tex(r"(-" ).scale(0.9)
+        p36_fix_eq_1.next_to(gradient_descent_eq_2_copy_b[3:-1], RIGHT, buff=0.1)
+        p36_fix_eq_2=Tex(r")" ).scale(0.9)
+        p36_fix_eq_2.next_to(gradient_descent_eq_2_copy_b[3:-1], RIGHT, buff=1.7)
+
+        # self.add(p36_fix_eq_1, p36_fix_eq_2)
+
         
         # nabla_copy.next_to(gradient_descent_eq_2_copy_b[3:-1], RIGHT, buff=0.1).shift([0, -0.04, 0])
         # gs_copy.next_to(gradient_descent_eq_2_copy_b[3:-1], RIGHT, buff=0.7).shift([0.03, -0.1, 0])
         self.wait()
-        self.play(nabla_copy.animate.next_to(gradient_descent_eq_2_copy_b[3:-1], RIGHT, buff=0.1).shift([0, -0.04, 0]),
-                 gs_copy.animate.next_to(gradient_descent_eq_2_copy_b[3:-1], RIGHT, buff=0.7).shift([0.03, -0.1, 0]),
+        self.play(nabla_copy.animate.next_to(gradient_descent_eq_2_copy_b[3:-1], RIGHT, buff=0.6).shift([0, -0.04, 0]),
+                  gs_copy.animate.next_to(gradient_descent_eq_2_copy_b[3:-1], RIGHT, buff=1.2).shift([0.03, -0.1, 0]),
+                 ReplacementTransform(gradient_descent_eq_2_copy_b[-5].copy(), p36_fix_eq_1[1])
                  )
+        self.add(p36_fix_eq_1, p36_fix_eq_2)
         self.wait()
 
 
@@ -1131,7 +1152,7 @@ class P27_40(Scene):
         # Ok, now how did pranav to the cool animation last time?
         # Also, let me go ahead and add the random arrow
         funky_arrow_2 = SVGMobject(asset_dir_1+"/p33_40_to_manim-04.svg")[1:].scale(5)
-        funky_arrow_2.move_to([9.9, -4.95, 0])       
+        funky_arrow_2.move_to([10.3, -4.95, 0])       
 
         self.wait()
         self.play(
@@ -1176,27 +1197,46 @@ class P27_40(Scene):
         self.add(funky_arrow_2)
         self.wait()
 
+        #Ok now a smidge of cleanup that I had to add for the negative from the chain rule correction. 
+        #Fade out minus signs, then adjust and fade out parenthesis I think, move over funky arrow. 
+        self.play(FadeOut(p36_fix_eq_1[1]), 
+                  FadeOut(gradient_descent_eq_2_copy_a[1]))
+
+        # self.remove(gradient_descent_eq_2_copy_a[0])
+        self.play(FadeOut(p36_fix_eq_1[0]),
+                  FadeOut(p36_fix_eq_2), 
+                  nabla_copy.animate.shift([-0.5, 0, 0]),
+                  gs_copy.animate.shift([-0.5, 0, 0]),
+                  funky_arrow_2.animate.shift([-0.5, 0, 0]), 
+                  gradient_vector_2.animate.shift([-0.5, 0, 0]))
+        self.wait()
+
+
         # P37 - phew p36 was no joke lol
         # Alright first a little clean up
         # I don't want to end up with a frankenstien equation going foward, 
         # So let me see if I can do some decent clean up here...
 
-        gradient_descent_eq_3 = Tex(r" = - \alpha  (g_T - g_S) \nabla_\theta g_S")
-        gradient_descent_eq_3.move_to([6.303+2.05, -3.425,  0])
+        gradient_descent_eq_3 = Tex(r" = \alpha  (g_T - g_S) \nabla_\theta g_S")
+        gradient_descent_eq_3.move_to([6.303+1.9, -3.425,  0])
         gradient_descent_eq_3[-4:-2].set_color(YELLOW)
         gradient_descent_eq_3[-2:].set_color(COOL_GREEN)
-        gradient_descent_eq_3[4:6].set_color(COOL_GREEN)
-        gradient_descent_eq_3[7:9].set_color(COOL_GREEN)
+        gradient_descent_eq_3[3:5].set_color(COOL_GREEN)
+        gradient_descent_eq_3[6:8].set_color(COOL_GREEN)
 
 
         self.wait()
         self.play(FadeOut(funky_arrow_2), FadeOut(gradient_vector_2), FadeOut(gradient_descent_eq_2))
-        self.play(ReplacementTransform(gradient_descent_eq_2_copy_a, gradient_descent_eq_3[:3]), 
-                  ReplacementTransform(gradient_descent_eq_2_copy_b[3:-1], gradient_descent_eq_3[3:10]), 
-                  ReplacementTransform(nabla_copy, gradient_descent_eq_3[10:12]),
-                  ReplacementTransform(gs_copy, gradient_descent_eq_3[12:]))
+        self.play(ReplacementTransform(gradient_descent_eq_2_copy_a[0], gradient_descent_eq_3[0]), 
+                  ReplacementTransform(gradient_descent_eq_2_copy_a[2], gradient_descent_eq_3[1]),
+                  ReplacementTransform(gradient_descent_eq_2_copy_b[3:-1], gradient_descent_eq_3[2:9]), 
+                  ReplacementTransform(nabla_copy, gradient_descent_eq_3[9:11]),
+                  ReplacementTransform(gs_copy, gradient_descent_eq_3[11:]))
         self.wait()
 
+
+        # self.remove(gradient_descent_eq_2_copy_a[0])
+        # self.add(gradient_descent_eq_2_copy_a)
 
         # Hmm maybe I can kinda do a nice lag ratio for the S to zero transformation?
         # Hmm replaceing entire equation seems a bit problematic?
@@ -1208,12 +1248,12 @@ class P27_40(Scene):
         squared_error_b[7:9].set_color(COOL_GREEN)
         squared_error_b[10:12].set_color(COOL_GREEN)
 
-        gradient_descent_eq_3b = Tex(r" = - \alpha  (g_T - g_0) \nabla_\theta g_0")
+        gradient_descent_eq_3b = Tex(r" = \alpha  (g_T - g_0) \nabla_\theta g_0")
         gradient_descent_eq_3b.move_to(gradient_descent_eq_3, aligned_edge=LEFT)
         gradient_descent_eq_3b[-4:-2].set_color(YELLOW)
         gradient_descent_eq_3b[-2:].set_color(COOL_GREEN)
-        gradient_descent_eq_3b[4:6].set_color(COOL_GREEN)
-        gradient_descent_eq_3b[7:9].set_color(COOL_GREEN)
+        gradient_descent_eq_3b[3:5].set_color(COOL_GREEN)
+        gradient_descent_eq_3b[6:8].set_color(COOL_GREEN)
 
         self.wait()
         self.play(ReplacementTransform(squared_error, squared_error_b), 
@@ -1650,9 +1690,47 @@ class P27_40(Scene):
         self.add(theta_0_dot)
         self.wait()
 
-        self.play(ReplacementTransform(geq_eq_1, eq_0_eq_1))
+        self.play(ReplacementTransform(eq_0_eq_1, leq_eq_1))
         self.wait()        
 
+
+        ## ---- P43 ----- ##
+        # litte resent, bring dot product over to left side, and = ?, bring back in everything else!
+        left_dot_product_eq=Tex(r"\Delta \theta_T \cdot \Delta \theta_S = \: ?", font_size=40)
+        left_dot_product_eq.move_to([-2, -2, 0])
+        left_dot_product_eq[:3].set_color(CYAN)
+
+        self.wait()
+        self.play(ReplacementTransform(central_dot_product_eq[4:7], left_dot_product_eq[4:7]), 
+                  ReplacementTransform(central_dot_product_eq[:3], left_dot_product_eq[:3]), 
+                  FadeOut(central_dot_product_eq[3]), 
+                  FadeOut(leq_eq_1),
+                  FadeOut(p30_48_to_manim_1), 
+                  FadeOut(paramter_space_text),
+                  FadeOut(theta_0_label_1),
+                  FadeOut(teacher_label_1),
+                  FadeOut(student_label_1),
+                  FadeOut(teacher_arrow_1),
+                  FadeOut(student_arrow_1),
+                  FadeOut(theta_0_dot),
+                  FadeIn(legend_footer_group), 
+                  FadeIn(delta_theta_s_eq_4), 
+                  FadeIn(delta_theta_s_eq_3), 
+                  FadeIn(cross_out_line_3),
+                  FadeIn(squared_error_b),
+                  FadeIn(cross_out_line_2),
+                  FadeIn(gradient_descent_eq_3b), 
+                  FadeIn(gradient_descent_eq))
+        self.add(left_dot_product_eq)
+        self.wait()
+
+        left_dot_product_eq_2=Tex(r"\Delta \theta_S \cdot \Delta \theta_T = [-\alpha (\nabla_{\theta} g_0 \cdot \Delta \theta_T) \nabla_{\theta} g_0] \cdot \Delta \theta_T", font_size=40)
+
+
+
+
+        self.wait(20)
+        self.embed()
 
 
 
@@ -1669,13 +1747,6 @@ class P27_40(Scene):
 
 
         # self.remove(teacher_arrow_1)
-
-
-        self.wait(20)
-        self.embed()
-
-
-
 
 
 

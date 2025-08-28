@@ -1785,10 +1785,57 @@ class P27_40(Scene):
 
 
         #Ok almost through p43 here...
+        left_dot_product_eq_4=Tex(r" = \alpha (\nabla_{\theta} g_0 \cdot \Delta \theta_T)^2 \geq 0", font_size=37)
+        left_dot_product_eq_4.move_to([0.22, -4.3, 0])
+        left_dot_product_eq_4[3:5].set_color(YELLOW)
+        left_dot_product_eq_4[5:7].set_color(COOL_GREEN)
+        left_dot_product_eq_4[8:11].set_color(CYAN)
+
+        self.wait()
+        self.play(ReplacementTransform(left_dot_product_eq_3[:12].copy(), left_dot_product_eq_4[:12]))
+        self.play(ReplacementTransform(left_dot_product_eq_3[12:].copy(), left_dot_product_eq_4[2:12])) 
+        self.add(left_dot_product_eq_4[-3])
+        self.wait()
+                  
+
+        self.play(Write(left_dot_product_eq_4[-2:]))
+        self.wait()
+
+        dot_prod_eq_copy=left_dot_product_eq_2[:7].copy()
+        self.add(dot_prod_eq_copy)
+
+        self.play(dot_prod_eq_copy.animate.next_to(left_dot_product_eq_4, LEFT, buff=0.15), 
+                 FadeOut(p30_48_to_manim_4), FadeOut(p30_48_to_manim_4b), FadeOut(p30_48_to_manim_4c)
+                 )
+        self.wait()
+
+        result_box_1=RoundedRectangle(width=5.7, height=0.7, corner_radius=0.1)
+        result_box_1.set_stroke(color=YELLOW, width=2.5)
+        result_box_1.move_to([-0.66, -4.32, 0])
+
+        self.play(Write(result_box_1))
+        self.wait()
 
 
 
 
+        # self.add(result_box_1)
+
+
+        # self.remove(result_box_1)
+
+
+        #Now draw a nice rounded rectangle
+
+
+
+        # self.add(dot_prod_eq_copy)
+
+
+        # self.remove(dot_prod_eq_copy)
+
+
+        # self.remove(left_dot_product_eq_4)
 
 
         self.wait(20)

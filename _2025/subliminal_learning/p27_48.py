@@ -57,7 +57,7 @@ def create_right_angle_symbol(vertex, side1_end, side2_end, size=0.15):
     
     return VGroup(line1, line2)
 
-class P27_40(Scene):
+class P27_47(Scene):
     def construct(self):
         # p27_to_manim_1 = SVGMobject("p27_to_manim-01.svg")[1:].scale(4)
         p27_to_manim_2 = SVGMobject(asset_dir_1+"/p27_to_manim-02.svg")[1:].scale(4)
@@ -1957,7 +1957,94 @@ class P27_40(Scene):
         ## I think from here I rotate/move everythign over to like 120 degrees
         ## And then back to 100 degrees (perpendicular), then back to starting point 
 
+        ## --- P46 ---- ##
+        # Animate rotation from 60 degrees to 140 degrees
+        new_teacher_angle = 150  # degrees
 
+        # Create updater functions for all dependent elements
+        def update_teacher_arrow(mob, alpha):
+            current_angle = interpolate(teacher_arrow_angle, new_teacher_angle, alpha)
+            new_end = theta_0_dot_2.get_center() + np.array([
+                teacher_arrow_len * np.cos(np.pi * current_angle / 180), 
+                teacher_arrow_len * np.sin(np.pi * current_angle / 180), 
+                0
+            ])
+            mob.put_start_and_end_on(teacher_arrow_start, new_end)
+
+        def update_projections_and_student(alpha):
+            # Calculate current teacher vector
+            current_angle = interpolate(teacher_arrow_angle, new_teacher_angle, alpha)
+            current_teacher_end = theta_0_dot_2.get_center() + np.array([
+                teacher_arrow_len * np.cos(np.pi * current_angle / 180), 
+                teacher_arrow_len * np.sin(np.pi * current_angle / 180), 
+                0
+            ])
+            current_teacher_vec = current_teacher_end - teacher_arrow_start
+            
+            # Recalculate projection
+            current_projection_length = np.dot(current_teacher_vec, gradient_direction)
+            current_projected_vector = current_projection_length * gradient_direction
+            current_projection_point = teacher_arrow_start + current_projected_vector
+            
+            # Update student arrow
+            student_arrow_2.put_start_and_end_on(student_arrow_start, current_projection_point)
+            
+            # Recreate perpendicular connector (since DashedLine doesn't update well)
+            new_perp_connector = DashedLine(current_teacher_end, current_projection_point, dash_length=0.05, positive_space_ratio=0.5)
+            new_perp_connector.set_stroke(color=CYAN, width=3)
+            perp_connector.become(new_perp_connector)
+            
+            # Update right angle symbol - switch direction based on angle
+            if current_angle > 90:  # When teacher angle is obtuse, flip the gradient direction
+                gradient_direction_point = current_projection_point + 0.5 * (gradient_vec / np.linalg.norm(gradient_vec))
+            else:
+                gradient_direction_point = current_projection_point - 0.5 * (gradient_vec / np.linalg.norm(gradient_vec))
+                
+            new_right_angle = create_right_angle_symbol(
+                vertex=current_projection_point,
+                side1_end=current_teacher_end,
+                side2_end=gradient_direction_point,
+                size=0.2
+            )
+            new_right_angle.set_stroke(color=CYAN, width=3)
+            right_angle_symbol.become(new_right_angle)
+            
+            # Update label positions
+            delta_theta_s_copy_2.move_to(student_arrow_2).shift([0.15, -0.25, 0])
+            delta_theta_t_copy_2.move_to(current_teacher_end).shift([-0.4, 0.1, 0])
+
+        # Run the animation
+        self.play(
+            UpdateFromAlphaFunc(teacher_arrow_2, update_teacher_arrow),
+            UpdateFromAlphaFunc(VGroup(), lambda mob, alpha: update_projections_and_student(alpha)),
+            run_time=2
+        )
+        self.wait()
+
+        # Update the teacher_arrow_angle variable for future use
+        teacher_arrow_angle = new_teacher_angle
+
+        new_teacher_angle = 100  # degrees
+        self.play(
+            UpdateFromAlphaFunc(teacher_arrow_2, update_teacher_arrow),
+            UpdateFromAlphaFunc(VGroup(), lambda mob, alpha: update_projections_and_student(alpha)),
+            run_time=2
+        )
+        self.wait()
+        teacher_arrow_angle = new_teacher_angle
+
+        new_teacher_angle = 60  # degrees
+        self.play(
+            UpdateFromAlphaFunc(teacher_arrow_2, update_teacher_arrow),
+            UpdateFromAlphaFunc(VGroup(), lambda mob, alpha: update_projections_and_student(alpha)),
+            run_time=2
+        )
+        self.wait()
+        teacher_arrow_angle = new_teacher_angle
+
+
+        #Damn claude did a nice job!
+        self.wait()
 
 
 

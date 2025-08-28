@@ -1864,9 +1864,9 @@ class P27_40(Scene):
         theta_0_dot_2=Dot(radius=0.07).set_color(CHILL_BROWN)
         theta_0_dot_2.move_to([7, -3.65, 0])
 
-        theta_0_label_2=Tex(r"\theta^0", font_size=38)
+        theta_0_label_2=Tex(r"\theta^0", font_size=30)
         theta_0_label_2.set_color(CHILL_BROWN)
-        theta_0_label_2.move_to(theta_0_dot_2).shift([0.05, -0.3, 0]) #This might get tricky as we rotate! 
+        theta_0_label_2.move_to(theta_0_dot_2).shift([0.05, -0.25, 0]) #This might get tricky as we rotate! 
 
         # Ok now I need a nice gradient arrow that extends through my points, and 
         # I want to bring down the label from the equation
@@ -1887,19 +1887,15 @@ class P27_40(Scene):
         teacher_arrow_2 = Arrow(teacher_arrow_start, teacher_arrow_end, thickness=2.5, buff=0)
         teacher_arrow_2.set_color(CYAN)
 
-        # Normalize the gradient vector to get just the direction
-        gradient_direction = gradient_vec / np.linalg.norm(gradient_vec)
 
-        # Project teacher vector onto the gradient direction
+        gradient_vec = gradient_vector_end - gradient_vector_start
+        teacher_vec = teacher_arrow_end - teacher_arrow_start
+        gradient_direction = gradient_vec / np.linalg.norm(gradient_vec)
         projection_length = np.dot(teacher_vec, gradient_direction)
         projected_vector = projection_length * gradient_direction
-
-        # The projection point starts from the teacher arrow start
         projection_point = teacher_arrow_start + projected_vector
 
 
-        # student_arrow_angle=10 #Degrees
-        # student_arrow_len=1.2
         student_arrow_start=theta_0_dot_2.get_center()
         student_arrow_end=projection_point
         student_arrow_2 = Arrow(student_arrow_start, student_arrow_end, thickness=2.5, buff=0)
@@ -1917,22 +1913,79 @@ class P27_40(Scene):
             side2_end=gradient_direction_point,   # gradient line direction
             size=0.2
         )
-
         right_angle_symbol.set_stroke(color=CYAN, width=3)
 
-        self.add(right_angle_symbol)
+
+        delta_theta_s_copy_2=p45_eq_1[:3].copy()
+        delta_theta_s_copy_2.scale(1.2)
+        delta_theta_s_copy_2.set_color(WHITE)
+        delta_theta_s_copy_2.move_to(student_arrow_2).shift([0.15, -0.25, 0])
 
 
-        self.add(perp_connector)
+        delta_theta_t_copy_2=p45_eq_1[11:14].copy()
+        delta_theta_t_copy_2.scale(1.2)
+        delta_theta_t_copy_2.set_color(CYAN)
+        delta_theta_t_copy_2.move_to(teacher_arrow_2).shift([-0.4, 0.1, 0])
 
-        self.add(teacher_arrow_2, student_arrow_2)
-        self.add(p30_48_to_manim_1b, theta_0_dot_2, theta_0_label_2, gradient_arrow_1)
-        self.add(theta_0_dot_2)
+        grad_copy_2=p45_eq_1[-4:].copy()
+        grad_copy_2.scale(1.2)
+        grad_copy_2[:2].set_color(YELLOW)
+        grad_copy_2[2:].set_color(COOL_GREEN)
+        grad_copy_2.move_to(gradient_arrow_1.get_end()).shift([0.4, 0., 0])
 
 
-        self.remove(theta_0_dot_2, theta_0_label_2, gradient_arrow_1)
-        self.remove(right_angle_symbol)
+        #Ok yeah I think that getting the gradient vector and axis down first is less overwhelming
+        self.wait()
+        self.play(Write(p30_48_to_manim_1b), 
+                  Write(gradient_arrow_1), 
+                  ReplacementTransform(p45_eq_1[-4:].copy(), grad_copy_2))
 
+        self.play(Write(teacher_arrow_2),
+                  Write(student_arrow_2),
+                  Write(perp_connector),
+                  Write(right_angle_symbol),
+                  Write(theta_0_dot_2),
+                  Write(theta_0_label_2),
+                  ReplacementTransform(p45_eq_1[:3].copy(), delta_theta_s_copy_2),
+                  ReplacementTransform(p45_eq_1[11:14].copy(), delta_theta_t_copy_2)
+                  )
+        self.wait()
+
+
+        ## --- P46 ---- ##
+        ## Ok ok ok ok ok ok ok ok 
+        ## I think from here I rotate/move everythign over to like 120 degrees
+        ## And then back to 100 degrees (perpendicular), then back to starting point 
+
+
+
+
+
+
+
+        self.wait(20)
+        self.embed()
+
+
+
+        # self.add(gradient_arrow_1
+
+
+        # self.add(delta_theta_s_copy_2, delta_theta_t_copy_2, grad_copy_2)        
+
+        # self.add(right_angle_symbol)
+
+
+        # self.add(perp_connector)
+
+        # self.add(teacher_arrow_2, student_arrow_2)
+        # self.add(p30_48_to_manim_1b, theta_0_dot_2, theta_0_label_2, gradient_arrow_1)
+        # self.add(theta_0_dot_2)
+
+
+        # self.remove(theta_0_dot_2, theta_0_label_2, gradient_arrow_1)
+        # self.remove(right_angle_symbol)
+        # self.remove(delta_theta_t_copy_2)
 
 
 
@@ -1949,8 +2002,6 @@ class P27_40(Scene):
 
 
 
-        self.wait(20)
-        self.embed()
 
 
         # self.add(p30_48_to_manim_1b)

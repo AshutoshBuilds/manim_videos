@@ -1225,6 +1225,7 @@ class P27_40(Scene):
         gradient_descent_eq_3[6:8].set_color(COOL_GREEN)
 
 
+
         self.wait()
         self.play(FadeOut(funky_arrow_2), FadeOut(gradient_vector_2), FadeOut(gradient_descent_eq_2))
         self.play(ReplacementTransform(gradient_descent_eq_2_copy_a[0], gradient_descent_eq_3[0]), 
@@ -1816,11 +1817,89 @@ class P27_40(Scene):
         self.play(Write(result_box_1))
         self.wait()
 
+        ## --- P45 ---- ##
+        ## Ok now i need to collapse down right side, bringing in a couple important elements. 
 
+        p30_48_to_manim_1b = SVGMobject(asset_dir_1+"/p40_48_to_manim-01.svg")[1:].scale(4.2)
+
+
+        p45_eq_1=Tex(r"\Delta \theta_S = \alpha (\nabla_{\theta} g_0 \cdot \Delta \theta_T) \nabla_{\theta} g_0", font_size=28)
+        p45_eq_1.set_color(CHILL_BROWN)
+        p45_eq_1.move_to([7, -1.6, 0])
+        p30_48_to_manim_1b.move_to([7, -3.5, 0])
+
+        self.remove(squared_error_b, gradient_descent_eq[4:], gradient_descent_eq_3b, delta_theta_s_eq_4[0])
+        self.remove(delta_theta_s_eq_3, cross_out_line_2, cross_out_line_3)
+        self.play(ReplacementTransform(gradient_descent_eq[:4], p45_eq_1[:4]), 
+                  ReplacementTransform(delta_theta_s_eq_4[1:], p45_eq_1[4:]))
+        self.wait()
+
+        #Ah yeah should construct various parts bringing down bariables from equation above...
+
+        theta_0_dot_2=Dot(radius=0.07).set_color(CHILL_BROWN)
+        theta_0_dot_2.move_to([7, -3.65, 0])
+
+        theta_0_label_2=Tex(r"\theta^0", font_size=38)
+        theta_0_label_2.set_color(CHILL_BROWN)
+        theta_0_label_2.move_to(theta_0_dot_2).shift([0.05, -0.3, 0]) #This might get tricky as we rotate! 
+
+        # Ok now I need a nice gradient arrow that extends through my points, and 
+        # I want to bring down the label from the equation
+        gradient_vector_angle=10 #degrees
+        gradient_vector_len=4 # go in both directions around theta 0
+        gradient_vector_end=theta_0_dot_2.get_center()+np.array([gradient_vector_len/2*np.cos(np.pi*gradient_vector_angle/180), 
+                                                             gradient_vector_len/2*np.sin(np.pi*gradient_vector_angle/180),0])
+        gradient_vector_start=theta_0_dot_2.get_center()-np.array([gradient_vector_len/2*np.cos(np.pi*gradient_vector_angle/180), 
+                                                             gradient_vector_len/2*np.sin(np.pi*gradient_vector_angle/180),0])
+        gradient_arrow_1 = Arrow(gradient_vector_start, gradient_vector_end, thickness=2.5, buff=0)
+        gradient_arrow_1.set_color(YELLOW)
+
+
+        self.add(theta_0_dot_2, theta_0_label_2, gradient_arrow_1)
+        self.remove(theta_0_dot_2, theta_0_label_2, gradient_arrow_1)
+
+
+        # teacher_arrow_angle=60 #Degrees
+        # teacher_arrow_len=1.5
+        # teacher_arrow_start=theta_0_dot.get_center()
+        # teacher_arrow_end=theta_0_dot.get_center()+np.array([teacher_arrow_len*np.cos(np.pi*teacher_arrow_angle/180), 
+        #                                                     teacher_arrow_len*np.sin(np.pi*teacher_arrow_angle/180),0])
+        # teacher_arrow_1 = Arrow(teacher_arrow_start, teacher_arrow_end, thickness=2.5, buff=0)
+        # teacher_arrow_1.set_color(CYAN)
+
+        # student_arrow_angle=10 #Degrees
+        # student_arrow_len=1.2
+        # student_arrow_start=theta_0_dot.get_center()
+        # student_arrow_end=theta_0_dot.get_center()+np.array([student_arrow_len*np.cos(np.pi*student_arrow_angle/180), 
+        #                                                     student_arrow_len*np.sin(np.pi*student_arrow_angle/180),0])
+        # student_arrow_1 = Arrow(student_arrow_start, student_arrow_end, thickness=2.5, buff=0)
+        # student_arrow_1.set_color(WHITE)
+
+        # #Lerbels move down after we add those suckers
+        # teacher_label_1=Tex(r"\Delta \theta_T", font_size=38)
+        # teacher_label_1.set_color(CYAN)
+        # teacher_label_1.move_to(teacher_arrow_1).shift([-0.5, 0.1, 0]) #This might get tricky as we rotate!
+
+        # student_label_1=Tex(r"\Delta \theta_S", font_size=38)
+        # student_label_1.set_color(WHITE)
+        # student_label_1.move_to(student_arrow_1).shift([0.1, -0.3, 0]) #This might get tricky as we rotate!    
+      
+
+
+
+
+        self.wait(20)
+        self.embed()
+
+
+        # self.add(p30_48_to_manim_1b)
+
+        # self.add(p45_eq_1)
+
+        # self.remove(p45_eq_1)
 
 
         # self.add(result_box_1)
-
 
         # self.remove(result_box_1)
 
@@ -1838,8 +1917,6 @@ class P27_40(Scene):
         # self.remove(left_dot_product_eq_4)
 
 
-        self.wait(20)
-        self.embed()
 
 
 

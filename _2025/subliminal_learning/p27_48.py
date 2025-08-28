@@ -32,6 +32,31 @@ def copy_frame_positioning_precise(frame):
     pyperclip.copy(call)
 
 
+def create_right_angle_symbol(vertex, side1_end, side2_end, size=0.15):
+    """
+    Create a right angle symbol at vertex between two sides
+    vertex: the corner point where the right angle is
+    side1_end: end point of first side
+    side2_end: end point of second side
+    size: size of the right angle symbol
+    """
+    # Get unit vectors for both sides
+    vec1 = side1_end - vertex
+    vec2 = side2_end - vertex
+    unit_vec1 = vec1 / np.linalg.norm(vec1)
+    unit_vec2 = vec2 / np.linalg.norm(vec2)
+    
+    # Create the right angle square
+    corner1 = vertex + size * unit_vec1
+    corner2 = vertex + size * unit_vec1 + size * unit_vec2
+    corner3 = vertex + size * unit_vec2
+    
+    # Create lines for the right angle symbol
+    line1 = Line(corner1, corner2, stroke_width=2, color=CYAN)
+    line2 = Line(corner2, corner3, stroke_width=2, color=CYAN)
+    
+    return VGroup(line1, line2)
+
 class P27_40(Scene):
     def construct(self):
         # p27_to_manim_1 = SVGMobject("p27_to_manim-01.svg")[1:].scale(4)
@@ -1854,26 +1879,62 @@ class P27_40(Scene):
         gradient_arrow_1 = Arrow(gradient_vector_start, gradient_vector_end, thickness=2.5, buff=0)
         gradient_arrow_1.set_color(YELLOW)
 
+        teacher_arrow_angle=60 #Degrees
+        teacher_arrow_len=1.5
+        teacher_arrow_start=theta_0_dot_2.get_center()
+        teacher_arrow_end=theta_0_dot_2.get_center()+np.array([teacher_arrow_len*np.cos(np.pi*teacher_arrow_angle/180), 
+                                                            teacher_arrow_len*np.sin(np.pi*teacher_arrow_angle/180),0])
+        teacher_arrow_2 = Arrow(teacher_arrow_start, teacher_arrow_end, thickness=2.5, buff=0)
+        teacher_arrow_2.set_color(CYAN)
 
-        self.add(theta_0_dot_2, theta_0_label_2, gradient_arrow_1)
-        self.remove(theta_0_dot_2, theta_0_label_2, gradient_arrow_1)
+        # Normalize the gradient vector to get just the direction
+        gradient_direction = gradient_vec / np.linalg.norm(gradient_vec)
 
+        # Project teacher vector onto the gradient direction
+        projection_length = np.dot(teacher_vec, gradient_direction)
+        projected_vector = projection_length * gradient_direction
 
-        # teacher_arrow_angle=60 #Degrees
-        # teacher_arrow_len=1.5
-        # teacher_arrow_start=theta_0_dot.get_center()
-        # teacher_arrow_end=theta_0_dot.get_center()+np.array([teacher_arrow_len*np.cos(np.pi*teacher_arrow_angle/180), 
-        #                                                     teacher_arrow_len*np.sin(np.pi*teacher_arrow_angle/180),0])
-        # teacher_arrow_1 = Arrow(teacher_arrow_start, teacher_arrow_end, thickness=2.5, buff=0)
-        # teacher_arrow_1.set_color(CYAN)
+        # The projection point starts from the teacher arrow start
+        projection_point = teacher_arrow_start + projected_vector
+
 
         # student_arrow_angle=10 #Degrees
         # student_arrow_len=1.2
-        # student_arrow_start=theta_0_dot.get_center()
-        # student_arrow_end=theta_0_dot.get_center()+np.array([student_arrow_len*np.cos(np.pi*student_arrow_angle/180), 
-        #                                                     student_arrow_len*np.sin(np.pi*student_arrow_angle/180),0])
-        # student_arrow_1 = Arrow(student_arrow_start, student_arrow_end, thickness=2.5, buff=0)
-        # student_arrow_1.set_color(WHITE)
+        student_arrow_start=theta_0_dot_2.get_center()
+        student_arrow_end=projection_point
+        student_arrow_2 = Arrow(student_arrow_start, student_arrow_end, thickness=2.5, buff=0)
+        student_arrow_2.set_color(WHITE)     
+
+
+        perp_connector=DashedLine(teacher_arrow_2.get_end(), projection_point, dash_length=0.05, positive_space_ratio=0.5)
+        perp_connector.set_stroke(color=CYAN, width=3)
+
+
+        gradient_direction_point = projection_point - 0.5 * (gradient_vec / np.linalg.norm(gradient_vec))
+        right_angle_symbol = create_right_angle_symbol(
+            vertex=projection_point,
+            side1_end=teacher_arrow_2.get_end(),  # perpendicular line
+            side2_end=gradient_direction_point,   # gradient line direction
+            size=0.2
+        )
+
+        right_angle_symbol.set_stroke(color=CYAN, width=3)
+
+        self.add(right_angle_symbol)
+
+
+        self.add(perp_connector)
+
+        self.add(teacher_arrow_2, student_arrow_2)
+        self.add(p30_48_to_manim_1b, theta_0_dot_2, theta_0_label_2, gradient_arrow_1)
+        self.add(theta_0_dot_2)
+
+
+        self.remove(theta_0_dot_2, theta_0_label_2, gradient_arrow_1)
+        self.remove(right_angle_symbol)
+
+
+
 
         # #Lerbels move down after we add those suckers
         # teacher_label_1=Tex(r"\Delta \theta_T", font_size=38)

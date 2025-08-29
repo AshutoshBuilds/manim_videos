@@ -57,7 +57,7 @@ def create_right_angle_symbol(vertex, side1_end, side2_end, size=0.15):
     
     return VGroup(line1, line2)
 
-class P27_47(Scene):
+class P27_47b(Scene):
     def construct(self):
         # p27_to_manim_1 = SVGMobject("p27_to_manim-01.svg")[1:].scale(4)
         p27_to_manim_2 = SVGMobject(asset_dir_1+"/p27_to_manim-02.svg")[1:].scale(4)
@@ -1516,7 +1516,8 @@ class P27_47(Scene):
                   ReplacementTransform(taylor_expansion_2[13:16], taylor_expansion_3[11:]), 
                   ReplacementTransform(taylor_expansion_2[24:27], taylor_expansion_3[11:]),
                   ReplacementTransform(taylor_expansion_2[35:38], taylor_expansion_3[11:]),
-                  ReplacementTransform(taylor_expansion_2[3:5].copy(), taylor_expansion_3[8:10]))
+                  ReplacementTransform(taylor_expansion_2[3:5].copy(), taylor_expansion_3[8:10]), 
+                  run_time=2.5)
         self.add(taylor_expansion_3[10])
         self.wait()
 
@@ -1547,9 +1548,9 @@ class P27_47(Scene):
 
         self.wait()
         self.play(ReplacementTransform(gradient_descent_eq_3b[:4].copy(), delta_theta_s_eq_3[:4]), 
-                  ReplacementTransform(gradient_descent_eq_3b[-8:].copy(), delta_theta_s_eq_3[-8:]))
+                  ReplacementTransform(gradient_descent_eq_3b[-8:].copy(), delta_theta_s_eq_3[-8:]), run_time=2)
         self.remove(p33_40_to_manim_11)
-        self.play(ReplacementTransform(taylor_expansion_3[3:].copy(), delta_theta_s_eq_3[3:-8]))
+        self.play(ReplacementTransform(taylor_expansion_3[3:].copy(), delta_theta_s_eq_3[3:-8]), run_time=2)
         self.wait()
 
         #Ok let's cancel some shit.
@@ -1580,13 +1581,13 @@ class P27_47(Scene):
         self.wait()
         self.play(ReplacementTransform(delta_theta_s_eq_3[:3].copy(), delta_theta_s_eq_4[:3]), 
                   ReplacementTransform(delta_theta_s_eq_3[6:14].copy(), delta_theta_s_eq_4[3:11]), 
-                  ReplacementTransform(delta_theta_s_eq_3[17:].copy(), delta_theta_s_eq_4[11:]))
+                  ReplacementTransform(delta_theta_s_eq_3[17:].copy(), delta_theta_s_eq_4[11:]), run_time=2.5)
         self.wait()
 
         # To support the final line, i think we bring down the Delta Theta S
         # Then I think it does away showrlty. 
         delta_theta_s_term_copy=gradient_descent_eq[:3].copy()
-        self.play(delta_theta_s_term_copy.animate.next_to(delta_theta_s_eq_4, LEFT, buff=0.15))
+        self.play(delta_theta_s_term_copy.animate.next_to(delta_theta_s_eq_4, LEFT, buff=0.15), run_time=2)
         self.wait()
         
 
@@ -1616,7 +1617,7 @@ class P27_47(Scene):
                   FadeOut(squared_error_b),
                   FadeOut(cross_out_line_2),
                   FadeOut(gradient_descent_eq_3b), 
-                  FadeOut(gradient_descent_eq))
+                  FadeOut(gradient_descent_eq), run_time=2.5)
         self.add(central_dot_product_eq[3]) #Add the dot lol. 
         self.wait()
 
@@ -1688,7 +1689,7 @@ class P27_47(Scene):
         self.play(ReplacementTransform(central_dot_product_eq[:3].copy(), teacher_label_1),
                   ReplacementTransform(central_dot_product_eq[4:].copy(), student_label_1), 
                   GrowArrow(teacher_arrow_1), 
-                  GrowArrow(student_arrow_1))
+                  GrowArrow(student_arrow_1), , run_time=2.5)
         self.wait()
 
         self.add(p30_48_to_manim_2)
@@ -1701,7 +1702,7 @@ class P27_47(Scene):
         self.wait()
         self.remove(p30_48_to_manim_2)
         self.play(teacher_arrow_1.animate.rotate(DEGREES*40, [0, 0, 1], theta_0_dot.get_center()), 
-                  teacher_label_1.animate.shift([-0.45, 0, 0]))
+                  teacher_label_1.animate.shift([-0.45, 0, 0]), run_time=2.5)
         self.add(theta_0_dot)
         self.wait()
 
@@ -1712,7 +1713,7 @@ class P27_47(Scene):
         self.wait()
         self.play(teacher_arrow_1.animate.rotate(DEGREES*40, [0, 0, 1], theta_0_dot.get_center()), 
                   teacher_label_1.animate.shift([-0.45, -0.3, 0]), 
-                  theta_0_label_1.animate.shift([0, -0.1, 0]))
+                  theta_0_label_1.animate.shift([0, -0.1, 0]), run_time=2.5)
         self.add(theta_0_dot)
         self.wait()
 
@@ -1746,7 +1747,7 @@ class P27_47(Scene):
                   FadeIn(squared_error_b),
                   FadeIn(cross_out_line_2),
                   FadeIn(gradient_descent_eq_3b), 
-                  FadeIn(gradient_descent_eq))
+                  FadeIn(gradient_descent_eq), run_time=2.5)
         self.add(left_dot_product_eq)
         self.wait()
 
@@ -1764,12 +1765,12 @@ class P27_47(Scene):
         self.wait()
         #Ok I think I have a good solution to match the VO, do the left side bring down switch action at after the rist side!
 
-        self.play(ReplacementTransform(delta_theta_s_eq_4[1:].copy(), left_dot_product_eq_2[9:-5]))
+        self.play(ReplacementTransform(delta_theta_s_eq_4[1:].copy(), left_dot_product_eq_2[9:-5]), run_time=2.5)
         self.add(left_dot_product_eq_2[7:8],left_dot_product_eq_2[-4],left_dot_product_eq_2[8], left_dot_product_eq_2[-5])
-        self.play(ReplacementTransform(left_dot_product_eq[:3].copy(), left_dot_product_eq_2[-3:]))
+        self.play(ReplacementTransform(left_dot_product_eq[:3].copy(), left_dot_product_eq_2[-3:]), run_time=2.5)
         self.wait()
         self.play(ReplacementTransform(left_dot_product_eq[:3].copy(), left_dot_product_eq_2[4:7]), #The ole switcheroo
-                  ReplacementTransform(left_dot_product_eq[4:7].copy(), left_dot_product_eq_2[:3]))
+                  ReplacementTransform(left_dot_product_eq[4:7].copy(), left_dot_product_eq_2[:3]), run_time=2.5)
         self.add(left_dot_product_eq_2[3]) #Add that dot!
         self.wait()
         
@@ -1797,7 +1798,7 @@ class P27_47(Scene):
                   ReplacementTransform(left_dot_product_eq_2[9:20].copy(), left_dot_product_eq_3[1:12]),
                   ReplacementTransform(left_dot_product_eq_2[20:24].copy(), left_dot_product_eq_3[13:17]), 
                   ReplacementTransform(left_dot_product_eq_2[-3:].copy(), left_dot_product_eq_3[-4:-1]),
-                  )
+                  run_time=2.5)
         self.add(left_dot_product_eq_3)
         self.wait()
 
@@ -1818,8 +1819,8 @@ class P27_47(Scene):
         left_dot_product_eq_4[8:11].set_color(CYAN)
 
         self.wait()
-        self.play(ReplacementTransform(left_dot_product_eq_3[:12].copy(), left_dot_product_eq_4[:12]))
-        self.play(ReplacementTransform(left_dot_product_eq_3[12:].copy(), left_dot_product_eq_4[2:12])) 
+        self.play(ReplacementTransform(left_dot_product_eq_3[:12].copy(), left_dot_product_eq_4[:12]), run_time=2.0)
+        self.play(ReplacementTransform(left_dot_product_eq_3[12:].copy(), left_dot_product_eq_4[2:12]), run_time=2.0) 
         self.add(left_dot_product_eq_4[-3])
         self.wait()
                   
@@ -1831,7 +1832,7 @@ class P27_47(Scene):
         self.add(dot_prod_eq_copy)
 
         self.play(dot_prod_eq_copy.animate.next_to(left_dot_product_eq_4, LEFT, buff=0.15), 
-                 FadeOut(p30_48_to_manim_4), FadeOut(p30_48_to_manim_4b), FadeOut(p30_48_to_manim_4c)
+                 FadeOut(p30_48_to_manim_4), FadeOut(p30_48_to_manim_4b), FadeOut(p30_48_to_manim_4c), run_time=2.0
                  )
         self.wait()
 
@@ -1856,7 +1857,7 @@ class P27_47(Scene):
         self.remove(squared_error_b, gradient_descent_eq[4:], gradient_descent_eq_3b, delta_theta_s_eq_4[0])
         self.remove(delta_theta_s_eq_3, cross_out_line_2, cross_out_line_3)
         self.play(ReplacementTransform(gradient_descent_eq[:4], p45_eq_1[:4]), 
-                  ReplacementTransform(delta_theta_s_eq_4[1:], p45_eq_1[4:]))
+                  ReplacementTransform(delta_theta_s_eq_4[1:], p45_eq_1[4:]), run_time=2.5)
         self.wait()
 
         #Ah yeah should construct various parts bringing down bariables from equation above...
@@ -1938,7 +1939,7 @@ class P27_47(Scene):
         self.wait()
         self.play(Write(p30_48_to_manim_1b), 
                   Write(gradient_arrow_1), 
-                  ReplacementTransform(p45_eq_1[-4:].copy(), grad_copy_2))
+                  ReplacementTransform(p45_eq_1[-4:].copy(), grad_copy_2), run_time=2.5)
 
         self.play(Write(teacher_arrow_2),
                   Write(student_arrow_2),
@@ -1947,7 +1948,7 @@ class P27_47(Scene):
                   Write(theta_0_dot_2),
                   Write(theta_0_label_2),
                   ReplacementTransform(p45_eq_1[:3].copy(), delta_theta_s_copy_2),
-                  ReplacementTransform(p45_eq_1[11:14].copy(), delta_theta_t_copy_2)
+                  ReplacementTransform(p45_eq_1[11:14].copy(), delta_theta_t_copy_2), run_time=2.5
                   )
         self.wait()
 
@@ -2249,7 +2250,7 @@ class P27_47(Scene):
 
 
 
-class P27_30(Scene):
+class P27_30b(Scene):
     def construct(self):
         # p27_to_manim_1 = SVGMobject("p27_to_manim-01.svg")[1:].scale(4)
         p27_to_manim_2 = SVGMobject(asset_dir_1+"/p27_to_manim-02.svg")[1:].scale(4)
@@ -2712,6 +2713,116 @@ class P27_30(Scene):
         )
 
         self.wait(3)
+
+        t_network_copy = VGroup(
+            # Input neurons with labels
+            n1_1.copy(),
+            n1_2.copy(),
+            x1.copy(),
+            x2.copy(),
+            # Hidden layer neurons and their activation functions
+            n2_1.copy(),
+            n2_2.copy(),
+            n2_1_graph.copy(),
+            n2_2_graph.copy(),
+            n2_1_text.copy(),
+            n2_2_text.copy(),
+            # Output layer neurons and arrows
+            n3_1.copy(),
+            n3_2.copy(),
+            n3_1_arrow.copy(),
+            n3_2_arrow.copy(),
+            # Split lines between input and hidden layer
+            ln1_1_n2_1_left.copy(),
+            ln1_1_n2_1_right.copy(),
+            ln1_2_n2_1_left.copy(),
+            ln1_2_n2_1_right.copy(),
+            ln1_1_n2_2_left.copy(),
+            ln1_1_n2_2_right.copy(),
+            ln1_2_n2_2_left.copy(),
+            ln1_2_n2_2_right.copy(),
+            # Split lines between hidden and output layer
+            ln2_1_n3_1_left.copy(),
+            ln2_1_n3_1_right.copy(),
+            ln2_2_n3_1_left.copy(),
+            ln2_2_n3_1_right.copy(),
+            ln2_1_n3_2_left.copy(),
+            ln2_1_n3_2_right.copy(),
+            ln2_2_n3_2_left.copy(),
+            ln2_2_n3_2_right.copy(),
+            # Thetas (weights) on the connections
+            theta_1.copy(),
+            theta_2.copy(),
+            theta_3.copy(),
+            theta_4.copy(),
+            theta_5.copy(),
+            theta_6.copy(),
+            theta_7.copy(),
+            theta_8.copy(),
+            model_parameters.copy(),
+            auxiliary_output.copy(),
+            primary_output.copy(),
+        )
+
+
+        # Assign individual variables for each element in the VGroup
+        s_n1_1 = t_network_copy[0]
+        s_n1_2 = t_network_copy[1]
+        s_x1 = t_network_copy[2]
+        s_x2 = t_network_copy[3]
+        s_n2_1 = t_network_copy[4]
+        s_n2_2 = t_network_copy[5]
+        s_n2_1_graph = t_network_copy[6]
+        s_n2_2_graph = t_network_copy[7]
+        s_n2_1_text = t_network_copy[8]
+        s_n2_2_text = t_network_copy[9]
+        s_n3_1 = t_network_copy[10]
+        s_n3_2 = t_network_copy[11]
+        s_n3_1_arrow = t_network_copy[12]
+        s_n3_2_arrow = t_network_copy[13]
+        s_ln1_1_n2_1_left = t_network_copy[14]
+        s_ln1_1_n2_1_right = t_network_copy[15]
+        s_ln1_2_n2_1_left = t_network_copy[16]
+        s_ln1_2_n2_1_right = t_network_copy[17]
+        s_ln1_1_n2_2_left = t_network_copy[18]
+        s_ln1_1_n2_2_right = t_network_copy[19]
+        s_ln1_2_n2_2_left = t_network_copy[20]
+        s_ln1_2_n2_2_right = t_network_copy[21]
+        s_ln2_1_n3_1_left = t_network_copy[22]
+        s_ln2_1_n3_1_right = t_network_copy[23]
+        s_ln2_2_n3_1_left = t_network_copy[24]
+        s_ln2_2_n3_1_right = t_network_copy[25]
+        s_ln2_1_n3_2_left = t_network_copy[26]
+        s_ln2_1_n3_2_right = t_network_copy[27]
+        s_ln2_2_n3_2_left = t_network_copy[28]
+        s_ln2_2_n3_2_right = t_network_copy[29]
+        s_theta_1 = t_network_copy[30]
+        s_theta_2 = t_network_copy[31]
+        s_theta_3 = t_network_copy[32]
+        s_theta_4 = t_network_copy[33]
+        s_theta_5 = t_network_copy[34]
+        s_theta_6 = t_network_copy[35]
+        s_theta_7 = t_network_copy[36]
+        s_theta_8 = t_network_copy[37]
+        s_model_parameters = t_network_copy[38]
+        s_auxiliary_output = t_network_copy[39]
+        s_primary_output = t_network_copy[40]
+
+        self.wait()
+
+        self.play(
+            # self.camera.frame.animate.set_width(16).move_to([3.9, -1.4, 0]),
+            self.frame.animate.reorient(0.0, 0.0, 0.0, (3.73, -1.84, 0.0), 8.74), #SW little different framing
+            t_network_copy.animate.shift(RIGHT * 7),
+            run_time=3,  # TODO: Find best camera position
+        )
+
+        self.wait(1)
+
+        # self.play(t_network_copy.animate.shift(RIGHT * 7), run_time=2.5)
+
+        self.wait(1)
+
 
 
 

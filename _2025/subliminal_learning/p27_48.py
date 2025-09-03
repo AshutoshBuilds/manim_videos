@@ -1689,7 +1689,7 @@ class P27_47b(Scene):
         self.play(ReplacementTransform(central_dot_product_eq[:3].copy(), teacher_label_1),
                   ReplacementTransform(central_dot_product_eq[4:].copy(), student_label_1), 
                   GrowArrow(teacher_arrow_1), 
-                  GrowArrow(student_arrow_1), , run_time=2.5)
+                  GrowArrow(student_arrow_1),run_time=2.5)
         self.wait()
 
         self.add(p30_48_to_manim_2)

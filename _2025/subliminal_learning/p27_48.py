@@ -57,7 +57,7 @@ def create_right_angle_symbol(vertex, side1_end, side2_end, size=0.15):
     
     return VGroup(line1, line2)
 
-class P27_47b(Scene):
+class P27_47c(Scene):
     def construct(self):
         # p27_to_manim_1 = SVGMobject("p27_to_manim-01.svg")[1:].scale(4)
         p27_to_manim_2 = SVGMobject(asset_dir_1+"/p27_to_manim-02.svg")[1:].scale(4)
@@ -1547,7 +1547,7 @@ class P27_47b(Scene):
 
 
         self.wait()
-        self.play(ReplacementTransform(gradient_descent_eq_3b[:4].copy(), delta_theta_s_eq_3[:4]), 
+        self.play(ReplacementTransform(gradient_descent_eq_3b[:3].copy(), delta_theta_s_eq_3[:3]), 
                   ReplacementTransform(gradient_descent_eq_3b[-8:].copy(), delta_theta_s_eq_3[-8:]), run_time=2)
         self.remove(p33_40_to_manim_11)
         self.play(ReplacementTransform(taylor_expansion_3[3:].copy(), delta_theta_s_eq_3[3:-8]), run_time=2)

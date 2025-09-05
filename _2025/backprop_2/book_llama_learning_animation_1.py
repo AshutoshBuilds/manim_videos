@@ -29,8 +29,9 @@ def get_edge_points(circle1, circle2, neuron_radius):
 
 viridis_colormap=plt.get_cmap("viridis")
 blues_colormap=plt.get_cmap("Blues")
-custom_cmap_tans = mcolors.LinearSegmentedColormap.from_list('custom', ['#000000', '#dfd0b9'], N=256)
-custom_cmap_cyan = mcolors.LinearSegmentedColormap.from_list('custom', ['#000000', '#00FFFF'], N=256)
+# custom_cmap_tans = mcolors.LinearSegmentedColormap.from_list('custom', ['#FFFFFF', CHILL_BROWN], N=256)
+custom_cmap_tans = mcolors.LinearSegmentedColormap.from_list('custom', ['#FFFFFF', CHILL_BROWN], N=256)
+custom_cmap_cyan = mcolors.LinearSegmentedColormap.from_list('custom', ['#FFFFFF', '#518c9b'], N=256)
 
 # def get_nueron_color(value, vmin=-2, vmax=2):        
 #         value_clipped = np.clip((value - vmin) / (vmax - vmin), 0, 1)
@@ -114,7 +115,7 @@ def get_mlp(w1,
             line_weight=1.0, 
             line_opacity=0.5, 
             neuron_stroke_width=1.0, 
-            neuron_stroke_color='#dfd0b9', 
+            neuron_stroke_color=CHILL_BROWN, 
             line_stroke_color='#948979', 
             connection_display_thresh=0.4):
 
@@ -143,7 +144,7 @@ def get_mlp(w1,
             neuron = Circle(radius=NEURON_RADIUS, stroke_color=neuron_stroke_color)
             neuron.set_stroke(width=neuron_stroke_width)
             if neuron_fills is None: 
-                neuron.set_fill(color='#000000', opacity=1.0)
+                neuron.set_fill(color='#FFFFFF', opacity=1.0)
             else: 
                 neuron.set_fill(color=get_nueron_color(neuron_fills[0][neuron_count], vmax=np.abs(neuron_fills[0]).max()), opacity=1.0)
             neuron.move_to(LEFT * LAYER_SPACING + UP * ((INPUT_NEURONS//2 - i) * VERTICAL_SPACING))
@@ -161,7 +162,7 @@ def get_mlp(w1,
             neuron = Circle(radius=NEURON_RADIUS, stroke_color=neuron_stroke_color)
             neuron.set_stroke(width=neuron_stroke_width)
             if neuron_fills is None: 
-                neuron.set_fill(color='#000000', opacity=1.0)
+                neuron.set_fill(color='#FFFFFF', opacity=1.0)
             else: 
                 neuron.set_fill(color=get_nueron_color(neuron_fills[1][neuron_count], vmax=np.abs(neuron_fills[1]).max()), opacity=1.0)
             neuron.move_to(UP * ((HIDDEN_NEURONS//2 - i) * VERTICAL_SPACING))
@@ -179,7 +180,7 @@ def get_mlp(w1,
             neuron = Circle(radius=NEURON_RADIUS, stroke_color=neuron_stroke_color)
             neuron.set_stroke(width=neuron_stroke_width)
             if neuron_fills is None: 
-                neuron.set_fill(color='#000000', opacity=1.0)
+                neuron.set_fill(color='#FFFFFF', opacity=1.0)
             else: 
                 neuron.set_fill(color=get_nueron_color(neuron_fills[2][neuron_count], vmax=np.abs(neuron_fills[2]).max()), opacity=1.0)
             neuron.move_to(RIGHT * LAYER_SPACING + UP * ((OUTPUT_NEURONS//2 - i) * VERTICAL_SPACING))
@@ -369,7 +370,7 @@ def get_input_layer(prompt_neuron_indices, snapshot, num_input_neurons=36):
     input_layer_text=VGroup()
     vertical_spacing = 0.18
     neuron_radius = 0.06
-    neuron_stroke_color='#dfd0b9'
+    neuron_stroke_color=CHILL_BROWN
     neuron_stroke_width= 1.0
     words_to_nudge={' capital':-0.02}
 
@@ -383,7 +384,7 @@ def get_input_layer(prompt_neuron_indices, snapshot, num_input_neurons=36):
             neuron = Circle(radius=neuron_radius, stroke_color=neuron_stroke_color)
             neuron.set_stroke(width=neuron_stroke_width)
             if neuron_count in prompt_neuron_indices:
-                neuron.set_fill(color='#dfd0b9', opacity=1.0)
+                neuron.set_fill(color=CHILL_BROWN, opacity=1.0)
                 t=Text(snapshot['prompt.tokens'][prompt_token_count], font_size=24, font='myriad-pro')
                 t.set_color(neuron_stroke_color)
                 # print(t.get_center())
@@ -394,7 +395,7 @@ def get_input_layer(prompt_neuron_indices, snapshot, num_input_neurons=36):
                 input_layer_text.add(t)
                 prompt_token_count+=1 
             else:
-                neuron.set_fill(color='#000000', opacity=1.0)
+                neuron.set_fill(color='#FFFFFF', opacity=1.0)
 
             neuron.move_to(UP * ((num_input_neurons//2 - i) * vertical_spacing))
             input_layer_nuerons.add(neuron)
@@ -410,7 +411,7 @@ def get_output_layer(snapshot, empty=False):
     num_output_neurons=36   
     vertical_spacing = 0.18
     neuron_radius = 0.06
-    neuron_stroke_color='#dfd0b9'
+    neuron_stroke_color=CHILL_BROWN
     neuron_stroke_width= 1.0
 
     neuron_count=0
@@ -436,7 +437,7 @@ def get_output_layer(snapshot, empty=False):
                 output_layer_text.add(t)
 
             else: 
-                n.set_fill(color='#000000', opacity=1.0)
+                n.set_fill(color='#FFFFFF', opacity=1.0)
 
             #I like the idea of having probs on here, but I think it's too much right now, mayb in part 3
             # if neuron_count<5:
@@ -453,7 +454,7 @@ def get_output_layer(snapshot, empty=False):
     return output_layer
 
 
-class LlamaLearningTwelveF(InteractiveScene):
+class LlamaLearningTwelveC(InteractiveScene):
     def construct(self):
         '''
         Getting close! Next hurdle is to bring in different examples. 
@@ -474,210 +475,213 @@ class LlamaLearningTwelveF(InteractiveScene):
 
         # random_seeds=[25, 26, 27, 28, 29, 30, 31, 32, 33, 34] #For ordering input neurons
         random_seeds=[25, 25, 25, 25, 25, 25, 25, 25, 25, 25]
-        for snapshot_count, snapshot_index in enumerate([0,0,0]):
-            snapshot=snapshots[snapshot_index]
+        # for snapshot_count, snapshot_index in enumerate([0,0,0]):
+        snapshot_count=18
+        snapshot_index=18
 
-            all_weights=VGroup()
-            all_activations=VGroup()
-            all_activations_empty=VGroup()
-            all_grads=VGroup()
-            random_background_stuff=VGroup()
+        snapshot=snapshots[snapshot_index]
 
-
-            mlps=[]
-            attns=[]
-            start_x=-4.0
-            # for layer_count, layer_num in enumerate([0, 1, 2, 3, 12, 13, 14, 15]):
-            # for layer_count, layer_num in enumerate([0, 1, 2, 3, 4, 5, 10, 11, 12, 13, 14, 15]):
-            # for layer_count, layer_num in enumerate([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]):
-            # for layer_count, layer_num in enumerate([0, 1, 2, 3, 4, 5, 6, 7, 14, 15]):
-            for layer_count, layer_num in enumerate([0, 1, 6, 7, 8, 9, 14, 15]):
-
-                #Kinda clunky interface but meh
-                neuron_fills=[snapshot['blocks.'+str(layer_num)+'.hook_resid_mid'],
-                              snapshot['blocks.'+str(layer_num)+'.mlp.hook_post'],
-                              snapshot['blocks.'+str(layer_num)+'.hook_mlp_out']]
-                w1=snapshot['blocks.'+str(layer_num)+'.mlp.W_in']
-                w2=snapshot['blocks.'+str(layer_num)+'.mlp.W_out']
-                grads_1=snapshot['blocks.'+str(layer_num)+'.mlp.W_in.grad']
-                grads_2=snapshot['blocks.'+str(layer_num)+'.mlp.W_out.grad']
-                all_attn_patterns=snapshot['blocks.'+str(layer_num)+'.attn.hook_pattern']
-                wO_full=snapshot['blocks.'+str(layer_num)+'.attn.W_O']
-                wq_full=snapshot['blocks.'+str(layer_num)+'.attn.W_Q']
-                wO_full_grad=snapshot['blocks.'+str(layer_num)+'.attn.W_O.grad']
-                wq_full_grad=snapshot['blocks.'+str(layer_num)+'.attn.W_Q.grad']
-
-                attn_patterns=[]
-                wos=[]; wqs=[]
-                wosg=[]; wqsg=[]
-                for i in range(1, 31, 3): #Just take every thrid pattern for now. ### for i in range(0, 30, 3):
-                    attn_patterns.append(all_attn_patterns[0][i][1:-1,1:-1]) #Ignore BOS token and final "answer" token
-                    wos.append(wO_full[i, 0])
-                    wqs.append(wq_full[i, :, 0])
-                    wosg.append(wO_full_grad[i, 0])
-                    wqsg.append(wq_full_grad[i, :, 0])
-                wos=np.array(wos); wqs=np.array(wqs)
-                wosg=np.array(wosg); wqsg=np.array(wqsg)
-                attention_connections_left=wqs.T #Queries
-                attention_connections_right=wos
-                attention_connections_left_grad=wqsg.T #Queries
-                attention_connections_right_grad=wosg
-
-                attn=get_attention_layer(attn_patterns)
-                attn.move_to([start_x+layer_count*1.6, 0, 0]) 
-                attns.append(attn)
-                all_activations.add(attn[0])
-                random_background_stuff.add(attn[1])
-
-                mlp=get_mlp(w1, w2, neuron_fills, grads_1=grads_1, grads_2=grads_2)
-                mlp.move_to([start_x+0.8+layer_count*1.6, 0, 0])
-                mlps.append(mlp)
-                # all_activations.add(*mlp[2:-1]) #Skip weights and connections
-                all_activations.add(mlp[2:-1]) #Try as a single block, might actually animate better?
-                random_background_stuff.add(mlp[-1])
-
-                attn_empty=get_attention_layer([np.zeros_like(all_attn_patterns[0][0][1:-1,1:-1]) for i in range(len(attn_patterns))])
-                attn_empty.move_to([start_x+layer_count*1.6, 0, 0]) 
-                all_activations_empty.add(attn_empty[0])
-
-                mlp_empty=get_mlp(w1, w2)
-                mlp_empty.move_to([start_x+0.8+layer_count*1.6, 0, 0])
-                all_activations_empty.add(*mlp_empty[2:-1]) #Skip weights and connections
+        all_weights=VGroup()
+        all_activations=VGroup()
+        all_activations_empty=VGroup()
+        all_grads=VGroup()
+        random_background_stuff=VGroup()
 
 
-                connections_right, connections_right_grads=get_mlp_connections_right(attention_connections_right=attention_connections_right, 
-                                                                                   mlp_in=mlp[2],
-                                                                                   connection_points_right=attn[3],
-                                                                                   attention_connections_right_grad=attention_connections_right_grad)
+        mlps=[]
+        attns=[]
+        start_x=-4.0
+        # for layer_count, layer_num in enumerate([0, 1, 2, 3, 12, 13, 14, 15]):
+        # for layer_count, layer_num in enumerate([0, 1, 2, 3, 4, 5, 10, 11, 12, 13, 14, 15]):
+        # for layer_count, layer_num in enumerate([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]):
+        # for layer_count, layer_num in enumerate([0, 1, 2, 3, 4, 5, 6, 7, 14, 15]):
+        for layer_count, layer_num in enumerate([0, 1, 6, 7, 8, 9, 14, 15]):
+
+            #Kinda clunky interface but meh
+            neuron_fills=[snapshot['blocks.'+str(layer_num)+'.hook_resid_mid'],
+                          snapshot['blocks.'+str(layer_num)+'.mlp.hook_post'],
+                          snapshot['blocks.'+str(layer_num)+'.hook_mlp_out']]
+            w1=snapshot['blocks.'+str(layer_num)+'.mlp.W_in']
+            w2=snapshot['blocks.'+str(layer_num)+'.mlp.W_out']
+            grads_1=snapshot['blocks.'+str(layer_num)+'.mlp.W_in.grad']
+            grads_2=snapshot['blocks.'+str(layer_num)+'.mlp.W_out.grad']
+            all_attn_patterns=snapshot['blocks.'+str(layer_num)+'.attn.hook_pattern']
+            wO_full=snapshot['blocks.'+str(layer_num)+'.attn.W_O']
+            wq_full=snapshot['blocks.'+str(layer_num)+'.attn.W_Q']
+            wO_full_grad=snapshot['blocks.'+str(layer_num)+'.attn.W_O.grad']
+            wq_full_grad=snapshot['blocks.'+str(layer_num)+'.attn.W_Q.grad']
+
+            attn_patterns=[]
+            wos=[]; wqs=[]
+            wosg=[]; wqsg=[]
+            for i in range(1, 31, 3): #Just take every thrid pattern for now. ### for i in range(0, 30, 3):
+                attn_patterns.append(all_attn_patterns[0][i][1:-1,1:-1]) #Ignore BOS token and final "answer" token
+                wos.append(wO_full[i, 0])
+                wqs.append(wq_full[i, :, 0])
+                wosg.append(wO_full_grad[i, 0])
+                wqsg.append(wq_full_grad[i, :, 0])
+            wos=np.array(wos); wqs=np.array(wqs)
+            wosg=np.array(wosg); wqsg=np.array(wqsg)
+            attention_connections_left=wqs.T #Queries
+            attention_connections_right=wos
+            attention_connections_left_grad=wqsg.T #Queries
+            attention_connections_right_grad=wosg
+
+            attn=get_attention_layer(attn_patterns)
+            attn.move_to([start_x+layer_count*1.6, 0, 0]) 
+            attns.append(attn)
+            all_activations.add(attn[0])
+            random_background_stuff.add(attn[1])
+
+            mlp=get_mlp(w1, w2, neuron_fills, grads_1=grads_1, grads_2=grads_2)
+            mlp.move_to([start_x+0.8+layer_count*1.6, 0, 0])
+            mlps.append(mlp)
+            # all_activations.add(*mlp[2:-1]) #Skip weights and connections
+            all_activations.add(mlp[2:-1]) #Try as a single block, might actually animate better?
+            random_background_stuff.add(mlp[-1])
+
+            attn_empty=get_attention_layer([np.zeros_like(all_attn_patterns[0][0][1:-1,1:-1]) for i in range(len(attn_patterns))])
+            attn_empty.move_to([start_x+layer_count*1.6, 0, 0]) 
+            all_activations_empty.add(attn_empty[0])
+
+            mlp_empty=get_mlp(w1, w2)
+            mlp_empty.move_to([start_x+0.8+layer_count*1.6, 0, 0])
+            all_activations_empty.add(*mlp_empty[2:-1]) #Skip weights and connections
 
 
-                if len(mlps)>1:
-                    connections_left, connections_left_grads=get_mlp_connections_left(attention_connections_left=attention_connections_left, 
-                                                                                  mlp_out=mlps[-2][4],
-                                                                                  connection_points_left=attn[2],
-                                                                                  attention_connections_left_grad=attention_connections_left_grad)
-                    # self.add(connections_left)
-                    all_weights.add(connections_left)
-                    # self.add(connections_left_grads)
-                    all_grads.add(connections_left_grads)
-
-                # self.add(connections_right)
-                all_weights.add(connections_right)
-                # self.add(connections_right_grads)
-                all_grads.add(connections_right_grads)
-
-                all_weights.add(mlp[0])
-                all_grads.add(mlp[1])
-
-            #Inputs 
-            num_input_neurons = 36
-            np.random.seed(random_seeds[snapshot_count]) #Need to figure out how to add variety withotu moving the same token like "The" around
-            prompt_neuron_indices=np.random.choice(np.arange(36), len(snapshot['prompt.tokens'])-1) #Don't include last token
-
-            input_layer = get_input_layer(prompt_neuron_indices, snapshot, num_input_neurons=num_input_neurons)
-            input_layer.move_to([-4.7, 0, 0], aligned_edge=RIGHT)
-
-            input_layer_empty = get_input_layer([], snapshot, num_input_neurons=num_input_neurons)
-            input_layer_empty.move_to([-4.7, 0, 0], aligned_edge=RIGHT)
+            connections_right, connections_right_grads=get_mlp_connections_right(attention_connections_right=attention_connections_right, 
+                                                                               mlp_in=mlp[2],
+                                                                               connection_points_right=attn[3],
+                                                                               attention_connections_right_grad=attention_connections_right_grad)
 
 
-            # Okie dokie -> Let me add intput/first attention layer connections - this will need to be a separate function
-            # Ok right and I need to bring two matrices together here -> hmm. 
-            
-            all_embeddings=[]; all_embeddings_grad=[]; prompt_token_embeddings=[]; prompt_token_embeddings_grad=[]
-            for i in range(1, 31, 3):
-                all_embeddings.append(snapshot['embed.W_E'][0, :num_input_neurons, i])
-                all_embeddings_grad.append(snapshot['embed.W_E.grad'][0, :num_input_neurons, i])
-                prompt_token_embeddings.append(snapshot['prompt.embed.W_E'][:, 0, i])
-                prompt_token_embeddings_grad.append(snapshot['prompt.embed.W_E.grad'][:, 0, i])
-            all_embeddings=np.array(all_embeddings).T
-            all_embeddings_grad=np.array(all_embeddings_grad).T
-            prompt_token_embeddings=np.array(prompt_token_embeddings).T
-            prompt_token_embeddings_grad=np.array(prompt_token_embeddings_grad).T
+            if len(mlps)>1:
+                connections_left, connections_left_grads=get_mlp_connections_left(attention_connections_left=attention_connections_left, 
+                                                                              mlp_out=mlps[-2][4],
+                                                                              connection_points_left=attn[2],
+                                                                              attention_connections_left_grad=attention_connections_left_grad)
+                # self.add(connections_left)
+                all_weights.add(connections_left)
+                # self.add(connections_left_grads)
+                all_grads.add(connections_left_grads)
 
-            for count, i in enumerate(prompt_neuron_indices):
-                all_embeddings[i,:]=prompt_token_embeddings[count, :]
-                all_embeddings_grad[i,:]=prompt_token_embeddings_grad[count, :]
+            # self.add(connections_right)
+            all_weights.add(connections_right)
+            # self.add(connections_right_grads)
+            all_grads.add(connections_right_grads)
 
-            we_connections=VGroup()
-            all_embeddings_abs=np.abs(all_embeddings)
-            all_embeddings_scaled=all_embeddings_abs/np.percentile(all_embeddings_abs, 95)
-            for i, n1 in enumerate(input_layer[0]):
-                for j, n2 in enumerate(attns[0][2]):
-                    # if np.abs(all_embeddings_scaled[i, j])<0.1: continue
-                    if abs(j-i/4)>3: continue #Need to dial this up or lost it probably, but it is helpful!
-                    start_point, end_point = get_edge_points(n1, n2, 0.06)
-                    line = Line(start_point, n2.get_center())
-                    # line.set_stroke(width=1, opacity=0.3)
-                    # line.set_stroke(opacity=np.clip(0.8*(np.abs(w2[i, j])-attention_connection_display_thresh), 0.1, 1), width=1)
-                    line.set_stroke(opacity=np.clip(all_embeddings_scaled[i,j], 0.4, 1), width=np.clip(1.0*all_embeddings_scaled[i,j],0.5,1.7))
-                    line.set_color(CHILL_BROWN)
-                    we_connections.add(line)
+            all_weights.add(mlp[0])
+            all_grads.add(mlp[1])
+
+        #Inputs 
+        num_input_neurons = 36
+        np.random.seed(random_seeds[snapshot_count]) #Need to figure out how to add variety withotu moving the same token like "The" around
+        prompt_neuron_indices=np.random.choice(np.arange(36), len(snapshot['prompt.tokens'])-1) #Don't include last token
+
+        input_layer = get_input_layer(prompt_neuron_indices, snapshot, num_input_neurons=num_input_neurons)
+        input_layer.move_to([-4.7, 0, 0], aligned_edge=RIGHT)
+
+        input_layer_empty = get_input_layer([], snapshot, num_input_neurons=num_input_neurons)
+        input_layer_empty.move_to([-4.7, 0, 0], aligned_edge=RIGHT)
 
 
-            we_connections_grad=VGroup()
-            all_embeddings_grad_abs=np.abs(all_embeddings_grad)
-            all_embeddings_grad_scaled=all_embeddings_grad_abs/np.percentile(all_embeddings_grad_abs, 95)
-            for i, n1 in enumerate(input_layer[0]):
-                for j, n2 in enumerate(attns[0][2]):
-                    # if np.abs(all_embeddings_grad_scaled[i, j])<0.1: continue
-                    if abs(j-i/4)>4: continue #Need to dial this up or lost it probably, but it is helpful!
-                    start_point, end_point = get_edge_points(n1, n2, 0.06)
-                    line = Line(start_point, n2.get_center())
-                    # line.set_stroke(width=1, opacity=0.3)
-                    # line.set_stroke(opacity=np.clip(0.8*(np.abs(w2[i, j])-attention_connection_display_thresh), 0.1, 1), width=1)
-                    # line.set_stroke(opacity=np.clip(all_embeddings_grad_scaled[i,j], 0.4, 1), width=np.clip(1.0*all_embeddings_grad_scaled[i,j],0.5,1.7))
-                    # line.set_color(CHILL_BROWN)
-                    line.set_stroke(opacity=np.clip(all_embeddings_grad_scaled[i,j], 0, 1), width=np.clip(1.0*all_embeddings_grad_scaled[i,j],0,3))
-                    line.set_color(get_grad_color(all_embeddings_grad_scaled[i,j]))
-                    we_connections_grad.add(line)
+        # Okie dokie -> Let me add intput/first attention layer connections - this will need to be a separate function
+        # Ok right and I need to bring two matrices together here -> hmm. 
+        
+        all_embeddings=[]; all_embeddings_grad=[]; prompt_token_embeddings=[]; prompt_token_embeddings_grad=[]
+        for i in range(1, 31, 3):
+            all_embeddings.append(snapshot['embed.W_E'][0, :num_input_neurons, i])
+            all_embeddings_grad.append(snapshot['embed.W_E.grad'][0, :num_input_neurons, i])
+            prompt_token_embeddings.append(snapshot['prompt.embed.W_E'][:, 0, i])
+            prompt_token_embeddings_grad.append(snapshot['prompt.embed.W_E.grad'][:, 0, i])
+        all_embeddings=np.array(all_embeddings).T
+        all_embeddings_grad=np.array(all_embeddings_grad).T
+        prompt_token_embeddings=np.array(prompt_token_embeddings).T
+        prompt_token_embeddings_grad=np.array(prompt_token_embeddings_grad).T
+
+        for count, i in enumerate(prompt_neuron_indices):
+            all_embeddings[i,:]=prompt_token_embeddings[count, :]
+            all_embeddings_grad[i,:]=prompt_token_embeddings_grad[count, :]
+
+        we_connections=VGroup()
+        all_embeddings_abs=np.abs(all_embeddings)
+        all_embeddings_scaled=all_embeddings_abs/np.percentile(all_embeddings_abs, 95)
+        for i, n1 in enumerate(input_layer[0]):
+            for j, n2 in enumerate(attns[0][2]):
+                # if np.abs(all_embeddings_scaled[i, j])<0.1: continue
+                if abs(j-i/4)>3: continue #Need to dial this up or lost it probably, but it is helpful!
+                start_point, end_point = get_edge_points(n1, n2, 0.06)
+                line = Line(start_point, n2.get_center())
+                # line.set_stroke(width=1, opacity=0.3)
+                # line.set_stroke(opacity=np.clip(0.8*(np.abs(w2[i, j])-attention_connection_display_thresh), 0.1, 1), width=1)
+                line.set_stroke(opacity=np.clip(all_embeddings_scaled[i,j], 0.4, 1), width=np.clip(1.0*all_embeddings_scaled[i,j],0.5,1.7))
+                line.set_color(CHILL_BROWN)
+                we_connections.add(line)
 
 
-            #Ok I should probably go ahead and wrap up input stuff but I don't really want to -> 
-            #'topk.indices', 'topk.tokens', 'topk.probs', 'topk.unembed.W_U', 'topk.unembed.W_U.grad'
+        we_connections_grad=VGroup()
+        all_embeddings_grad_abs=np.abs(all_embeddings_grad)
+        all_embeddings_grad_scaled=all_embeddings_grad_abs/np.percentile(all_embeddings_grad_abs, 95)
+        for i, n1 in enumerate(input_layer[0]):
+            for j, n2 in enumerate(attns[0][2]):
+                # if np.abs(all_embeddings_grad_scaled[i, j])<0.1: continue
+                if abs(j-i/4)>4: continue #Need to dial this up or lost it probably, but it is helpful!
+                start_point, end_point = get_edge_points(n1, n2, 0.06)
+                line = Line(start_point, n2.get_center())
+                # line.set_stroke(width=1, opacity=0.3)
+                # line.set_stroke(opacity=np.clip(0.8*(np.abs(w2[i, j])-attention_connection_display_thresh), 0.1, 1), width=1)
+                # line.set_stroke(opacity=np.clip(all_embeddings_grad_scaled[i,j], 0.4, 1), width=np.clip(1.0*all_embeddings_grad_scaled[i,j],0.5,1.7))
+                # line.set_color(CHILL_BROWN)
+                line.set_stroke(opacity=np.clip(all_embeddings_grad_scaled[i,j], 0, 1), width=np.clip(1.0*all_embeddings_grad_scaled[i,j],0,3))
+                line.set_color(get_grad_color(all_embeddings_grad_scaled[i,j]))
+                we_connections_grad.add(line)
 
-            output_layer=get_output_layer(snapshot)
-            output_layer.move_to([mlps[-1].get_right()[0]+0.36, -3.21, 0], aligned_edge=LEFT+BOTTOM) #Was 5.45
 
-            output_layer_empty=get_output_layer(snapshot, empty=True)
-            output_layer_empty.move_to([mlps[-1].get_right()[0]+0.36, -3.21, 0], aligned_edge=LEFT+BOTTOM)
+        #Ok I should probably go ahead and wrap up input stuff but I don't really want to -> 
+        #'topk.indices', 'topk.tokens', 'topk.probs', 'topk.unembed.W_U', 'topk.unembed.W_U.grad'
+
+        output_layer=get_output_layer(snapshot)
+        output_layer.move_to([mlps[-1].get_right()[0]+0.36, -3.21, 0], aligned_edge=LEFT+BOTTOM) #Was 5.45
+
+        output_layer_empty=get_output_layer(snapshot, empty=True)
+        output_layer_empty.move_to([mlps[-1].get_right()[0]+0.36, -3.21, 0], aligned_edge=LEFT+BOTTOM)
 
 
-            wu_connections=VGroup()
-            unembed_abs=np.abs(snapshot['topk.unembed.W_U'][:,0,:].T)
-            unembed_scaled=unembed_abs/np.percentile(unembed_abs, 98)
-            for i, n1 in enumerate(mlps[-1][4]):
-                for j, n2 in enumerate(output_layer[0]):
-                    if np.abs(unembed_scaled[i, j])<0.5: continue
-                    if abs(j-i)>8: continue #Need to dial this up or lost it probably, but it is helpful!
-                    start_point, end_point = get_edge_points(n1, n2, 0.06)
-                    line = Line(start_point, n2.get_center())
-                    # line.set_stroke(width=1, opacity=0.3)
-                    # line.set_stroke(opacity=np.clip(0.8*(np.abs(w2[i, j])-attention_connection_display_thresh), 0.1, 1), width=1)
-                    line.set_stroke(opacity=np.clip(unembed_scaled[i,j], 0.4, 1), width=np.clip(1.0*unembed_scaled[i,j],0.5,1.7))
-                    line.set_color(CHILL_BROWN)
-                    wu_connections.add(line)
+        wu_connections=VGroup()
+        unembed_abs=np.abs(snapshot['topk.unembed.W_U'][:,0,:].T)
+        unembed_scaled=unembed_abs/np.percentile(unembed_abs, 98)
+        for i, n1 in enumerate(mlps[-1][4]):
+            for j, n2 in enumerate(output_layer[0]):
+                if np.abs(unembed_scaled[i, j])<0.5: continue
+                if abs(j-i)>8: continue #Need to dial this up or lost it probably, but it is helpful!
+                start_point, end_point = get_edge_points(n1, n2, 0.06)
+                line = Line(start_point, n2.get_center())
+                # line.set_stroke(width=1, opacity=0.3)
+                # line.set_stroke(opacity=np.clip(0.8*(np.abs(w2[i, j])-attention_connection_display_thresh), 0.1, 1), width=1)
+                line.set_stroke(opacity=np.clip(unembed_scaled[i,j], 0.4, 1), width=np.clip(1.0*unembed_scaled[i,j],0.5,1.7))
+                line.set_color(CHILL_BROWN)
+                wu_connections.add(line)
 
-            wu_connections_grad=VGroup()
-            unembed_grad_abs=np.abs(snapshot['topk.unembed.W_U.grad'][:,0,:].T)
-            unembed_scaled_grad=unembed_grad_abs/np.percentile(unembed_grad_abs, 99)
-            for i, n1 in enumerate(mlps[-1][4]):
-                for j, n2 in enumerate(output_layer[0]):
-                    if np.abs(unembed_scaled_grad[i, j])<0.5: continue
-                    if abs(j-i)>8: continue #Need to dial this up or lost it probably, but it is helpful!
-                    start_point, end_point = get_edge_points(n1, n2, 0.06)
-                    line = Line(start_point, n2.get_center())
-                    # line.set_stroke(width=1, opacity=0.3)
-                    # line.set_stroke(opacity=np.clip(0.8*(np.abs(w2[i, j])-attention_connection_display_thresh), 0.1, 1), width=1)
-                    # line.set_stroke(opacity=np.clip(unembed_scaled_grad[i,j], 0.4, 1), width=np.clip(1.0*unembed_scaled_grad[i,j],0.5,1.7))
-                    # line.set_color(CHILL_BROWN)
-                    line.set_stroke(opacity=np.clip(unembed_scaled_grad[i,j], 0, 1), width=np.clip(0.7*unembed_scaled_grad[i,j],0,3))
-                    line.set_color(get_grad_color(unembed_scaled_grad[i,j]))
-                    wu_connections_grad.add(line)
+        wu_connections_grad=VGroup()
+        unembed_grad_abs=np.abs(snapshot['topk.unembed.W_U.grad'][:,0,:].T)
+        unembed_scaled_grad=unembed_grad_abs/np.percentile(unembed_grad_abs, 99)
+        for i, n1 in enumerate(mlps[-1][4]):
+            for j, n2 in enumerate(output_layer[0]):
+                if np.abs(unembed_scaled_grad[i, j])<0.5: continue
+                if abs(j-i)>8: continue #Need to dial this up or lost it probably, but it is helpful!
+                start_point, end_point = get_edge_points(n1, n2, 0.06)
+                line = Line(start_point, n2.get_center())
+                # line.set_stroke(width=1, opacity=0.3)
+                # line.set_stroke(opacity=np.clip(0.8*(np.abs(w2[i, j])-attention_connection_display_thresh), 0.1, 1), width=1)
+                # line.set_stroke(opacity=np.clip(unembed_scaled_grad[i,j], 0.4, 1), width=np.clip(1.0*unembed_scaled_grad[i,j],0.5,1.7))
+                # line.set_color(CHILL_BROWN)
+                line.set_stroke(opacity=np.clip(unembed_scaled_grad[i,j], 0, 1), width=np.clip(0.7*unembed_scaled_grad[i,j],0,3))
+                line.set_color(get_grad_color(unembed_scaled_grad[i,j]))
+                wu_connections_grad.add(line)
 
-            all_backward_passes.append(VGroup(we_connections_grad, *all_grads, wu_connections_grad))
-            # all_forward_passes.append(VGroup(input_layer[:-1], *all_activations, output_layer[:-1])) #Leaving out input output text for now. 
-            all_forward_passes.append(VGroup(input_layer, *all_activations, output_layer))
+        all_backward_passes.append(VGroup(we_connections_grad, *all_grads, wu_connections_grad))
+        # all_forward_passes.append(VGroup(input_layer[:-1], *all_activations, output_layer[:-1])) #Leaving out input output text for now. 
+        all_forward_passes.append(VGroup(input_layer, *all_activations, output_layer))
 
         ## -- end big ole loop
         self.wait()
@@ -705,179 +709,15 @@ class LlamaLearningTwelveF(InteractiveScene):
 
         self.wait()
 
-        all_forward_passes[1].set_opacity(1.0)
-        self.wait(1.0)
-        all_backward_passes[1].set_opacity(1.0)
-        self.wait(1.0)
-        all_forward_passes[1].set_opacity(0.0)
-        all_backward_passes[1].set_opacity(0)
+        all_forward_passes[0].set_opacity(1.0)
+        # self.wait(1.0)
+        all_backward_passes[0].set_opacity(1.0)
+        # self.wait(1.0)
+
         self.wait()
-        # all_forward_passes[1].set_opacity(1.0)
-        # all_forward_passes[2].set_opacity(1.0)
+
         # all_forward_passes[0].set_opacity(0.0)
-        # all_forward_passes[1].set_opacity(0.0)
-        # all_forward_passes[2].set_opacity(0.0)
-
-        # all_backward_passes[0].set_opacity(1.0)
-        # all_backward_passes[1].set_opacity(1.0)
-        # all_backward_passes[0].set_opacity(0.0)
-        # all_backward_passes[1].set_opacity(0.0)
-
-        #Ok nothing has broken so far lol. 
-
-        def create_multi_snapshot_animation(self, all_forward_passes, all_backward_passes, 
-                                           individual_time=1.0, lag_ratio=0.5, 
-                                           start_opacity=0.0, end_opacity=1.0,
-                                           fade_out_time=1.0, pause_between_snapshots=0.5):
-            """
-            Animates multiple snapshots with forward and backward passes.
-            Each snapshot fades in, plays, then fades out before the next one starts.
-            
-            Args:
-                self: The scene object
-                all_forward_passes: List of forward pass VGroups for each snapshot
-                all_backward_passes: List of backward pass VGroups for each snapshot
-                individual_time: Time for each object to fully animate
-                lag_ratio: Overlap ratio between consecutive objects
-                start_opacity: Starting opacity for fade-in
-                end_opacity: Maximum opacity
-                fade_out_time: Time to fade out each snapshot
-                pause_between_snapshots: Pause time between snapshots
-            """
-            
-            def create_snapshot_animation(forward_pass, backward_pass, time_offset=0, is_final=False):
-                """Creates animation for a single snapshot"""
-                objects = list(forward_pass) + list(backward_pass[::-1])
-                num_objects = len(objects)
-                
-                if num_objects == 0:
-                    return None, 0
-                
-                lag_time = lag_ratio * individual_time
-                animation_time = individual_time + (num_objects - 1) * lag_time
-                
-                def update_opacity(obj, dt, index, start_time):
-                    current_time = time_tracker.get_value()
-                    
-                    # Check if we're in the animation phase for this snapshot
-                    if current_time < start_time:
-                        obj.set_opacity(start_opacity)
-                        return
-                    
-                    snapshot_time = current_time - start_time
-                    
-                    # Fade in phase
-                    obj_start_time = index * lag_time
-                    obj_end_time = obj_start_time + individual_time
-                    
-                    if snapshot_time < obj_start_time:
-                        obj.set_opacity(start_opacity)
-                    elif snapshot_time <= obj_end_time:
-                        progress = (snapshot_time - obj_start_time) / individual_time
-                        opacity = start_opacity + (end_opacity - start_opacity) * progress
-                        obj.set_opacity(opacity)
-                    elif snapshot_time <= animation_time:
-                        obj.set_opacity(end_opacity)
-                    # Fade out phase (skip for final snapshot)
-                    elif not is_final and snapshot_time <= animation_time + fade_out_time:
-                        fade_progress = (snapshot_time - animation_time) / fade_out_time
-                        opacity = end_opacity * (1 - fade_progress)
-                        obj.set_opacity(opacity)
-                    elif not is_final:
-                        obj.set_opacity(0)
-                    else:
-                        # Keep final snapshot visible
-                        obj.set_opacity(end_opacity)
-                
-                return objects, animation_time, update_opacity
-            
-            # Calculate total animation time
-            total_time = 0
-            snapshot_data = []
-            
-            for i, (forward, backward) in enumerate(zip(all_forward_passes, all_backward_passes)):
-                is_final = (i == len(all_forward_passes) - 1)
-                objects, anim_time, updater_func = create_snapshot_animation(forward, backward, total_time, is_final)
-                
-                if objects:
-                    snapshot_data.append({
-                        'objects': objects,
-                        'start_time': total_time,
-                        'animation_time': anim_time,
-                        'updater_func': updater_func,
-                        'is_final': is_final
-                    })
-                    
-                    # Don't add fade_out_time or pause for the final snapshot
-                    if not is_final:
-                        total_time += anim_time + fade_out_time + pause_between_snapshots
-                    else:
-                        total_time += anim_time
-            
-            # Remove the final pause
-            total_time -= pause_between_snapshots
-            
-            # Create the main time tracker
-            time_tracker = ValueTracker(0)
-            
-            # Add updaters to all objects
-            all_updaters = []
-            for snapshot in snapshot_data:
-                for idx, obj in enumerate(snapshot['objects']):
-                    updater = lambda o, dt, i=idx, start=snapshot['start_time'], func=snapshot['updater_func']: func(o, dt, i, start)
-                    obj.add_updater(updater)
-                    all_updaters.append((obj, updater))
-            
-            # Play the animation
-            # self.play(time_tracker.animate.set_value(total_time), run_time=total_time)
-            
-            # # Clean up updaters
-            # for obj, updater in all_updaters:
-            #     obj.remove_updater(updater)
-            
-            # # Ensure non-final objects are at 0 opacity and final objects stay visible
-            # for snapshot in snapshot_data:
-            #     for obj in snapshot['objects']:
-            #         if snapshot['is_final']:
-            #             obj.set_opacity(end_opacity)
-            #         else:
-            #             obj.set_opacity(0)
-
-       
-
-            return time_tracker, total_time
-
-        #Forward and backward pass
-        time_tracker, total_time = create_multi_snapshot_animation(self, all_forward_passes, all_backward_passes, 
-                                                   individual_time=1.0, lag_ratio=0.5, 
-                                                   start_opacity=0.0, end_opacity=1.0,
-                                                   fade_out_time=7.0, pause_between_snapshots=0.5)
-
-
-        self.wait()
-
-        # Play the animation
-        self.play(time_tracker.animate.set_value(total_time), run_time=total_time)
-        self.wait()
-
-        #Ok now zoom in on that one pattern!
-        # self.play(self.frame.animate.reorient(0, 0, 0, (0.8, -1.89, 0.0), 1.00), run_time=7)
-        # self.wait()
-
-        # self.play(self.frame.animate.reorient(0, 0, 0, (2.06, -0.06, 0.0), 9.36), run_time=7)
-        # self.wait()
-
-
-
-        
-        # # Clean up updaters
-        # for obj, updater in all_updaters:
-        #     obj.remove_updater(updater)
-        
-        # # Ensure all objects are at 0 opacity at the end
-        # for snapshot in snapshot_data:
-        #     for obj in snapshot['objects']:
-        #         obj.set_opacity(0)
+        # all_backward_passes[0].set_opacity(0)
 
 
 
@@ -886,78 +726,4 @@ class LlamaLearningTwelveF(InteractiveScene):
 
 
 
-
-
-        # def create_lag_animation(objects, individual_time=1.5, lag_ratio=0.2, start_opacity=0.0, end_opacity=1.0):
-        #     num_objects = len(objects)
-        #     if num_objects == 0:
-        #         return
-
-        #     lag_time = lag_ratio * individual_time
-        #     actual_total_time = individual_time + (num_objects - 1) * lag_time
-        #     time_tracker = ValueTracker(0)
-            
-        #     def update_opacity(obj, dt, index):
-        #         current_time = time_tracker.get_value()
-        #         start_time = index * lag_time
-        #         end_time = start_time + individual_time
-                
-        #         if current_time < start_time:
-        #             obj.set_opacity(start_opacity)
-        #         elif current_time > end_time:
-        #             obj.set_opacity(end_opacity)
-        #         else:
-        #             progress = (current_time - start_time) / individual_time
-        #             opacity = start_opacity + (end_opacity - start_opacity) * progress
-        #             obj.set_opacity(opacity)
-            
-        #     for i, obj in enumerate(objects):
-        #         obj.add_updater(lambda o, dt, idx=i: update_opacity(o, dt, idx))
-
-        #     return time_tracker, actual_total_time, objects
-
-        # # Usage:
-        # self.wait()
-        # # create_lag_animation(self, list(forward_pass)+list(backward_pass[::-1]), individual_time=1.0, lag_ratio=0.5, start_opacity=0.0, end_opacity=1.0)
-        # # create_lag_animation(self, list(backward_pass[::-1]), individual_time=1.5, lag_ratio=0.2, start_opacity=0.0, end_opacity=1.0)
-        # time_tracker, actual_total_time, objects=create_lag_animation(list(all_forward_passes[0])+list(all_backward_passes[0][::-1]), 
-        #                                                     individual_time=1.0, lag_ratio=0.5, start_opacity=0.0, end_opacity=1.0)
-
-        # self.wait()
-        # self.play(time_tracker.animate.set_value(actual_total_time), run_time=actual_total_time)
-
-
-        # Remove updaters
-        # for obj in objects:
-        #     obj.clear_updaters()
-
-        # num_loops=5,
-        # individual_time=1.0, 
-        # lag_ratio=0.5, 
-        # start_opacity=0.0, 
-        # end_opacity=1.0,
-        # fade_out_time=7.0
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        self.wait(20)
         self.embed()

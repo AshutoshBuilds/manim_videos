@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" 
+     width="800" 
+     height="642.6000000000001" 
+     viewBox="0 0 800 642.6000000000001">
+    
+    <defs>
+        <style type="text/css">
+            text {
+                font-family: Menlo, monospace;
+                font-size: 13px;
+            }
+            .code-text {
+                font-family: Menlo, monospace;
+            }
+        </style>
+    </defs>
+    
+    <!-- Background -->
+    <rect width="800" height="642.6000000000001" fill="#ffffff"/>
+    
+    <!-- Notebook cells -->
+
+        <rect x="10" y="20" 
+              width="780" height="56.4"
+              fill="#fafafa" 
+              stroke="none" rx="3" ry="3"/>
+        
+            <text x="20" y="43" 
+                  font-family="Menlo" 
+                  font-size="15px" 
+                  fill="#333333"
+                  font-weight="bold">
+                # Sample Notebook
+            </text>
+            
+            <text x="20" y="61.2" 
+                  font-family="Menlo" 
+                  font-size="13px" 
+                  fill="#333333"
+                  font-weight="normal">
+                This is a test notebook
+            </text>
+            
+        <rect x="80" y="91.4" 
+              width="700" height="165.6"
+              fill="#f7f7f7" 
+              stroke="#cfcfcf" 
+              stroke-width="1" rx="3" ry="3"/>
+        
+        <text x="10" y="114.4" 
+              font-family="Menlo" 
+              font-size="13px" 
+              fill="#303f9f" 
+              font-weight="bold">
+            In [1]:
+        </text>
+        <text x="90" y="114.4" font-family="Menlo" font-size="13px" xml:space="preserve"><tspan fill="#cb4b16">import</tspan><tspan fill="#000000"> </tspan><tspan fill="#268bd2">numpy</tspan><tspan fill="#000000"> </tspan><tspan fill="#859900">as</tspan><tspan fill="#000000"> </tspan><tspan fill="#268bd2">np</tspan></text><text x="90" y="132.6" font-family="Menlo" font-size="13px" xml:space="preserve"><tspan fill="#cb4b16">import</tspan><tspan fill="#000000"> </tspan><tspan fill="#268bd2">matplotlib.pyplot</tspan><tspan fill="#000000"> </tspan><tspan fill="#859900">as</tspan><tspan fill="#000000"> </tspan><tspan fill="#268bd2">plt</tspan></text><text x="90" y="168.99999999999997" font-family="Menlo" font-size="13px" xml:space="preserve"><tspan fill="#93a1a1" font-style="italic"># Generate data</tspan></text><text x="90" y="187.19999999999996" font-family="Menlo" font-size="13px" xml:space="preserve"><tspan fill="#657b83">x</tspan><tspan fill="#000000"> </tspan><tspan fill="#93a1a1">=</tspan><tspan fill="#000000"> </tspan><tspan fill="#657b83">np</tspan><tspan fill="#93a1a1">.</tspan><tspan fill="#657b83">linspace</tspan><tspan fill="#657b83">(</tspan><tspan fill="#2aa198">0</tspan><tspan fill="#657b83">,</tspan><tspan fill="#000000"> </tspan><tspan fill="#2aa198">10</tspan><tspan fill="#657b83">,</tspan><tspan fill="#000000"> </tspan><tspan fill="#2aa198">100</tspan><tspan fill="#657b83">)</tspan></text><text x="90" y="205.39999999999995" font-family="Menlo" font-size="13px" xml:space="preserve"><tspan fill="#657b83">y</tspan><tspan fill="#000000"> </tspan><tspan fill="#93a1a1">=</tspan><tspan fill="#000000"> </tspan><tspan fill="#657b83">np</tspan><tspan fill="#93a1a1">.</tspan><tspan fill="#657b83">sin</tspan><tspan fill="#657b83">(</tspan><tspan fill="#657b83">x</tspan><tspan fill="#657b83">)</tspan></text><text x="90" y="223.59999999999994" font-family="Menlo" font-size="13px" xml:space="preserve"><tspan fill="#657b83">model_id</tspan><tspan fill="#000000"> </tspan><tspan fill="#93a1a1">=</tspan><tspan fill="#000000"> </tspan><tspan fill="#2aa198">"meta-llama/Llama-3.2-1B"</tspan></text>
+            <text x="10" y="280.0" 
+                  font-family="Menlo" 
+                  font-size="13px" 
+                  fill="#303f9f" 
+                  font-weight="bold">
+                Out[1]:
+            </text>
+            
+                <text x="90" y="290.0" 
+                      font-family="Menlo" 
+                      font-size="13px" 
+                      fill="#000000">
+                    array([0.        , 0.10101010, 0.20202020, ...])
+                </text>
+                
+        <rect x="80" y="335.2" 
+              width="700" height="56.4"
+              fill="#f7f7f7" 
+              stroke="#cfcfcf" 
+              stroke-width="1" rx="3" ry="3"/>
+        
+        <text x="10" y="358.2" 
+              font-family="Menlo" 
+              font-size="13px" 
+              fill="#303f9f" 
+              font-weight="bold">
+            In [2]:
+        </text>
+        <text x="90" y="358.2" font-family="Menlo" font-size="13px" xml:space="preserve"><tspan fill="#268bd2">print</tspan><tspan fill="#657b83">(</tspan><tspan fill="#2aa198">'Hello, World!'</tspan><tspan fill="#657b83">)</tspan></text><text x="90" y="376.4" font-family="Menlo" font-size="13px" xml:space="preserve"><tspan fill="#268bd2">print</tspan><tspan fill="#657b83">(</tspan><tspan fill="#2aa198">'Testing output'</tspan><tspan fill="#657b83">)</tspan></text>
+                <text x="90" y="424.6" 
+                      font-family="Menlo" 
+                      font-size="13px" 
+                      fill="#000000">
+                    Hello, World!
+                </text>
+                
+                <text x="90" y="442.8" 
+                      font-family="Menlo" 
+                      font-size="13px" 
+                      fill="#000000">
+                    Testing output
+                </text>
+                
+                <text x="90" y="461.0" 
+                      font-family="Menlo" 
+                      font-size="13px" 
+                      fill="#000000">
+                    
+                </text>
+                
+        <rect x="80" y="506.20000000000005" 
+              width="700" height="38.2"
+              fill="#f7f7f7" 
+              stroke="#cfcfcf" 
+              stroke-width="1" rx="3" ry="3"/>
+        
+        <text x="10" y="529.2" 
+              font-family="Menlo" 
+              font-size="13px" 
+              fill="#303f9f" 
+              font-weight="bold">
+            In [3]:
+        </text>
+        <text x="90" y="529.2" font-family="Menlo" font-size="13px" xml:space="preserve"><tspan fill="#2aa198">1</tspan><tspan fill="#93a1a1">/</tspan><tspan fill="#2aa198">0</tspan><tspan fill="#000000">  </tspan><tspan fill="#93a1a1" font-style="italic"># This will cause an error</tspan></text>
+                <rect x="80" y="554.4000000000001" 
+                      width="700" height="38.2"
+                      fill="#ffdddd" 
+                      stroke="#cfcfcf" 
+                      stroke-width="1" rx="3" ry="3"/>
+                
+                <text x="90" y="577.4000000000001" 
+                      font-family="Menlo" 
+                      font-size="13px" 
+                      fill="#cc0000">
+                    ZeroDivisionError: division by zero
+                </text>
+                
+</svg>

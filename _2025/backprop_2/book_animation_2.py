@@ -15,6 +15,9 @@ YELLOW='#ffd35a'
 BLUE='#65c8d0'
 # BLUE='00FFFF'
 GREEN='#00a14b'
+CHILL_GREEN='#6c946f'
+CHILL_BLUE='#3d5c6f'
+CHILL_BROWN='#948979'
 
 #From video
 THRESHOLDS=[0.75, 0.45, 0.5, 0.5, 0.5, 0.5, 0.5, 0.6, 0.5, 0.5]
@@ -469,7 +472,7 @@ def get_output_layer(snapshot, empty=False):
     return output_layer
 
 
-class LlamaLearningTwelveE(InteractiveScene):
+class LlamaWithBackpropBlocks(InteractiveScene):
     def construct(self):
         '''
         Getting close! Next hurdle is to bring in different examples. 
@@ -726,16 +729,49 @@ class LlamaLearningTwelveE(InteractiveScene):
 
         all_forward_passes[0].set_opacity(1.0)
         self.wait(1.0)
-        all_backward_passes[0].set_opacity(1.0)
-        self.wait(1.0)
+        # all_backward_passes[0].set_opacity(1.0)
+        # self.wait(1.0)
 
         self.wait()
 
         #Zoom in on the attention pattern I want. 
-        self.frame.reorient(0, 0, 0, (0.81, -1.9, 0.0), 0.56)
+        # self.frame.reorient(0, 0, 0, (0.81, -1.9, 0.0), 0.56)
+        # self.wait()
+
+
+        rect_spacing=0.8008
+        dem_rectangles=VGroup()
+        for i in range(16):
+            rect=RoundedRectangle(0.7, 6.4, 0.1)
+            rect.set_stroke(width=0)
+            if i%2==1: rect.set_color(CHILL_GREEN)
+            else: rect.set_color(CHILL_BLUE)
+            rect.set_opacity(0.25)
+            rect.move_to([8.01-rect_spacing*i, 0, 0])
+            if i==0:
+                eq=Tex(r"\frac{\partial L}{\partial h_{16}}")
+            else:
+                eq=Tex(r"\frac{\partial h_{"+str(17-i)+"}}{\partial h_{"+str(16-i)+"}}")
+            eq.scale(0.5)
+            eq.next_to(rect, DOWN, buff=0.2)
+            eq.set_color(CHILL_BROWN)
+
+            if i!=0:
+                dot=Tex(r"\cdot")
+                dot.scale(0.8)
+                dot.set_color(CHILL_BROWN)
+                dot.next_to(eq, RIGHT, buff=0.15)
+                equation_rect_pair=VGroup(eq, rect, dot)
+            else: 
+                equation_rect_pair=VGroup(eq, rect)
+            dem_rectangles.add(equation_rect_pair)
+
+
+        for r in dem_rectangles:
+            self.add(r)
+            # self.wait(0.1)
+
         self.wait()
-
-
 
 
 

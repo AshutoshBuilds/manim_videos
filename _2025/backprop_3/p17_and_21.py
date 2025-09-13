@@ -264,7 +264,8 @@ class p17(InteractiveScene):
 
 class p21_final_planes(InteractiveScene):
     def construct(self):
-        map_img=ImageMobject(graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-11.png')
+        # map_img=ImageMobject(graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-11.png')
+        map_img=ImageMobject('/Users/stephen/Stephencwelch\ Dropbox/welch_labs/ai_book/3_backprop_2/graphics/barrle_hertog_map_32.png')
         map_img.move_to(ORIGIN)
         map_img.scale(0.25)
         

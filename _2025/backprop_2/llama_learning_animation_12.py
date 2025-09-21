@@ -460,7 +460,7 @@ class LlamaLearningTwelveF(InteractiveScene):
         '''
 
 
-        pickle_path='/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backprop2/hackin/jun_3_1'
+        pickle_path='/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backprop2/hackin/jun_3_1_manual_download'
         snapshots=[]
         for p in sorted(glob.glob(pickle_path+'/*.p')):
             with open(p, 'rb') as f:

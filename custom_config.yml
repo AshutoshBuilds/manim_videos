@@ -1,7 +1,7 @@
 directories:
   mirror_module_path: False
   removed_mirror_prefix: "/Users/stephen/Stephencwelch Dropbox/Stephen Welch"
-  base: "/Users/stephen/Stephencwelch Dropbox/welch_labs/ai_book/3_backprop_2/manim"
+  base: "/Users/stephen/Stephencwelch Dropbox/welch_labs/ai_book/2_backprop_1/design/assets/manim"
   subdirs:
     raster_images: "images/raster"
     vector_images: "images/vector"

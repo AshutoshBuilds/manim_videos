@@ -5,11 +5,18 @@ YELLOW='#ffd35a'
 RED='#EC2027'
 BLUE='#65c8d0'
 
-surf=np.load('/home/zedaes/Documents/Welch Labs/ai_book/backprop/data/p_24_28_losses_4.npy')
-xy=np.load('/home/zedaes/Documents/Welch Labs/ai_book/backprop/data/p_24_28_losses_4xy.npy')
-grads_1=np.load('/home/zedaes/Documents/Welch Labs/ai_book/backprop/data/p_33_35_grads_1_2.npy') 
-grads_2=np.load('/home/zedaes/Documents/Welch Labs/ai_book/backprop/data/p_33_35_grads_2_2.npy') 
-xy_grads=np.load('/home/zedaes/Documents/Welch Labs/ai_book/backprop/data/p_33_35_xy_2.npy') 
+# surf=np.load('/home/zedaes/Documents/Welch Labs/ai_book/backprop/data/p_24_28_losses_4.npy')
+# xy=np.load('/home/zedaes/Documents/Welch Labs/ai_book/backprop/data/p_24_28_losses_4xy.npy')
+# grads_1=np.load('/home/zedaes/Documents/Welch Labs/ai_book/backprop/data/p_33_35_grads_1_2.npy') 
+# grads_2=np.load('/home/zedaes/Documents/Welch Labs/ai_book/backprop/data/p_33_35_grads_2_2.npy') 
+# xy_grads=np.load('/home/zedaes/Documents/Welch Labs/ai_book/backprop/data/p_33_35_xy_2.npy') 
+
+surf=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/p_24_28_losses_4.npy')
+xy=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/p_24_28_losses_4xy.npy')
+grads_1=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/p_33_35_grads_1_2.npy') 
+grads_2=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/p_33_35_grads_2_2.npy') 
+xy_grads=np.load('/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/p_33_35_xy_2.npy') 
+
 
 
 def param_surface(u, v):
@@ -323,7 +330,9 @@ class P33_35(InteractiveScene):
             resolution=(256, 256),
         )
 
-        ts = TexturedSurface(surface, '/home/zedaes/Documents/Welch Labs/ai_book/backprop/data/p_24_28_losses_4.png')
+        # ts = TexturedSurface(surface, '/home/zedaes/Documents/Welch Labs/ai_book/backprop/data/p_24_28_losses_4.png')
+        ts = TexturedSurface(surface, '/Users/stephen/Stephencwelch Dropbox/Stephen Welch/welch_labs/backpropagation/hackin/p_24_28_losses_4.png')
+
         ts.set_shading(0.0, 0.1, 0)
         
         pivot_x,scale_x=get_pivot_and_scale(axis_min=x_axis_1.x_min, axis_max=x_axis_1.x_max, 
@@ -372,8 +381,8 @@ class P33_35(InteractiveScene):
                   points_2[0].animate.set_opacity(0.0),
                   arrows_1[0].animate.rotate(-DEGREES*135, axis=arrows_1[0].get_end()-arrows_1[0].get_start()),
                   arrows_2[0].animate.rotate(-DEGREES*80, axis=arrows_2[0].get_end()-arrows_2[0].get_start()),
-                  u_gridlines.animate.set_stroke(opacity=0.14), 
-                  v_gridlines.animate.set_stroke(opacity=0.14),
+                  u_gridlines.animate.set_stroke(opacity=0.5), #0.14 Trying higher for book
+                  v_gridlines.animate.set_stroke(opacity=0.5), #0.14
                   # self.frame.animate.reorient(125, 57, 0, (-2.45, 1.36, 2.08), 1.21),
                   # self.frame.animate.reorient(106, 41, 0, (-2.43, 0.92, 2.55), 3.11), 
                   self.frame.animate.reorient(124, 40, 0, (-2.57, 0.86, 2.7), 1.81),
@@ -381,186 +390,216 @@ class P33_35(InteractiveScene):
 
         self.wait()
 
-        a3 =Arrow(start=[arrows_1[0].get_corner(LEFT)[0]+0.03, arrows_1[0].get_corner(LEFT)[1]+0.01, arrows_1[0].get_corner(OUT)[2]],
-                  end=[arrows_1[0].get_corner(RIGHT)[0], arrows_2[0].get_corner(UP)[1], arrows_2[0].get_corner(IN)[2]-0.1], 
-                  fill_color='#FF00FF', thickness=3.0, tip_width_ratio=5, buff=0)
+        #Might be a good spot for a book shot here
+
+        self.remove(x_label_1)
+        self.remove(x_label_2)
+        self.remove(y_label_1)
+        self.remove(arrows_1)
+        self.remove(arrows_2)
         self.wait()
 
-        self.play(TransformFromCopy(arrows_1[0], a3), #Ah that's fucking dope - how many more cool tricks does Grant have up his sleeve that I know nothing about lol. 
-                  TransformFromCopy(arrows_2[0], a3),
-                  run_time=3.0)
-        self.wait()
+
+        # self.frame.reorient(-154, 65, 0, (-3.64, 1.96, 1.53), 4.59)
+        # self.frame.reorient(-166, 76, 0, (-3.71, 2.02, 1.28), 4.12)
+        # self.frame.reorient(-151, 66, 0, (-3.66, 2.01, 1.37), 4.56)
+        self.frame.reorient(-150, 60, 0, (-3.52, 1.99, 1.55), 5.15)
+        self.wait(5)
+
+        self.embed()
+
+        #Ok, I'll do a decent amount of overlay, it's not perfect, but I think it can work??
+
+        # self.remove(arrows_1[0]); self.add(arrows_1[0])
 
 
-        s1=Dot3D(center=a3.get_start(), radius=0.06, color='$FF00FF')
-        s2=Dot3D(center=a3.get_end(), radius=0.06, color='$FF00FF')
-        self.wait()
 
-        self.play(arrows_1[0].animate.set_opacity(0.0),
-                  arrows_2[0].animate.set_opacity(0.0),
-                  curves_1[0].animate.set_opacity(0.0),
-                  curves_2[0].animate.set_opacity(0.0),
-                  FadeIn(s1),
-                  FadeIn(s2),
-                  self.frame.animate.reorient(175, 47, 0, (-3.89, 1.49, 1.6), 3.75),
-                  run_time=2.0)
-        self.remove(s1); self.add(s1) #Occlusions
-        self.wait()
 
-        # Now add in next set of RED and blue lines (maybe curves)? And have them merge together again to steer us 
-        # donwhill bro!
-        # Ok so I need to move the rest of the panel stuff...
-        # panel_1=VGroup(axes_1, x_label_1, y_label_1, curves_1, points_1, arrows_1, lines_1)
-        # panel_1_start=VGroup(axes_1, x_label_1, y_label_1, curves_1[0], points_1[0], arrows_1[0])
-        panel_1_leftovers=VGroup(curves_1[1:], points_1[1:], arrows_1[1:])
-        panel_2_leftovers=VGroup(curves_2[1:], points_2[1:], arrows_2[1:])
-        panel_1_leftovers.shift([0, 0, -2.0])
-        panel_2_leftovers.rotate(90*DEGREES, [0,0,1], about_point=r).shift([0, 0, 2.0])
 
-        # --- Step 2
-        arrows_1[1].move_to(s2.get_center(), aligned_edge=LEFT)
-        arrows_1[1].rotate(-DEGREES*130, axis=arrows_1[1].get_end()-arrows_1[1].get_start())
-        arrows_1[1].shift([0,0,-0.06])
-        
-        arrows_2[1].move_to(s2.get_center(), aligned_edge=LEFT)
-        arrows_2[1].rotate(-DEGREES*75, axis=arrows_2[1].get_end()-arrows_2[1].get_start())
-        arrows_2[1].shift([0,0.12,-0.06])
 
-        self.add(arrows_1[1], arrows_2[1])
 
-        # self.add(curves_1[1])
-        # curves_1[1].set_stroke(opacity=0.15)
-        # curves_1[1].shift([0, (arrows_1[1].get_center()-curves_1[1].get_center())[1],0])
-        #Ok I don't think adding the curves here is really helpful/interesting. 
-        a4 =Arrow(start=[arrows_1[1].get_corner(LEFT)[0]+0.00, arrows_1[1].get_corner(LEFT)[1]+0.00, arrows_1[1].get_corner(OUT)[2]],
-                  end=[arrows_1[1].get_corner(RIGHT)[0], arrows_2[1].get_corner(UP)[1], arrows_2[1].get_corner(IN)[2]-0.07], 
-                  fill_color='#FF00FF', thickness=3.0, tip_width_ratio=5, buff=0, max_width_to_length_ratio=0.2)
-        # self.add(a4)
-        self.play(TransformFromCopy(arrows_1[1], a4), 
-                  TransformFromCopy(arrows_2[1], a4),
-                  # self.frame.animate.reorient(175, 47, 0, (-3.89, 1.49, 1.6), 3.75),
-                  self.frame.animate.reorient(179, 48, 0, (-3.66, 1.68, 1.37), 2.39),
-                  run_time=3.0)
 
-        # self.frame.reorient(-141, 63, 0, (-3.87, 0.05, -0.09), 2.29) #Debug view
+
+        # a3 =Arrow(start=[arrows_1[0].get_corner(LEFT)[0]+0.03, arrows_1[0].get_corner(LEFT)[1]+0.01, arrows_1[0].get_corner(OUT)[2]],
+        #           end=[arrows_1[0].get_corner(RIGHT)[0], arrows_2[0].get_corner(UP)[1], arrows_2[0].get_corner(IN)[2]-0.1], 
+        #           fill_color='#FF00FF', thickness=3.0, tip_width_ratio=5, buff=0)
         # self.wait()
 
-        s3=Dot3D(center=a4.get_end(), radius=0.05, color='$FF00FF')
-        self.play(arrows_1[1].animate.set_opacity(0.0),
-                  arrows_2[1].animate.set_opacity(0.0),
-                  FadeIn(s3),
-                  # self.frame.animate.reorient(175, 47, 0, (-3.89, 1.49, 1.6), 3.75),
-                  run_time=2.0)
-        self.remove(s2); self.add(s2) #Occlusions
-        self.wait()
-
-        # --- Step 3
-        arrows_1[2].move_to(s3.get_center(), aligned_edge=LEFT)
-        arrows_1[2].rotate(-DEGREES*120, axis=arrows_1[2].get_end()-arrows_1[2].get_start())
-        # arrows_1[2].shift([0,0,-0.05])
-        
-        arrows_2[2].move_to(s3.get_center(), aligned_edge=LEFT)
-        arrows_2[2].rotate(-DEGREES*70, axis=arrows_2[2].get_end()-arrows_2[2].get_start())
-        arrows_2[2].shift([0,0.09,0.03])
-
-        self.add(arrows_1[2], arrows_2[2])
-
-        a5 =Arrow(start=[arrows_1[2].get_corner(LEFT)[0]+0.00, arrows_1[2].get_corner(LEFT)[1]+0.00, arrows_1[2].get_corner(OUT)[2]],
-                  end=[arrows_1[2].get_corner(RIGHT)[0], arrows_2[2].get_corner(UP)[1], arrows_2[2].get_corner(IN)[2]-0.05], 
-                  fill_color='#FF00FF', thickness=3.0, tip_width_ratio=3, buff=0, max_width_to_length_ratio=0.2)
-        # self.add(a5)
-        self.wait()
-        
-        self.play(TransformFromCopy(arrows_1[2], a5), 
-                  TransformFromCopy(arrows_2[2], a5),
-                  self.frame.animate.reorient(179, 54, 0, (-3.44, 1.77, 1.25), 1.62),
-                  run_time=3.0)
-        # self.wait()
-        # self.frame.reorient(-141, 63, 0, (-3.87, 0.05, -0.09), 2.29) #Debug view
-
-        s4=Dot3D(center=a5.get_end(), radius=0.035, color='$FF00FF')
-        self.play(arrows_1[2].animate.set_opacity(0.0),
-                  arrows_2[2].animate.set_opacity(0.0),
-                  FadeIn(s4),
-                  # self.frame.animate.reorient(175, 47, 0, (-3.89, 1.49, 1.6), 3.75),
-                  run_time=2.0)
-        self.remove(s3); self.add(s3) #Occlusions
-        self.wait()
-
-        # --- Step 4
-        arrows_1[3].move_to(s4.get_center(), aligned_edge=LEFT)
-        arrows_1[3].rotate(-DEGREES*120, axis=arrows_1[3].get_end()-arrows_1[3].get_start())
-        # arrows_1[3].shift([0,0,-0.05])
-        
-        arrows_2[3].move_to(s4.get_center(), aligned_edge=LEFT)
-        arrows_2[3].rotate(-DEGREES*70, axis=arrows_2[3].get_end()-arrows_2[3].get_start())
-        arrows_2[3].shift([0,0.04,0.01])
-
-        self.add(arrows_1[3], arrows_2[3])
-
-        a6 =Arrow(start=[arrows_1[3].get_corner(LEFT)[0]+0.00, arrows_1[3].get_corner(LEFT)[1]+0.00, arrows_1[3].get_corner(OUT)[2]],
-                  end=[arrows_1[3].get_corner(RIGHT)[0], arrows_2[3].get_corner(UP)[1], arrows_2[3].get_corner(IN)[2]], 
-                  fill_color='#FF00FF', thickness=3.0, tip_width_ratio=3, buff=0, max_width_to_length_ratio=0.2)
-        # self.add(a6)
-        self.wait()
-        
-        self.play(TransformFromCopy(arrows_1[3], a6), 
-                  TransformFromCopy(arrows_2[3], a6),
-                  self.frame.animate.reorient(179, 54, 0, (-3.43, 1.82, 1.18), 1.18),
-                  run_time=3.0)
-        self.wait()
-
-        # self.frame.reorient(-141, 63, 0, (-3.87, 0.05, -0.09), 2.29) #Debug view
-
-        s5=Dot3D(center=a6.get_end(), radius=0.02, color='$FF00FF')
-        self.play(arrows_1[3].animate.set_opacity(0.0),
-                  arrows_2[3].animate.set_opacity(0.0),
-                  FadeIn(s5),
-                  # self.frame.animate.reorient(175, 47, 0, (-3.89, 1.49, 1.6), 3.75),
-                  run_time=2.0)
-        self.remove(s4); self.add(s4) #Occlusions
-        self.wait()
-
-        # --- Step 5 - probably our last step
-        # --- Ok, I don't think step 5 actually adds much value. 
-        # arrows_1[4].move_to(s5.get_center(), aligned_edge=LEFT)
-        # arrows_1[4].rotate(-DEGREES*90, axis=arrows_1[4].get_end()-arrows_1[4].get_start())
-        # # arrows_1[4].shift([0,0,-0.05])
-        
-        # arrows_2[4].move_to(s5.get_center(), aligned_edge=LEFT)
-        # arrows_2[4].rotate(-DEGREES*90, axis=arrows_2[4].get_end()-arrows_2[4].get_start())
-        # arrows_2[4].shift([0,0.02,0.005])
-
-        # self.add(arrows_1[4], arrows_2[4])
-
-        # a7 =Arrow(start=[arrows_1[4].get_corner(LEFT)[0]+0.00, arrows_1[4].get_corner(LEFT)[1]+0.00, arrows_1[4].get_corner(OUT)[2]],
-        #           end=[arrows_1[4].get_corner(RIGHT)[0], arrows_2[4].get_corner(UP)[1], arrows_2[4].get_corner(IN)[2]], 
-        #           fill_color='#FF00FF', thickness=3.0, tip_width_ratio=3, buff=0, max_width_to_length_ratio=0.2)
-        # # self.add(a7)
-        # self.wait()
-        
-        # self.play(TransformFromCopy(arrows_1[4], a7), 
-        #           TransformFromCopy(arrows_2[4], a7),
-        #           self.frame.animate.reorient(179, 54, 0, (-3.43, 1.82, 1.18), 1.0),
+        # self.play(TransformFromCopy(arrows_1[0], a3), #Ah that's fucking dope - how many more cool tricks does Grant have up his sleeve that I know nothing about lol. 
+        #           TransformFromCopy(arrows_2[0], a3),
         #           run_time=3.0)
         # self.wait()
 
-        # s6=Dot3D(center=a7.get_end(), radius=0.01, color='$FF00FF')
-        # self.play(arrows_1[4].animate.set_opacity(0.0),
-        #           arrows_2[4].animate.set_opacity(0.0),
-        #           FadeIn(s6),
-        #           # self.frame.animate.reorient(179, 54, 0, (-3.39, 1.87, 1.12), 0.72),
-        #           run_time=2.0)
-        # self.remove(s5); self.add(s5) #Occlusions
+
+        # s1=Dot3D(center=a3.get_start(), radius=0.06, color='$FF00FF')
+        # s2=Dot3D(center=a3.get_end(), radius=0.06, color='$FF00FF')
         # self.wait()
 
-        #Ok this scene could be tuned more for sure, but it's not terrible - it's time to go do the rewrite! 
+        # self.play(arrows_1[0].animate.set_opacity(0.0),
+        #           arrows_2[0].animate.set_opacity(0.0),
+        #           curves_1[0].animate.set_opacity(0.0),
+        #           curves_2[0].animate.set_opacity(0.0),
+        #           FadeIn(s1),
+        #           FadeIn(s2),
+        #           self.frame.animate.reorient(175, 47, 0, (-3.89, 1.49, 1.6), 3.75),
+        #           run_time=2.0)
+        # self.remove(s1); self.add(s1) #Occlusions
+        # self.wait()
+
+        # # Now add in next set of RED and blue lines (maybe curves)? And have them merge together again to steer us 
+        # # donwhill bro!
+        # # Ok so I need to move the rest of the panel stuff...
+        # # panel_1=VGroup(axes_1, x_label_1, y_label_1, curves_1, points_1, arrows_1, lines_1)
+        # # panel_1_start=VGroup(axes_1, x_label_1, y_label_1, curves_1[0], points_1[0], arrows_1[0])
+        # panel_1_leftovers=VGroup(curves_1[1:], points_1[1:], arrows_1[1:])
+        # panel_2_leftovers=VGroup(curves_2[1:], points_2[1:], arrows_2[1:])
+        # panel_1_leftovers.shift([0, 0, -2.0])
+        # panel_2_leftovers.rotate(90*DEGREES, [0,0,1], about_point=r).shift([0, 0, 2.0])
+
+        # # --- Step 2
+        # arrows_1[1].move_to(s2.get_center(), aligned_edge=LEFT)
+        # arrows_1[1].rotate(-DEGREES*130, axis=arrows_1[1].get_end()-arrows_1[1].get_start())
+        # arrows_1[1].shift([0,0,-0.06])
+        
+        # arrows_2[1].move_to(s2.get_center(), aligned_edge=LEFT)
+        # arrows_2[1].rotate(-DEGREES*75, axis=arrows_2[1].get_end()-arrows_2[1].get_start())
+        # arrows_2[1].shift([0,0.12,-0.06])
+
+        # self.add(arrows_1[1], arrows_2[1])
+
+        # # self.add(curves_1[1])
+        # # curves_1[1].set_stroke(opacity=0.15)
+        # # curves_1[1].shift([0, (arrows_1[1].get_center()-curves_1[1].get_center())[1],0])
+        # #Ok I don't think adding the curves here is really helpful/interesting. 
+        # a4 =Arrow(start=[arrows_1[1].get_corner(LEFT)[0]+0.00, arrows_1[1].get_corner(LEFT)[1]+0.00, arrows_1[1].get_corner(OUT)[2]],
+        #           end=[arrows_1[1].get_corner(RIGHT)[0], arrows_2[1].get_corner(UP)[1], arrows_2[1].get_corner(IN)[2]-0.07], 
+        #           fill_color='#FF00FF', thickness=3.0, tip_width_ratio=5, buff=0, max_width_to_length_ratio=0.2)
+        # # self.add(a4)
+        # self.play(TransformFromCopy(arrows_1[1], a4), 
+        #           TransformFromCopy(arrows_2[1], a4),
+        #           # self.frame.animate.reorient(175, 47, 0, (-3.89, 1.49, 1.6), 3.75),
+        #           self.frame.animate.reorient(179, 48, 0, (-3.66, 1.68, 1.37), 2.39),
+        #           run_time=3.0)
+
+        # # self.frame.reorient(-141, 63, 0, (-3.87, 0.05, -0.09), 2.29) #Debug view
+        # # self.wait()
+
+        # s3=Dot3D(center=a4.get_end(), radius=0.05, color='$FF00FF')
+        # self.play(arrows_1[1].animate.set_opacity(0.0),
+        #           arrows_2[1].animate.set_opacity(0.0),
+        #           FadeIn(s3),
+        #           # self.frame.animate.reorient(175, 47, 0, (-3.89, 1.49, 1.6), 3.75),
+        #           run_time=2.0)
+        # self.remove(s2); self.add(s2) #Occlusions
+        # self.wait()
+
+        # # --- Step 3
+        # arrows_1[2].move_to(s3.get_center(), aligned_edge=LEFT)
+        # arrows_1[2].rotate(-DEGREES*120, axis=arrows_1[2].get_end()-arrows_1[2].get_start())
+        # # arrows_1[2].shift([0,0,-0.05])
+        
+        # arrows_2[2].move_to(s3.get_center(), aligned_edge=LEFT)
+        # arrows_2[2].rotate(-DEGREES*70, axis=arrows_2[2].get_end()-arrows_2[2].get_start())
+        # arrows_2[2].shift([0,0.09,0.03])
+
+        # self.add(arrows_1[2], arrows_2[2])
+
+        # a5 =Arrow(start=[arrows_1[2].get_corner(LEFT)[0]+0.00, arrows_1[2].get_corner(LEFT)[1]+0.00, arrows_1[2].get_corner(OUT)[2]],
+        #           end=[arrows_1[2].get_corner(RIGHT)[0], arrows_2[2].get_corner(UP)[1], arrows_2[2].get_corner(IN)[2]-0.05], 
+        #           fill_color='#FF00FF', thickness=3.0, tip_width_ratio=3, buff=0, max_width_to_length_ratio=0.2)
+        # # self.add(a5)
+        # self.wait()
+        
+        # self.play(TransformFromCopy(arrows_1[2], a5), 
+        #           TransformFromCopy(arrows_2[2], a5),
+        #           self.frame.animate.reorient(179, 54, 0, (-3.44, 1.77, 1.25), 1.62),
+        #           run_time=3.0)
+        # # self.wait()
+        # # self.frame.reorient(-141, 63, 0, (-3.87, 0.05, -0.09), 2.29) #Debug view
+
+        # s4=Dot3D(center=a5.get_end(), radius=0.035, color='$FF00FF')
+        # self.play(arrows_1[2].animate.set_opacity(0.0),
+        #           arrows_2[2].animate.set_opacity(0.0),
+        #           FadeIn(s4),
+        #           # self.frame.animate.reorient(175, 47, 0, (-3.89, 1.49, 1.6), 3.75),
+        #           run_time=2.0)
+        # self.remove(s3); self.add(s3) #Occlusions
+        # self.wait()
+
+        # # --- Step 4
+        # arrows_1[3].move_to(s4.get_center(), aligned_edge=LEFT)
+        # arrows_1[3].rotate(-DEGREES*120, axis=arrows_1[3].get_end()-arrows_1[3].get_start())
+        # # arrows_1[3].shift([0,0,-0.05])
+        
+        # arrows_2[3].move_to(s4.get_center(), aligned_edge=LEFT)
+        # arrows_2[3].rotate(-DEGREES*70, axis=arrows_2[3].get_end()-arrows_2[3].get_start())
+        # arrows_2[3].shift([0,0.04,0.01])
+
+        # self.add(arrows_1[3], arrows_2[3])
+
+        # a6 =Arrow(start=[arrows_1[3].get_corner(LEFT)[0]+0.00, arrows_1[3].get_corner(LEFT)[1]+0.00, arrows_1[3].get_corner(OUT)[2]],
+        #           end=[arrows_1[3].get_corner(RIGHT)[0], arrows_2[3].get_corner(UP)[1], arrows_2[3].get_corner(IN)[2]], 
+        #           fill_color='#FF00FF', thickness=3.0, tip_width_ratio=3, buff=0, max_width_to_length_ratio=0.2)
+        # # self.add(a6)
+        # self.wait()
+        
+        # self.play(TransformFromCopy(arrows_1[3], a6), 
+        #           TransformFromCopy(arrows_2[3], a6),
+        #           self.frame.animate.reorient(179, 54, 0, (-3.43, 1.82, 1.18), 1.18),
+        #           run_time=3.0)
+        # self.wait()
+
+        # # self.frame.reorient(-141, 63, 0, (-3.87, 0.05, -0.09), 2.29) #Debug view
+
+        # s5=Dot3D(center=a6.get_end(), radius=0.02, color='$FF00FF')
+        # self.play(arrows_1[3].animate.set_opacity(0.0),
+        #           arrows_2[3].animate.set_opacity(0.0),
+        #           FadeIn(s5),
+        #           # self.frame.animate.reorient(175, 47, 0, (-3.89, 1.49, 1.6), 3.75),
+        #           run_time=2.0)
+        # self.remove(s4); self.add(s4) #Occlusions
+        # self.wait()
+
+        # # --- Step 5 - probably our last step
+        # # --- Ok, I don't think step 5 actually adds much value. 
+        # # arrows_1[4].move_to(s5.get_center(), aligned_edge=LEFT)
+        # # arrows_1[4].rotate(-DEGREES*90, axis=arrows_1[4].get_end()-arrows_1[4].get_start())
+        # # # arrows_1[4].shift([0,0,-0.05])
+        
+        # # arrows_2[4].move_to(s5.get_center(), aligned_edge=LEFT)
+        # # arrows_2[4].rotate(-DEGREES*90, axis=arrows_2[4].get_end()-arrows_2[4].get_start())
+        # # arrows_2[4].shift([0,0.02,0.005])
+
+        # # self.add(arrows_1[4], arrows_2[4])
+
+        # # a7 =Arrow(start=[arrows_1[4].get_corner(LEFT)[0]+0.00, arrows_1[4].get_corner(LEFT)[1]+0.00, arrows_1[4].get_corner(OUT)[2]],
+        # #           end=[arrows_1[4].get_corner(RIGHT)[0], arrows_2[4].get_corner(UP)[1], arrows_2[4].get_corner(IN)[2]], 
+        # #           fill_color='#FF00FF', thickness=3.0, tip_width_ratio=3, buff=0, max_width_to_length_ratio=0.2)
+        # # # self.add(a7)
+        # # self.wait()
+        
+        # # self.play(TransformFromCopy(arrows_1[4], a7), 
+        # #           TransformFromCopy(arrows_2[4], a7),
+        # #           self.frame.animate.reorient(179, 54, 0, (-3.43, 1.82, 1.18), 1.0),
+        # #           run_time=3.0)
+        # # self.wait()
+
+        # # s6=Dot3D(center=a7.get_end(), radius=0.01, color='$FF00FF')
+        # # self.play(arrows_1[4].animate.set_opacity(0.0),
+        # #           arrows_2[4].animate.set_opacity(0.0),
+        # #           FadeIn(s6),
+        # #           # self.frame.animate.reorient(179, 54, 0, (-3.39, 1.87, 1.12), 0.72),
+        # #           run_time=2.0)
+        # # self.remove(s5); self.add(s5) #Occlusions
+        # # self.wait()
+
+        # #Ok this scene could be tuned more for sure, but it's not terrible - it's time to go do the rewrite! 
 
 
-        self.play(self.frame.animate.reorient(360-135, 69, 0, (-3.49, 1.61, 1.42), 2.91), run_time=6)
+        # self.play(self.frame.animate.reorient(360-135, 69, 0, (-3.49, 1.61, 1.42), 2.91), run_time=6)
 
-        self.embed()
-        self.wait(20)
+        # self.embed()
+        # self.wait(20)
 
 
 
@@ -599,6 +638,7 @@ class P33_35_2D(InteractiveScene):
         y_label_2 = Tex('Loss', font_size=25).set_color(CHILL_BROWN)
         x_label_2.next_to(x_axis_2, RIGHT, buff=0.05)
         y_label_2.next_to(y_axis_2, UP, buff=0.05) #not sure I need this. 
+
 
 
         ## Get all Curves, Points, Arrows, and Lines, then Group into panels
@@ -712,7 +752,8 @@ from functools import partial
 
 CHILL_BROWN='#948979'
 BLUE='#65c8d0'
-WELCH_ASSET_PATH='/home/zedaes/Documents/Welch Labs/manim_videos/welch_assets'
+# WELCH_ASSET_PATH='/home/zedaes/Documents/Welch Labs/manim_videos/welch_assets'
+WELCH_ASSET_PATH='/Users/stephen/manim/videos/welch_assets'
 
     # def copy_frame_positioning(self):
     #     frame = self.frame

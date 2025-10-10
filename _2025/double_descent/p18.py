@@ -78,13 +78,23 @@ def line_circle_intersection(line_start, line_end, circle_center, radius):
     return sorted(intersections)
 
 
-def create_split_line(start, end, all_neurons, neuron_radius, exclude_neurons=None):
+def create_split_line(neuron1, neuron2, all_neurons, neuron_radius, exclude_neurons=None):
     """
     Create a line that splits around neurons it passes through.
     Returns a VGroup of line segments that avoid neurons.
+    The line segments touch the edges of the source and destination neurons.
     """
     if exclude_neurons is None:
         exclude_neurons = set()
+
+    center1 = neuron1.get_center()
+    center2 = neuron2.get_center()
+    
+    direction = center2 - center1
+    unit_vector = direction / np.linalg.norm(direction)
+    
+    full_start = center1 + unit_vector * neuron_radius
+    full_end = center2 - unit_vector * neuron_radius
 
     t_values = [0.0]
 
@@ -93,7 +103,7 @@ def create_split_line(start, end, all_neurons, neuron_radius, exclude_neurons=No
             continue
 
         intersections = line_circle_intersection(
-            start, end, neuron.get_center(), neuron_radius * 1.1
+            full_start, full_end, neuron.get_center(), neuron_radius
         )
         t_values.extend(intersections)
 
@@ -106,20 +116,20 @@ def create_split_line(start, end, all_neurons, neuron_radius, exclude_neurons=No
         t_end = t_values[i + 1]
         t_mid = (t_start + t_end) / 2
 
-        mid_point = start + t_mid * (end - start)
+        mid_point = full_start + t_mid * (full_end - full_start)
 
         is_inside_neuron = False
         for neuron in all_neurons:
             if neuron in exclude_neurons:
                 continue
             dist = np.linalg.norm(mid_point - neuron.get_center())
-            if dist < neuron_radius * 1.05:
+            if dist < neuron_radius * 0.95:
                 is_inside_neuron = True
                 break
 
         if not is_inside_neuron:
-            seg_start = start + t_start * (end - start)
-            seg_end = start + t_end * (end - start)
+            seg_start = full_start + t_start * (full_end - full_start)
+            seg_end = full_start + t_end * (full_end - full_start)
             segment = Line(seg_start, seg_end)
             line_segments.add(segment)
 
@@ -805,11 +815,9 @@ class FourLayerNetworkFullConnections(InteractiveScene):
 
                 for neuron1 in current_layer:
                     for neuron2 in next_layer:
-                        start, end = get_edge_points(neuron1, neuron2, neuron_radius)
-
                         line_segments = create_split_line(
-                            start,
-                            end,
+                            neuron1,
+                            neuron2,
                             all_neurons,
                             neuron_radius,
                             exclude_neurons={neuron1, neuron2}

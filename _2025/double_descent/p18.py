@@ -816,7 +816,7 @@ class FourLayerNetworkFullConnections(InteractiveScene):
                         )
 
                         for segment in line_segments:
-                            segment.set_stroke(FRESH_TAN, width=0.7, opacity=0.6)
+                            segment.set_stroke(FRESH_TAN, width=2.0, opacity=0.6)
 
                         lines.add(line_segments)
 

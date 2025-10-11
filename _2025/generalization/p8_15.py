@@ -310,7 +310,7 @@ class p8_15_1(InteractiveScene):
 
         # self.frame.reorient(0, 0, 0, (0.14, 0.38, 0.0), 8.31)
 
-
+        #U shaped curve to add in in paragraph 12
         error_curves_svg=SVGMobject(svg_dir+'/p8_15_2-06.svg') #[1:] 
         error_curves_svg.scale(2.98)
         error_curves_svg.move_to([4.84, 0.74, 0])

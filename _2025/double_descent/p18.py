@@ -732,7 +732,7 @@ class P18(InteractiveScene):
 
 class FourLayerNetworkFullConnections(InteractiveScene):
     def construct(self):
-        layer_spacing = 0.3
+        layer_spacing = 0.22
         neuron_radius = 0.06
         vertical_spacing = 0.14
         dots_scale = 0.25
@@ -804,10 +804,11 @@ class FourLayerNetworkFullConnections(InteractiveScene):
         for layer in neuron_layers:
             all_neurons.add(*layer)
 
-        for layer_idx, layer in enumerate(neuron_layers):
-            self.add(layer)
-            self.wait(0.5)
+        all_lines = VGroup()
+        
+        
 
+        for layer_idx, layer in enumerate(neuron_layers):
             if layer_idx < len(neuron_layers) - 1:
                 lines = VGroup()
                 current_layer = neuron_layers[layer_idx]
@@ -828,9 +829,14 @@ class FourLayerNetworkFullConnections(InteractiveScene):
 
                         lines.add(line_segments)
 
-                self.play(GrowFromEdge(lines, LEFT), run_time=1.5)
+                all_lines.add(lines)
+                
+        network = VGroup(all_lines, neuron_layers, dots)
+        network.scale(4).move_to(ORIGIN)
 
-        self.add(dots)
+        self.add(network)
         self.wait(2)
+
+        
 
         self.embed()

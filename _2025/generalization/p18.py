@@ -758,7 +758,7 @@ class P18(InteractiveScene):
                     .rotate(PI / 2, OUT)
                     .scale(dots_scale)
                     .set_color(FRESH_TAN)
-                )
+                ).set_opacity(0.5)
                 dot.move_to(RIGHT * x_pos)
                 dots.add(dot)
                 for y in bottom_y:
@@ -782,7 +782,7 @@ class P18(InteractiveScene):
                     .rotate(PI / 2, OUT)
                     .scale(dots_scale)
                     .set_color(FRESH_TAN)
-                )
+                ).set_opacity(0.5)
                 dot.move_to(RIGHT * x_pos)
                 dots.add(dot)
                 for y in bottom_y[:-2]:
@@ -842,7 +842,7 @@ class P18(InteractiveScene):
         for iteration in range(3):
             neurons_list = list(first_four_layers_neurons)
             total_neurons = len(neurons_list)
-            num_to_disable = int(total_neurons * 0.5)
+            num_to_disable = int(total_neurons * 0.3)
             indices_to_disable = np.random.choice(
                 total_neurons, 
                 size=num_to_disable, 
@@ -857,7 +857,153 @@ class P18(InteractiveScene):
                     disable_animations.append(line_segment.animate.set_opacity(0.2))
 
             self.play(*disable_animations, run_time=1.0)
-            self.wait(2)
+            self.wait(1)
+
+            enable_animations = []
+            for neuron in neurons_to_disable:
+                enable_animations.append(neuron.animate.set_opacity(1.0))
+                for line_segment in neuron_to_lines[neuron]:
+                    enable_animations.append(line_segment.animate.set_opacity(1.0))
+
+            self.play(*enable_animations, run_time=1.0)
+            self.wait(1)
+
+        self.embed()
+
+class P18_Long(InteractiveScene):
+    def construct(self):
+        layer_spacing = 0.22
+        neuron_radius = 0.06
+        vertical_spacing = 0.14
+        dots_scale = 0.25
+        visible_neurons = 8
+
+        neuron_layers = VGroup()
+        dots = VGroup()
+
+        def get_vertical_positions():
+            half = visible_neurons // 2
+            top_y = [vertical_spacing * (half - i) for i in range(half)]
+            bottom_y = [vertical_spacing * (-(i + 1)) for i in range(half)]
+            return top_y, bottom_y
+
+        for layer_idx in range(5):
+            group = VGroup()
+            x_pos = layer_idx * layer_spacing
+            if layer_idx < 4:
+                top_y, bottom_y = get_vertical_positions()
+                for y in top_y:
+                    neuron = Circle(radius=neuron_radius, stroke_color=FRESH_TAN)
+                    neuron.set_stroke(width=2)
+                    neuron.set_fill(THUNDER, 1)
+                    neuron.set_stroke(WHITE, width=2)
+                    neuron.move_to(RIGHT * x_pos + UP * y)
+                    group.add(neuron)
+                dot = (
+                    Tex("...")
+                    .rotate(PI / 2, OUT)
+                    .scale(dots_scale)
+                    .set_color(FRESH_TAN)
+                ).set_opacity(0.5)
+                dot.move_to(RIGHT * x_pos)
+                dots.add(dot)
+                for y in bottom_y:
+                    neuron = Circle(radius=neuron_radius, stroke_color=FRESH_TAN)
+                    neuron.set_stroke(width=2)
+                    neuron.set_fill(THUNDER, 1)
+                    neuron.set_stroke(WHITE, width=2)
+                    neuron.move_to(RIGHT * x_pos + UP * y)
+                    group.add(neuron)
+            else:
+                top_y, bottom_y = get_vertical_positions()
+                for y in top_y[2:]:
+                    neuron = Circle(radius=neuron_radius, stroke_color=FRESH_TAN)
+                    neuron.set_stroke(width=2)
+                    neuron.set_fill(THUNDER, 1)
+                    neuron.set_stroke(WHITE, width=2)
+                    neuron.move_to(RIGHT * x_pos + UP * y)
+                    group.add(neuron)
+                dot = (
+                    Tex("...")
+                    .rotate(PI / 2, OUT)
+                    .scale(dots_scale)
+                    .set_color(FRESH_TAN)
+                ).set_opacity(0.5)
+                dot.move_to(RIGHT * x_pos)
+                dots.add(dot)
+                for y in bottom_y[:-2]:
+                    neuron = Circle(radius=neuron_radius, stroke_color=FRESH_TAN)
+                    neuron.set_stroke(width=2)
+                    neuron.set_fill(THUNDER, 1)
+                    neuron.set_stroke(WHITE, width=2)
+                    neuron.move_to(RIGHT * x_pos + UP * y)
+                    group.add(neuron)
+            neuron_layers.add(group)
+
+        all_neurons = VGroup()
+        for layer in neuron_layers:
+            all_neurons.add(*layer)
+
+        all_lines = VGroup()
+        neuron_to_lines = {}
+        
+        for neuron in all_neurons:
+            neuron_to_lines[neuron] = VGroup()
+
+        for layer_idx, layer in enumerate(neuron_layers):
+            if layer_idx < len(neuron_layers) - 1:
+                lines = VGroup()
+                current_layer = neuron_layers[layer_idx]
+                next_layer = neuron_layers[layer_idx + 1]
+
+                for neuron1 in current_layer:
+                    for neuron2 in next_layer:
+                        line_segments = create_split_line(
+                            neuron1,
+                            neuron2,
+                            all_neurons,
+                            neuron_radius,
+                            exclude_neurons={neuron1, neuron2}
+                        )
+
+                        for segment in line_segments:
+                            segment.set_stroke(FRESH_TAN, width=2.0, opacity=0.6)
+                            neuron_to_lines[neuron1].add(segment)
+                            neuron_to_lines[neuron2].add(segment)
+
+                        lines.add(line_segments)
+
+                all_lines.add(lines)
+                
+        network = VGroup(all_lines, neuron_layers, dots)
+        network.scale(4).move_to(ORIGIN)
+
+        self.add(network)
+        self.wait(2)
+
+        first_four_layers_neurons = VGroup()
+        for layer_idx in range(4):
+            first_four_layers_neurons.add(*neuron_layers[layer_idx])
+
+        for iteration in range(20):
+            neurons_list = list(first_four_layers_neurons)
+            total_neurons = len(neurons_list)
+            num_to_disable = int(total_neurons * 0.3)
+            indices_to_disable = np.random.choice(
+                total_neurons, 
+                size=num_to_disable, 
+                replace=False
+            )
+            neurons_to_disable = [neurons_list[i] for i in indices_to_disable]
+
+            disable_animations = []
+            for neuron in neurons_to_disable:
+                disable_animations.append(neuron.animate.set_opacity(0.2))
+                for line_segment in neuron_to_lines[neuron]:
+                    disable_animations.append(line_segment.animate.set_opacity(0.2))
+
+            self.play(*disable_animations, run_time=1.0)
+            self.wait(1)
 
             enable_animations = []
             for neuron in neurons_to_disable:

@@ -724,13 +724,7 @@ def get_output_layer(snapshot, empty=False):
     output_layer = VGroup(output_layer_neurons, dot, output_layer_text)
     return output_layer
 
-
 class P18(InteractiveScene):
-    def construct(self):
-        pass
-
-
-class FourLayerNetworkFullConnections(InteractiveScene):
     def construct(self):
         layer_spacing = 0.22
         neuron_radius = 0.06
@@ -805,8 +799,10 @@ class FourLayerNetworkFullConnections(InteractiveScene):
             all_neurons.add(*layer)
 
         all_lines = VGroup()
+        neuron_to_lines = {}
         
-        
+        for neuron in all_neurons:
+            neuron_to_lines[neuron] = VGroup()
 
         for layer_idx, layer in enumerate(neuron_layers):
             if layer_idx < len(neuron_layers) - 1:
@@ -826,6 +822,8 @@ class FourLayerNetworkFullConnections(InteractiveScene):
 
                         for segment in line_segments:
                             segment.set_stroke(FRESH_TAN, width=2.0, opacity=0.6)
+                            neuron_to_lines[neuron1].add(segment)
+                            neuron_to_lines[neuron2].add(segment)
 
                         lines.add(line_segments)
 
@@ -837,6 +835,37 @@ class FourLayerNetworkFullConnections(InteractiveScene):
         self.add(network)
         self.wait(2)
 
-        
+        first_four_layers_neurons = VGroup()
+        for layer_idx in range(4):
+            first_four_layers_neurons.add(*neuron_layers[layer_idx])
+
+        for iteration in range(3):
+            neurons_list = list(first_four_layers_neurons)
+            total_neurons = len(neurons_list)
+            num_to_disable = int(total_neurons * 0.5)
+            indices_to_disable = np.random.choice(
+                total_neurons, 
+                size=num_to_disable, 
+                replace=False
+            )
+            neurons_to_disable = [neurons_list[i] for i in indices_to_disable]
+
+            disable_animations = []
+            for neuron in neurons_to_disable:
+                disable_animations.append(neuron.animate.set_opacity(0.2))
+                for line_segment in neuron_to_lines[neuron]:
+                    disable_animations.append(line_segment.animate.set_opacity(0.2))
+
+            self.play(*disable_animations, run_time=1.0)
+            self.wait(2)
+
+            enable_animations = []
+            for neuron in neurons_to_disable:
+                enable_animations.append(neuron.animate.set_opacity(1.0))
+                for line_segment in neuron_to_lines[neuron]:
+                    enable_animations.append(line_segment.animate.set_opacity(1.0))
+
+            self.play(*enable_animations, run_time=1.0)
+            self.wait(1)
 
         self.embed()

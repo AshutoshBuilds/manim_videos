@@ -244,176 +244,52 @@ class P8_15V2(InteractiveScene):
         legend_4.scale(0.9)
         legend_4.move_to(ORIGIN + DOWN * 3.2)'''
         
-        legend_1 = VGroup()
-        legend_1_training_data = VGroup()
-        legend_1_testing_data = VGroup()
+        # Create simplified legend with just Training Data, Testing Data, and Target Function
+        legend = VGroup()
         
-        legend_1_training_dot = Dot(radius=0.06).set_color(YELLOW)
-        legend_1_training_text = Text("Training Data", font_size=22, font='myraid-pro').set_color(CHILL_BROWN)
-        legend_1_training_data.add(legend_1_training_dot, legend_1_training_text).arrange(RIGHT, buff=0.1)
+        # Training Data item
+        legend_training_dot = Dot(radius=0.06).set_color(YELLOW)
+        legend_training_text = Text("Training Data", font_size=20, font='myraid-pro').set_color(CHILL_BROWN)
+        legend_training = VGroup(legend_training_dot, legend_training_text).arrange(RIGHT, buff=0.15, aligned_edge=ORIGIN)
         
-        legend_1_testing_dot = Dot(radius=0.06).set_color(TEST_BLUE)
-        legend_1_testing_text = Text("Testing Data", font_size=22, font='myraid-pro').set_color(CHILL_BROWN)
-        legend_1_testing_data.add(legend_1_testing_dot, legend_1_testing_text).arrange(RIGHT, buff=0.1)
+        # Testing Data item
+        legend_testing_dot = Dot(radius=0.06).set_color(TEST_BLUE)
+        legend_testing_text = Text("Testing Data", font_size=20, font='myraid-pro').set_color(CHILL_BROWN)
+        legend_testing = VGroup(legend_testing_dot, legend_testing_text).arrange(RIGHT, buff=0.15, aligned_edge=ORIGIN)
         
-        legend_1_equations = VGroup()
-        legend_1_equation_1_text = Tex(r"y = ax+b", font_size=26).set_color(GREEN)
-        legend_1_equation_1_line = Line(LEFT * 0.15, RIGHT * 0.15, color=GREEN, stroke_width=12)
-        legend_1_equation = VGroup(legend_1_equation_1_line, legend_1_equation_1_text).arrange(RIGHT, buff=0.1)
-        legend_1_equations.add(legend_1_equation).arrange(RIGHT, buff=0.2)
+        # Target Function item
+        legend_target_line = Line(LEFT * 0.2, RIGHT * 0.2, color=CHILL_BROWN, stroke_width=3)
+        legend_target_text = Text("Target Function", font_size=20, font='myraid-pro').set_color(CHILL_BROWN)
+        legend_target = VGroup(legend_target_line, legend_target_text).arrange(RIGHT, buff=0.15, aligned_edge=ORIGIN)
         
-        legend_1.add(legend_1_training_data, legend_1_testing_data, legend_1_equations).arrange(RIGHT)
-
-        legend_1_box = RoundedRectangle(
-            width=legend_1.get_width() + 0.4,
-            height=legend_1.get_height() + 0.4,
+        # Arrange all items in the legend
+        legend_items = VGroup(legend_training, legend_testing, legend_target).arrange(RIGHT, buff=0.4)
+        
+        # Create box around legend
+        legend_box = RoundedRectangle(
+            width=legend_items.get_width() + 0.5,
+            height=legend_items.get_height() + 0.35,
             corner_radius=0.08,
             stroke_color=CHILL_BROWN,
             stroke_width=2,
             fill_color=None,
             fill_opacity=0.0
         )
-        legend_1_box.move_to(legend_1.get_center())
-        legend_1.add(legend_1_box)
+        legend_box.set_stroke(opacity=0.7)
+        legend_items.move_to(legend_box.get_center())
         
-        legend_1.move_to([0.81999993, 0.46      , 0.        ])
-        legend_1.to_edge(DOWN) 
-         ################################################################
+        legend.add(legend_box, legend_items)
+        legend.scale(0.85)
+        # Position under the first plot (x = -2.94 is camera center for first plot)
+        legend.move_to([-2.94, -3.2, 0])
         
-        legend_2 = VGroup()
-        legend_2_training_data = VGroup()
-        legend_2_testing_data = VGroup()
-        
-        legend_2_training_dot = Dot(radius=0.06).set_color(YELLOW)
-        legend_2_training_text = Text("Training Data", font_size=22, font='myraid-pro').set_color(CHILL_BROWN)
-        legend_2_training_data.add(legend_2_training_dot, legend_2_training_text).arrange(RIGHT, buff=0.1)
-        
-        legend_2_testing_dot = Dot(radius=0.06).set_color(TEST_BLUE)
-        legend_2_testing_text = Text("Testing Data", font_size=22, font='myraid-pro').set_color(CHILL_BROWN)
-        legend_2_testing_data.add(legend_2_testing_dot, legend_2_testing_text).arrange(RIGHT, buff=0.1)
-        
-        legend_2_equations = VGroup()
-        legend_2_equation_1_text = Tex(r"y = ax+b", font_size=26).set_color(GREEN)
-        legend_2_equation_1_line = Line(LEFT * 0.15, RIGHT * 0.15, color=GREEN, stroke_width=12)
-        legend_2_equation_1 = VGroup(legend_2_equation_1_line, legend_2_equation_1_text).arrange(RIGHT, buff=0.1)
-        legend_2_equation_2_text = Tex(r"y = ax^2+bx+c", font_size=26).set_color(YELLOW)
-        legend_2_equation_2_line = Line(LEFT * 0.15, RIGHT * 0.15, color=YELLOW, stroke_width=12)
-        legend_2_equation_2 = VGroup(legend_2_equation_2_line, legend_2_equation_2_text).arrange(RIGHT, buff=0.1)
-        legend_2_equations.add(legend_2_equation_1, legend_2_equation_2).arrange(RIGHT, buff=0.2)
-
-        legend_2.add(legend_2_training_data, legend_2_testing_data, legend_2_equations).arrange(RIGHT)
-        
-        legend_2_box = RoundedRectangle(
-            width=legend_2.get_width() + 0.4,
-            height=legend_2.get_height() + 0.4,
-            corner_radius=0.08,
-            stroke_color=CHILL_BROWN,
-            stroke_width=2,
-            fill_color=None,
-            fill_opacity=0.0
-        )
-        legend_2_box.move_to(legend_2.get_center())
-        legend_2.add(legend_2_box)
-        
-        legend_2.move_to([0.81999993, 0.46      , 0.        ])
-        legend_2.to_edge(DOWN) 
-        
-        ##################################
-        
-        legend_3 = VGroup()
-        legend_3_training_data = VGroup()
-        legend_3_testing_data = VGroup()
-        
-        legend_3_training_dot = Dot(radius=0.06).set_color(YELLOW)
-        legend_3_training_text = Text("Training Data", font_size=22, font='myraid-pro').set_color(CHILL_BROWN)
-        legend_3_training_data.add(legend_3_training_dot, legend_3_training_text).arrange(RIGHT, buff=0.1)
-        
-        legend_3_testing_dot = Dot(radius=0.06).set_color(TEST_BLUE)
-        legend_3_testing_text = Text("Testing Data", font_size=22, font='myraid-pro').set_color(CHILL_BROWN)
-        legend_3_testing_data.add(legend_3_testing_dot, legend_3_testing_text).arrange(RIGHT, buff=0.1)
-        
-        legend_3_equations = VGroup()
-        legend_3_equation_1_text = Tex(r"y = ax+b", font_size=26).set_color(GREEN)
-        legend_3_equation_1_line = Line(LEFT * 0.15, RIGHT * 0.15, color=GREEN, stroke_width=12)
-        legend_3_equation_1 = VGroup(legend_3_equation_1_line, legend_3_equation_1_text).arrange(RIGHT, buff=0.1)
-        legend_3_equation_2_text = Tex(r"y = ax^2+bx+c", font_size=26).set_color(YELLOW)
-        legend_3_equation_2_line = Line(LEFT * 0.15, RIGHT * 0.15, color=YELLOW, stroke_width=12)
-        legend_3_equation_2 = VGroup(legend_3_equation_2_line, legend_3_equation_2_text).arrange(RIGHT, buff=0.1)
-        legend_3_equation_3_text = Tex(r"y = ax^3+bx^2+cx+d", font_size=26).set_color(ORANGE)
-        legend_3_equation_3_line = Line(LEFT * 0.15, RIGHT * 0.15, color=ORANGE, stroke_width=12)
-        legend_3_equation_3 = VGroup(legend_3_equation_3_line, legend_3_equation_3_text).arrange(RIGHT, buff=0.1)
-        legend_3_equations.add(legend_3_equation_1, legend_3_equation_2, legend_3_equation_3).arrange(RIGHT, buff=0.2)
-
-        
-        legend_3.add(legend_3_training_data, legend_3_testing_data, legend_3_equations).arrange(RIGHT)
-        
-        legend_3_box = RoundedRectangle(
-            width=legend_3.get_width() + 0.4,
-            height=legend_3.get_height() + 0.4,
-            corner_radius=0.08,
-            stroke_color=CHILL_BROWN,
-            stroke_width=2,
-            fill_color=None,
-            fill_opacity=0.0
-        )
-        legend_3_box.move_to(legend_3.get_center())
-        legend_3.add(legend_3_box)
-        
-        legend_3.move_to([0.81999993, 0.46      , 0.        ])
-        legend_3.to_edge(DOWN)
-        
-        ########################################################
-        
-        legend_4 = VGroup()
-        legend_4_training_data = VGroup()
-        legend_4_testing_data = VGroup()
-        
-        legend_4_training_dot = Dot(radius=0.06).set_color(YELLOW)
-        legend_4_training_text = Text("Training Data", font_size=22, font='myraid-pro').set_color(CHILL_BROWN)
-        legend_4_training_data.add(legend_4_training_dot, legend_4_training_text).arrange(RIGHT, buff=0.1)
-        
-        legend_4_testing_dot = Dot(radius=0.06).set_color(TEST_BLUE)
-        legend_4_testing_text = Text("Testing Data", font_size=22, font='myraid-pro').set_color(CHILL_BROWN)
-        legend_4_testing_data.add(legend_4_testing_dot, legend_4_testing_text).arrange(RIGHT, buff=0.1)
-        
-        legend_4_equations = VGroup()
-        legend_4_equation_1_text = Tex(r"y = ax+b", font_size=26).set_color(GREEN)
-        legend_4_equation_1_line = Line(LEFT * 0.15, RIGHT * 0.15, color=GREEN, stroke_width=12)
-        legend_4_equation_1 = VGroup(legend_4_equation_1_line, legend_4_equation_1_text).arrange(RIGHT, buff=0.1)
-        legend_4_equation_2_text = Tex(r"y = ax^2+bx+c", font_size=26).set_color(YELLOW)
-        legend_4_equation_2_line = Line(LEFT * 0.15, RIGHT * 0.15, color=YELLOW, stroke_width=12)
-        legend_4_equation_2 = VGroup(legend_4_equation_2_line, legend_4_equation_2_text).arrange(RIGHT, buff=0.1)
-        legend_4_equation_3_text = Tex(r"y = ax^3+bx^2+cx+d", font_size=26).set_color(ORANGE)
-        legend_4_equation_3_line = Line(LEFT * 0.15, RIGHT * 0.15, color=ORANGE, stroke_width=12)
-        legend_4_equation_3 = VGroup(legend_4_equation_3_line, legend_4_equation_3_text).arrange(RIGHT, buff=0.1)
-        legend_4_equation_4_text = Tex(r"y = ax^4+bx^3+cx^2+dx+e", font_size=26).set_color(MAROON_B)
-        legend_4_equation_4_line = Line(LEFT * 0.15, RIGHT * 0.15, color=MAROON_B, stroke_width=12)
-        legend_4_equation_4 = VGroup(legend_4_equation_4_line, legend_4_equation_4_text).arrange(RIGHT, buff=0.1)
-        legend_4_equations.add(legend_4_equation_1, legend_4_equation_2, legend_4_equation_3, legend_4_equation_4).arrange(RIGHT, buff=0.2)
-
-        legend_4.add(legend_4_training_data, legend_4_testing_data, legend_4_equations).arrange(RIGHT)
-
-        legend_4_box = RoundedRectangle(
-            width=legend_4.get_width() + 0.4,
-            height=legend_4.get_height() + 0.4,
-            corner_radius=0.08,
-            stroke_color=CHILL_BROWN,
-            stroke_width=2,
-            fill_color=None,
-            fill_opacity=0.0
-        )
-        legend_4_box.move_to(legend_4.get_center())
-        legend_4.add(legend_4_box)
-
-        legend_4.move_to([0.81999993, 0.46      , 0.        ])
-        legend_4.to_edge(DOWN)
-
 
 
         # Initial Animation: Show Curve and Data
         self.frame.reorient(0, 0, 0, (-2.94, 0.08, 0.0), 7.45)
         
         self.play(Write(curve_fit_axis_svg), run_time=3)
+        self.play(ShowCreation(parabola), run_time=2)  # Show the target function (brown parabola)
         self.play(
             LaggedStart(*[FadeIn(dot) for dot in sorted_dots], lag_ratio=0.15), 
             run_time=2
@@ -465,7 +341,7 @@ class P8_15V2(InteractiveScene):
         fit_line_1.set_points_smoothly(fit_points)
         
         self.play(ShowCreation(fit_line_1), run_time=1.5)
-        self.add(legend_1)
+        self.add(legend)
         self.wait()
         
         # Create Second Axes (Error Plot)
@@ -569,7 +445,7 @@ class P8_15V2(InteractiveScene):
         
         self.play(
             self.frame.animate.reorient(0, 0, 0, (0.82, 0.46, 0.0), 8.86),
-            legend_1.animate.shift([0, -0.1, 0]),
+            legend.animate.shift([3.76, -0.1, 0]),  # Move legend to stay under first plot as camera pans
             Write(error_axis_svg),
             ReplacementTransform(train_error_bars, target_train_bars),
             run_time=4
@@ -620,10 +496,6 @@ class P8_15V2(InteractiveScene):
         self.play(
             ShowCreation(fit_line_2),
             fit_line_1.animate.set_stroke(opacity=0.3),
-            ReplacementTransform(legend_1[-1], legend_2[-1]),
-            ReplacementTransform(legend_1[0:2], legend_2[0:2]),
-            ReplacementTransform(legend_1[2][0], legend_2[2][0]),
-            FadeIn(legend_2[2][1]),
             run_time=2
         )
         self.wait()
@@ -728,10 +600,6 @@ class P8_15V2(InteractiveScene):
         self.play(
             ShowCreation(fit_line_3),
             fit_line_2.animate.set_stroke(opacity=0.3),
-            ReplacementTransform(legend_2[-1], legend_3[-1]),
-            ReplacementTransform(legend_2[0:2], legend_3[0:2]),
-            ReplacementTransform(legend_2[2][0:2], legend_3[2][0:2]),
-            FadeIn(legend_3[2][2]),
             run_time=2
         )
         self.wait()
@@ -836,53 +704,13 @@ class P8_15V2(InteractiveScene):
         self.play(
             ShowCreation(fit_line_4),
             fit_line_3.animate.set_stroke(opacity=0.3),
-            ReplacementTransform(legend_3[-1], legend_4[-1]),
-            ReplacementTransform(legend_3[0:2], legend_4[0:2]),
-            ReplacementTransform(legend_3[2][0:3], legend_4[2][0:3]),
-            FadeIn(legend_4[2][3]),
             run_time=2
         )
         self.wait()
         
-        # Create Training Error Bars for Degree 4
-        train_error_bars_4 = VGroup()
-        for i in range(len(x_train)):
-            point_pos = axes_1.c2p(x_train[i], y_train[i])
-            fit_pos_4 = axes_1.c2p(x_train[i], y_train_pred4[i])
-            if point_pos[1] > fit_pos_4[1]:
-                error_bar = Line(fit_pos_4, point_pos, color=YELLOW, stroke_width=3)
-            else:
-                error_bar = Line(point_pos, fit_pos_4, color=YELLOW, stroke_width=3)
-            train_error_bars_4.add(error_bar)
-        
-        # Create target bars for degree 4 on error plot
-        target_train_bars_4 = VGroup()
-        bar_height_4 = train_errors[3] / len(train_error_bars_4) if train_errors[3] > 0 else 0.001
-        x_pos_4 = degrees[3]
-        
-        for i in range(len(train_error_bars_4)):
-            bottom_y = i * bar_height_4
-            top_y = (i + 1) * bar_height_4
-            bottom = axes_2.c2p(x_pos_4, bottom_y)
-            top = axes_2.c2p(x_pos_4, top_y)
-            target_bar = Line(bottom, top, color=YELLOW, stroke_width=3)
-            target_train_bars_4.add(target_bar)
-        
-        # Animate training error bars for degree 4
-        self.play(
-            LaggedStart(*[ShowCreation(bar) for bar in train_error_bars_4], lag_ratio=0.1),
-            run_time=1.5
-        )
-        
-        train_error_bars_4_copy = train_error_bars_4.copy()
-        self.add(train_error_bars_4_copy)
-        train_error_bars_4.set_opacity(0.5)
-        self.wait()
-        
-        # Fade out degree 3 test bars and move degree 4 training bars
+        # Skip training error bars for degree 4 since training error is essentially zero
+        # Just fade out degree 3 test bars  
         self.play(target_test_bars_3.animate.set_opacity(0.0), run_time=1.5)
-        self.play(ReplacementTransform(train_error_bars_4, target_train_bars_4), run_time=3.0)
-        self.play(ShowCreation(train_error_dots[3]))
         self.wait()
         
         # Create Testing Error Bars for Degree 4
@@ -918,18 +746,14 @@ class P8_15V2(InteractiveScene):
         test_error_bars_4_copy = test_error_bars_4.copy()
         self.add(test_error_bars_4_copy)
         
-        # Fade out degree 4 training bars and move degree 4 test bars
-        self.play(target_train_bars_4.animate.set_opacity(0.0), run_time=1.5)
-        self.bring_to_front(train_error_dots[3])
+        # Move degree 4 test bars  
         self.play(ReplacementTransform(test_error_bars_4_copy, target_test_bars_4), run_time=3.0)
-        self.bring_to_front(train_error_dots[3])
         self.play(ShowCreation(test_error_dots[3]))
         
         self.wait()
         
         # Fade out all error bars on the left plot at the end
         self.play(
-            FadeOut(train_error_bars_4_copy),
             FadeOut(test_error_bars_4),
             FadeOut(target_test_bars_4),
             run_time=1.0

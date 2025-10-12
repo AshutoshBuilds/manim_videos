@@ -248,8 +248,6 @@ class p46_56(InteractiveScene):
         self.wait()
 
         #Ok, now into p47 wehere we talk about existing fits. 
-
-        #Claude, can you draw a magenta box around the two degree two points on the error plot? 
         train_pos = train_error_dots[1].get_center()
         test_pos = test_error_dots[1].get_center()
 
@@ -306,14 +304,62 @@ class p46_56(InteractiveScene):
 
         self.play(FadeOut(degree_3_train_box), FadeOut(degree_3_test_box), fit_line_3.animate.set_stroke(opacity=0.2), run_time=2)
         self.wait()
+
+
+        polynomial_equation_4=Tex('f(x)=ax^4+bx^3+cx^2+dx+e', font_size=28).set_color('#FF00FF')
+        polynomial_equation_4.move_to([-2.5, 3, 0])
+        # self.add(polynomial_equation_4)
+
         self.play(ShowCreation(fit_line_4), run_time=3)
         self.wait()
-        self.play(ShowCreation())
+        self.play(ShowCreation(degree_4_test_box))
+        self.wait()
+        self.play(ShowCreation(degree_4_train_box))
+        self.wait()
+
+        self.play(Write(polynomial_equation_4))
+        #Ok think we just add quick arrows in illustrator pointing to the 5 parameters. 
+        self.wait()
 
 
+        # P48
+        # Vertical dotted line at degree 4
+        interp_threshold_line = DashedLine(
+            start=axes_2.c2p(4, -0.2),
+            end=axes_2.c2p(4, 1.5),
+            color=WHITE,
+            stroke_width=3,
+            dash_length=0.1
+        )
 
-        # self.add(fit_line_1, fit_line_2, fit_line_3, fit_line_4)
+        interp_threshold_label = Text(
+            "Interpolation Threshold",
+            font_size=24,
+            font='myraid-pro',
+            color=WHITE
+        )
+        interp_threshold_label.next_to(axes_2.c2p(4, 0), DOWN, buff=0.9)
 
+        self.wait()
+        self.play(FadeOut(degree_4_test_box), FadeOut(degree_4_train_box), ShowCreation(interp_threshold_line), Write(interp_threshold_label), run_time=1.5)
+        
+
+        # Ok now let's fade out a bunch of stuff, zoom out a bit, need to expand my error plot axes a bit
+        # That's going to be a little annoying, but we can figure it out
+        # Would love to do it once and have room for 5th order and 10th order, but we'll see. 
+
+
+        self.wait()
+        self.play(self.frame.animate.reorient(0, 0, 0, (1.91, 0.64, 0.0), 10.36),
+                  FadeOut(error_curves_svg), 
+                  FadeOut(fit_line_2), 
+                  FadeOut(fit_line_3), 
+                  FadeOut(fit_line_4),
+                  FadeOut(polynomial_equation_4),
+                  interp_threshold_line.animate.set_opacity(0.5),
+                  interp_threshold_label.animate.set_opacity(0.5),
+                  #Replace axes with longer one here!
+                  run_time=2)
 
 
         self.wait(20)

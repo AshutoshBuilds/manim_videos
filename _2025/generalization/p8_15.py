@@ -265,7 +265,7 @@ class P8_15V2(InteractiveScene):
         legend_1.add(legend_1_training_data, legend_1_testing_data, legend_1_equations).arrange(RIGHT)
 
         legend_1_box = RoundedRectangle(
-            width=legend_1.get_width() + 0.8,
+            width=legend_1.get_width() + 0.4,
             height=legend_1.get_height() + 0.4,
             corner_radius=0.08,
             stroke_color=CHILL_BROWN,
@@ -276,6 +276,7 @@ class P8_15V2(InteractiveScene):
         legend_1_box.move_to(legend_1.get_center())
         legend_1.add(legend_1_box)
         
+        legend_1.move_to([0.81999993, 0.46      , 0.        ])
         legend_1.to_edge(DOWN) 
          ################################################################
         
@@ -303,7 +304,7 @@ class P8_15V2(InteractiveScene):
         legend_2.add(legend_2_training_data, legend_2_testing_data, legend_2_equations).arrange(RIGHT)
         
         legend_2_box = RoundedRectangle(
-            width=legend_2.get_width() + 0.8,
+            width=legend_2.get_width() + 0.4,
             height=legend_2.get_height() + 0.4,
             corner_radius=0.08,
             stroke_color=CHILL_BROWN,
@@ -314,6 +315,7 @@ class P8_15V2(InteractiveScene):
         legend_2_box.move_to(legend_2.get_center())
         legend_2.add(legend_2_box)
         
+        legend_2.move_to([0.81999993, 0.46      , 0.        ])
         legend_2.to_edge(DOWN) 
         
         ##################################
@@ -342,10 +344,11 @@ class P8_15V2(InteractiveScene):
         legend_3_equation_3 = VGroup(legend_3_equation_3_line, legend_3_equation_3_text).arrange(RIGHT, buff=0.1)
         legend_3_equations.add(legend_3_equation_1, legend_3_equation_2, legend_3_equation_3).arrange(RIGHT, buff=0.2)
 
+        
         legend_3.add(legend_3_training_data, legend_3_testing_data, legend_3_equations).arrange(RIGHT)
         
         legend_3_box = RoundedRectangle(
-            width=legend_3.get_width() + 0.8,
+            width=legend_3.get_width() + 0.4,
             height=legend_3.get_height() + 0.4,
             corner_radius=0.08,
             stroke_color=CHILL_BROWN,
@@ -356,6 +359,7 @@ class P8_15V2(InteractiveScene):
         legend_3_box.move_to(legend_3.get_center())
         legend_3.add(legend_3_box)
         
+        legend_3.move_to([0.81999993, 0.46      , 0.        ])
         legend_3.to_edge(DOWN)
         
         ########################################################
@@ -383,14 +387,14 @@ class P8_15V2(InteractiveScene):
         legend_4_equation_3_line = Line(LEFT * 0.15, RIGHT * 0.15, color=ORANGE, stroke_width=3)
         legend_4_equation_3 = VGroup(legend_4_equation_3_line, legend_4_equation_3_text).arrange(RIGHT, buff=0.1)
         legend_4_equation_4_text = Tex(r"y = ax^4+bx^3+cx^2+dx+e", font_size=26).set_color(MAROON_B)
-        legend_4_equation_4_line = Line(LEFT * 0.15, RIGHT * 0.15, color=ORANGE, stroke_width=3)
+        legend_4_equation_4_line = Line(LEFT * 0.15, RIGHT * 0.15, color=MAROON_B, stroke_width=3)
         legend_4_equation_4 = VGroup(legend_4_equation_4_line, legend_4_equation_4_text).arrange(RIGHT, buff=0.1)
         legend_4_equations.add(legend_4_equation_1, legend_4_equation_2, legend_4_equation_3, legend_4_equation_4).arrange(RIGHT, buff=0.2)
 
         legend_4.add(legend_4_training_data, legend_4_testing_data, legend_4_equations).arrange(RIGHT)
 
         legend_4_box = RoundedRectangle(
-            width=legend_4.get_width() + 0.8,
+            width=legend_4.get_width() + 0.4,
             height=legend_4.get_height() + 0.4,
             corner_radius=0.08,
             stroke_color=CHILL_BROWN,
@@ -401,6 +405,7 @@ class P8_15V2(InteractiveScene):
         legend_4_box.move_to(legend_4.get_center())
         legend_4.add(legend_4_box)
 
+        legend_4.move_to([0.81999993, 0.46      , 0.        ])
         legend_4.to_edge(DOWN)
 
 

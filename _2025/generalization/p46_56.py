@@ -1,0 +1,339 @@
+from manimlib import *
+import scipy.special
+
+CHILL_BROWN='#948979'
+YELLOW='#ffd35a'
+YELLOW_FADE='#7f6a2d'
+BLUE='#65c8d0'
+GREEN='#00a14b' #6e9671' 
+CHILL_GREEN='#6c946f'
+CHILL_BLUE='#3d5c6f'
+FRESH_TAN='#dfd0b9'
+CYAN='#00FFFF'
+
+graphics_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/double_descent/graphics/'
+svg_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/double_descent/graphics/to_manim'
+
+def fit_legendre_pinv(x_train, y_train, degree, x_min=-2, x_max=2):
+    """Fit Legendre polynomial using pseudoinverse"""
+    # Rescale x to [-1, 1]
+    x_scaled = 2 * (x_train - x_min) / (x_max - x_min) - 1
+    
+    feature_degrees = np.arange(degree + 1)[:, None]
+    X_train_poly = scipy.special.eval_legendre(feature_degrees, x_scaled).T
+    beta_hat = np.linalg.pinv(X_train_poly) @ y_train
+    return beta_hat
+
+def eval_legendre_poly(beta, x, degree, x_min=-2, x_max=2):
+    """Evaluate Legendre polynomial with given coefficients"""
+    # Rescale x to [-1, 1]
+    x_scaled = 2 * (x - x_min) / (x_max - x_min) - 1
+    
+    feature_degrees = np.arange(degree + 1)[:, None]
+    X_poly = scipy.special.eval_legendre(feature_degrees, x_scaled).T
+    return X_poly @ beta
+
+def get_noisy_data(n_points=10, noise_level=0.2, random_seed=428):
+    np.random.seed(random_seed) 
+    x=np.random.uniform(-2, 2, n_points)
+    y=f(x)+noise_level*np.random.randn(n_points)
+    return x,y
+
+def get_fit_line(axes, x_train, y_train, x_test, y_test, all_x, degree=1, color=GREEN):
+    beta_hat = fit_legendre_pinv(x_train, y_train, degree)
+    all_y_fit = eval_legendre_poly(beta_hat, all_x, degree)
+    y_train_pred = eval_legendre_poly(beta_hat, x_train, degree)
+    y_test_pred = eval_legendre_poly(beta_hat, x_test, degree)
+    all_y_fit = eval_legendre_poly(beta_hat, all_x, degree)
+    train_error = np.mean((y_train - y_train_pred)**2)
+    test_error = np.mean((y_test - y_test_pred)**2)
+
+    fit_points = [axes.c2p(all_x[i], all_y_fit[i]) for i in range(len(all_x))]
+    fit_line = VMobject(stroke_width=3)
+    fit_line.set_points_smoothly(fit_points)
+    fit_line.set_color(color)
+    return fit_line, test_error, train_error
+
+
+
+def f(x): return 0.5*(x**2)
+# def f(x): return 0.5*(x**4-3*x**2)
+# def f(x): return np.add(2.0 * x, np.cos(x * 25)) #[:, 0]
+
+
+class p46_56(InteractiveScene):
+    '''
+    Ok long scene here, let's start chipping away. 
+    '''
+    def construct(self):
+
+        curve_fit_axis_svg=SVGMobject(svg_dir+'/p8_15_2a.svg')[1:] 
+        curve_fit_axis_svg.scale(4.0)
+        curve_fit_axis_svg.move_to([-2.86, 0.6, 0])
+
+        random_seed=428
+        n_points=10
+        noise_level=0.2
+
+
+        all_x = np.linspace(-2, 2, 128)
+        all_y = f(all_x)
+
+        n_train_points=int(np.floor(n_points*0.5))
+        n_test_points=n_points-n_train_points
+        x,y=get_noisy_data(n_points, noise_level, random_seed)
+                           
+        x_train, y_train=x[:n_train_points], y[:n_train_points]
+        x_test, y_test=x[n_train_points:],y[n_train_points:]
+
+        axes_1 = Axes(
+            x_range=[-2.0, 2.0, 1],
+            y_range=[-0.5, 2.0, 1],
+            width=6,
+            height=5,
+            axis_config={
+                "color": CHILL_BROWN,
+                "include_ticks": True,
+                "include_numbers": True,
+                "include_tip": True,
+                "stroke_width":3,
+                "tip_config": {"width":0.02, "length":0.02}
+                }
+        )
+        axes_1.move_to([-3, 0, 0])
+
+        parabola = axes_1.get_graph(
+            lambda x: f(x),
+            x_range=[-2, 2],
+            color=CHILL_BROWN
+        )
+        parabola.set_stroke(width=3)
+
+
+        train_dots = VGroup(*[Dot(axes_1.c2p(x_train[i], y_train[i]), radius=0.08) for i in range(len(x_train))])
+        test_dots = VGroup(*[ Dot(axes_1.c2p(x_test[i], y_test[i]), radius=0.08) for i in range(len(x_test))])
+        all_dots=VGroup(test_dots, train_dots)
+        all_dots.set_color(YELLOW)
+
+        #Sorted dots so I can bring them in nicely. 
+        dots_with_x = []
+        for i, dot in enumerate(train_dots):
+            dots_with_x.append((x_train[i], dot, 'train'))
+        for i, dot in enumerate(test_dots):
+            dots_with_x.append((x_test[i], dot, 'test'))
+        dots_with_x.sort(key=lambda item: item[0])
+        sorted_dots = [item[1] for item in dots_with_x]
+
+
+        # Create legend items
+        legend_train_dot = Dot(radius=0.05).set_color(YELLOW)
+        legend_train_text = Text("Training Data", font_size=18, font='myraid-pro').set_color(CHILL_BROWN)
+        legend_train = VGroup(legend_train_dot, legend_train_text).arrange(RIGHT, buff=0.15)
+        
+        legend_test_dot = Dot(radius=0.05).set_opacity(0.5).set_color(BLUE)
+        legend_test_text = Text("Testing Data", font_size=18, font='myraid-pro').set_color(CHILL_BROWN)
+        legend_test = VGroup(legend_test_dot, legend_test_text).arrange(RIGHT, buff=0.15)
+
+        legend_line = Line(LEFT * 0.2, RIGHT * 0.2, color=CHILL_BROWN, stroke_width=3)
+        legend_line_text = Text("Target Function", font_size=18, font='myraid-pro').set_color(CHILL_BROWN)
+        legend_line_item = VGroup(legend_line, legend_line_text).arrange(RIGHT, buff=0.15)
+        
+        # Arrange legend items horizontally
+        legend_items = VGroup(legend_train, legend_test, legend_line_item).arrange(RIGHT, buff=0.3)
+        
+        # Create rounded rectangle background
+        legend_box = RoundedRectangle(
+            width=legend_items.get_width() + 0.6,
+            height=legend_items.get_height() + 0.3,
+            corner_radius=0.08,
+            stroke_color=CHILL_BROWN,
+            stroke_width=2,
+            fill_color=None,
+            fill_opacity=0.0
+        )
+        legend_box.set_stroke(opacity=0.7)
+        
+        # Position legend below the plot
+        legend = VGroup(legend_box, legend_items)
+        legend.move_to(axes_1.get_bottom() + DOWN * 0.15 + RIGHT * 0.1)
+
+
+        fit_line_1, test_error_1, train_error_1 = get_fit_line(axes_1, x_train, y_train, x_test, y_test, all_x, degree=1, color=GREEN)
+        fit_line_2, test_error_2, train_error_2 = get_fit_line(axes_1, x_train, y_train, x_test, y_test, all_x, degree=2, color=YELLOW)
+        fit_line_3, test_error_3, train_error_3 = get_fit_line(axes_1, x_train, y_train, x_test, y_test, all_x, degree=3, color=ORANGE)
+        fit_line_4, test_error_4, train_error_4 = get_fit_line(axes_1, x_train, y_train, x_test, y_test, all_x, degree=4, color='#FF00FF')
+        fit_line_5, test_error_5, train_error_5 = get_fit_line(axes_1, x_train, y_train, x_test, y_test, all_x, degree=5, color='#FFFFFF')
+        fit_line_10, test_error_10, train_error_10 = get_fit_line(axes_1, x_train, y_train, x_test, y_test, all_x, degree=10, color='#be1e2d')
+
+        axes_2 = Axes(
+            x_range=[0, 4, 1],
+            y_range=[0, 1.2, 1],
+            width=6,
+            height=5,
+            axis_config={
+                "color": CHILL_BROWN,
+                "include_ticks": True,
+                "include_numbers": True,
+                "include_tip": True,
+                "stroke_width":3,
+                "tip_config": {"width":0.02, "length":0.02}
+                }
+        )
+        axes_2.move_to([4.0, 0.48, 0])
+
+
+        degrees = [1, 2, 3, 4, 5, 10]
+        train_errors = [0.221350, 0.031825, 0.000803, 0.000000, 0.0, 0.0]
+        test_errors = [0.691636, 0.079449, 0.727023, 1.328535, 0.694120, 0.481703]
+
+        train_error_dots = VGroup(*[Dot(axes_2.c2p(degrees[i], train_errors[i]), radius=0.08)
+                                    for i in range(len(degrees))])
+        test_error_dots = VGroup(*[Dot(axes_2.c2p(degrees[i], test_errors[i]), radius=0.08)
+                                  for i in range(len(degrees))])
+        train_error_dots.set_color(YELLOW)
+        test_error_dots.set_color(CYAN)
+        test_error_dots.set_opacity(0.7)
+
+
+        error_axis_svg=SVGMobject(svg_dir+'/p8_15_2-05.svg') #[1:] 
+        error_axis_svg.scale(2.95)
+        error_axis_svg.move_to([4.79, 0.75, 0])
+
+
+        # train_error_bars = VGroup()
+        # for i in range(len(x_train)):
+        #     point_pos = axes_1.c2p(x_train[i], y_train[i])
+        #     fit_pos = axes_1.c2p(x_train[i], y_train_pred[i])
+        #     # Always draw from the lower point to the higher point
+        #     if point_pos[1] > fit_pos[1]:  # point is above fit
+        #         error_bar = Line(fit_pos, point_pos, color=YELLOW, stroke_width=3)
+        #     else:  # point is below fit
+        #         error_bar = Line(point_pos, fit_pos, color=YELLOW, stroke_width=3)
+        #     train_error_bars.add(error_bar)
+
+        # # self.add(train_error_bars)
+
+        # target_bars = VGroup()
+        # bar_height = train_errors[0] / len(train_error_bars)  # Each bar gets equal portion of total height
+        # x_pos = degrees[0]  # x position is degree 1
+
+        # for i in range(len(train_error_bars)):
+        #     # Stack bars on top of each other
+        #     bottom_y = i * bar_height
+        #     top_y = (i + 1) * bar_height
+        #     bottom = axes_2.c2p(x_pos, bottom_y)
+        #     top = axes_2.c2p(x_pos, top_y)
+        #     target_bar = Line(bottom, top, color=YELLOW, stroke_width=3)
+        #     target_bars.add(target_bar)
+
+        #Setup in p46
+        self.wait()
+        test_dots.set_color('#008080')
+        self.frame.reorient(0, 0, 0, (0.8, 0.54, 0.0), 8.94)
+        parabola.set_stroke(opacity=0.5)
+        self.add(curve_fit_axis_svg, error_axis_svg)
+
+        self.play(ShowCreation(parabola), LaggedStart(*[FadeIn(dot) for dot in sorted_dots], lag_ratio=0.15), run_time=2)
+        self.add(legend)
+
+        error_curves_svg=SVGMobject(svg_dir+'/p8_15_2-06.svg') #[1:] 
+        error_curves_svg.scale(3.1)
+        error_curves_svg.move_to([4.82, 1.2, 0])
+        error_curves_svg[0].set_color('#00BBBB')
+
+        self.wait()
+        self.play(LaggedStart(*[FadeIn(train_error_dots[i]) for i in range(4)], lag_ratio=0.15),
+                  LaggedStart(*[FadeIn(test_error_dots[i]) for i in range(4)], lag_ratio=0.15), 
+                  FadeIn(error_curves_svg), run_time=2)
+        self.wait()
+
+        #Ok, now into p47 wehere we talk about existing fits. 
+
+        #Claude, can you draw a magenta box around the two degree two points on the error plot? 
+        train_pos = train_error_dots[1].get_center()
+        test_pos = test_error_dots[1].get_center()
+
+        # Calculate box dimensions with some padding
+        padding = 0.3
+        left = min(train_pos[0], test_pos[0]) - padding
+        right = max(train_pos[0], test_pos[0]) + padding
+        bottom = min(train_pos[1], test_pos[1]) - padding
+        top = max(train_pos[1], test_pos[1]) + padding
+
+        # Create the box
+        degree_2_box = Rectangle(
+            width=right - left,
+            height=top - bottom,
+            stroke_color='#FF00FF',  # Magenta
+            stroke_width=3,
+            fill_opacity=0
+        )
+        degree_2_box.move_to([(left + right) / 2, (bottom + top) / 2, 0])
+
+
+        box_padding = 0.15
+        degree_3_train_box = Rectangle(
+            width=0.3, height=0.3,
+            stroke_color='#FF00FF', stroke_width=3, fill_opacity=0
+        ).move_to(train_error_dots[2].get_center())
+
+        degree_3_test_box = Rectangle(
+            width=0.3, height=0.3,
+            stroke_color='#FF00FF', stroke_width=3, fill_opacity=0
+        ).move_to(test_error_dots[2].get_center())
+
+        degree_4_train_box = Rectangle(
+            width=0.3, height=0.3,
+            stroke_color='#FF00FF', stroke_width=3, fill_opacity=0
+        ).move_to(train_error_dots[3].get_center())
+
+        degree_4_test_box = Rectangle(
+            width=0.3, height=0.3,
+            stroke_color='#FF00FF', stroke_width=3, fill_opacity=0
+        ).move_to(test_error_dots[3].get_center())
+
+        self.play(ShowCreation(fit_line_2), run_time=2)
+        self.play(ShowCreation(degree_2_box), run_time=1.5)
+        self.wait()
+
+        self.play(FadeOut(degree_2_box), fit_line_2.animate.set_stroke(opacity=0.2), run_time=2)
+        self.play(ShowCreation(fit_line_3), run_time=3)
+        self.wait()
+        self.play(ShowCreation(degree_3_train_box))
+        self.wait()
+        self.play(ShowCreation(degree_3_test_box))
+        self.wait()
+
+        self.play(FadeOut(degree_3_train_box), FadeOut(degree_3_test_box), fit_line_3.animate.set_stroke(opacity=0.2), run_time=2)
+        self.wait()
+        self.play(ShowCreation(fit_line_4), run_time=3)
+        self.wait()
+        self.play(ShowCreation())
+
+
+
+        # self.add(fit_line_1, fit_line_2, fit_line_3, fit_line_4)
+
+
+
+        self.wait(20)
+        self.embed()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

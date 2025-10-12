@@ -196,9 +196,19 @@ class p46_56(InteractiveScene):
 
 
         error_axis_svg=SVGMobject(svg_dir+'/p8_15_2-05.svg') #[1:] 
+        degree_label=error_axis_svg[39:]
         error_axis_svg.scale(2.95)
         error_axis_svg.move_to([4.79, 0.75, 0])
 
+        extended_axis_labels_svg=SVGMobject(svg_dir+'/p46_56_2-04.svg')[1:]
+        extended_axis_svg=SVGMobject(svg_dir+'/p46_56_2-05.svg')[1:]
+        extended_axis_group=Group(extended_axis_svg, extended_axis_labels_svg)
+        extended_axis_group.scale(4.5)
+        extended_axis_group.move_to([6.57, -1.98, 0])
+        extended_axis_svg.scale([0.67, 1, 1], about_point=extended_axis_svg.get_left())
+
+        # self.remove()
+        # self.add(error_axis_svg)
 
         # train_error_bars = VGroup()
         # for i in range(len(x_train)):
@@ -231,10 +241,12 @@ class p46_56(InteractiveScene):
         test_dots.set_color('#008080')
         self.frame.reorient(0, 0, 0, (0.8, 0.54, 0.0), 8.94)
         parabola.set_stroke(opacity=0.5)
-        self.add(curve_fit_axis_svg, error_axis_svg)
+        self.add(curve_fit_axis_svg, error_axis_svg[1:])
+        self.add(extended_axis_svg)
 
         self.play(ShowCreation(parabola), LaggedStart(*[FadeIn(dot) for dot in sorted_dots], lag_ratio=0.15), run_time=2)
         self.add(legend)
+
 
         error_curves_svg=SVGMobject(svg_dir+'/p8_15_2-06.svg') #[1:] 
         error_curves_svg.scale(3.1)
@@ -348,18 +360,29 @@ class p46_56(InteractiveScene):
         # That's going to be a little annoying, but we can figure it out
         # Would love to do it once and have room for 5th order and 10th order, but we'll see. 
 
+        # extended_axis_group.move_to([6.57, -2.05, 0])
+        # self.frame.reorient(0, 0, 0, (7.3, -0.18, 0.0), 7.39)
+        # self.add(extended_axis_group)
 
+        
         self.wait()
-        self.play(self.frame.animate.reorient(0, 0, 0, (1.91, 0.64, 0.0), 10.36),
+        self.remove(interp_threshold_line, interp_threshold_label)
+        self.play(self.frame.animate.reorient(0, 0, 0, (1.57, 0.64, 0.0), 9.98),
                   FadeOut(error_curves_svg), 
                   FadeOut(fit_line_2), 
                   FadeOut(fit_line_3), 
                   FadeOut(fit_line_4),
                   FadeOut(polynomial_equation_4),
+                  # FadeOut(interp_threshold_line),
+                  # FadeOut(interp_threshold_label),
                   interp_threshold_line.animate.set_opacity(0.5),
                   interp_threshold_label.animate.set_opacity(0.5),
+                  degree_label.animate.move_to([9.5, -2.1, 0]),
+                  extended_axis_svg.animate.scale([1.3, 1, 1], about_point=extended_axis_svg.get_left()),
                   #Replace axes with longer one here!
                   run_time=2)
+        self.add(extended_axis_group[1][6], extended_axis_group[1][8])
+
 
 
         self.wait(20)

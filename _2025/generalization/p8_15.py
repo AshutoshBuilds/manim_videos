@@ -280,8 +280,8 @@ class P8_15V2(InteractiveScene):
         
         legend.add(legend_box, legend_items)
         legend.scale(0.85)
-        # Position under the first plot (x = -2.94 is camera center for first plot)
-        legend.move_to([-2.94, -3.2, 0])
+        # Position under the first plot - x-aligned with axes_1 at x=-3
+        legend.move_to([-3, -3.2, 0])
         
 
 
@@ -340,7 +340,16 @@ class P8_15V2(InteractiveScene):
         fit_line_1 = VMobject(color=GREEN, stroke_width=3)
         fit_line_1.set_points_smoothly(fit_points)
         
-        self.play(ShowCreation(fit_line_1), run_time=1.5)
+        # Create equation for degree 1 - centered above left graph
+        eq_1 = Tex("y = ax + b", font_size=40).set_color(GREEN)
+        eq_1.move_to([-3, 3.2, 0])  # Centered at x=-3 (axes_1 position), above the graph
+        
+        self.play(
+            ShowCreation(fit_line_1),
+            Write(eq_1),
+            run_time=1.5
+        )
+        self.bring_to_front(fit_line_1)  # Keep fit line in front
         self.add(legend)
         self.wait()
         
@@ -437,15 +446,17 @@ class P8_15V2(InteractiveScene):
             LaggedStart(*[ShowCreation(bar) for bar in train_error_bars], lag_ratio=0.1), 
             run_time=1.5
         )
+        self.bring_to_front(fit_line_1)  # Keep fit line in front of error bars
         
         train_error_bars_copy = train_error_bars.copy()
         self.add(train_error_bars_copy)
+        self.bring_to_front(fit_line_1)  # Bring fit line to front after adding copy
         train_error_bars.set_opacity(0.5)
         self.wait()
         
         self.play(
             self.frame.animate.reorient(0, 0, 0, (0.82, 0.46, 0.0), 8.86),
-            legend.animate.shift([3.76, -0.1, 0]),  # Move legend to stay under first plot as camera pans
+            # Legend stays at x=-3 aligned with axes_1, no shift needed
             Write(error_axis_svg),
             ReplacementTransform(train_error_bars, target_train_bars),
             run_time=4
@@ -465,14 +476,17 @@ class P8_15V2(InteractiveScene):
             LaggedStart(*[ShowCreation(bar) for bar in test_error_bars], lag_ratio=0.1), 
             run_time=1.5
         )
+        self.bring_to_front(fit_line_1)  # Keep fit line in front of error bars
         
         # Copy test error bars before moving
         test_error_bars_copy = test_error_bars.copy()
         self.add(test_error_bars_copy)
+        self.bring_to_front(fit_line_1)  # Bring fit line to front after adding copy
         
         # Fade out yellow bars first, then move blue bars
         self.play(target_train_bars.animate.set_opacity(0.0), run_time=1.5)
         self.bring_to_front(train_error_dots[0])
+        self.bring_to_front(fit_line_1)  # Keep fit line in front
         self.play(ReplacementTransform(test_error_bars_copy, target_test_bars), run_time=3.0)
         self.bring_to_front(train_error_dots[0])
         self.play(ShowCreation(test_error_dots[0]))
@@ -493,11 +507,19 @@ class P8_15V2(InteractiveScene):
         fit_line_2 = VMobject(color=YELLOW, stroke_width=3)
         fit_line_2.set_points_smoothly(fit_points_2)
         
+        # Create equation for degree 2 - centered above left graph
+        eq_2 = Tex("y = ax^2 + bx + c", font_size=40).set_color(YELLOW)
+        eq_2.move_to([-3, 3.2, 0])  # Centered at x=-3 (axes_1 position), above the graph
+        
         self.play(
             ShowCreation(fit_line_2),
             fit_line_1.animate.set_stroke(opacity=0.3),
+            FadeOut(eq_1),
             run_time=2
         )
+        self.play(Write(eq_2))
+        self.bring_to_front(fit_line_1)  # Keep all fit lines in front
+        self.bring_to_front(fit_line_2)
         self.wait()
         
         # Create Training Error Bars for Degree 2
@@ -529,15 +551,23 @@ class P8_15V2(InteractiveScene):
             LaggedStart(*[ShowCreation(bar) for bar in train_error_bars_2], lag_ratio=0.1),
             run_time=1.5
         )
+        self.bring_to_front(fit_line_1)  # Keep all fit lines in front of error bars
+        self.bring_to_front(fit_line_2)
         
         train_error_bars_2_copy = train_error_bars_2.copy()
         self.add(train_error_bars_2_copy)
+        self.bring_to_front(fit_line_1)  # Bring fit lines to front after adding copy
+        self.bring_to_front(fit_line_2)
         train_error_bars_2.set_opacity(0.5)
         self.wait()
         
         # Fade out degree 1 test bars and move degree 2 training bars
         self.play(target_test_bars.animate.set_opacity(0.0), run_time=1.5)
+        self.bring_to_front(fit_line_1)  # Keep fit lines in front
+        self.bring_to_front(fit_line_2)
         self.play(ReplacementTransform(train_error_bars_2, target_train_bars_2), run_time=3.0)
+        self.bring_to_front(fit_line_1)  # Keep fit lines in front after transform
+        self.bring_to_front(fit_line_2)
         self.play(ShowCreation(train_error_dots[1]))
         self.wait()
         
@@ -570,15 +600,23 @@ class P8_15V2(InteractiveScene):
             LaggedStart(*[ShowCreation(bar) for bar in test_error_bars_2], lag_ratio=0.1),
             run_time=1.5
         )
+        self.bring_to_front(fit_line_1)  # Keep all fit lines in front of error bars
+        self.bring_to_front(fit_line_2)
         
         test_error_bars_2_copy = test_error_bars_2.copy()
         self.add(test_error_bars_2_copy)
+        self.bring_to_front(fit_line_1)  # Bring fit lines to front after adding copy
+        self.bring_to_front(fit_line_2)
         
         # Fade out degree 2 training bars and move degree 2 test bars
         self.play(target_train_bars_2.animate.set_opacity(0.0), run_time=1.5)
         self.bring_to_front(train_error_dots[1])
+        self.bring_to_front(fit_line_1)  # Keep fit lines on top
+        self.bring_to_front(fit_line_2)
         self.play(ReplacementTransform(test_error_bars_2_copy, target_test_bars_2), run_time=3.0)
         self.bring_to_front(train_error_dots[1])
+        self.bring_to_front(fit_line_1)  # Keep fit lines on top after transform
+        self.bring_to_front(fit_line_2)
         self.play(ShowCreation(test_error_dots[1]))
         
         self.wait()
@@ -597,11 +635,20 @@ class P8_15V2(InteractiveScene):
         fit_line_3 = VMobject(color=ORANGE, stroke_width=3)
         fit_line_3.set_points_smoothly(fit_points_3)
         
+        # Create equation for degree 3 - centered above left graph
+        eq_3 = Tex("y = ax^3 + bx^2 + cx + d", font_size=40).set_color(ORANGE)
+        eq_3.move_to([-3, 3.2, 0])  # Centered at x=-3 (axes_1 position), above the graph
+        
         self.play(
             ShowCreation(fit_line_3),
             fit_line_2.animate.set_stroke(opacity=0.3),
+            FadeOut(eq_2),
             run_time=2
         )
+        self.play(Write(eq_3))
+        self.bring_to_front(fit_line_1)  # Keep all fit lines in front
+        self.bring_to_front(fit_line_2)
+        self.bring_to_front(fit_line_3)
         self.wait()
         
         # Create Training Error Bars for Degree 3
@@ -633,15 +680,27 @@ class P8_15V2(InteractiveScene):
             LaggedStart(*[ShowCreation(bar) for bar in train_error_bars_3], lag_ratio=0.1),
             run_time=1.5
         )
+        self.bring_to_front(fit_line_1)  # Keep all fit lines in front of error bars
+        self.bring_to_front(fit_line_2)
+        self.bring_to_front(fit_line_3)
         
         train_error_bars_3_copy = train_error_bars_3.copy()
         self.add(train_error_bars_3_copy)
+        self.bring_to_front(fit_line_1)  # Bring fit lines to front after adding copy
+        self.bring_to_front(fit_line_2)
+        self.bring_to_front(fit_line_3)
         train_error_bars_3.set_opacity(0.5)
         self.wait()
         
         # Fade out degree 2 test bars and move degree 3 training bars
         self.play(target_test_bars_2.animate.set_opacity(0.0), run_time=1.5)
+        self.bring_to_front(fit_line_1)  # Keep fit lines in front
+        self.bring_to_front(fit_line_2)
+        self.bring_to_front(fit_line_3)
         self.play(ReplacementTransform(train_error_bars_3, target_train_bars_3), run_time=3.0)
+        self.bring_to_front(fit_line_1)  # Keep fit lines in front after transform
+        self.bring_to_front(fit_line_2)
+        self.bring_to_front(fit_line_3)
         self.play(ShowCreation(train_error_dots[2]))
         self.wait()
         
@@ -674,13 +733,22 @@ class P8_15V2(InteractiveScene):
             LaggedStart(*[ShowCreation(bar) for bar in test_error_bars_3], lag_ratio=0.1),
             run_time=1.5
         )
+        self.bring_to_front(fit_line_1)  # Keep all fit lines in front of error bars
+        self.bring_to_front(fit_line_2)
+        self.bring_to_front(fit_line_3)
         
         test_error_bars_3_copy = test_error_bars_3.copy()
         self.add(test_error_bars_3_copy)
+        self.bring_to_front(fit_line_1)  # Bring fit lines to front after adding copy
+        self.bring_to_front(fit_line_2)
+        self.bring_to_front(fit_line_3)
         
         # Fade out degree 3 training bars and move degree 3 test bars
         self.play(target_train_bars_3.animate.set_opacity(0.0), run_time=1.5)
         self.bring_to_front(train_error_dots[2])
+        self.bring_to_front(fit_line_1)  # Keep fit lines in front
+        self.bring_to_front(fit_line_2)
+        self.bring_to_front(fit_line_3)
         self.play(ReplacementTransform(test_error_bars_3_copy, target_test_bars_3), run_time=3.0)
         self.bring_to_front(train_error_dots[2])
         self.play(ShowCreation(test_error_dots[2]))
@@ -701,11 +769,21 @@ class P8_15V2(InteractiveScene):
         fit_line_4 = VMobject(color=MAROON_B, stroke_width=3)
         fit_line_4.set_points_smoothly(fit_points_4)
         
+        # Create equation for degree 4 - centered above left graph
+        eq_4 = Tex("y = ax^4 + bx^3 + cx^2 + dx + e", font_size=40).set_color(MAROON_B)
+        eq_4.move_to([-3, 3.2, 0])  # Centered at x=-3 (axes_1 position), above the graph
+        
         self.play(
             ShowCreation(fit_line_4),
             fit_line_3.animate.set_stroke(opacity=0.3),
+            FadeOut(eq_3),
             run_time=2
         )
+        self.play(Write(eq_4))
+        self.bring_to_front(fit_line_1)  # Keep all fit lines in front
+        self.bring_to_front(fit_line_2)
+        self.bring_to_front(fit_line_3)
+        self.bring_to_front(fit_line_4)
         self.wait()
         
         # Skip training error bars for degree 4 since training error is essentially zero
@@ -743,14 +821,30 @@ class P8_15V2(InteractiveScene):
             LaggedStart(*[ShowCreation(bar) for bar in test_error_bars_4], lag_ratio=0.1),
             run_time=1.5
         )
+        self.bring_to_front(fit_line_1)  # Keep all fit lines in front of error bars
+        self.bring_to_front(fit_line_2)
+        self.bring_to_front(fit_line_3)
+        self.bring_to_front(fit_line_4)
         
         test_error_bars_4_copy = test_error_bars_4.copy()
         self.add(test_error_bars_4_copy)
+        self.bring_to_front(fit_line_1)  # Bring fit lines to front after adding copy
+        self.bring_to_front(fit_line_2)
+        self.bring_to_front(fit_line_3)
+        self.bring_to_front(fit_line_4)
         
         # Move degree 4 test bars (training dot already shown at zero)
         self.bring_to_front(train_error_dots[3])  # Keep yellow dot visible
+        self.bring_to_front(fit_line_1)  # Keep fit lines in front
+        self.bring_to_front(fit_line_2)
+        self.bring_to_front(fit_line_3)
+        self.bring_to_front(fit_line_4)
         self.play(ReplacementTransform(test_error_bars_4_copy, target_test_bars_4), run_time=3.0)
         self.bring_to_front(train_error_dots[3])  # Keep yellow dot in front
+        self.bring_to_front(fit_line_1)  # Keep fit lines in front after transform
+        self.bring_to_front(fit_line_2)
+        self.bring_to_front(fit_line_3)
+        self.bring_to_front(fit_line_4)
         self.play(ShowCreation(test_error_dots[3]))
         
         self.wait()
@@ -768,6 +862,7 @@ class P8_15V2(InteractiveScene):
             fit_line_2.animate.set_stroke(opacity=0.15),
             fit_line_3.animate.set_stroke(opacity=0.15),
             fit_line_4.animate.set_stroke(opacity=0.15),
+            FadeOut(eq_4),  # Fade out the last equation
             run_time=1.5
         )
         

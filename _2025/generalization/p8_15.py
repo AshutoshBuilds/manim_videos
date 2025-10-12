@@ -868,6 +868,8 @@ class P8_15V2(InteractiveScene):
         
         self.wait()
         
-        # Final Wait
+        self.play(GrowFromEdge(error_curves_svg[0], LEFT))
+        self.play(GrowFromEdge(error_curves_svg[1], LEFT))
+        
         self.embed()
-        self.wait(20)
+        # Final Wait

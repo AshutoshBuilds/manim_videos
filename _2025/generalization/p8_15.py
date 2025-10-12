@@ -258,7 +258,7 @@ class P8_15V2(InteractiveScene):
         
         legend_1_equations = VGroup()
         legend_1_equation_1_text = Tex(r"y = ax+b", font_size=26).set_color(GREEN)
-        legend_1_equation_1_line = Line(LEFT * 0.15, RIGHT * 0.15, color=GREEN, stroke_width=3)
+        legend_1_equation_1_line = Line(LEFT * 0.15, RIGHT * 0.15, color=GREEN, stroke_width=6)
         legend_1_equation = VGroup(legend_1_equation_1_line, legend_1_equation_1_text).arrange(RIGHT, buff=0.1)
         legend_1_equations.add(legend_1_equation).arrange(RIGHT, buff=0.2)
         
@@ -294,10 +294,10 @@ class P8_15V2(InteractiveScene):
         
         legend_2_equations = VGroup()
         legend_2_equation_1_text = Tex(r"y = ax+b", font_size=26).set_color(GREEN)
-        legend_2_equation_1_line = Line(LEFT * 0.15, RIGHT * 0.15, color=GREEN, stroke_width=3)
+        legend_2_equation_1_line = Line(LEFT * 0.15, RIGHT * 0.15, color=GREEN, stroke_width=6)
         legend_2_equation_1 = VGroup(legend_2_equation_1_line, legend_2_equation_1_text).arrange(RIGHT, buff=0.1)
         legend_2_equation_2_text = Tex(r"y = ax^2+bx+c", font_size=26).set_color(YELLOW)
-        legend_2_equation_2_line = Line(LEFT * 0.15, RIGHT * 0.15, color=YELLOW, stroke_width=3)
+        legend_2_equation_2_line = Line(LEFT * 0.15, RIGHT * 0.15, color=YELLOW, stroke_width=6)
         legend_2_equation_2 = VGroup(legend_2_equation_2_line, legend_2_equation_2_text).arrange(RIGHT, buff=0.1)
         legend_2_equations.add(legend_2_equation_1, legend_2_equation_2).arrange(RIGHT, buff=0.2)
 
@@ -334,13 +334,13 @@ class P8_15V2(InteractiveScene):
         
         legend_3_equations = VGroup()
         legend_3_equation_1_text = Tex(r"y = ax+b", font_size=26).set_color(GREEN)
-        legend_3_equation_1_line = Line(LEFT * 0.15, RIGHT * 0.15, color=GREEN, stroke_width=3)
+        legend_3_equation_1_line = Line(LEFT * 0.15, RIGHT * 0.15, color=GREEN, stroke_width=6)
         legend_3_equation_1 = VGroup(legend_3_equation_1_line, legend_3_equation_1_text).arrange(RIGHT, buff=0.1)
         legend_3_equation_2_text = Tex(r"y = ax^2+bx+c", font_size=26).set_color(YELLOW)
-        legend_3_equation_2_line = Line(LEFT * 0.15, RIGHT * 0.15, color=YELLOW, stroke_width=3)
+        legend_3_equation_2_line = Line(LEFT * 0.15, RIGHT * 0.15, color=YELLOW, stroke_width=6)
         legend_3_equation_2 = VGroup(legend_3_equation_2_line, legend_3_equation_2_text).arrange(RIGHT, buff=0.1)
         legend_3_equation_3_text = Tex(r"y = ax^3+bx^2+cx+d", font_size=26).set_color(ORANGE)
-        legend_3_equation_3_line = Line(LEFT * 0.15, RIGHT * 0.15, color=ORANGE, stroke_width=3)
+        legend_3_equation_3_line = Line(LEFT * 0.15, RIGHT * 0.15, color=ORANGE, stroke_width=6)
         legend_3_equation_3 = VGroup(legend_3_equation_3_line, legend_3_equation_3_text).arrange(RIGHT, buff=0.1)
         legend_3_equations.add(legend_3_equation_1, legend_3_equation_2, legend_3_equation_3).arrange(RIGHT, buff=0.2)
 
@@ -378,16 +378,16 @@ class P8_15V2(InteractiveScene):
         
         legend_4_equations = VGroup()
         legend_4_equation_1_text = Tex(r"y = ax+b", font_size=26).set_color(GREEN)
-        legend_4_equation_1_line = Line(LEFT * 0.15, RIGHT * 0.15, color=GREEN, stroke_width=3)
+        legend_4_equation_1_line = Line(LEFT * 0.15, RIGHT * 0.15, color=GREEN, stroke_width=6)
         legend_4_equation_1 = VGroup(legend_4_equation_1_line, legend_4_equation_1_text).arrange(RIGHT, buff=0.1)
         legend_4_equation_2_text = Tex(r"y = ax^2+bx+c", font_size=26).set_color(YELLOW)
-        legend_4_equation_2_line = Line(LEFT * 0.15, RIGHT * 0.15, color=YELLOW, stroke_width=3)
+        legend_4_equation_2_line = Line(LEFT * 0.15, RIGHT * 0.15, color=YELLOW, stroke_width=6)
         legend_4_equation_2 = VGroup(legend_4_equation_2_line, legend_4_equation_2_text).arrange(RIGHT, buff=0.1)
         legend_4_equation_3_text = Tex(r"y = ax^3+bx^2+cx+d", font_size=26).set_color(ORANGE)
-        legend_4_equation_3_line = Line(LEFT * 0.15, RIGHT * 0.15, color=ORANGE, stroke_width=3)
+        legend_4_equation_3_line = Line(LEFT * 0.15, RIGHT * 0.15, color=ORANGE, stroke_width=6)
         legend_4_equation_3 = VGroup(legend_4_equation_3_line, legend_4_equation_3_text).arrange(RIGHT, buff=0.1)
         legend_4_equation_4_text = Tex(r"y = ax^4+bx^3+cx^2+dx+e", font_size=26).set_color(MAROON_B)
-        legend_4_equation_4_line = Line(LEFT * 0.15, RIGHT * 0.15, color=MAROON_B, stroke_width=3)
+        legend_4_equation_4_line = Line(LEFT * 0.15, RIGHT * 0.15, color=MAROON_B, stroke_width=6)
         legend_4_equation_4 = VGroup(legend_4_equation_4_line, legend_4_equation_4_text).arrange(RIGHT, buff=0.1)
         legend_4_equations.add(legend_4_equation_1, legend_4_equation_2, legend_4_equation_3, legend_4_equation_4).arrange(RIGHT, buff=0.2)
 
@@ -620,6 +620,10 @@ class P8_15V2(InteractiveScene):
         self.play(
             ShowCreation(fit_line_2),
             fit_line_1.animate.set_stroke(opacity=0.3),
+            ReplacementTransform(legend_1[-1], legend_2[-1]),
+            ReplacementTransform(legend_1[0:2], legend_2[0:2]),
+            ReplacementTransform(legend_1[2][0], legend_2[2][0]),
+            FadeIn(legend_2[2][1]),
             run_time=2
         )
         self.wait()
@@ -724,6 +728,10 @@ class P8_15V2(InteractiveScene):
         self.play(
             ShowCreation(fit_line_3),
             fit_line_2.animate.set_stroke(opacity=0.3),
+            ReplacementTransform(legend_2[-1], legend_3[-1]),
+            ReplacementTransform(legend_2[0:2], legend_3[0:2]),
+            ReplacementTransform(legend_2[2][0:2], legend_3[2][0:2]),
+            FadeIn(legend_3[2][2]),
             run_time=2
         )
         self.wait()
@@ -828,6 +836,10 @@ class P8_15V2(InteractiveScene):
         self.play(
             ShowCreation(fit_line_4),
             fit_line_3.animate.set_stroke(opacity=0.3),
+            ReplacementTransform(legend_3[-1], legend_4[-1]),
+            ReplacementTransform(legend_3[0:2], legend_4[0:2]),
+            ReplacementTransform(legend_3[2][0:3], legend_4[2][0:3]),
+            FadeIn(legend_4[2][3]),
             run_time=2
         )
         self.wait()

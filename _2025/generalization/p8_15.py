@@ -709,8 +709,9 @@ class P8_15V2(InteractiveScene):
         self.wait()
         
         # Skip training error bars for degree 4 since training error is essentially zero
-        # Just fade out degree 3 test bars  
+        # Just fade out degree 3 test bars and show training error dot at zero
         self.play(target_test_bars_3.animate.set_opacity(0.0), run_time=1.5)
+        self.play(ShowCreation(train_error_dots[3]))  # Draw yellow dot at zero before blue bars
         self.wait()
         
         # Create Testing Error Bars for Degree 4
@@ -746,8 +747,10 @@ class P8_15V2(InteractiveScene):
         test_error_bars_4_copy = test_error_bars_4.copy()
         self.add(test_error_bars_4_copy)
         
-        # Move degree 4 test bars  
+        # Move degree 4 test bars (training dot already shown at zero)
+        self.bring_to_front(train_error_dots[3])  # Keep yellow dot visible
         self.play(ReplacementTransform(test_error_bars_4_copy, target_test_bars_4), run_time=3.0)
+        self.bring_to_front(train_error_dots[3])  # Keep yellow dot in front
         self.play(ShowCreation(test_error_dots[3]))
         
         self.wait()

@@ -483,25 +483,24 @@ class p46_56(InteractiveScene):
         self.wait()
         self.play(ReplacementTransform(polynomial_equation_5a[5:10].copy(), coeffs_squared_1[1:6]), 
                   ReplacementTransform(polynomial_equation_5a[12:17].copy(), coeffs_squared_1[10:15]),
-                  ReplacementTransform(polynomial_equation_5a[5:10].copy(), coeffs_squared_1[1:6]),
-                  ReplacementTransform(polynomial_equation_5a[5:10].copy(), coeffs_squared_1[1:6]),
-                  ReplacementTransform(polynomial_equation_5a[5:10].copy(), coeffs_squared_1[1:6]),
-                  ReplacementTransform(polynomial_equation_5a[5:10].copy(), coeffs_squared_1[1:6]),
+                  ReplacementTransform(polynomial_equation_5a[19:24].copy(), coeffs_squared_1[19:24]),
+                  ReplacementTransform(polynomial_equation_5a[27:31].copy(), coeffs_squared_1[28:32]),
+                  ReplacementTransform(polynomial_equation_5a[34:38].copy(), coeffs_squared_1[36:40]),
+                  ReplacementTransform(polynomial_equation_5a[39:44].copy(), coeffs_squared_1[44:49]),
                   run_time=2)
 
-        #To do -> Fade in all the parts of the coeffs_squared_1 that don't have yet
-        # self.play(FadeIn(coeffs_squared_1[0]),
-        #           FadeIn(coeffs_squared_1[0]),
-        #           FadeIn(coeffs_squared_1[0]),
-        #           FadeIn(coeffs_squared_1[0]),
-        #           FadeIn(coeffs_squared_1[0]),
-        #           FadeIn(coeffs_squared_1[0]),
-        #           FadeIn(coeffs_squared_1[0]),
-        #           FadeIn(coeffs_squared_1),
-        #      )
-        # self.wait()
+        self.play(FadeIn(coeffs_squared_1[0]),
+                  FadeIn(coeffs_squared_1[6:10]),
+                  FadeIn(coeffs_squared_1[15:19]),
+                  FadeIn(coeffs_squared_1[24:28]),
+                  FadeIn(coeffs_squared_1[32:36]),
+                  FadeIn(coeffs_squared_1[40:44]),
+                  FadeIn(coeffs_squared_1[49:]),
+                  run_time=1)
+        self.wait()
 
-        self.add(coeffs_squared_1) #Remove this after we finish the nice animated version above. 
+
+        # self.add(coeffs_squared_1) #Remove this after we finish the nice animated version above. 
 
         result_eq_1 = Tex('=19.13', font_size=32).set_color('#FF00FF')
         result_eq_1.next_to(coeffs_squared_1, DOWN, buff=0.4, aligned_edge=LEFT)
@@ -517,9 +516,27 @@ class p46_56(InteractiveScene):
         ).set_color(YELLOW)
         coeffs_squared_2.next_to(polynomial_equation_5b, DOWN, buff=0.3)
 
+        self.play(ReplacementTransform(polynomial_equation_5b[5:10].copy(), coeffs_squared_2[1:6]), 
+                  ReplacementTransform(polynomial_equation_5b[12:17].copy(), coeffs_squared_2[10:15]),
+                  ReplacementTransform(polynomial_equation_5b[20:24].copy(), coeffs_squared_2[19:23]),
+                  ReplacementTransform(polynomial_equation_5b[27:31].copy(), coeffs_squared_2[27:31]),
+                  ReplacementTransform(polynomial_equation_5b[33:38].copy(), coeffs_squared_2[35:40]),
+                  ReplacementTransform(polynomial_equation_5b[39:44].copy(), coeffs_squared_2[44:49]),
+                  run_time=2)
+
+        self.play(FadeIn(coeffs_squared_2[0]),
+                  FadeIn(coeffs_squared_2[6:10]),
+                  FadeIn(coeffs_squared_2[15:19]),
+                  FadeIn(coeffs_squared_2[23:27]),  # Changed from 24:28 to match indices better
+                  FadeIn(coeffs_squared_2[31:35]),  # Changed from 32:36 to match indices better
+                  FadeIn(coeffs_squared_2[40:44]),
+                  FadeIn(coeffs_squared_2[49:]),
+                  run_time=1)
+        self.wait()
+
         # To-do -> nice animation bringing coefficeints from polynomial_equation_5b into coeffs_squared_2
         # and adding parenthesis and squares. 
-        self.add(coeffs_squared_2)
+        # self.add(coeffs_squared_2)
 
 
         result_eq_2 = Tex('=7.04', font_size=32).set_color(YELLOW)
@@ -597,9 +614,8 @@ class p46_56(InteractiveScene):
 
         fit_line_4.set_color(MAROON_B).set_stroke(opacity=0.8)
         self.play(ShowCreation(fit_line_4), run_time=2)
+        self.wait()
         
-
-
 
         # Create Testing Error Bars
         test_error_bars = VGroup()
@@ -642,30 +658,24 @@ class p46_56(InteractiveScene):
         self.play(ShowCreation(test_error_dots[4]))
 
 
+        self.play(FadeOut(target_test_bars), FadeOut(test_error_bars))
+        self.wait()
+        # Ok so now I need a little double descent curve action! 
+        # I think just do illustrator/premiere here I think. 
 
+        # Ok I think 52 might be all in illustrator, going to hack on that
+        # Ok yeah that's going to be al illustrator
+        # Now let me jump on p54 here. 
 
-        self.bring_to_front(train_error_dots[0])
-
-
-        train_error_bars_copy = train_error_bars.copy()
-        self.add(train_error_bars_copy)
-        self.bring_to_front(all_fifth_order_fits[48])  # Bring fit line to front after adding copy
-        train_error_bars.set_opacity(0.5)
+        self.play(FadeOut(fit_line_4), all_fifth_order_fits[48].animate.set_stroke(opacity=0.2), run_time=2.0)
         self.wait()
 
 
-        # Copy test error bars before moving
-        test_error_bars_copy = test_error_bars.copy()
-        self.add(test_error_bars_copy)
-        self.bring_to_front(fit_line_1)  # Bring fit line to front after adding copy
-        
-        # Fade out yellow bars first, then move blue bars
-        self.play(target_train_bars.animate.set_opacity(0.0), run_time=1.5)
-        self.bring_to_front(train_error_dots[0])
-        self.bring_to_front(fit_line_1)  # Keep fit line in front
-        self.play(ReplacementTransform(test_error_bars_copy, target_test_bars), run_time=3.0)
-        self.bring_to_front(train_error_dots[0])
-        self.play(ShowCreation(test_error_dots[0]))
+
+
+
+
+
 
 
 
@@ -680,6 +690,30 @@ class p46_56(InteractiveScene):
 
 
 
+
+
+        # self.bring_to_front(train_error_dots[0])
+
+
+        # train_error_bars_copy = train_error_bars.copy()
+        # self.add(train_error_bars_copy)
+        # self.bring_to_front(all_fifth_order_fits[48])  # Bring fit line to front after adding copy
+        # train_error_bars.set_opacity(0.5)
+        # self.wait()
+
+
+        # # Copy test error bars before moving
+        # test_error_bars_copy = test_error_bars.copy()
+        # self.add(test_error_bars_copy)
+        # self.bring_to_front(fit_line_1)  # Bring fit line to front after adding copy
+        
+        # # Fade out yellow bars first, then move blue bars
+        # self.play(target_train_bars.animate.set_opacity(0.0), run_time=1.5)
+        # self.bring_to_front(train_error_dots[0])
+        # self.bring_to_front(fit_line_1)  # Keep fit line in front
+        # self.play(ReplacementTransform(test_error_bars_copy, target_test_bars), run_time=3.0)
+        # self.bring_to_front(train_error_dots[0])
+        # self.play(ShowCreation(test_error_dots[0]))
 
 
 

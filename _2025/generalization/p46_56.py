@@ -435,6 +435,9 @@ class p46_56(InteractiveScene):
         # Add footnote about about minium norm calculation in editing. 
         # Ok this little bit is fairly complex, but I think one of the 2-3 most complex parts of the vid. 
         # Ok I think i really want to focus on on the fits here, and temporarily fade some stuff out. 
+        polynomial_equation_5a=Tex('f(x)=-0.66x^5-2.85x^4-0.01x^3+3.12x^2+0.36x-0.83', font_size=36).set_color('#FF00FF')
+        polynomial_equation_5a.move_to([4.8, -2.8, 0])
+
 
         self.wait()
         self.play(FadeOut(polynomial_equation_5),
@@ -453,20 +456,82 @@ class p46_56(InteractiveScene):
                   all_fifth_order_fits[72].animate.set_stroke(width=4, opacity=0.9), #.set_color(YELLOW),
                   run_time=4
             )
-        
-
-        polynomial_equation_5a=Tex('f(x)=-0.66x^5-2.85x^4-0.01x^3+3.12x^2+0.36x-0.83', font_size=36).set_color('#FF00FF')
-        polynomial_equation_5a.move_to([5.0, -3.5, 0])
-
-        self.wait()
-        self.play(Write(polynomial_equation_5a))
+        self.play(Write(polynomial_equation_5a), run_time=2)
 
         self.wait()
         self.play(all_fifth_order_fits[48].animate.set_stroke(width=4, opacity=0.9).set_color(YELLOW), 
                   run_time=2)
 
-        polynomial_equation_5b=Tex('f(x)=-0.66x^5-2.85x^4-0.01x^3+3.12x^2+0.36x-0.83', font_size=36).set_color('#FF00FF')
-        polynomial_equation_5b.move_to([5.0, -3.5, 0])
+        polynomial_equation_5b=Tex('f(x)=-0.54x^5-1.99x^4+0.95x^3+1.36x^2-1.11x-0.01', font_size=36).set_color(YELLOW)
+        polynomial_equation_5b.move_to([4.8, 2.3, 0])
+        self.wait()
+        self.play(Write(polynomial_equation_5b), run_time=2)
+        self.wait()
+
+       #  array([-0.5370232 , -1.9890692 ,  0.9468571 ,  1.3580599 , -0.10506456,
+       # -0.2067696 ], dtype=float32)
+
+
+        coeffs_squared_1 = Tex(
+            r'(-0.66)^2 + (-2.85)^2 + (-0.01)^2 + (3.12)^2 + (0.36)^2 + (-0.83)^2',
+            font_size=32
+        ).set_color('#FF00FF')
+        coeffs_squared_1.next_to(polynomial_equation_5a, DOWN, buff=0.5).shift([0.4, 0, 0])
+
+        #To do ->  finish matching indices here so all 6 terms move down nicely. 
+        self.wait()
+        self.play(ReplacementTransform(polynomial_equation_5a[5:10].copy(), coeffs_squared_1[1:6]), 
+                  ReplacementTransform(polynomial_equation_5a[12:17].copy(), coeffs_squared_1[10:15]),
+                  ReplacementTransform(polynomial_equation_5a[5:10].copy(), coeffs_squared_1[1:6]),
+                  ReplacementTransform(polynomial_equation_5a[5:10].copy(), coeffs_squared_1[1:6]),
+                  ReplacementTransform(polynomial_equation_5a[5:10].copy(), coeffs_squared_1[1:6]),
+                  ReplacementTransform(polynomial_equation_5a[5:10].copy(), coeffs_squared_1[1:6]),
+                  run_time=2)
+
+        #To do -> Fade in all the parts of the coeffs_squared_1 that don't have yet
+        self.play(FadeIn(coeffs_squared_1[0]),
+                  FadeIn(coeffs_squared_1[0]),
+                  FadeIn(coeffs_squared_1[0]),
+                  FadeIn(coeffs_squared_1[0]),
+                  FadeIn(coeffs_squared_1[0]),
+                  FadeIn(coeffs_squared_1[0]),
+                  FadeIn(coeffs_squared_1[0]),
+                  FadeIn(coeffs_squared_1),
+             )
+        self.wait()
+
+        self.add(coeffs_squared_1)
+
+
+
+        # Create the squared coefficients expression
+        coeffs_squared = Tex(
+            r'(-0.54)^2 + (-1.99)^2 + (0.95)^2 + (1.36)^2 + (-1.11)^2 + (-0.01)^2',
+            font_size=32
+        ).set_color(YELLOW)
+        coeffs_squared.next_to(polynomial_equation_5b, DOWN, buff=0.5)
+
+        # Create the final sum
+        final_sum = Tex(
+            r'= 0.29 + 3.96 + 0.90 + 1.85 + 1.23 + 0.0001 = 8.23',
+            font_size=32
+        ).set_color(YELLOW)
+        final_sum.next_to(coeffs_squared, DOWN, buff=0.3)
+
+        # Animate the transformation
+        self.play(
+            TransformMatchingTex(
+                polynomial_equation_5b.copy(),
+                coeffs_squared,
+                path_arc=PI/4
+            ),
+            run_time=2
+        )
+        self.wait()
+
+        # Show the final calculation
+        self.play(Write(final_sum), run_time=2)
+        self.wait()
 
 
 

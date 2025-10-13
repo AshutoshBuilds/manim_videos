@@ -466,8 +466,10 @@ class P8_15V2(InteractiveScene):
         
         # Load Error Curves SVG
         error_curves_svg = SVGMobject(svg_dir + '/p8_15_2-06.svg')
-        error_curves_svg.scale(2.98)
+        error_curves_svg.scale(3.15)
         error_curves_svg.move_to([4.84, 0.74, 0])
+        error_curves_svg.shift(UP*0.5)
+        error_curves_svg[0].set_color(TEST_BLUE)
         
         # Animate Testing Error Bars
         self.wait()

@@ -382,6 +382,24 @@ class p46_56(InteractiveScene):
                   #Replace axes with longer one here!
                   run_time=2)
         self.add(extended_axis_group[1][6], extended_axis_group[1][8])
+        
+
+        lil_arrow_1=SVGMobject(svg_dir+'/p46_56_2-06.svg') #[1:] 
+        lil_arrow_1.scale(0.3)
+        lil_arrow_1.set_color('#FF00FF')
+        lil_arrow_1.move_to([8.25, -2.55, 0])
+
+        # self.add(lil_arrow_1)
+
+        polynomial_equation_5=Tex('f(x)=ax^5+bx^4+cx^3+dx^2+ex+f', font_size=28).set_color('#FF00FF')
+        # polynomial_equation_5.move_to([-2.5, 3, 0]) 
+        polynomial_equation_5.move_to([5.4, -2.8, 0])
+        
+        self.wait()
+        self.play(Write(polynomial_equation_5))
+        self.play(Write(lil_arrow_1))
+        self.wait()
+
 
 
 

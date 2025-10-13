@@ -13,8 +13,11 @@ FRESH_TAN='#dfd0b9'
 CYAN='#00FFFF'
 TEST_BLUE='#008080'  # Teal color for all test/blue elements
 
-graphics_dir = os.path.expanduser('~/Stephencwelch Dropbox/welch_labs/double_descent/graphics/')
-svg_dir = os.path.expanduser('~/Downloads')
+# graphics_dir = os.path.expanduser('~/Stephencwelch Dropbox/welch_labs/double_descent/graphics/')
+# svg_dir = os.path.expanduser('~/Downloads')
+graphics_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/double_descent/graphics/'
+svg_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/double_descent/graphics/to_manim'
+
 
 def fit_legendre_pinv(x_train, y_train, degree, x_min=-2, x_max=2):
     """Fit Legendre polynomial using pseudoinverse"""

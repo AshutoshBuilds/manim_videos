@@ -746,12 +746,63 @@ class p46_56(InteractiveScene):
         
 
         test_error_bars_copy = test_error_bars.copy()
-        self.play(ReplacementTransform(test_error_bars_copy, target_test_bars), run_time=3.0)
+        final_ticks=SVGMobject(svg_dir+'/p46_56_2-14.svg')[1:] 
+        final_ticks.scale(4.5)
+        final_ticks.move_to([12.98, -2, 0])
+
+        self.wait()
+
+        self.play(self.frame.animate.reorient(0, 0, 0, (5.17, 0.23, 0.0), 13.80),
+                  extended_axis_svg.animate.scale([1.94, 1, 1], about_point=extended_axis_svg.get_left()),
+                  degree_label.animate.move_to([16.7, -2.1, 0]), 
+                  ReplacementTransform(test_error_bars_copy, target_test_bars),
+                  run_time=4.0)
+        self.add(final_ticks, train_error_dots[5])
         self.play(ShowCreation(test_error_dots[5]))
-        self.add(train_error_dots[5])
+        
 
 
-        self.frame.reorient(0, 0, 0, (4.86, 0.23, 0.0), 13.64)
+        # self.play(ReplacementTransform(test_error_bars_copy, target_test_bars), run_time=3.0)
+        # self.play(ShowCreation(test_error_dots[5]))
+        # self.add(train_error_dots[5])
+
+
+        #Make these sucker into a a nice animation.
+        # self.frame.reorient(0, 0, 0, (5.17, 0.23, 0.0), 13.80)
+        # self.play(extended_axis_svg.animate.scale([1.94, 1, 1], about_point=extended_axis_svg.get_left()))
+        # degree_label.move_to([16.7, -2.1, 0])
+
+
+        #Ok cool so for 56 I think we replay drawing the 4th order curve, 
+        #And and probably bring back in interpolation treshold dotted line and label
+        self.wait()
+        self.play(all_tenth_order_fits.animate.set_stroke(opacity=0.0), 
+                  FadeOut(test_error_bars),
+                  FadeOut(fit_line_10),
+                  run_time=2)
+        self.wait()
+
+        self.play(FadeIn(interp_threshold_label), FadeIn(interp_threshold_line))
+        fit_line_4.set_color(YELLOW)
+
+        self.play(ShowCreation(fit_line_4), run_time=3)
+        self.wait()
+
+        self.play(FadeOut(fit_line_4))
+        self.wait()
+
+        tenth_order_group=VGroup(fit_line_10, all_tenth_order_fits)
+        self.remove(tenth_order_group)
+        tenth_order_group.set_stroke(width=1.0, opacity=0.3)
+        # fit_line_10.set_stroke(width=1.0, opacity=0.3)
+        self.play(*[ShowCreation(all_tenth_order_fits[i]) for i in range(len(all_tenth_order_fits))], run_time=7)
+        self.remove(train_dots); self.add(train_dots)
+
+        self.play(FadeOut(all_tenth_order_fits),
+                 fit_line_10.animate.set_color(YELLOW).set_stroke(width=3, opacity=0.9), #a little jumpy buy maybe ok?
+                 run_time=3.0)
+        self.wait()
+
 
 
 

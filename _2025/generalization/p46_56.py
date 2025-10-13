@@ -667,15 +667,91 @@ class p46_56(InteractiveScene):
         # Ok yeah that's going to be al illustrator
         # Now let me jump on p54 here. 
 
-        self.play(FadeOut(fit_line_4), all_fifth_order_fits[48].animate.set_stroke(opacity=0.2), run_time=2.0)
+        #hmm yeah I think totally take away the fourth order fit? Shit's about to get complicated
+        self.play(FadeOut(fit_line_4), all_fifth_order_fits[48].animate.set_stroke(opacity=0.0), run_time=2.0)
         self.wait()
 
 
 
+        all_fits=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/double_descent/graphics/all_fits_degree_10_oct_13_1.npy')
+        all_tenth_order_fits=VGroup()
+        for af in all_fits:
+            fit_points = [axes_1.c2p(all_x[i], af[i]) for i in range(len(all_x))]
+            fit_line = VMobject(stroke_width=3)
+            fit_line.set_points_smoothly(fit_points)
+            fit_line.set_color('#FFFFFF')  #FF00FF
+            all_tenth_order_fits.add(fit_line)
+
+        all_tenth_order_fits.set_stroke(width=1.0, opacity=0.3)
+
+        self.wait()
+        self.play(*[ShowCreation(all_tenth_order_fits[i]) for i in range(len(all_tenth_order_fits))], run_time=7)
+        self.remove(train_dots); self.add(train_dots)
+        self.wait()
+
+        self.remove(all_tenth_order_fits[66]); 
+        all_tenth_order_fits[66].set_stroke(width=5, opacity=0.9).set_color('#FF00FF')
+
+        self.play(ShowCreation(all_tenth_order_fits[66]), run_time=3.0)
+        # self.play(all_tenth_order_fits[66].animate.set_stroke(width=3, opacity=0.9).set_color('#FF00FF'))
+        
+        #66self.add(all_tenth_order_fits[66])
+
+        fit_line_10.set_stroke(width=4).set_color(YELLOW)
+        # self.add(fit_line_10)
+
+        self.wait()
+        self.play(
+                  # all_tenth_order_fits[66].animate.set_stroke(width=1.0, opacity=0.3).set_color('#FFFFFF'),
+                  all_tenth_order_fits.animate.set_stroke(width=0.5, opacity=0.01).set_color('#FFFFFF'),
+                  # FadeIn(fit_line_10),
+                  run_time=3.0)
+        self.add(fit_line_10)
+        self.wait()
+
+        #Ok I think probably do the error bars again and tweak the VO to give a little more space for it?
+        test_error_bars = VGroup()
+        for i in range(len(x_test)):
+            point_pos = axes_1.c2p(x_test[i], y_test[i])
+            fit_pos = axes_1.c2p(x_test[i], y_test_pred_10[i])
+            # Always draw from the lower point to the higher point
+            if point_pos[1] > fit_pos[1]:  # point is above fit
+                error_bar = Line(fit_pos, point_pos, color=TEST_BLUE, stroke_width=3)
+            else:  # point is below fit
+                error_bar = Line(point_pos, fit_pos, color=TEST_BLUE, stroke_width=3)
+            test_error_bars.add(error_bar)
+        
+
+        # Create target bars for error plot (stacked bars)
+        target_test_bars = VGroup()
+        bar_height = test_errors[5] / len(test_error_bars)
+        x_pos = degrees[5]
+        
+        for i in range(len(test_error_bars)):
+            bottom_y = i * bar_height
+            top_y = (i + 1) * bar_height
+            bottom = axes_2.c2p(x_pos, bottom_y)
+            top = axes_2.c2p(x_pos, top_y)
+            target_bar = Line(bottom, top, color=TEST_BLUE, stroke_width=3)
+            target_test_bars.add(target_bar)
 
 
+        # Animate Test Error Bars
+        self.wait()
+        self.play(
+            LaggedStart(*[ShowCreation(bar) for bar in test_error_bars], lag_ratio=0.1), 
+            run_time=1.5
+        )
+        # self.bring_to_front(all_fifth_order_fits[48])  # Keep fit line in front of error bars
+        
+
+        test_error_bars_copy = test_error_bars.copy()
+        self.play(ReplacementTransform(test_error_bars_copy, target_test_bars), run_time=3.0)
+        self.play(ShowCreation(test_error_dots[5]))
+        self.add(train_error_dots[5])
 
 
+        self.frame.reorient(0, 0, 0, (4.86, 0.23, 0.0), 13.64)
 
 
 

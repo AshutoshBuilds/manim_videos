@@ -366,6 +366,7 @@ class p46_56(InteractiveScene):
 
         
         self.wait()
+
         self.remove(interp_threshold_line, interp_threshold_label)
         self.play(self.frame.animate.reorient(0, 0, 0, (1.57, 0.64, 0.0), 9.98),
                   FadeOut(error_curves_svg), 
@@ -375,8 +376,8 @@ class p46_56(InteractiveScene):
                   FadeOut(polynomial_equation_4),
                   # FadeOut(interp_threshold_line),
                   # FadeOut(interp_threshold_label),
-                  interp_threshold_line.animate.set_opacity(0.5),
-                  interp_threshold_label.animate.set_opacity(0.5),
+                  #interp_threshold_line.animate.set_opacity(0.5),
+                  #interp_threshold_label.animate.set_opacity(0.5),
                   degree_label.animate.move_to([9.5, -2.1, 0]),
                   extended_axis_svg.animate.scale([1.3, 1, 1], about_point=extended_axis_svg.get_left()),
                   #Replace axes with longer one here!
@@ -391,14 +392,82 @@ class p46_56(InteractiveScene):
 
         # self.add(lil_arrow_1)
 
-        polynomial_equation_5=Tex('f(x)=ax^5+bx^4+cx^3+dx^2+ex+f', font_size=28).set_color('#FF00FF')
+        polynomial_equation_5=Tex('f(x)=ax^5+bx^4+cx^3+dx^2+ex+f', font_size=32).set_color('#FF00FF')
         # polynomial_equation_5.move_to([-2.5, 3, 0]) 
-        polynomial_equation_5.move_to([5.4, -2.8, 0])
+        polynomial_equation_5.move_to([5.0, -2.8, 0])
         
         self.wait()
         self.play(Write(polynomial_equation_5))
         self.play(Write(lil_arrow_1))
         self.wait()
+
+        # Now add arrows pointing to each arrow in illustrator - already made em
+        # Ok now time to tackle N different curve fits, probalby back to jupyter for a minute
+        # to figure out who exactly i want to do this 
+        # I need to pick out two examples too and figurout thier vondermonte coefficicent
+        # Cool wiil do that and then come back.  
+
+        # Load up 100 different perfect 5th order fits and coefficients from jupyter notebook
+        # I want to highlight 48 (chill) and 72 (nuts)
+        all_fits=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/double_descent/graphics/all_fits_oct_13_1.npy')
+        all_coeffs=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/double_descent/graphics/all_coefs_oct_13_1.npy')
+
+
+        all_fifth_order_fits=VGroup()
+        for af in all_fits:
+            fit_points = [axes_1.c2p(all_x[i], af[i]) for i in range(len(all_x))]
+            fit_line = VMobject(stroke_width=3)
+            fit_line.set_points_smoothly(fit_points)
+            fit_line.set_color('#FF00FF')
+            all_fifth_order_fits.add(fit_line)
+
+        all_fifth_order_fits.set_stroke(width=1.0, opacity=0.4)
+
+        # fit_points_72 = [axes_1.c2p(all_x[i], all_fits[72][i]) for i in range(len(all_x))]
+        # dashed_fit_72 = DashedVMobject(all_fifth_order_fits[72], num_dashes=200, color='#FF00FF')
+        # dashed_fit_72.set_stroke(width=3)
+        # self.add(dashed_fit_72)
+
+        self.wait() #This is DOPE
+        self.play(*[ShowCreation(all_fifth_order_fits[i]) for i in range(len(all_fifth_order_fits))], run_time=7)
+        
+
+        # Add footnote about about minium norm calculation in editing. 
+        # Ok this little bit is fairly complex, but I think one of the 2-3 most complex parts of the vid. 
+        # Ok I think i really want to focus on on the fits here, and temporarily fade some stuff out. 
+
+        self.wait()
+        self.play(FadeOut(polynomial_equation_5),
+                  FadeOut(lil_arrow_1),
+                  FadeOut(error_axis_svg[1:]),
+                  FadeOut(degree_label),
+                  FadeOut(extended_axis_svg),
+                  FadeOut(extended_axis_group[1][6]), 
+                  FadeOut(extended_axis_group[1][8]),
+                  FadeOut(train_error_dots[:4]), 
+                  FadeOut(test_error_dots[:4]), 
+                  FadeOut(legend),
+                  self.frame.animate.reorient(0, 0, 0, (1.43, 0.35, 0.0), 11.25),
+                  all_fifth_order_fits[:72].animate.set_stroke(width=0.5, opacity=0.1).set_color(CHILL_BROWN),
+                  all_fifth_order_fits[73:].animate.set_stroke(width=0.5, opacity=0.1).set_color(CHILL_BROWN),
+                  all_fifth_order_fits[72].animate.set_stroke(width=4, opacity=0.9), #.set_color(YELLOW),
+                  run_time=4
+            )
+        
+
+        polynomial_equation_5a=Tex('f(x)=-0.66x^5-2.85x^4-0.01x^3+3.12x^2+0.36x-0.83', font_size=36).set_color('#FF00FF')
+        polynomial_equation_5a.move_to([5.0, -3.5, 0])
+
+        self.wait()
+        self.play(Write(polynomial_equation_5a))
+
+        self.wait()
+        self.play(all_fifth_order_fits[48].animate.set_stroke(width=4, opacity=0.9).set_color(YELLOW), 
+                  run_time=2)
+
+        polynomial_equation_5b=Tex('f(x)=-0.66x^5-2.85x^4-0.01x^3+3.12x^2+0.36x-0.83', font_size=36).set_color('#FF00FF')
+        polynomial_equation_5b.move_to([5.0, -3.5, 0])
+
 
 
 

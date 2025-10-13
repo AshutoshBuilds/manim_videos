@@ -870,8 +870,8 @@ class P8_15V2(InteractiveScene):
         
         self.wait()
         
-        self.play(ShowCreation(error_curves_svg[0]))
-        self.play(ShowCreation(error_curves_svg[1]))
+        self.play(FadeIn(error_curves_svg[0]))
+        self.play(FadeIn(error_curves_svg[1]))
         
         self.embed()
         # Final Wait

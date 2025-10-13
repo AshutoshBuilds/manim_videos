@@ -10,6 +10,7 @@ CHILL_GREEN='#6c946f'
 CHILL_BLUE='#3d5c6f'
 FRESH_TAN='#dfd0b9'
 CYAN='#00FFFF'
+TEST_BLUE='#008080' 
 
 graphics_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/double_descent/graphics/'
 svg_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/double_descent/graphics/to_manim'
@@ -52,7 +53,7 @@ def get_fit_line(axes, x_train, y_train, x_test, y_test, all_x, degree=1, color=
     fit_line = VMobject(stroke_width=3)
     fit_line.set_points_smoothly(fit_points)
     fit_line.set_color(color)
-    return fit_line, test_error, train_error
+    return fit_line, test_error, train_error, y_train_pred, y_test_pred
 
 
 
@@ -158,12 +159,12 @@ class p46_56(InteractiveScene):
         legend.move_to(axes_1.get_bottom() + DOWN * 0.15 + RIGHT * 0.1)
 
 
-        fit_line_1, test_error_1, train_error_1 = get_fit_line(axes_1, x_train, y_train, x_test, y_test, all_x, degree=1, color=GREEN)
-        fit_line_2, test_error_2, train_error_2 = get_fit_line(axes_1, x_train, y_train, x_test, y_test, all_x, degree=2, color=YELLOW)
-        fit_line_3, test_error_3, train_error_3 = get_fit_line(axes_1, x_train, y_train, x_test, y_test, all_x, degree=3, color=ORANGE)
-        fit_line_4, test_error_4, train_error_4 = get_fit_line(axes_1, x_train, y_train, x_test, y_test, all_x, degree=4, color='#FF00FF')
-        fit_line_5, test_error_5, train_error_5 = get_fit_line(axes_1, x_train, y_train, x_test, y_test, all_x, degree=5, color='#FFFFFF')
-        fit_line_10, test_error_10, train_error_10 = get_fit_line(axes_1, x_train, y_train, x_test, y_test, all_x, degree=10, color='#be1e2d')
+        fit_line_1, test_error_1, train_error_1, y_train_pred_1, y_test_pred_1 = get_fit_line(axes_1, x_train, y_train, x_test, y_test, all_x, degree=1, color=GREEN)
+        fit_line_2, test_error_2, train_error_2, y_train_pred_2, y_test_pred_2 = get_fit_line(axes_1, x_train, y_train, x_test, y_test, all_x, degree=2, color=YELLOW)
+        fit_line_3, test_error_3, train_error_3, y_train_pred_3, y_test_pred_3 = get_fit_line(axes_1, x_train, y_train, x_test, y_test, all_x, degree=3, color=ORANGE)
+        fit_line_4, test_error_4, train_error_4, y_train_pred_4, y_test_pred_4 = get_fit_line(axes_1, x_train, y_train, x_test, y_test, all_x, degree=4, color='#FF00FF')
+        fit_line_5, test_error_5, train_error_5, y_train_pred_5, y_test_pred_5 = get_fit_line(axes_1, x_train, y_train, x_test, y_test, all_x, degree=5, color='#FFFFFF')
+        fit_line_10, test_error_10, train_error_10, y_train_pred_10, y_test_pred_10 = get_fit_line(axes_1, x_train, y_train, x_test, y_test, all_x, degree=10, color='#be1e2d')
 
         axes_2 = Axes(
             x_range=[0, 4, 1],
@@ -462,7 +463,7 @@ class p46_56(InteractiveScene):
         self.play(all_fifth_order_fits[48].animate.set_stroke(width=4, opacity=0.9).set_color(YELLOW), 
                   run_time=2)
 
-        polynomial_equation_5b=Tex('f(x)=-0.54x^5-1.99x^4+0.95x^3+1.36x^2-1.11x-0.01', font_size=36).set_color(YELLOW)
+        polynomial_equation_5b=Tex('f(x)=-0.54x^5-1.99x^4+0.95x^3+1.36x^2-0.11x-0.01', font_size=36).set_color(YELLOW)
         polynomial_equation_5b.move_to([4.8, 2.3, 0])
         self.wait()
         self.play(Write(polynomial_equation_5b), run_time=2)
@@ -476,7 +477,7 @@ class p46_56(InteractiveScene):
             r'(-0.66)^2 + (-2.85)^2 + (-0.01)^2 + (3.12)^2 + (0.36)^2 + (-0.83)^2',
             font_size=32
         ).set_color('#FF00FF')
-        coeffs_squared_1.next_to(polynomial_equation_5a, DOWN, buff=0.5).shift([0.4, 0, 0])
+        coeffs_squared_1.next_to(polynomial_equation_5a, DOWN, buff=0.4).shift([0.4, 0, 0])
 
         #To do ->  finish matching indices here so all 6 terms move down nicely. 
         self.wait()
@@ -489,51 +490,182 @@ class p46_56(InteractiveScene):
                   run_time=2)
 
         #To do -> Fade in all the parts of the coeffs_squared_1 that don't have yet
-        self.play(FadeIn(coeffs_squared_1[0]),
-                  FadeIn(coeffs_squared_1[0]),
-                  FadeIn(coeffs_squared_1[0]),
-                  FadeIn(coeffs_squared_1[0]),
-                  FadeIn(coeffs_squared_1[0]),
-                  FadeIn(coeffs_squared_1[0]),
-                  FadeIn(coeffs_squared_1[0]),
-                  FadeIn(coeffs_squared_1),
-             )
-        self.wait()
+        # self.play(FadeIn(coeffs_squared_1[0]),
+        #           FadeIn(coeffs_squared_1[0]),
+        #           FadeIn(coeffs_squared_1[0]),
+        #           FadeIn(coeffs_squared_1[0]),
+        #           FadeIn(coeffs_squared_1[0]),
+        #           FadeIn(coeffs_squared_1[0]),
+        #           FadeIn(coeffs_squared_1[0]),
+        #           FadeIn(coeffs_squared_1),
+        #      )
+        # self.wait()
 
-        self.add(coeffs_squared_1)
+        self.add(coeffs_squared_1) #Remove this after we finish the nice animated version above. 
+
+        result_eq_1 = Tex('=19.13', font_size=32).set_color('#FF00FF')
+        result_eq_1.next_to(coeffs_squared_1, DOWN, buff=0.4, aligned_edge=LEFT)
+        self.play(Write(result_eq_1))
 
 
+        #0.54^2+1.99^2+0.95^2+1.36^2+0.11^2+0.01^2
 
         # Create the squared coefficients expression
-        coeffs_squared = Tex(
-            r'(-0.54)^2 + (-1.99)^2 + (0.95)^2 + (1.36)^2 + (-1.11)^2 + (-0.01)^2',
+        coeffs_squared_2 = Tex(
+            r'(-0.54)^2 + (-1.99)^2 + (0.95)^2 + (1.36)^2 + (-0.11)^2 + (-0.01)^2',
             font_size=32
         ).set_color(YELLOW)
-        coeffs_squared.next_to(polynomial_equation_5b, DOWN, buff=0.5)
+        coeffs_squared_2.next_to(polynomial_equation_5b, DOWN, buff=0.3)
 
-        # Create the final sum
-        final_sum = Tex(
-            r'= 0.29 + 3.96 + 0.90 + 1.85 + 1.23 + 0.0001 = 8.23',
-            font_size=32
-        ).set_color(YELLOW)
-        final_sum.next_to(coeffs_squared, DOWN, buff=0.3)
+        # To-do -> nice animation bringing coefficeints from polynomial_equation_5b into coeffs_squared_2
+        # and adding parenthesis and squares. 
+        self.add(coeffs_squared_2)
 
-        # Animate the transformation
-        self.play(
-            TransformMatchingTex(
-                polynomial_equation_5b.copy(),
-                coeffs_squared,
-                path_arc=PI/4
-            ),
-            run_time=2
+
+        result_eq_2 = Tex('=7.04', font_size=32).set_color(YELLOW)
+        result_eq_2.next_to(coeffs_squared_2, DOWN, buff=0.4, aligned_edge=LEFT)
+        self.play(Write(result_eq_2))
+
+        # Right at the end of p50 here, fade out magenta curve. 
+        self.wait()
+        self.play(FadeOut(polynomial_equation_5a),
+                  FadeOut(coeffs_squared_1),
+                  FadeOut(result_eq_1),
+                  all_fifth_order_fits[72].animate.set_stroke(width=0.5, opacity=0.1).set_color(CHILL_BROWN),
+                  run_time=2)
+        self.wait()
+
+        #P51 lets go
+        self.play(all_fifth_order_fits[:48].animate.set_stroke(width=1.0, opacity=0.4),
+                  all_fifth_order_fits[49:].animate.set_stroke(width=1.0, opacity=0.4),
+                  run_time=2.5 )
+        self.remove(train_dots, test_dots, all_fifth_order_fits[48])
+        self.add(train_dots, test_dots, all_fifth_order_fits[48])
+        self.wait()
+
+        # Ok time to bring back in error plot, lose all the other curves, lose thet equations, 
+        # zoom back in a bit, and then do a "measure error with lines again" 
+
+        # Ok I think i want more out of the way legend now -> might also be nice to 
+        # have a more out of the way one earlier, we'll see!
+        legend_train_2=legend_train.copy()
+        legend_test_2=legend_test.copy()
+        legend_line_item_2=legend_line_item.copy()
+        legend_items_2 = VGroup(legend_train_2, legend_test_2, legend_line_item_2).arrange(DOWN, buff=0.1, aligned_edge=LEFT)
+        
+        legend_box_2 = RoundedRectangle(
+            width=legend_items_2.get_width() + 0.6,
+            height=legend_items_2.get_height() + 0.3,
+            corner_radius=0.08,
+            stroke_color=CHILL_BROWN,
+            stroke_width=2,
+            fill_color=None,
+            fill_opacity=0.0
         )
+        legend_box_2.set_stroke(opacity=0.7)
+        
+        # Position legend below the plot
+        legend_2 = VGroup(legend_box_2, legend_items_2)
+        legend_2.move_to(axes_1.get_bottom() + DOWN * 0.5 + RIGHT * -2.0)
+        # self.add(legend_2)
+
+        self.wait()
+        self.remove(polynomial_equation_5b, coeffs_squared_2, result_eq_2)
+        self.play(self.frame.animate.reorient(0, 0, 0, (1.6, 0.58, 0.0), 9.91),
+                  #FadeOut(polynomial_equation_5b),
+                  #FadeOut(coeffs_squared_2),
+                  #FadeOut(result_eq_2),
+                  all_fifth_order_fits[:48].animate.set_stroke(opacity=0.0),
+                  all_fifth_order_fits[49:].animate.set_stroke(opacity=0.0),
+                  FadeIn(error_axis_svg[1:]),
+                  degree_label.animate.set_opacity(1.0),
+                  FadeIn(extended_axis_svg),
+                  FadeIn(extended_axis_group[1][6]), 
+                  FadeIn(extended_axis_group[1][8]),
+                  FadeIn(train_error_dots[:4]), 
+                  FadeIn(test_error_dots[:4]), 
+                  FadeIn(legend_2),
+                  run_time=4)
         self.wait()
 
-        # Show the final calculation
-        self.play(Write(final_sum), run_time=2)
+        self.play(ShowCreation(train_error_dots[4]))
+        self.wait(0)
+
+
+
+        #Hmm I think we want to bring back the 4th order fit in low opacity here, comparison is important. 
+
+        fit_line_4.set_color(MAROON_B).set_stroke(opacity=0.8)
+        self.play(ShowCreation(fit_line_4), run_time=2)
+        
+
+
+
+        # Create Testing Error Bars
+        test_error_bars = VGroup()
+        for i in range(len(x_test)):
+            point_pos = axes_1.c2p(x_test[i], y_test[i])
+            fit_pos = axes_1.c2p(x_test[i], y_test_pred_5[i])
+            # Always draw from the lower point to the higher point
+            if point_pos[1] > fit_pos[1]:  # point is above fit
+                error_bar = Line(fit_pos, point_pos, color=TEST_BLUE, stroke_width=3)
+            else:  # point is below fit
+                error_bar = Line(point_pos, fit_pos, color=TEST_BLUE, stroke_width=3)
+            test_error_bars.add(error_bar)
+        
+
+        # Create target bars for error plot (stacked bars)
+        target_test_bars = VGroup()
+        bar_height = test_errors[4] / len(test_error_bars)
+        x_pos = degrees[4]
+        
+        for i in range(len(test_error_bars)):
+            bottom_y = i * bar_height
+            top_y = (i + 1) * bar_height
+            bottom = axes_2.c2p(x_pos, bottom_y)
+            top = axes_2.c2p(x_pos, top_y)
+            target_bar = Line(bottom, top, color=TEST_BLUE, stroke_width=3)
+            target_test_bars.add(target_bar)
+
+
+        # Animate Test Error Bars
+        self.wait()
+        self.play(
+            LaggedStart(*[ShowCreation(bar) for bar in test_error_bars], lag_ratio=0.1), 
+            run_time=1.5
+        )
+        self.bring_to_front(all_fifth_order_fits[48])  # Keep fit line in front of error bars
+        
+
+        test_error_bars_copy = test_error_bars.copy()
+        self.play(ReplacementTransform(test_error_bars_copy, target_test_bars), run_time=3.0)
+        self.play(ShowCreation(test_error_dots[4]))
+
+
+
+
+        self.bring_to_front(train_error_dots[0])
+
+
+        train_error_bars_copy = train_error_bars.copy()
+        self.add(train_error_bars_copy)
+        self.bring_to_front(all_fifth_order_fits[48])  # Bring fit line to front after adding copy
+        train_error_bars.set_opacity(0.5)
         self.wait()
 
 
+        # Copy test error bars before moving
+        test_error_bars_copy = test_error_bars.copy()
+        self.add(test_error_bars_copy)
+        self.bring_to_front(fit_line_1)  # Bring fit line to front after adding copy
+        
+        # Fade out yellow bars first, then move blue bars
+        self.play(target_train_bars.animate.set_opacity(0.0), run_time=1.5)
+        self.bring_to_front(train_error_dots[0])
+        self.bring_to_front(fit_line_1)  # Keep fit line in front
+        self.play(ReplacementTransform(test_error_bars_copy, target_test_bars), run_time=3.0)
+        self.bring_to_front(train_error_dots[0])
+        self.play(ShowCreation(test_error_dots[0]))
 
 
 

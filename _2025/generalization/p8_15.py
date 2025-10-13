@@ -296,7 +296,10 @@ class P8_15V2(InteractiveScene):
         )
         self.wait()
         
-        self.play(test_dots.animate.set_color(TEST_BLUE))
+        self.play(
+            test_dots.animate.set_color(TEST_BLUE),
+            FadeIn(legend)
+        )
         self.wait()
         
         # Fit Linear Model (Degree 1)
@@ -340,9 +343,11 @@ class P8_15V2(InteractiveScene):
         fit_line_1 = VMobject(color=GREEN, stroke_width=3)
         fit_line_1.set_points_smoothly(fit_points)
         
-        # Create equation for degree 1 - centered above left graph
+        # Create equation for degree 1 - positioned right above the green line
         eq_1 = Tex("y = ax + b", font_size=40).set_color(GREEN)
-        eq_1.move_to([-3, 3.2, 0])  # Centered at x=-3 (axes_1 position), above the graph
+        # Position above the green line at x=0
+        line_y_at_center = axes_1.c2p(0, eval_legendre_poly(beta_hat, np.array([0]), degree)[0])[1]
+        eq_1.move_to([-3, line_y_at_center + 0.6, 0])  # Position above the green line
         
         self.play(
             ShowCreation(fit_line_1),
@@ -350,7 +355,6 @@ class P8_15V2(InteractiveScene):
             run_time=1.5
         )
         self.bring_to_front(fit_line_1)  # Keep fit line in front
-        self.add(legend)
         self.wait()
         
         # Create Second Axes (Error Plot)
@@ -468,7 +472,7 @@ class P8_15V2(InteractiveScene):
         error_curves_svg = SVGMobject(svg_dir + '/p8_15_2-06.svg')
         error_curves_svg.scale(3.15)
         error_curves_svg.move_to([4.84, 0.74, 0])
-        error_curves_svg.shift(UP*0.5)
+        error_curves_svg.shift(UP*0.51)
         error_curves_svg[0].set_color(TEST_BLUE)
         
         # Animate Testing Error Bars

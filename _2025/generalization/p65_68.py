@@ -344,10 +344,39 @@ class p65_68(InteractiveScene):
         self.wait()
         self.play(LaggedStart(*[FadeIn(dot) for dot in sorted_dots], lag_ratio=0.15), run_time=2)
         self.play(ShowCreation(fit_line_2b), run_time=2)
+        
         self.wait()
+        self.play(FadeOut(train_dots_2), FadeOut(test_dots_2), fit_line_2b.animate.set_stroke(opacity=0.5))
 
 
+        random_seed=52
+        x,y=get_noisy_data(n_points, noise_level, random_seed)     
+        x_train, y_train=x[:n_train_points], y[:n_train_points]
+        x_test, y_test=x[n_train_points:],y[n_train_points:]
+        fit_line_2c, test_error_2b, train_error_2b, y_train_pred_2b, y_test_pred_2b = get_fit_line(axes_1, x_train, y_train, x_test, y_test, all_x, degree=2, color=YELLOW)
+        
+        train_dots_2 = VGroup(*[Dot(axes_1.c2p(x_train[i], y_train[i]), radius=0.08) for i in range(len(x_train))])
+        test_dots_2 = VGroup(*[ Dot(axes_1.c2p(x_test[i], y_test[i]), radius=0.08) for i in range(len(x_test))])
+        test_dots_2.set_color('#008080')
+        train_dots_2.set_color(YELLOW)
 
+        dots_with_x = []
+        for i, dot in enumerate(train_dots_2):
+            dots_with_x.append((x_train[i], dot, 'train'))
+        for i, dot in enumerate(test_dots_2):
+            dots_with_x.append((x_test[i], dot, 'test'))
+        dots_with_x.sort(key=lambda item: item[0])
+        sorted_dots = [item[1] for item in dots_with_x]
+
+        self.play(LaggedStart(*[FadeIn(dot) for dot in sorted_dots], lag_ratio=0.15), run_time=2)
+        self.play(ShowCreation(fit_line_2c), run_time=2)
+
+
+        #ok I'm going to add 50 more fits - Hmm how much compute do i want to do here vs 
+        # in jupyter and import
+        # Eh kinda feel like i want to import?
+
+        
 
 
         self.wait(20)

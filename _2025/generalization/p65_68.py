@@ -497,6 +497,8 @@ class p65_68(InteractiveScene):
         self.play(Write(bias_var_labels[24:]), Write(bias_var_labels[16:18]), run_time=2)
         self.wait()
 
+
+
         #Bring back in various fit curves for a second, then take back out. 
 
         self.play(FadeIn(all_variance_fits_copy), run_time=2)
@@ -520,6 +522,12 @@ class p65_68(InteractiveScene):
           FadeIn(test_error_dots),
           self.frame.animate.reorient(0, 0, 0, (1.34, 0.67, 0.0), 9.41),
           run_time=3.0)
+        
+
+        bias_var_legend=SVGMobject(svg_dir+'/p65_68-06.svg')[1:]
+        bias_var_legend.scale(4)
+        bias_var_legend.move_to([5.5, -2.7, 0])
+        self.add(bias_var_legend)
         self.wait()
 
         # i want to break apart the distance between zero and test_error_dots[1] on the 
@@ -564,23 +572,169 @@ class p65_68(InteractiveScene):
         self.wait()
         self.play(
             ReplacementTransform(bias_region_copy, bias_error_line),
-            run_time=2
+            run_time=3
         )
         self.wait()
         self.play(
             ReplacementTransform(std_region_copy, variance_error_line),
-            run_time=2
+            run_time=3
         )
         self.wait()
         self.play(
             ShowCreation(irreducible_error_line),
-            run_time=2
+            run_time=3
+        )
+
+
+        all_first_order_fits_np=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/double_descent/graphics/fits_first_order_oct_14_1.npy')
+
+        all_first_order_fits=VGroup()
+        for af in all_first_order_fits_np:
+            fit_points = [axes_1.c2p(all_x[i], af[i]) for i in range(len(all_x))]
+            fit_line = VMobject(stroke_width=3)
+            fit_line.set_points_smoothly(fit_points)
+            fit_line.set_color(YELLOW)
+            all_first_order_fits.add(fit_line)
+        all_first_order_fits.set_stroke(width=1.0, opacity=0.4)
+
+        self.wait()
+        self.play(FadeOut(bias_var_labels[18:24]),
+                  FadeOut(bias_var_labels[24:]),
+                  FadeOut(bias_var_labels[16:18]),
+                  FadeOut(bias_region),
+                  FadeOut(std_region),
+                  FadeOut(mean_fit_line),
+                  run_time=2.0)
+        self.wait()
+
+        self.play(ShowCreation(all_first_order_fits), run_time=2.5)
+        self.wait()
+
+
+        # Calculate mean and standard deviation for first order fits
+        mean_fit_1 = np.mean(all_first_order_fits_np, 0)
+        std_fit_1 = np.std(all_first_order_fits_np, 0)
+
+        # Create the mean fit line
+        fit_points_1 = [axes_1.c2p(all_x[i], mean_fit_1[i]) for i in range(len(all_x))]
+        mean_fit_line_1 = VMobject(stroke_width=3)
+        mean_fit_line_1.set_points_smoothly(fit_points_1)
+        mean_fit_line_1.set_color(YELLOW)
+        mean_fit_line_1.set_stroke(width=3.0, opacity=0.9)
+
+        # Create the standard deviation region
+        upper_bound_1 = mean_fit_1 + std_fit_1
+        lower_bound_1 = mean_fit_1 - std_fit_1
+
+        upper_points_1 = [axes_1.c2p(all_x[i], upper_bound_1[i]) for i in range(len(all_x))]
+        lower_points_1 = [axes_1.c2p(all_x[i], lower_bound_1[i]) for i in range(len(all_x)-1, -1, -1)]
+
+        std_region_points_1 = upper_points_1 + lower_points_1
+
+        std_region_1 = VMobject()
+        std_region_1.set_points_as_corners(std_region_points_1 + [upper_points_1[0]])
+        std_region_1.set_fill(YELLOW, opacity=0.2)
+        std_region_1.set_stroke(width=0)
+
+        # Animate the transformation
+        self.play(
+            *[ReplacementTransform(all_first_order_fits[i], mean_fit_line_1) for i in range(len(all_first_order_fits))], 
+            FadeIn(std_region_1),
+            run_time=5
+        )
+        self.bring_to_back(std_region_1)
+        self.wait()
+
+        #Ok claude, now, as we did above with the second order fit, I want to shade the are between the average fit and 
+        # target parabola magenta. 
+        # Create the bias region between first-order mean fit and parabola
+        parabola_y = f(all_x)
+
+        # Create points for both curves
+        parabola_points = [axes_1.c2p(all_x[i], parabola_y[i]) for i in range(len(all_x))]
+        mean_fit_1_points = [axes_1.c2p(all_x[i], mean_fit_1[i]) for i in range(len(all_x))]
+
+        # Create the region by going along one curve and back along the other
+        bias_region_1_points = parabola_points + mean_fit_1_points[::-1]
+
+        # Create the shaded region
+        bias_region_1 = VMobject()
+        bias_region_1.set_points_as_corners(bias_region_1_points + [parabola_points[0]])  # Close the shape
+        bias_region_1.set_fill('#FF00FF', opacity=0.5)
+        bias_region_1.set_stroke(width=0)
+
+
+        # Animate it appearing
+        self.wait()
+        self.play(FadeIn(bias_region_1), run_time=2)
+        # self.bring_to_back(bias_region_1)
+        self.wait()
+
+        first_order_bias_variance_labels=SVGMobject(svg_dir+'/p65_68-08.svg')[1:]
+        first_order_bias_variance_labels.scale(5)
+        first_order_bias_variance_labels.move_to([-2.6, -0.4, 0])
+        self.add(first_order_bias_variance_labels)
+        self.wait()
+
+        #Ok Claude, now I want to animate my bias and variance regions coming over again to the error plot
+        # this time for the first order fit. Now I want bias to be 47% of the height, variance to be 47% of 
+        # the height, and irreducible error to be 6%. 
+
+        # Get the position of test_error_dots[0] (degree 1)
+        dot_pos_1 = test_error_dots[0].get_center()
+        zero_pos_1 = axes_2.c2p(1, 0)
+
+        # Calculate the total height and the three segments for first order
+        total_height_1 = dot_pos_1[1] - zero_pos_1[1]
+        bias_height_1 = total_height_1 * 0.47
+        variance_height_1 = total_height_1 * 0.47
+        irreducible_height_1 = total_height_1 * 0.06
+
+        # Create the three line segments for first order
+        bias_line_start_1 = zero_pos_1
+        bias_line_end_1 = zero_pos_1 + UP * bias_height_1
+
+        variance_line_start_1 = bias_line_end_1
+        variance_line_end_1 = variance_line_start_1 + UP * variance_height_1
+
+        irreducible_line_start_1 = variance_line_end_1
+        irreducible_line_end_1 = irreducible_line_start_1 + UP * irreducible_height_1
+
+        # Create the line objects for first order
+        bias_error_line_1 = Line(bias_line_start_1, bias_line_end_1, color='#FF00FF', stroke_width=8)
+        variance_error_line_1 = Line(variance_line_start_1, variance_line_end_1, color=YELLOW, stroke_width=8)
+        irreducible_error_line_1 = Line(irreducible_line_start_1, irreducible_line_end_1, color=GREEN, stroke_width=8)
+
+        # Create copies of the shaded regions for transformation
+        bias_region_1_copy = bias_region_1.copy()
+        std_region_1_copy = std_region_1.copy()
+
+        # Animate the transformation
+        self.wait()
+        self.play(
+            ReplacementTransform(bias_region_1_copy, bias_error_line_1),
+            run_time=3
+        )
+        self.wait()
+        self.play(
+            ReplacementTransform(std_region_1_copy, variance_error_line_1),
+            run_time=3
+        )
+        self.wait()
+        self.play(
+            ShowCreation(irreducible_error_line_1),
+            run_time=3
         )
         self.wait()
 
 
 
 
+
+
+
+
+        #50/50 on if I shift to more data points. Let me keep inching along here and see how it feels. 
 
 
         # self.play(FadeOut(interp_threshold_line),

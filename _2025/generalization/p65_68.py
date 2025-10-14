@@ -83,7 +83,6 @@ class p65_68(InteractiveScene):
         n_points=10
         noise_level=0.2
 
-
         all_x = np.linspace(-2, 2, 128)
         all_y = f(all_x)
 
@@ -257,9 +256,95 @@ class p65_68(InteractiveScene):
         self.play(Write(flexibility_label), run_time=1)
         self.wait()
 
+        all_fits=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/double_descent/graphics/all_fits_oct_13_1.npy')
+        all_coeffs=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/double_descent/graphics/all_coefs_oct_13_1.npy')
 
 
+        all_fifth_order_fits=VGroup()
+        for af in all_fits:
+            fit_points = [axes_1.c2p(all_x[i], af[i]) for i in range(len(all_x))]
+            fit_line = VMobject(stroke_width=3)
+            fit_line.set_points_smoothly(fit_points)
+            fit_line.set_color('#FF00FF')
+            all_fifth_order_fits.add(fit_line)
+        all_fifth_order_fits.set_stroke(width=1.0, opacity=0.4)
 
+        # fit_points_72 = [axes_1.c2p(all_x[i], all_fits[72][i]) for i in range(len(all_x))]
+        # dashed_fit_72 = DashedVMobject(all_fifth_order_fits[72], num_dashes=200, color='#FF00FF')
+        # dashed_fit_72.set_stroke(width=3)
+        # self.add(dashed_fit_72)
+
+        self.wait() #This is DOPE
+        self.play(*[ShowCreation(all_fifth_order_fits[i]) for i in range(len(all_fifth_order_fits))], run_time=7)
+        self.remove(train_dots); self.add(train_dots)
+
+        fit_line_5.set_color('#FF00FF').set_stroke(width=4)
+        self.wait()
+        self.play(FadeIn(fit_line_5), FadeOut(all_fifth_order_fits), run_time=3)
+        self.wait()
+
+        fit_line_4.set_color(MAROON_B)
+        self.play(ShowCreation(fit_line_4), run_time=3)
+        
+
+        # Will need to add some illustrator labels for the degrees of these fits. 
+        # Ok on to P66 -> let's go!
+        # Ok not sure if/how I'm going to try to composite here -> i probably don't want to 
+        # composite for that long, ya know? Anyway, 
+        # Ok so here I think I want to lose everything except the initial parabaola and 
+        # training and testing points. Then I can explort different fits
+        # I do want to massage my language here for sure - let's see what we can do!
+        self.wait()
+        self.play(FadeOut(interp_threshold_line),
+                  FadeOut(interp_threshold_label),
+                  FadeOut(flexibility_label),
+                  FadeOut(strikethrough_line),
+                  FadeOut(test_error_dots),
+                  FadeOut(train_error_dots),
+                  FadeOut(double_descent_curve_svg),
+                  FadeOut(degree_label),
+                  FadeOut(error_axis_svg[1:]),
+                  FadeOut(extended_axis_svg),
+                  FadeOut(extended_axis_group[1][6]),
+                  FadeOut(extended_axis_group[1][8]),
+                  FadeOut(fit_line_5),
+                  FadeOut(fit_line_4),
+                  self.frame.animate.reorient(0, 0, 0, (-3.05, 0.65, 0.0), 7.66),
+                  run_time=3.0)
+
+        self.wait()
+        self.play(ShowCreation(fit_line_2), run_time=2)
+
+        random_seed=25
+        x,y=get_noisy_data(n_points, noise_level, random_seed)     
+        x_train, y_train=x[:n_train_points], y[:n_train_points]
+        x_test, y_test=x[n_train_points:],y[n_train_points:]
+        fit_line_2b, test_error_2b, train_error_2b, y_train_pred_2b, y_test_pred_2b = get_fit_line(axes_1, x_train, y_train, x_test, y_test, all_x, degree=2, color=YELLOW)
+        
+        train_dots_2 = VGroup(*[Dot(axes_1.c2p(x_train[i], y_train[i]), radius=0.08) for i in range(len(x_train))])
+        test_dots_2 = VGroup(*[ Dot(axes_1.c2p(x_test[i], y_test[i]), radius=0.08) for i in range(len(x_test))])
+        test_dots_2.set_color('#008080')
+        train_dots_2.set_color(YELLOW)
+
+        dots_with_x = []
+        for i, dot in enumerate(train_dots_2):
+            dots_with_x.append((x_train[i], dot, 'train'))
+        for i, dot in enumerate(test_dots_2):
+            dots_with_x.append((x_test[i], dot, 'test'))
+        dots_with_x.sort(key=lambda item: item[0])
+        sorted_dots = [item[1] for item in dots_with_x]
+
+
+        self.wait()
+        self.play(fit_line_2.animate.set_stroke(opacity=0.5), 
+                  FadeOut(train_dots),
+                  FadeOut(test_dots),
+                  run_time=2)
+
+        self.wait()
+        self.play(LaggedStart(*[FadeIn(dot) for dot in sorted_dots], lag_ratio=0.15), run_time=2)
+        self.play(ShowCreation(fit_line_2b), run_time=2)
+        self.wait()
 
 
 

@@ -368,6 +368,7 @@ class p65_68(InteractiveScene):
         dots_with_x.sort(key=lambda item: item[0])
         sorted_dots = [item[1] for item in dots_with_x]
 
+        self.wait()
         self.play(LaggedStart(*[FadeIn(dot) for dot in sorted_dots], lag_ratio=0.15), run_time=2)
         self.play(ShowCreation(fit_line_2c), run_time=2)
 
@@ -376,11 +377,89 @@ class p65_68(InteractiveScene):
         # in jupyter and import
         # Eh kinda feel like i want to import?
 
-        
+
+        all_variance_fits_np=np.load('/Users/stephen/Stephencwelch Dropbox/welch_labs/double_descent/graphics/variance_fits_oct_14_1.npy')
+
+        all_variance_fits=VGroup()
+        for af in all_variance_fits_np:
+            fit_points = [axes_1.c2p(all_x[i], af[i]) for i in range(len(all_x))]
+            fit_line = VMobject(stroke_width=3)
+            fit_line.set_points_smoothly(fit_points)
+            fit_line.set_color(YELLOW)
+            all_variance_fits.add(fit_line)
+        all_variance_fits.set_stroke(width=1.0, opacity=0.4)
+
+        self.wait()
+        self.play(fit_line_2.animate.set_stroke(width=1.0, opacity=0.5),
+                  fit_line_2b.animate.set_stroke(width=1.0, opacity=0.5),
+                  fit_line_2c.animate.set_stroke(width=1.0, opacity=0.5),
+                  FadeOut(train_dots_2),
+                  FadeOut(test_dots_2),
+                  FadeIn(all_variance_fits),
+                  run_time=3.0)
+
+
+        # Hmm do we need to switch to ~30 datapoints at some point here?
+        # Not sure yet, let me push a little further on animations and language tweaks, and we'll see. 
+        mean_fit=np.mean(all_variance_fits_np, 0)
+        std_fit=np.std(all_variance_fits_np, 0)
+        # bias=np.mean((all_variance_fits_np-mean_fit)**2)
+        # variance=np.mean((all_variance_fits_np-mean_fit)**2) 
+
+        fit_points = [axes_1.c2p(all_x[i], mean_fit[i]) for i in range(len(all_x))]
+        mean_fit_line = VMobject(stroke_width=3)
+        mean_fit_line.set_points_smoothly(fit_points)
+        mean_fit_line.set_color(YELLOW)
+        mean_fit_line.set_stroke(width=4.0, opacity=0.9)
+
+        upper_bound = mean_fit + std_fit
+        lower_bound = mean_fit - std_fit
+
+        # Create points for the shaded region (need to create a closed polygon)
+        upper_points = [axes_1.c2p(all_x[i], upper_bound[i]) for i in range(len(all_x))]
+        lower_points = [axes_1.c2p(all_x[i], lower_bound[i]) for i in range(len(all_x)-1, -1, -1)]
+
+        # Combine upper and lower bounds to create a closed shape
+        std_region_points = upper_points + lower_points
+
+        # Create the shaded region
+        std_region = VMobject()
+        std_region.set_points_as_corners(std_region_points + [upper_points[0]])  # Close the shape
+        std_region.set_fill(YELLOW, opacity=0.2)
+        std_region.set_stroke(width=0)
+
+
+        # self.add(std_region)
+        # all_variance_fits_copy=all_variance_fits.copy()
+        # self.add(all_variance_fits_copy)
+        # all_variance_fits.set_stroke(opacity=0.1)
+
+        self.wait()
+        self.remove(fit_line_2, fit_line_2b, fit_line_2c)
+        self.play(*[ReplacementTransform(all_variance_fits[i], mean_fit_line) for i in range(len(all_variance_fits))], 
+                    FadeIn(std_region),
+                    run_time=5)
+        self.bring_to_back(std_region)
+        self.wait()
+
+        #Ok yeah that's not bad!
+
+
 
 
         self.wait(20)
         self.embed()
+
+
+
+
+
+
+
+
+
+
+
 
 
 

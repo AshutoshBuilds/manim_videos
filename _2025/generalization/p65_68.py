@@ -504,6 +504,109 @@ class p65_68(InteractiveScene):
         self.play(FadeOut(all_variance_fits_copy), run_time=2)
         self.wait()
 
+
+        #Ok, now we want to bring back the testing error curve and bring in bias-variance. 
+        test_error_dots[1].shift([0, 0.3, 0]) #Fudge position a little to make the breakdown more clear. 
+
+        self.wait()
+        self.remove(mean_std_eqs, bias_var_labels[:16])
+        self.play(
+          FadeIn(degree_label),
+          FadeIn(error_axis_svg[1:]),
+          FadeIn(extended_axis_svg),
+          FadeIn(extended_axis_group[1][6]),
+          FadeIn(extended_axis_group[1][8]),
+          # FadeIn(train_error_dots),
+          FadeIn(test_error_dots),
+          self.frame.animate.reorient(0, 0, 0, (1.34, 0.67, 0.0), 9.41),
+          run_time=3.0)
+        self.wait()
+
+        # i want to break apart the distance between zero and test_error_dots[1] on the 
+        # error plot into 3 lines, one magenta line for bias, one yellow line for variance, and one 
+        # green line for irreducible error. Let's make bias take up 10%, variance take up 60%, and irreducible 
+        # error take up the final upper 30%. 
+        # I want to move a copy of the magenta shaded bias region into becoming the first part of the error line
+        # then a copy of the shaded variance region, then draw in the final irreducible error region. 
+        # Don't worry about adding labels, I'll do those myself. 
+
+
+        # Get the position of test_error_dots[1] (degree 2)
+        dot_pos = test_error_dots[1].get_center()
+        zero_pos = axes_2.c2p(2, 0)
+
+        # Calculate the total height and the three segments
+        total_height = dot_pos[1] - zero_pos[1]
+        bias_height = total_height * 0.10
+        variance_height = total_height * 0.60
+        irreducible_height = total_height * 0.30
+
+        # Create the three line segments
+        bias_line_start = zero_pos
+        bias_line_end = zero_pos + UP * bias_height
+
+        variance_line_start = bias_line_end
+        variance_line_end = variance_line_start + UP * variance_height
+
+        irreducible_line_start = variance_line_end
+        irreducible_line_end = irreducible_line_start + UP * irreducible_height
+
+        # Create the line objects
+        bias_error_line = Line(bias_line_start, bias_line_end, color='#FF00FF', stroke_width=8)
+        variance_error_line = Line(variance_line_start, variance_line_end, color=YELLOW, stroke_width=8)
+        irreducible_error_line = Line(irreducible_line_start, irreducible_line_end, color=GREEN, stroke_width=8)
+
+        # Create copies of the shaded regions for transformation
+        bias_region_copy = bias_region.copy()
+        std_region_copy = std_region.copy()
+
+        # Animate the transformation
+        self.wait()
+        self.play(
+            ReplacementTransform(bias_region_copy, bias_error_line),
+            run_time=2
+        )
+        self.wait()
+        self.play(
+            ReplacementTransform(std_region_copy, variance_error_line),
+            run_time=2
+        )
+        self.wait()
+        self.play(
+            ShowCreation(irreducible_error_line),
+            run_time=2
+        )
+        self.wait()
+
+
+
+
+
+
+        # self.play(FadeOut(interp_threshold_line),
+        #   FadeOut(interp_threshold_label),
+        #   FadeOut(flexibility_label),
+        #   FadeOut(strikethrough_line),
+        #   FadeOut(test_error_dots),
+        #   FadeOut(train_error_dots),
+        #   FadeOut(double_descent_curve_svg),
+        #   FadeOut(degree_label),
+        #   FadeOut(error_axis_svg[1:]),
+        #   FadeOut(extended_axis_svg),
+        #   FadeOut(extended_axis_group[1][6]),
+        #   FadeOut(extended_axis_group[1][8]),
+        #   FadeOut(fit_line_5),
+        #   FadeOut(fit_line_4),
+        #   self.frame.animate.reorient(0, 0, 0, (-3.05, 0.65, 0.0), 7.66),
+        #   run_time=3.0)
+
+
+        # Yeah yeah yeah so once I bring back the error plot and show this on the second order 
+        # fit, then showing the bias and variance shaded regions for the first order fit will be nice 
+        # and clarifying I think, and set me up nicely to talk abou tthe trade-off!
+
+
+
         self.wait(20)
         self.embed()
 

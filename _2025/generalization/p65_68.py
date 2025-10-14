@@ -410,7 +410,7 @@ class p65_68(InteractiveScene):
         mean_fit_line = VMobject(stroke_width=3)
         mean_fit_line.set_points_smoothly(fit_points)
         mean_fit_line.set_color(YELLOW)
-        mean_fit_line.set_stroke(width=4.0, opacity=0.9)
+        mean_fit_line.set_stroke(width=3.0, opacity=0.9)
 
         upper_bound = mean_fit + std_fit
         lower_bound = mean_fit - std_fit
@@ -430,7 +430,7 @@ class p65_68(InteractiveScene):
 
 
         # self.add(std_region)
-        # all_variance_fits_copy=all_variance_fits.copy()
+        all_variance_fits_copy=all_variance_fits.copy()
         # self.add(all_variance_fits_copy)
         # all_variance_fits.set_stroke(opacity=0.1)
 
@@ -440,12 +440,69 @@ class p65_68(InteractiveScene):
                     FadeIn(std_region),
                     run_time=5)
         self.bring_to_back(std_region)
-        self.wait()
+        
 
         #Ok yeah that's not bad!
+        #Ok now i'll add labels in illustartor, then I want to highlight the undelying fit. 
+        mean_std_eqs=SVGMobject(svg_dir+'/p65_68-02.svg')[1:]
+        mean_std_eqs.scale(3.85)
+        mean_std_eqs.move_to([0.62, 2.75, 0])
+
+        bias_var_labels=SVGMobject(svg_dir+'/p65_68-04.svg')[1:]
+        bias_var_labels.scale(3.85)
+        bias_var_labels.move_to([-1.8, 2.42, 0])
+
+        self.wait()
+        # self.add(mean_std_eqs)
+        self.play(Write(mean_std_eqs))
 
 
+        parabola_copy=parabola.copy()
+        parabola_copy.set_stroke(width=3.0, opacity=0.8).set_color(WHITE)
+        self.wait()
+        self.bring_to_front(parabola_copy)
+        self.play(ShowCreation(parabola_copy), run_time=2.5)
+        self.play(Write(bias_var_labels[:16]), run_time=2)
+        self.remove(parabola)
 
+        #Ok if I'm doing all my labels in manim, shold bring in a "Target function" label. 
+        # self.wait()
+        parabola_y = f(all_x)
+
+        # Create points for both curves
+        parabola_points = [axes_1.c2p(all_x[i], parabola_y[i]) for i in range(len(all_x))]
+        mean_fit_points = [axes_1.c2p(all_x[i], mean_fit[i]) for i in range(len(all_x))]
+
+        # Create the region by going along one curve and back along the other
+        bias_region_points = parabola_points + mean_fit_points[::-1]
+
+        # Create the shaded region
+        bias_region = VMobject()
+        bias_region.set_points_as_corners(bias_region_points + [parabola_points[0]])  # Close the shape
+        bias_region.set_fill('#FF00FF', opacity=0.4)
+        bias_region.set_stroke(width=0)
+
+
+        #I think a zoom here, but does that mean I should put the equations/labels into manim?
+        # self.play(self.frame.animate.reorient(0, 0, 0, (-5.85, 2.35, 0.0), 3.46), run_time=3)
+        self.wait()
+        self.play(self.frame.animate.reorient(0, 0, 0, (-2.36, 1.67, 0.0), 5.53), run_time=3)
+        self.wait()
+        self.play(FadeIn(bias_region), Write(bias_var_labels[18:24]), run_time=3)
+        # self.play, run_time=2)
+        self.wait()
+        self.play(self.frame.animate.reorient(0, 0, 0, (-3.05, 0.65, 0.0), 7.66), run_time=3)
+        # self.bring_to_front(parabola_copy, mean_fit_line)s
+        self.wait()
+        self.play(Write(bias_var_labels[24:]), Write(bias_var_labels[16:18]), run_time=2)
+        self.wait()
+
+        #Bring back in various fit curves for a second, then take back out. 
+
+        self.play(FadeIn(all_variance_fits_copy), run_time=2)
+        self.wait()
+        self.play(FadeOut(all_variance_fits_copy), run_time=2)
+        self.wait()
 
         self.wait(20)
         self.embed()

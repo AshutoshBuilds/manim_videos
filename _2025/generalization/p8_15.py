@@ -879,6 +879,59 @@ class P8_15V2(InteractiveScene):
         
         self.play(FadeIn(error_curves_svg[0]))
         self.play(FadeIn(error_curves_svg[1]))
+        self.wait()
+
+        # self.remove(legend, parabola, fit_line_1, fit_line_2, fit_line_3, fit_line_4)
+        # self.remove(curve_fit_axis_svg, train_dots, test_dots, train_error_dots, test_error_dots, error_curves_svg[1])
         
+        self.wait()
+        self.play(FadeOut(legend),
+                  FadeOut(parabola),
+                  FadeOut(fit_line_1),
+                  FadeOut(fit_line_2),
+                  FadeOut(fit_line_3),
+                  FadeOut(fit_line_4),
+                  FadeOut(curve_fit_axis_svg),
+                  FadeOut(train_dots), 
+                  FadeOut(test_dots),
+                  FadeOut(train_error_dots),
+                  FadeOut(test_error_dots),
+                  FadeOut(error_curves_svg[1]),
+                  self.frame.animate.reorient(0, 0, 0, (4.53, 1.33, 0.0), 9.13),
+                  run_time=4)
+        self.wait()
+
+
+
+
+
+
+
+
+
+        self.wait(20)
         self.embed()
         # Final Wait
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

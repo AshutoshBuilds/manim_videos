@@ -49,7 +49,7 @@ def f(x): return 0.5*(x**2)
 # def f(x): return np.add(2.0 * x, np.cos(x * 25)) #[:, 0]
 
 
-class p20(InteractiveScene):
+class p20_2(InteractiveScene):
     def construct(self):
         # Configuration Parameters
         random_seed = 428
@@ -219,19 +219,22 @@ class p20(InteractiveScene):
                 # First curve - just add it
                 self.remove(all_fit_lines[0])
                 self.add(fit_line)
-                self.play(
-                    Transform(lambda_display, new_lambda_display),
-                    run_time=0.5
-                )
+                self.remove(lambda_display); self.add(new_lambda_display)
+                # self.play(
+                #     Transform(lambda_display, new_lambda_display),
+                #     run_time=0.5
+                # )
             else:
                 # Subsequent curves - fade out previous, fade in new
                 prev_fit_line = all_fit_lines[i-1]
+                self.remove(lambda_display); self.add(new_lambda_display)
                 self.play(
                     prev_fit_line.animate.set_stroke(opacity=0.12),
                     FadeIn(fit_line),
-                    Transform(lambda_display, new_lambda_display),
+                    # Transform(lambda_display, new_lambda_display),
                     run_time=0.3
                 )
+            lambda_display=new_lambda_display
             
             # Brief pause to see each curve
             self.wait(0.1)

@@ -59,7 +59,7 @@ def get_fit_line(axes, x_train, y_train, x_test, y_test, all_x, degree=1, color=
 def f(x): return 0.5*(x**2)
 
 
-class p65_68_v2(InteractiveScene):
+class p65_68_rewrite(InteractiveScene):
     '''
     Ok, so the idea here is to potentially do a bit of a composite thing
     in the dark region next to the book - 
@@ -174,8 +174,8 @@ class p65_68_v2(InteractiveScene):
         test_error_dots.set_opacity(0.7)
 
 
-        error_axis_svg=SVGMobject(svg_dir+'/p8_15_2-05.svg') #[1:] 
-        degree_label=error_axis_svg[39:]
+        error_axis_svg=SVGMobject(svg_dir+'/p8_15_2-14.svg') #[1:] 
+        degree_label=error_axis_svg[32:]
         error_axis_svg.scale(2.95)
         error_axis_svg.move_to([4.79, 0.75, 0])
 

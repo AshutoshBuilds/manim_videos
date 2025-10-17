@@ -59,7 +59,7 @@ def get_fit_line(axes, x_train, y_train, x_test, y_test, all_x, degree=1, color=
 def f(x): return 0.5*(x**2)
 
 
-class p65_68_rewrite(InteractiveScene):
+class p65_68_rewrite_v3(InteractiveScene):
     '''
     Ok, so the idea here is to potentially do a bit of a composite thing
     in the dark region next to the book - 
@@ -195,7 +195,8 @@ class p65_68_rewrite(InteractiveScene):
         self.wait()
         self.play(Write(curve_fit_axis_svg))
         self.play(ShowCreation(parabola), LaggedStart(*[FadeIn(dot) for dot in sorted_dots], lag_ratio=0.15), run_time=2)
-        
+        og_dots=sorted_dots.copy()
+
 
         degree_label.scale(1.6)
         degree_label.move_to([5.5, -2.5, 0])
@@ -1189,18 +1190,28 @@ class p65_68_rewrite(InteractiveScene):
         variance_error_line_5 = Line(variance_line_start_5, variance_line_end_5, color=YELLOW, stroke_width=8)
         irreducible_error_line_5 = Line(irreducible_line_start_5, irreducible_line_end_5, color=GREEN, stroke_width=8)
 
-        self.wait()
+
         self.remove(interp_threshold_line, interp_threshold_label)
+        self.wait()
+
+        
+        # self.play(ShowCreation(fit_line_4), run_time=3)
+        # self.play(ShowCreation(fit_line_5), run_time=3)
+
+
+        self.wait()
+        self.play(LaggedStart(*[FadeIn(dot) for dot in og_dots], lag_ratio=0.15), run_time=2)
         self.play(
                   #FadeOut(std_region_4), 
-                  #FadeOut(mean_fit_line_4), 
+                  #FadeOut(mean_fit_line_4),
+                  ShowCreation(fit_line_4),
                   ShowCreation(bias_error_line_4), 
                   ShowCreation(variance_error_line_4),
                   ShowCreation(irreducible_error_line_4),
                   run_time=3)
-
         self.play(
             # LaggedStart(*[ShowCreation(selected_fifth_order_fits[i]) for i in range(len(selected_fifth_order_fits))], lag_ratio=0.2),
+            ShowCreation(fit_line_5),
             ShowCreation(bias_error_line_5),
             ShowCreation(variance_error_line_5),
             ShowCreation(irreducible_error_line_5),
@@ -1228,23 +1239,25 @@ class p65_68_rewrite(InteractiveScene):
         selected_fifth_order_fits.set_stroke(width=2.0, opacity=0.6)
 
 
-
         # Animate fits and error bars simultaneously
-        self.wait()
-        self.play(
-            LaggedStart(*[ShowCreation(selected_fifth_order_fits[i]) for i in range(len(selected_fifth_order_fits))], lag_ratio=0.2),
-            # ShowCreation(bias_error_line_5),
-            # ShowCreation(variance_error_line_5),
-            # ShowCreation(irreducible_error_line_5),
-            run_time=4
-        )
-        # self.remove(test_error_dots); self.add(test_error_dots)
-        self.wait()
+        # self.wait()
+        # self.play(
+        #     LaggedStart(*[ShowCreation(selected_fifth_order_fits[i]) for i in range(len(selected_fifth_order_fits))], lag_ratio=0.2),
+        #     # ShowCreation(bias_error_line_5),
+        #     # ShowCreation(variance_error_line_5),
+        #     # ShowCreation(irreducible_error_line_5),
+        #     run_time=4
+        # )
+        # # self.remove(test_error_dots); self.add(test_error_dots)
+        # self.wait()
 
         self.wait()
 
         self.play(self.frame.animate.reorient(0, 0, 0, (5.42, 0.77, 0.0), 8.36), 
-                 FadeOut(selected_fifth_order_fits),
+                 # FadeOut(selected_fifth_order_fits),
+                 FadeOut(fit_line_4),
+                 FadeOut(fit_line_5),
+                 FadeOut(VGroup(og_dots)),
                  FadeOut(parabola_copy), 
                  FadeOut(curve_fit_axis_svg),
                  run_time=4)

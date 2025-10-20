@@ -398,7 +398,11 @@ class p7a(InteractiveScene):
         self.frame.reorient(0, 0, 0, (0.02, 0.0, 0.0), 2.65)
         self.add(flat_map)
         self.add(lines_flat)
-        self.add()
+        # self.add()
+
+
+
+
 
 
 
@@ -519,17 +523,20 @@ class p7b_16(InteractiveScene):
         polygons_22.set_color(YELLOW)
         polygons_21.set_color(BLUE)
 
-        polygons_21.set_opacity(0.1)
-        polygons_22.set_opacity(0.1)
+        polygons_21.set_opacity(0.3)
+        polygons_22.set_opacity(0.3)
         surfaces[2][0].set_opacity(0.4)
         surfaces[2][1].set_opacity(0.4)
         top_polygons_vgroup.set_opacity(0.5)
 
-        self.frame.reorient(0, 45, 0, (4.28, 0.08, -0.19), 3.97)
+        # self.frame.reorient(0, 45, 0, (4.28, 0.08, -0.19), 3.97)
+        self.frame.reorient(0, 40, 0, (3.1, -0.16, -0.18), 4.12)
         # self.add(surfaces[2][0], surfaces[2][1]) #ok i want to include these, but the max value clipping is tricky -> ignore for now. 
         self.add(polygons_21, polygons_22)
         self.add(top_polygons_vgroup)
         self.add(lines)
+        self.wait()
+        self.remove(polygons_21, polygons_22, top_polygons_vgroup, lines)
 
 
         def flat_surf_func(u, v): return [u, v, 0]
@@ -543,15 +550,41 @@ class p7b_16(InteractiveScene):
             loop=loop*np.array([1, 1, 0])
             line = VMobject()
             line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=5)
+            line.set_stroke(color='#ec008c', width=6)
             lines_flat.add(line)
         lines_flat.shift([5.7, 0, 0])
 
+        self.frame.reorient(0, 0, 0, (5.73, 0.0, 0.0), 2.51)
+        
 
-        self.add(flat_map, lines_flat)
+        top_polygons_vgroup_flat=VGroup()
+        for j, p in enumerate(my_top_polygons):
+            if len(p)<3: continue
+            if my_indicator[j]: color=YELLOW
+            else: color=BLUE
+            
+            p_scaled=copy.deepcopy(p) #Scaling for viz
+            p_scaled[:,2]=0 #p_scaled[:,2]*viz_scales[2] #Flatten that shit!
+            p_scaled[:, -1] = np.clip(p_scaled[:, -1], -polygon_max_height, polygon_max_height)
+            poly_3d = Polygon(*p_scaled,
+                             fill_color=color,
+                             fill_opacity=0.4,
+                             stroke_color=color,
+                             stroke_width=0)
+            poly_3d.set_opacity(0.3)
+            poly_3d.shift([5.7, 0, 0])
+            top_polygons_vgroup_flat.add(poly_3d)
+
+
+        self.wait()
+        self.add(flat_map)
+        self.add(top_polygons_vgroup_flat)
+        self.add(lines_flat)
+
+
         self.wait()
 
-        self.play(self.frame.animate.reorient(0, 20, 0, (4.28, 0.08, -0.19), 3.97), run_time=4)
+        # self.play(self.frame.animate.reorient(0, 20, 0, (4.28, 0.08, -0.19), 3.97), run_time=4)
         self.wait()
 
 
@@ -622,7 +655,7 @@ class p7c_32(InteractiveScene):
             loop=loop*np.array([1, 1, viz_scales[2]])
             line = VMobject()
             line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=5)
+            line.set_stroke(color='#ec008c', width=4)
             lines.add(line)
         lines.shift([3, 0, 0])
 
@@ -659,17 +692,26 @@ class p7c_32(InteractiveScene):
         polygons_22.set_color(YELLOW)
         polygons_21.set_color(BLUE)
 
-        polygons_21.set_opacity(0.1)
-        polygons_22.set_opacity(0.1)
+        polygons_21.set_opacity(0.3)
+        polygons_22.set_opacity(0.3)
         surfaces[2][0].set_opacity(0.4)
         surfaces[2][1].set_opacity(0.4)
         top_polygons_vgroup.set_opacity(0.5)
 
-        self.frame.reorient(0, 20, 0, (4.28, 0.08, -0.19), 3.97)
+        # self.frame.reorient(0, 20, 0, (4.28, 0.08, -0.19), 3.97)
+        # # self.add(surfaces[2][0], surfaces[2][1]) #ok i want to include these, but the max value clipping is tricky -> ignore for now. 
+        # self.add(polygons_21, polygons_22)
+        # self.add(top_polygons_vgroup)
+        # self.add(lines)
+
+        self.frame.reorient(0, 40, 0, (3.1, -0.16, -0.18), 4.12)
         # self.add(surfaces[2][0], surfaces[2][1]) #ok i want to include these, but the max value clipping is tricky -> ignore for now. 
         self.add(polygons_21, polygons_22)
         self.add(top_polygons_vgroup)
         self.add(lines)
+        self.wait()
+        self.remove(polygons_21, polygons_22, top_polygons_vgroup, lines)
+
 
 
         def flat_surf_func(u, v): return [u, v, 0]
@@ -683,13 +725,36 @@ class p7c_32(InteractiveScene):
             loop=loop*np.array([1, 1, 0])
             line = VMobject()
             line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=5)
+            line.set_stroke(color='#ec008c', width=6)
             lines_flat.add(line)
         lines_flat.shift([5.7, 0, 0])
 
+        self.frame.reorient(0, 0, 0, (5.73, 0.0, 0.0), 2.51)
 
-        self.add(flat_map, lines_flat)
+
+        top_polygons_vgroup_flat=VGroup()
+        for j, p in enumerate(my_top_polygons):
+            if len(p)<3: continue
+            if my_indicator[j]: color=YELLOW
+            else: color=BLUE
+            
+            p_scaled=copy.deepcopy(p) #Scaling for viz
+            p_scaled[:,2]=0 #p_scaled[:,2]*viz_scales[2] #Flatten that shit!
+            p_scaled[:, -1] = np.clip(p_scaled[:, -1], -polygon_max_height, polygon_max_height)
+            poly_3d = Polygon(*p_scaled,
+                             fill_color=color,
+                             fill_opacity=0.4,
+                             stroke_color=color,
+                             stroke_width=0)
+            poly_3d.set_opacity(0.3)
+            poly_3d.shift([5.7, 0, 0])
+            top_polygons_vgroup_flat.add(poly_3d)
+
+
         self.wait()
+        self.add(flat_map)
+        self.add(top_polygons_vgroup_flat)
+        self.add(lines_flat)
 
         # self.play(self.frame.animate.reorient(0, 20, 0, (4.28, 0.08, -0.19), 3.97), run_time=4)
         self.wait()
@@ -761,7 +826,7 @@ class p7d_64(InteractiveScene):
             loop=loop*np.array([1, 1, viz_scales[2]])
             line = VMobject()
             line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=5)
+            line.set_stroke(color='#ec008c', width=4)
             lines.add(line)
         lines.shift([3, 0, 0])
 
@@ -798,17 +863,54 @@ class p7d_64(InteractiveScene):
         polygons_22.set_color(YELLOW)
         polygons_21.set_color(BLUE)
 
-        polygons_21.set_opacity(0.1)
-        polygons_22.set_opacity(0.1)
+
+        polygons_21.set_opacity(0.3)
+        polygons_22.set_opacity(0.3)
         surfaces[2][0].set_opacity(0.4)
         surfaces[2][1].set_opacity(0.4)
         top_polygons_vgroup.set_opacity(0.5)
 
-        self.frame.reorient(0, 20, 0, (4.28, 0.08, -0.19), 3.97)
+        # self.frame.reorient(0, 20, 0, (4.28, 0.08, -0.19), 3.97)
+        # # self.add(surfaces[2][0], surfaces[2][1]) #ok i want to include these, but the max value clipping is tricky -> ignore for now. 
+        # self.add(polygons_21, polygons_22)
+        # self.add(top_polygons_vgroup)
+        # self.add(lines)
+
+
+        # def flat_surf_func(u, v): return [u, v, 0]
+        # flat_map_surf = ParametricSurface(flat_surf_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
+        # flat_map=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/'+map_filename)
+        # flat_map.set_shading(0,0,0).set_opacity(0.8)
+        # flat_map.shift([5.7, 0, 0])
+
+        # lines_flat=VGroup()
+        # for loop in loops: 
+        #     loop=loop*np.array([1, 1, 0])
+        #     line = VMobject()
+        #     line.set_points_as_corners(loop)
+        #     line.set_stroke(color='#FF00FF', width=5)
+        #     lines_flat.add(line)
+        # lines_flat.shift([5.7, 0, 0])
+
+
+        # self.add(flat_map, lines_flat)
+        # self.wait()
+
+        # # self.play(self.frame.animate.reorient(0, 20, 0, (4.28, 0.08, -0.19), 3.97), run_time=4)
+        # self.wait()
+
+
+        # self.wait(20)
+        # self.embed()
+
+        self.frame.reorient(0, 40, 0, (3.1, -0.16, -0.18), 4.12)
         # self.add(surfaces[2][0], surfaces[2][1]) #ok i want to include these, but the max value clipping is tricky -> ignore for now. 
         self.add(polygons_21, polygons_22)
         self.add(top_polygons_vgroup)
         self.add(lines)
+        self.wait()
+        self.remove(polygons_21, polygons_22, top_polygons_vgroup, lines)
+
 
 
         def flat_surf_func(u, v): return [u, v, 0]
@@ -822,12 +924,37 @@ class p7d_64(InteractiveScene):
             loop=loop*np.array([1, 1, 0])
             line = VMobject()
             line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=5)
+            line.set_stroke(color='#ec008c', width=6)
             lines_flat.add(line)
         lines_flat.shift([5.7, 0, 0])
 
+        self.frame.reorient(0, 0, 0, (5.73, 0.0, 0.0), 2.51)
 
-        self.add(flat_map, lines_flat)
+
+        top_polygons_vgroup_flat=VGroup()
+        for j, p in enumerate(my_top_polygons):
+            if len(p)<3: continue
+            if my_indicator[j]: color=YELLOW
+            else: color=BLUE
+            
+            p_scaled=copy.deepcopy(p) #Scaling for viz
+            p_scaled[:,2]=0 #p_scaled[:,2]*viz_scales[2] #Flatten that shit!
+            p_scaled[:, -1] = np.clip(p_scaled[:, -1], -polygon_max_height, polygon_max_height)
+            poly_3d = Polygon(*p_scaled,
+                             fill_color=color,
+                             fill_opacity=0.4,
+                             stroke_color=color,
+                             stroke_width=0)
+            poly_3d.set_opacity(0.3)
+            poly_3d.shift([5.7, 0, 0])
+            top_polygons_vgroup_flat.add(poly_3d)
+
+
+        self.wait()
+        self.add(flat_map)
+        self.add(top_polygons_vgroup_flat)
+        self.add(lines_flat)
+
         self.wait()
 
         # self.play(self.frame.animate.reorient(0, 20, 0, (4.28, 0.08, -0.19), 3.97), run_time=4)
@@ -836,6 +963,7 @@ class p7d_64(InteractiveScene):
 
         self.wait(20)
         self.embed()
+
 
 
 class p7e_128(InteractiveScene):
@@ -900,7 +1028,8 @@ class p7e_128(InteractiveScene):
             loop=np.hstack((loop, np.zeros((len(loop), 1))))
             line = VMobject()
             line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=5)
+            # line.set_stroke(color='#FF00FF', width=5)
+            line.set_stroke(color='#ec008c', width=4)
             lines.add(line)
         lines.shift([3, 0, 0])
 
@@ -937,17 +1066,29 @@ class p7e_128(InteractiveScene):
         polygons_22.set_color(YELLOW)
         polygons_21.set_color(BLUE)
 
-        polygons_21.set_opacity(0.1)
-        polygons_22.set_opacity(0.1)
+        polygons_21.set_opacity(0.3)
+        polygons_22.set_opacity(0.3)
         surfaces[2][0].set_opacity(0.4)
         surfaces[2][1].set_opacity(0.4)
         top_polygons_vgroup.set_opacity(0.5)
 
-        self.frame.reorient(0, 20, 0, (4.28, 0.08, -0.19), 3.97)
+        # self.frame.reorient(0, 20, 0, (4.28, 0.08, -0.19), 3.97)
+        # # self.add(surfaces[2][0], surfaces[2][1]) #ok i want to include these, but the max value clipping is tricky -> ignore for now. 
+        # self.add(polygons_21, polygons_22)
+        # self.add(top_polygons_vgroup)
+        # self.add(lines)
+
+
+        # self.frame.reorient(0, 40, 0, (3.1, -0.16, -0.18), 4.12)
+        self.frame.reorient(0, 31, 0, (3.13, -0.06, -0.12), 4.12)
         # self.add(surfaces[2][0], surfaces[2][1]) #ok i want to include these, but the max value clipping is tricky -> ignore for now. 
         self.add(polygons_21, polygons_22)
         self.add(top_polygons_vgroup)
         self.add(lines)
+        self.wait()
+        self.remove(polygons_21, polygons_22, top_polygons_vgroup, lines)
+
+
 
         def flat_surf_func(u, v): return [u, v, 0]
         flat_map_surf = ParametricSurface(flat_surf_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
@@ -960,12 +1101,40 @@ class p7e_128(InteractiveScene):
             loop=np.hstack((loop, np.zeros((len(loop), 1))))
             line = VMobject()
             line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=4)
+            line.set_stroke(color='#ec008c', width=4)
             lines_flat_cleaner.add(line)
         lines_flat_cleaner.shift([5.7, 0, 0])      
 
-        self.add(flat_map, lines_flat_cleaner)
+        # self.add(flat_map, lines_flat_cleaner)
+        # self.wait()
+
+        self.frame.reorient(0, 0, 0, (5.73, 0.0, 0.0), 2.51)
+        top_polygons_vgroup_flat=VGroup()
+        for j, p in enumerate(my_top_polygons):
+            if len(p)<3: continue
+            if my_indicator[j]: color=YELLOW
+            else: color=BLUE
+            
+            p_scaled=copy.deepcopy(p) #Scaling for viz
+            p_scaled[:,2]=0 #p_scaled[:,2]*viz_scales[2] #Flatten that shit!
+            p_scaled[:, -1] = np.clip(p_scaled[:, -1], -polygon_max_height, polygon_max_height)
+            poly_3d = Polygon(*p_scaled,
+                             fill_color=color,
+                             fill_opacity=0.4,
+                             stroke_color=color,
+                             stroke_width=0)
+            poly_3d.set_opacity(0.3)
+            poly_3d.shift([5.7, 0, 0])
+            top_polygons_vgroup_flat.add(poly_3d)
+
+
         self.wait()
+        self.add(flat_map)
+        self.add(top_polygons_vgroup_flat)
+        self.add(lines_flat_cleaner)
+        self.wait()
+
+
 
         # self.play(self.frame.animate.reorient(0, 20, 0, (4.28, 0.08, -0.19), 3.97), run_time=4)
         # self.wait()
@@ -1077,7 +1246,7 @@ class p7f_256(InteractiveScene):
             loop=np.hstack((loop, np.zeros((len(loop), 1))))
             line = VMobject()
             line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=5)
+            line.set_stroke(color='#ec008c', width=4)
             lines.add(line)
         lines.shift([3, 0, 0])
 
@@ -1112,7 +1281,7 @@ class p7f_256(InteractiveScene):
             loop=np.hstack((loop, np.zeros((len(loop), 1))))
             line = VMobject()
             line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=4)
+            line.set_stroke(color='#ec008c', width=4)
             lines_flat_cleaner.add(line)
         lines_flat_cleaner.shift([5.7, 0, 0])      
 
@@ -1120,7 +1289,12 @@ class p7f_256(InteractiveScene):
         self.add(top_polygons_vgroup_flat)
         self.add(lines)
 
+        polygons_copy=top_polygons_vgroup_flat.copy()
+        polygons_copy.set_stroke(width=0)
+        polygons_copy.shift([2.7, 0, 0])
+
         self.add(flat_map, lines_flat_cleaner)
+        self.add(polygons_copy)
         self.wait()
 
         self.wait(20)
@@ -1176,7 +1350,7 @@ class p7g_512(InteractiveScene):
             loop=np.hstack((loop, np.zeros((len(loop), 1))))
             line = VMobject()
             line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=5)
+            line.set_stroke(color='#ec008c', width=4)
             lines.add(line)
         lines.shift([3, 0, 0])
 
@@ -1211,7 +1385,7 @@ class p7g_512(InteractiveScene):
             loop=np.hstack((loop, np.zeros((len(loop), 1))))
             line = VMobject()
             line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=4)
+            line.set_stroke(color='#ec008c', width=4)
             lines_flat_cleaner.add(line)
         lines_flat_cleaner.shift([5.7, 0, 0])      
 
@@ -1219,7 +1393,12 @@ class p7g_512(InteractiveScene):
         self.add(top_polygons_vgroup_flat)
         self.add(lines)
 
+        polygons_copy=top_polygons_vgroup_flat.copy()
+        polygons_copy.set_stroke(width=0)
+        polygons_copy.shift([2.7, 0, 0])
+
         self.add(flat_map, lines_flat_cleaner)
+        self.add(polygons_copy)
         self.wait()
 
         #Optional fade and center on just map -> although I think i actually want to do it on 1024!
@@ -1281,7 +1460,7 @@ class p7h_1024(InteractiveScene):
             loop=np.hstack((loop, np.zeros((len(loop), 1))))
             line = VMobject()
             line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=5)
+            line.set_stroke(color='#ec008c', width=4)
             lines.add(line)
         lines.shift([3, 0, 0])
 
@@ -1316,7 +1495,7 @@ class p7h_1024(InteractiveScene):
             loop=np.hstack((loop, np.zeros((len(loop), 1))))
             line = VMobject()
             line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=4)
+            line.set_stroke(color='#ec008c', width=4)
             lines_flat_cleaner.add(line)
         lines_flat_cleaner.shift([5.7, 0, 0])      
 
@@ -1324,7 +1503,12 @@ class p7h_1024(InteractiveScene):
         self.add(top_polygons_vgroup_flat)
         self.add(lines)
 
+        polygons_copy=top_polygons_vgroup_flat.copy()
+        polygons_copy.set_stroke(width=0)
+        polygons_copy.shift([2.7, 0, 0])
+
         self.add(flat_map, lines_flat_cleaner)
+        self.add(polygons_copy)
         self.wait()
 
         #maybe a fade out and center on map/border? That's all we'll see for these last few rigth?
@@ -1363,7 +1547,7 @@ class p7i_10k(InteractiveScene):
             loop=np.hstack((loop, np.zeros((len(loop), 1))))
             line = VMobject()
             line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=4)
+            line.set_stroke(color='#ec008c', width=6)
             lines_flat_cleaner.add(line)
         lines_flat_cleaner.shift([5.7, 0, 0])      
 
@@ -1401,7 +1585,7 @@ class p7j_100k(InteractiveScene):
             loop=np.hstack((loop, np.zeros((len(loop), 1))))
             line = VMobject()
             line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=4)
+            line.set_stroke(color='#ec008c', width=6)
             lines_flat_cleaner.add(line)
         lines_flat_cleaner.shift([5.7, 0, 0])      
 

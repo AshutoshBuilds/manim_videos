@@ -11,8 +11,9 @@ from polytope_intersection_utils import intersect_polytopes
 from manimlib import *
 from gap_filler import fill_gaps
 
-graphics_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/graphics/' #Point to folder where map images are
+graphics_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/ai_book/4_deep_learning/graphics/'
 colors = [RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
+map_filename='baarle_hertog_maps-13.png'
 
 CHILL_BROWN='#948979'
 YELLOW='#ffd35a'
@@ -80,7 +81,7 @@ def order_closed_loops_with_closure(segments, tol=1e-6):
 
     return loops_pts
 
-class p12b_flat(InteractiveScene):
+class p12b_flat_2(InteractiveScene):
     def construct(self):
     	#Start with 512, move to as big as I can for final
         model_path='_2025/backprop_3/models/32_32_32_32_1.pth'
@@ -146,7 +147,7 @@ class p12b_flat(InteractiveScene):
             loop=np.hstack((loop, np.zeros((len(loop), 1))))
             line = VMobject()
             line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=5)
+            line.set_stroke(color='#ec008c', width=5)
             lines.add(line)
         lines.shift([3, 0, 0])
 
@@ -172,7 +173,7 @@ class p12b_flat(InteractiveScene):
 
         def flat_surf_func(u, v): return [u, v, 0]
         flat_map_surf = ParametricSurface(flat_surf_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
-        flat_map=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+        flat_map=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/'+map_filename)
         flat_map.set_shading(0,0,0).set_opacity(0.8)
         flat_map.shift([5.7, 0, 0])
 
@@ -181,7 +182,7 @@ class p12b_flat(InteractiveScene):
             loop=np.hstack((loop, np.zeros((len(loop), 1))))
             line = VMobject()
             line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=4)
+            line.set_stroke(color='#ec008c', width=4)
             lines_flat_cleaner.add(line)
         lines_flat_cleaner.shift([5.7, 0, 0])      
 

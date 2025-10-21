@@ -500,7 +500,7 @@ class p23b(InteractiveScene):
 
 
 
-class p25(InteractiveScene):
+class p25b(InteractiveScene):
     def construct(self):
 
         # model = BaarleNet([2])
@@ -840,6 +840,9 @@ class p25(InteractiveScene):
         self.wait()
 
         self.frame.reorient(-58, 81, 0, (6.41, 0.14, 0.58), 3.50)
+        self.wait()
+
+        self.frame.reorient(-12, 88, 0, (6.19, 0.37, 0.57), 4.08)
         self.wait()
 
 

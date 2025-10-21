@@ -778,7 +778,7 @@ def line_from_joint_points_1(joint_points, stroke_width=3):
                 end=[joint_points[1][0], joint_points[1][1], 0],
                 color=WHITE,
                 stroke_width=stroke_width,
-                dash_length=0.05
+                dash_length=0.08
             )
             return joint_line
 

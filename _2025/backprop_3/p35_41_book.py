@@ -593,7 +593,7 @@ class p35_41b(InteractiveScene):
 
         
 
-class p36_loop_v2(InteractiveScene):
+class p36_loop_v3(InteractiveScene):
     def construct(self):
 
         model = BaarleNet([3])
@@ -617,7 +617,7 @@ class p36_loop_v2(InteractiveScene):
 
         # train_step=2400
         start_step=0 #Start here to get the gradietns I want to show
-        step_size=100
+        step_size=1
         # print('starting weights', p['weights_history'][start_step])
 
         # print('starting grads', p['gradients_history'][start_step])
@@ -645,7 +645,7 @@ class p36_loop_v2(InteractiveScene):
         # For numbers on screen I'll show empirical grads then
 
 
-        for train_step in np.arange(start_step, len(p['weights_history']), step_size):
+        for train_step in np.arange(start_step, 200): #len(p['weights_history']), step_size):
             if 'group_12' in locals():
                 self.remove(group_12, group_13)
                 self.remove(group_21, group_22)
@@ -806,12 +806,12 @@ class p36_loop_v2(InteractiveScene):
 
 
             top_polygons_vgroup_flat=VGroup()
-            for j, p in enumerate(my_top_polygons):
-                if len(p)<3: continue
+            for j, pp in enumerate(my_top_polygons):
+                if len(pp)<3: continue
                 if my_indicator[j]: color=YELLOW
                 else: color=BLUE
                 
-                p_scaled=copy.deepcopy(p) #Scaling for viz
+                p_scaled=copy.deepcopy(pp) #Scaling for viz
                 p_scaled[:,2]=0 #p_scaled[:,2]*viz_scales[2] #Flatten that shit!
                 # p_scaled[:, -1] = np.clip(p_scaled[:, -1], -polygon_max_height, polygon_max_height)
                 poly_3d = Polygon(*p_scaled,
@@ -846,11 +846,14 @@ class p36_loop_v2(InteractiveScene):
 
             self.add(flat_map)
             self.add(top_polygons_vgroup_flat)
-            self.add(lines)
+            self.add(lines_flat)
 
             self.wait()
 
-            
+            self.remove(flat_map)
+            self.remove(top_polygons_vgroup_flat)
+            self.remove(lines_flat)
+        
 
             # self.add(group_11)
             # self.wait()

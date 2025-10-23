@@ -21,12 +21,15 @@ CHILL_BLUE='#3d5c6f'
 FRESH_TAN='#dfd0b9'
 CYAN='#00FFFF'
 
-graphics_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/graphics/' #Point to folder where map images are
+# graphics_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/graphics/' #Point to folder where map images are
+graphics_dir='/Users/stephen/Stephencwelch Dropbox/welch_labs/ai_book/4_deep_learning/graphics/'
+map_filename='baarle_hertog_maps-13.png'
+
 colors = [BLUE, GREY, GREEN, TEAL, PURPLE, PINK, TEAL, YELLOW, FRESH_TAN, CHILL_BLUE, CHILL_GREEN, YELLOW_FADE]
 # colors_old = [BLUE, GREY, GREEN, TEAL, PURPLE, ORANGE, PINK, TEAL, RED, YELLOW ]
 colors_old = [GREY, BLUE, GREEN, YELLOW, PURPLE, ORANGE, PINK, TEAL]
 
-def create_first_layer_relu_groups(model, surfaces, num_neurons_first_layer=8, extent=1, vertical_spacing=0.9):
+def create_first_layer_relu_groups(model, surfaces, num_neurons_first_layer=8, extent=1, vertical_spacing=0.9, line_color='#FFFFFF'):
     """
     Creates ReLU joint groups for all neurons in the first layer.
     
@@ -59,7 +62,7 @@ def create_first_layer_relu_groups(model, surfaces, num_neurons_first_layer=8, e
         joint_points = get_relu_joint(w1[neuron_idx, 0], w1[neuron_idx, 1], b1[neuron_idx], extent=extent)
         
         # Create joint line from points
-        joint_line = line_from_joint_points_1(joint_points)
+        joint_line = line_from_joint_points_1(joint_points, color=colors[neuron_idx%len(colors)])
         if joint_line is not None: 
             joint_line.set_opacity(0.9)
             neuron_group = Group(surfaces[1][neuron_idx], joint_line)
@@ -76,7 +79,7 @@ def create_first_layer_relu_groups(model, surfaces, num_neurons_first_layer=8, e
     return all_relu_groups
 
 
-class p61b(InteractiveScene):
+class p61e(InteractiveScene):
     def construct(self):
 
         model_path='_2025/backprop_3/models/8_8_1.pth'
@@ -105,7 +108,7 @@ class p61b(InteractiveScene):
             for neuron_idx in range(num_neurons[layer_idx]):
                 surface_func=partial(surface_func_from_model, model=model, layer_idx=layer_idx, neuron_idx=neuron_idx, viz_scale=adaptive_viz_scales[layer_idx][neuron_idx]) #viz_scales[layer_idx])
                 bent_surface = ParametricSurface(surface_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
-                ts=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+                ts=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/'+map_filename)
                 ts.set_shading(0,0,0).set_opacity(0.8)
                 s.add(ts)
                 surface_funcs[-1].append(surface_func)
@@ -207,7 +210,7 @@ class p61b(InteractiveScene):
             loop=loop*np.array([1, 1, viz_scales[2]])
             line = VMobject()
             line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=4)
+            line.set_stroke(color='#ec008c', width=3)
             lines.add(line)
         lines.shift([9, 0, 0.])
 
@@ -229,7 +232,7 @@ class p61b(InteractiveScene):
 
         def flat_surf_func(u, v): return [u, v, 0]
         flat_map_surf = ParametricSurface(flat_surf_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
-        flat_map_2=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+        flat_map_2=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/'+map_filename)
         flat_map_2.set_shading(0,0,0).set_opacity(0.8)
         flat_map_2.shift([9, 0, -2])
 
@@ -239,7 +242,7 @@ class p61b(InteractiveScene):
             loop[:,2]=0
             line = VMobject()
             line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=5)
+            line.set_stroke(color='#ec008c', width=3)
             lines_flat.add(line)
         lines_flat.shift([9, 0, -2])    
 
@@ -275,54 +278,95 @@ class p61b(InteractiveScene):
 
         self.wait()
 
+        #Book here-ish? 
+        self.frame.reorient(0, 57, 0, (4.53, 2.72, -1.76), 12.04)
+        self.wait()
+
+        self.remove(groups_1)
+        self.remove(groups_2)
+        self.remove(groups_output)
+        self.remove(group_combined_output)
+        self.remove(top_polygons_vgroup)
+        self.remove(lines)
+
+        self.remove(layer_2_polygons_flat)
+
+
+        layer_1_polygons_flat.move_to(ORIGIN)
+        self.frame.reorient(0, 0, 0, (0.05, -0.04, 0.0), 2.37)
+        self.wait()
+        self.remove(layer_1_polygons_flat)
+
+        self.add(layer_2_polygons_flat)
+        layer_2_polygons_flat.move_to(ORIGIN)
+        self.wait()
+
+        self.remove(layer_2_polygons_flat)
+
+        lines_flat.set_stroke(width=8)
+        final_group=Group(flat_map_2, top_polygons_vgroup_flat, lines_flat)
+        final_group.move_to(ORIGIN)
+        self.wait()
+        self.remove(final_group)
+
+        self.add(groups_2[1])
+        self.frame.reorient(0, 49, 0, (3.01, 3.36, -0.22), 6.18)
+        self.wait()
+
+
+
+        self.embed()
+
+
+
         #19, 102
 
         #Focus on tiling
-        self.play(self.frame.animate.reorient(0, 58, 0, (1.45, 1.08, -5.07), 5.78), run_time=6)
-        self.wait()
+        # self.play(self.frame.animate.reorient(0, 58, 0, (1.45, 1.08, -5.07), 5.78), run_time=6)
+        # self.wait()
 
-        self.play(self.frame.animate.reorient(18, 58, 0, (2.47, 1.79, 0.9), 5.81), 
-                  groups_1.animate.set_opacity(0.1), 
-                  groups_2[0].animate.set_opacity(0.1),
-                  groups_2[2:].animate.set_opacity(0.1),
-                  groups_output.animate.set_opacity(0.1), 
-                  run_time=6
-                  )
-        self.wait()
+        # self.play(self.frame.animate.reorient(18, 58, 0, (2.47, 1.79, 0.9), 5.81), 
+        #           groups_1.animate.set_opacity(0.1), 
+        #           groups_2[0].animate.set_opacity(0.1),
+        #           groups_2[2:].animate.set_opacity(0.1),
+        #           groups_output.animate.set_opacity(0.1), 
+        #           run_time=6
+        #           )
+        # self.wait()
 
-        self.play(self.frame.animate.reorient(-4, 58, 0, (7.86, 1.54, -1.02), 6.99), 
-                  groups_1.animate.set_opacity(0.6), 
-                  groups_2[0].animate.set_opacity(0.6),
-                  groups_2[2:].animate.set_opacity(0.6),
-                  groups_output.animate.set_opacity(0.6), 
-                  run_time=6
-                  )
-        self.wait()
+        # self.play(self.frame.animate.reorient(-4, 58, 0, (7.86, 1.54, -1.02), 6.99), 
+        #           groups_1.animate.set_opacity(0.6), 
+        #           groups_2[0].animate.set_opacity(0.6),
+        #           groups_2[2:].animate.set_opacity(0.6),
+        #           groups_output.animate.set_opacity(0.6), 
+        #           run_time=6
+        #           )
+        # self.wait()
 
-        self.play(self.frame.animate.reorient(0, 38, 0, (9.09, 0.29, -2.69), 3.98), 
-                 group_combined_output.animate.set_opacity(0.05),
-                 top_polygons_vgroup.animate.set_opacity(0.05),
-                 lines.animate.set_opacity(0.05),
-                 run_time=4)
-        self.wait()
+        # self.play(self.frame.animate.reorient(0, 38, 0, (9.09, 0.29, -2.69), 3.98), 
+        #          group_combined_output.animate.set_opacity(0.05),
+        #          top_polygons_vgroup.animate.set_opacity(0.05),
+        #          lines.animate.set_opacity(0.05),
+        #          run_time=4)
+        # self.wait()
 
-        #Overall view
-        self.play(self.frame.animate.reorient(0, 74, 0, (5.17, 1.54, -0.87), 11.81), 
-                 group_combined_output.animate.set_opacity(0.2),
-                 top_polygons_vgroup.animate.set_opacity(0.5),
-                 lines.animate.set_opacity(0.8),
-                 run_time=6)
-        self.wait()
+        # #Overall view
+        # self.play(self.frame.animate.reorient(0, 74, 0, (5.17, 1.54, -0.87), 11.81), 
+        #          group_combined_output.animate.set_opacity(0.2),
+        #          top_polygons_vgroup.animate.set_opacity(0.5),
+        #          lines.animate.set_opacity(0.8),
+        #          run_time=6)
+        # self.wait()
 
-        #One more little zoom in at the end on the dead neurons
-        self.play(self.frame.animate.reorient(-36, 72, 0, (3.44, 1.56, 0.35), 6.39), run_time=6)
-        self.wait()
+        # #One more little zoom in at the end on the dead neurons
+        # self.play(self.frame.animate.reorient(-36, 72, 0, (3.44, 1.56, 0.35), 6.39), run_time=6)
+        # self.wait()
 
-        self.play(self.frame.animate.reorient(36, 70, 0, (3.21, 1.43, 0.42), 6.39), run_time=12, rate_func=linear)
-        self.wait()
+        # self.play(self.frame.animate.reorient(36, 70, 0, (3.21, 1.43, 0.42), 6.39), run_time=12, rate_func=linear)
+        # self.wait()
 
-        # Then back to wide shot in case I need it. 
-        self.play(self.frame.animate.reorient(0, 74, 0, (5.17, 1.54, -0.87), 11.81), run_time=6)
+        # # Then back to wide shot in case I need it. 
+        # self.play(self.frame.animate.reorient(0, 74, 0, (5.17, 1.54, -0.87), 11.81), run_time=6)
 
 
 
@@ -361,7 +405,7 @@ class p62(InteractiveScene):
             for neuron_idx in range(num_neurons[layer_idx]):
                 surface_func=partial(surface_func_from_model, model=model, layer_idx=layer_idx, neuron_idx=neuron_idx, viz_scale=adaptive_viz_scales[layer_idx][neuron_idx]) #viz_scales[layer_idx])
                 bent_surface = ParametricSurface(surface_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
-                ts=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+                ts=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/'+map_filename)
                 ts.set_shading(0,0,0).set_opacity(0.8)
                 s.add(ts)
                 surface_funcs[-1].append(surface_func)
@@ -484,7 +528,7 @@ class p62(InteractiveScene):
             loop=loop*np.array([1, 1, viz_scales[2]])
             line = VMobject()
             line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=4)
+            line.set_stroke(color='#ec008c', width=4)
             lines.add(line)
         lines.shift([output_horizontal_offset+3, 0, 0.])
 
@@ -506,7 +550,7 @@ class p62(InteractiveScene):
 
         def flat_surf_func(u, v): return [u, v, 0]
         flat_map_surf = ParametricSurface(flat_surf_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
-        flat_map_2=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+        flat_map_2=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/'+map_filename)
         flat_map_2.set_shading(0,0,0).set_opacity(0.8)
         flat_map_2.shift([output_horizontal_offset+3, 0, -2])
 
@@ -516,7 +560,7 @@ class p62(InteractiveScene):
             loop[:,2]=0
             line = VMobject()
             line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=5)
+            line.set_stroke(color='#ec008c', width=5)
             lines_flat.add(line)
         lines_flat.shift([output_horizontal_offset+3, 0, -2])    
 
@@ -542,6 +586,46 @@ class p62(InteractiveScene):
         self.add(lines_flat)
 
         self.wait()
+
+
+        #Book here-ish? 
+        self.frame.reorient(0, 57, 0, (4.53, 2.72, -1.76), 12.04)
+        self.wait()
+
+        self.remove(groups_1)
+        self.remove(groups_2)
+        self.remove(groups_output)
+        self.remove(group_combined_output)
+        self.remove(top_polygons_vgroup)
+        self.remove(lines)
+
+        self.remove(layer_2_polygons_flat)
+
+
+        layer_1_polygons_flat.move_to(ORIGIN)
+        self.frame.reorient(0, 0, 0, (0.05, -0.04, 0.0), 2.37)
+        self.wait()
+        self.remove(layer_1_polygons_flat)
+
+        self.add(layer_2_polygons_flat)
+        layer_2_polygons_flat.move_to(ORIGIN)
+        self.wait()
+
+        self.remove(layer_2_polygons_flat)
+
+        lines_flat.set_stroke(width=8)
+        final_group=Group(flat_map_2, top_polygons_vgroup_flat, lines_flat)
+        final_group.move_to(ORIGIN)
+        self.wait()
+        self.remove(final_group)
+
+        self.add(groups_2[1])
+        self.frame.reorient(0, 49, 0, (3.01, 3.36, -0.22), 6.18)
+        self.wait()
+
+
+
+        self.embed()
 
 
         #20, 119, 430
@@ -673,7 +757,7 @@ class p62b(InteractiveScene):
             for neuron_idx in range(num_neurons[layer_idx]):
                 surface_func=partial(surface_func_from_model, model=model, layer_idx=layer_idx, neuron_idx=neuron_idx, viz_scale=adaptive_viz_scales[layer_idx][neuron_idx]) #viz_scales[layer_idx])
                 bent_surface = ParametricSurface(surface_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
-                ts=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+                ts=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/'+map_filename)
                 ts.set_shading(0,0,0).set_opacity(0.8)
                 s.add(ts)
                 surface_funcs[-1].append(surface_func)
@@ -796,7 +880,7 @@ class p62b(InteractiveScene):
             loop=loop*np.array([1, 1, viz_scales[2]])
             line = VMobject()
             line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=4)
+            line.set_stroke(color='#ec008c', width=2)
             lines.add(line)
         lines.shift([output_horizontal_offset+3, 0, 0.])
 
@@ -818,7 +902,7 @@ class p62b(InteractiveScene):
 
         def flat_surf_func(u, v): return [u, v, 0]
         flat_map_surf = ParametricSurface(flat_surf_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
-        flat_map_2=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+        flat_map_2=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/'+map_filename)
         flat_map_2.set_shading(0,0,0).set_opacity(0.8)
         flat_map_2.shift([output_horizontal_offset+3, 0, -2])
 
@@ -828,7 +912,7 @@ class p62b(InteractiveScene):
             loop[:,2]=0
             line = VMobject()
             line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=5)
+            line.set_stroke(color='#ec008c', width=2)
             lines_flat.add(line)
         lines_flat.shift([output_horizontal_offset+3, 0, -2])    
 
@@ -853,6 +937,52 @@ class p62b(InteractiveScene):
         self.add(flat_map_2)
         self.add(top_polygons_vgroup_flat)
         self.add(lines_flat)
+
+
+
+        #Book here-ish? 
+        self.frame.reorient(0, 57, 0, (5.41, 3.3, -2.33), 13.12)
+        self.wait()
+
+        self.remove(groups_1)
+        self.remove(groups_2)
+        self.remove(groups_3)
+        self.remove(groups_output)
+        self.remove(group_combined_output)
+        self.remove(top_polygons_vgroup)
+        self.remove(lines)
+
+        self.remove(layer_2_polygons_flat)
+        self.remove(layer_3_polygons_flat)
+
+
+        layer_1_polygons_flat.move_to(ORIGIN)
+        self.frame.reorient(0, 0, 0, (0.05, -0.04, 0.0), 2.37)
+        self.wait()
+        self.remove(layer_1_polygons_flat)
+
+        self.add(layer_2_polygons_flat)
+        layer_2_polygons_flat.move_to(ORIGIN)
+        self.wait()
+        self.remove(layer_2_polygons_flat)
+
+        self.add(layer_3_polygons_flat)
+        layer_3_polygons_flat.move_to(ORIGIN)
+        self.wait()
+        self.remove(layer_3_polygons_flat)
+
+        lines_flat.set_stroke(width=8)
+        final_group=Group(flat_map_2, top_polygons_vgroup_flat, lines_flat)
+        final_group.move_to(ORIGIN)
+        self.wait()
+        self.remove(final_group)
+
+        self.add(groups_2[1])
+        self.frame.reorient(0, 49, 0, (3.01, 3.36, -0.22), 6.18)
+        self.wait()
+
+
+
 
 
         self.wait()
@@ -938,7 +1068,7 @@ class p62c2(InteractiveScene):
             for neuron_idx in range(num_neurons[layer_idx]):
                 surface_func=partial(surface_func_from_model, model=model, layer_idx=layer_idx, neuron_idx=neuron_idx, viz_scale=adaptive_viz_scales[layer_idx][neuron_idx]) #viz_scales[layer_idx])
                 bent_surface = ParametricSurface(surface_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
-                ts=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+                ts=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/'+map_filename)
                 ts.set_shading(0,0,0).set_opacity(0.8)
                 s.add(ts)
                 surface_funcs[-1].append(surface_func)
@@ -1061,7 +1191,7 @@ class p62c2(InteractiveScene):
             loop=loop*np.array([1, 1, viz_scales[2]])
             line = VMobject()
             line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=4)
+            line.set_stroke(color='#ec008c', width=4)
             lines.add(line)
         lines.shift([output_horizontal_offset+3, 0, 0.])
 
@@ -1083,7 +1213,7 @@ class p62c2(InteractiveScene):
 
         def flat_surf_func(u, v): return [u, v, 0]
         flat_map_surf = ParametricSurface(flat_surf_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
-        flat_map_2=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+        flat_map_2=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/'+map_filename)
         flat_map_2.set_shading(0,0,0).set_opacity(0.8)
         flat_map_2.shift([output_horizontal_offset+3, 0, -2])
 
@@ -1093,7 +1223,7 @@ class p62c2(InteractiveScene):
             loop[:,2]=0
             line = VMobject()
             line.set_points_as_corners(loop)
-            line.set_stroke(color='#FF00FF', width=5)
+            line.set_stroke(color='#ec008c', width=5)
             lines_flat.add(line)
         lines_flat.shift([output_horizontal_offset+3, 0, -2])    
 
@@ -1183,7 +1313,7 @@ class p62c2(InteractiveScene):
 #             for neuron_idx in range(num_neurons[layer_idx]):
 #                 surface_func=partial(surface_func_from_model, model=model, layer_idx=layer_idx, neuron_idx=neuron_idx, viz_scale=adaptive_viz_scales[layer_idx][neuron_idx]) #viz_scales[layer_idx])
 #                 bent_surface = ParametricSurface(surface_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
-#                 ts=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+#                 ts=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/'+map_filename)
 #                 ts.set_shading(0,0,0).set_opacity(0.8)
 #                 s.add(ts)
 #                 surface_funcs[-1].append(surface_func)
@@ -1343,7 +1473,7 @@ class p62d(InteractiveScene):
                 for neuron_idx in range(num_neurons[layer_idx]):
                     surface_func=partial(surface_func_from_model, model=model, layer_idx=layer_idx, neuron_idx=neuron_idx, viz_scale=adaptive_viz_scales[layer_idx][neuron_idx]) #viz_scales[layer_idx])
                     bent_surface = ParametricSurface(surface_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
-                    ts=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+                    ts=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/'+map_filename)
                     ts.set_shading(0,0,0).set_opacity(0.8)
                     s.add(ts)
                     surface_funcs[-1].append(surface_func)
@@ -1433,7 +1563,7 @@ class p62d(InteractiveScene):
                 loop=loop*np.array([1, 1, adaptive_viz_scales[-1][0]])
                 line = VMobject()
                 line.set_points_as_corners(loop)
-                line.set_stroke(color='#FF00FF', width=4)
+                line.set_stroke(color='#ec008c', width=4)
                 lines.add(line)
             # lines.shift([output_horizontal_offset+3, 0, 0.])
             group_combined_output.set_opacity(0.3)
@@ -1524,7 +1654,7 @@ class p62e(InteractiveScene):
                 for neuron_idx in range(num_neurons[layer_idx]):
                     surface_func=partial(surface_func_from_model, model=model, layer_idx=layer_idx, neuron_idx=neuron_idx, viz_scale=adaptive_viz_scales[layer_idx][neuron_idx]) #viz_scales[layer_idx])
                     bent_surface = ParametricSurface(surface_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
-                    ts=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+                    ts=TexturedSurface(bent_surface, graphics_dir+'/baarle_hertog_maps/'+map_filename)
                     ts.set_shading(0,0,0).set_opacity(0.8)
                     s.add(ts)
                     surface_funcs[-1].append(surface_func)
@@ -1635,7 +1765,7 @@ class p62e(InteractiveScene):
                 loop=loop*np.array([1, 1, viz_scales[2]])
                 line = VMobject()
                 line.set_points_as_corners(loop)
-                line.set_stroke(color='#FF00FF', width=4)
+                line.set_stroke(color='#ec008c', width=4)
                 lines.add(line)
             lines.shift([output_horizontal_offset+3, 0, 0.])
 
@@ -1657,7 +1787,7 @@ class p62e(InteractiveScene):
 
             def flat_surf_func(u, v): return [u, v, 0]
             flat_map_surf = ParametricSurface(flat_surf_func, u_range=[-1, 1], v_range=[-1, 1], resolution=(64, 64))
-            flat_map_2=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/baarle_hertog_maps-17.png')
+            flat_map_2=TexturedSurface(flat_map_surf, graphics_dir+'/baarle_hertog_maps/'+map_filename)
             flat_map_2.set_shading(0,0,0).set_opacity(0.8)
             flat_map_2.shift([output_horizontal_offset+3, 0, -2])
 
@@ -1667,7 +1797,7 @@ class p62e(InteractiveScene):
                 loop[:,2]=0
                 line = VMobject()
                 line.set_points_as_corners(loop)
-                line.set_stroke(color='#FF00FF', width=5)
+                line.set_stroke(color='#ec008c', width=5)
                 lines_flat.add(line)
             lines_flat.shift([output_horizontal_offset+3, 0, -2])    
 
@@ -1692,3 +1822,20 @@ class p62e(InteractiveScene):
 
         self.wait(20)
         self.embed()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

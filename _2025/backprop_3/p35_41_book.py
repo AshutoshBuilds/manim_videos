@@ -593,14 +593,14 @@ class p35_41b(InteractiveScene):
 
         
 
-class p36_loop_v3(InteractiveScene):
+class p36_loop_v2b(InteractiveScene):
     def construct(self):
 
         model = BaarleNet([3])
-        # pickle_path='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/hackin/3_starting_configs_4/training_data_seed_01_acc_0.8561.pkl'
+        pickle_path='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/hackin/3_starting_configs_4/training_data_seed_01_acc_0.8561.pkl'
 
         #Maybe I can just switch to this sucker for the non-coverging one? 
-        pickle_path='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/hackin/3_starting_configs_4/training_data_seed_32_acc_0.6159.pkl'
+        # pickle_path='/Users/stephen/Stephencwelch Dropbox/welch_labs/backprop_3/hackin/3_starting_configs_4/training_data_seed_32_acc_0.6159.pkl'
         
         with open(pickle_path, 'rb') as f:
             p=pickle.load(f)
@@ -846,13 +846,13 @@ class p36_loop_v3(InteractiveScene):
 
             self.add(flat_map)
             self.add(top_polygons_vgroup_flat)
-            self.add(lines_flat)
+            # self.add(lines_flat)
 
             self.wait()
 
             self.remove(flat_map)
             self.remove(top_polygons_vgroup_flat)
-            self.remove(lines_flat)
+            # self.remove(lines_flat)
         
 
             # self.add(group_11)

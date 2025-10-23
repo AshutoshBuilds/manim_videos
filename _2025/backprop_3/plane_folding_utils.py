@@ -763,7 +763,7 @@ def get_relu_joint(weight_1, weight_2, bias, extent=1):
                 unique_points.append(p)
         return unique_points
 
-def line_from_joint_points_1(joint_points, stroke_width=3):
+def line_from_joint_points_1(joint_points, stroke_width=3, color=WHITE):
     if joint_points:
         # Create 3D points for the joint line
         joint_3d_points = []
@@ -776,7 +776,7 @@ def line_from_joint_points_1(joint_points, stroke_width=3):
             joint_line = DashedLine(
                 start=[joint_points[0][0], joint_points[0][1], 0],
                 end=[joint_points[1][0], joint_points[1][1], 0],
-                color=WHITE,
+                color=color,
                 stroke_width=stroke_width,
                 dash_length=0.08
             )

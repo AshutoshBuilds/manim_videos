@@ -49,4 +49,228 @@ I bind "command + R" to a "manim_checkpoint_paste" command, which will copy what
 
 Of course, you could set these to whatever keyboard shortcuts you prefer.
 
+# Installation & Setup
+
+## Prerequisites
+
+Before installing this project, ensure you have:
+
+- **Python 3.7+** installed on your system
+- **Git** for cloning the repository
+- **FFmpeg** for video rendering (optional but recommended)
+- **LaTeX** distribution for mathematical text rendering (optional - project works without it)
+
+### Installing FFmpeg (Recommended)
+
+**Windows (using Chocolatey):**
+```bash
+choco install ffmpeg
+```
+
+**macOS (using Homebrew):**
+```bash
+brew install ffmpeg
+```
+
+**Linux:**
+```bash
+# Ubuntu/Debian
+sudo apt install ffmpeg
+
+# CentOS/RHEL
+sudo yum install ffmpeg
+```
+
+### Installing LaTeX (Optional)
+
+LaTeX is required for rendering mathematical equations and formulas. Without it, you can still create videos but mathematical text may not render properly.
+
+**Windows:**
+- Install [MikTeX](https://miktex.org/download) (recommended)
+- Or use Chocolatey: `choco install miktex`
+
+**macOS:**
+```bash
+brew install --cask mactex
+```
+
+**Linux:**
+```bash
+# Ubuntu/Debian
+sudo apt install texlive-full
+
+# CentOS/RHEL
+sudo yum install texlive
+```
+
+## Installation
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/3b1b/manim.git
+cd manim
+```
+
+### 2. Create a Virtual Environment
+
+**Windows:**
+```bash
+python -m venv venv
+venv\Scripts\activate
+```
+
+**macOS/Linux:**
+```bash
+python -m venv venv
+source venv/bin/activate
+```
+
+### 3. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Install the 3Blue1Brown Manim Library
+
+```bash
+pip install -e .
+```
+
+### 5. Configure the Project
+
+The project uses a custom configuration file. Copy the example config:
+
+```bash
+cp custom_config.yml.example custom_config.yml
+```
+
+Edit `custom_config.yml` to set your preferred output directories and settings.
+
+## Usage
+
+### Basic Video Creation
+
+1. **Create a Scene File**
+
+Create a new Python file (e.g., `my_scene.py`) with your animation:
+
+```python
+from manim_imports_ext import *
+
+class MyScene(Scene):
+    def construct(self):
+        # Your animation code here
+        text = Text("Hello, Manim!")
+        self.play(Write(text))
+        self.wait(2)
+```
+
+2. **Render the Video**
+
+**High Quality (for final videos):**
+```bash
+manimgl my_scene.py MyScene -w
+```
+
+**Low Quality (for testing):**
+```bash
+manimgl my_scene.py MyScene -l
+```
+
+**Preview Mode:**
+```bash
+manimgl my_scene.py MyScene -p
+```
+
+### Command Line Options
+
+- `-w`: Render to high-quality video file
+- `-l`: Render to low-quality video file (faster for testing)
+- `-p`: Preview mode (opens window, doesn't save file)
+- `-s`: Skip to the end and just save the final frame
+- `-r [resolution]`: Set resolution (e.g., `-r 1080` for 1080p)
+- `-f [fps]`: Set frame rate (default: 30)
+
+### Example: Gradient Descent Video
+
+We've included an example gradient descent explanation video. To render it:
+
+```bash
+manimgl gradient_descent_scene.py GradientDescentExplanation -w
+```
+
+This will create `videos/GradientDescentExplanation.mp4` in your output directory.
+
+### Project Structure
+
+```
+manim_videos/
+├── _2024/                    # Example scenes from 2024 videos
+├── videos/                   # Output directory for rendered videos
+├── custom_config.yml         # Configuration file
+├── manim_imports_ext.py      # Custom imports and utilities
+├── stage_scenes.py          # Scene staging utilities
+├── requirements.txt         # Python dependencies
+└── README.md                # This file
+```
+
+### Configuration
+
+Edit `custom_config.yml` to customize:
+
+- **Output directories**: Where videos and images are saved
+- **Resolution and quality**: Video resolution, frame rate
+- **Colors and themes**: Default colors for your animations
+- **Font settings**: Text rendering preferences
+
+Example configuration:
+```yaml
+directories:
+  base: "O:\\D temp\\manim_videos"
+  output: "videos"
+
+video:
+  resolution: [1920, 1080]
+  fps: 30
+  background_color: "#1a1a2e"
+```
+
+### Troubleshooting
+
+#### Common Issues
+
+1. **"ModuleNotFoundError: No module named 'manimlib'"**
+   - Make sure you're using the correct imports: `from manim_imports_ext import *`
+   - Ensure you're in the virtual environment: `venv\Scripts\activate` (Windows) or `source venv/bin/activate` (macOS/Linux)
+
+2. **"NameError: name 'Create' is not defined"**
+   - Use `ShowCreation()` instead of `Create()` for this version of Manim
+
+3. **LaTeX/Math Text Not Rendering**
+   - Install a LaTeX distribution (see Prerequisites)
+   - Or use `Text()` objects instead of `Tex()` for simple text
+
+4. **Video Won't Render**
+   - Check that FFmpeg is installed and in your PATH
+   - Try low-quality render first: `manimgl scene.py SceneName -l`
+   - Check the console output for specific error messages
+
+5. **Slow Rendering**
+   - Use low-quality mode for testing: `-l` flag
+   - Reduce resolution in config: `resolution: [1280, 720]`
+   - Use preview mode: `-p` flag
+
+#### Getting Help
+
+- Check the [Manim documentation](https://docs.manim.community/)
+- Visit the [Manim Community Discord](https://discord.gg/manim)
+- Browse existing scenes in the `_2024/` directory for examples
+- Watch 3Blue1Brown's [workflow video](https://youtu.be/rbu7Zu5X1zI)
+
+## Development Workflow
+
+For advanced users interested in the development workflow used to create 3Blue1Brown videos:
+
 Copyright © 2024 3Blue1Brown

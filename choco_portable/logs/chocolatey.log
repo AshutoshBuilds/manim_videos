@@ -1,0 +1,79 @@
+2025-10-25 17:03:46,226 31824 [DEBUG] - XmlConfiguration is now operational
+2025-10-25 17:03:46,256 31824 [DEBUG] - Adding new type 'CygwinService' for type 'IAlternativeSourceRunner' from assembly 'choco'
+2025-10-25 17:03:46,256 31824 [DEBUG] - Adding new type 'CygwinService' for type 'IInstallSourceRunner' from assembly 'choco'
+2025-10-25 17:03:46,257 31824 [DEBUG] - Adding new type 'PythonService' for type 'IAlternativeSourceRunner' from assembly 'choco'
+2025-10-25 17:03:46,257 31824 [DEBUG] - Adding new type 'PythonService' for type 'IListSourceRunner' from assembly 'choco'
+2025-10-25 17:03:46,257 31824 [DEBUG] - Adding new type 'PythonService' for type 'IInstallSourceRunner' from assembly 'choco'
+2025-10-25 17:03:46,258 31824 [DEBUG] - Adding new type 'PythonService' for type 'IUninstallSourceRunner' from assembly 'choco'
+2025-10-25 17:03:46,258 31824 [DEBUG] - Adding new type 'RubyGemsService' for type 'IAlternativeSourceRunner' from assembly 'choco'
+2025-10-25 17:03:46,258 31824 [DEBUG] - Adding new type 'RubyGemsService' for type 'IListSourceRunner' from assembly 'choco'
+2025-10-25 17:03:46,259 31824 [DEBUG] - Adding new type 'RubyGemsService' for type 'IInstallSourceRunner' from assembly 'choco'
+2025-10-25 17:03:46,259 31824 [DEBUG] - Adding new type 'SystemStateValidation' for type 'IValidation' from assembly 'choco'
+2025-10-25 17:03:46,259 31824 [DEBUG] - Adding new type 'CacheFolderLockdownValidation' for type 'IValidation' from assembly 'choco'
+2025-10-25 17:03:46,431 31824 [DEBUG] - Adding new type 'EmptyOrInvalidUrlMetadataRule' for type 'IMetadataRule' from assembly 'choco'
+2025-10-25 17:03:46,432 31824 [DEBUG] - Adding new type 'FrameWorkReferencesMetadataRule' for type 'IMetadataRule' from assembly 'choco'
+2025-10-25 17:03:46,433 31824 [DEBUG] - Adding new type 'IconMetadataRule' for type 'IMetadataRule' from assembly 'choco'
+2025-10-25 17:03:46,433 31824 [DEBUG] - Adding new type 'LicenseMetadataRule' for type 'IMetadataRule' from assembly 'choco'
+2025-10-25 17:03:46,433 31824 [DEBUG] - Adding new type 'PackageTypesMetadataRule' for type 'IMetadataRule' from assembly 'choco'
+2025-10-25 17:03:46,433 31824 [DEBUG] - Adding new type 'ReadmeMetadataRule' for type 'IMetadataRule' from assembly 'choco'
+2025-10-25 17:03:46,434 31824 [DEBUG] - Adding new type 'RepositoryMetadataRule' for type 'IMetadataRule' from assembly 'choco'
+2025-10-25 17:03:46,434 31824 [DEBUG] - Adding new type 'RequireLicenseAcceptanceMetadataRule' for type 'IMetadataRule' from assembly 'choco'
+2025-10-25 17:03:46,434 31824 [DEBUG] - Adding new type 'ServicableMetadataRule' for type 'IMetadataRule' from assembly 'choco'
+2025-10-25 17:03:46,434 31824 [DEBUG] - Adding new type 'VersionMetadataRule' for type 'IMetadataRule' from assembly 'choco'
+2025-10-25 17:03:46,440 31824 [DEBUG] - Registering new command 'cache' in assembly 'choco'
+2025-10-25 17:03:46,441 31824 [DEBUG] - Registering new command 'list' in assembly 'choco'
+2025-10-25 17:03:46,441 31824 [DEBUG] - Registering new command 'template' in assembly 'choco'
+2025-10-25 17:03:46,441 31824 [DEBUG] - Registering new command 'export' in assembly 'choco'
+2025-10-25 17:03:46,442 31824 [DEBUG] - Registering new command 'info' in assembly 'choco'
+2025-10-25 17:03:46,442 31824 [DEBUG] - Registering new command 'help' in assembly 'choco'
+2025-10-25 17:03:46,442 31824 [DEBUG] - Registering new command 'config' in assembly 'choco'
+2025-10-25 17:03:46,442 31824 [DEBUG] - Registering new command 'feature' in assembly 'choco'
+2025-10-25 17:03:46,443 31824 [DEBUG] - Registering new command 'new' in assembly 'choco'
+2025-10-25 17:03:46,443 31824 [DEBUG] - Registering new command 'outdated' in assembly 'choco'
+2025-10-25 17:03:46,443 31824 [DEBUG] - Registering new command 'pack' in assembly 'choco'
+2025-10-25 17:03:46,443 31824 [DEBUG] - Registering new command 'pin' in assembly 'choco'
+2025-10-25 17:03:46,444 31824 [DEBUG] - Registering new command 'push' in assembly 'choco'
+2025-10-25 17:03:46,444 31824 [DEBUG] - Registering new command 'apikey' in assembly 'choco'
+2025-10-25 17:03:46,444 31824 [DEBUG] - Registering new command 'source' in assembly 'choco'
+2025-10-25 17:03:46,444 31824 [DEBUG] - Registering new command 'uninstall' in assembly 'choco'
+2025-10-25 17:03:46,445 31824 [DEBUG] - Registering new command 'upgrade' in assembly 'choco'
+2025-10-25 17:03:46,445 31824 [DEBUG] - Registering new command 'search' in assembly 'choco'
+2025-10-25 17:03:46,445 31824 [DEBUG] - Registering new command 'unpackself' in assembly 'choco'
+2025-10-25 17:03:46,445 31824 [DEBUG] - Registering new command 'install' in assembly 'choco'
+2025-10-25 17:03:46,451 31824 [DEBUG] - Attempting to create directory "O:\D temp\manim_videos\choco_portable\config".
+2025-10-25 17:03:46,504 31824 [INFO ] - ============================================================
+2025-10-25 17:03:46,566 31824 [DEBUG] - User may be subject to UAC, checking for a split token (not 100%
+ effective).
+2025-10-25 17:03:46,581 31824 [DEBUG] - Attempting to replace "O:\D temp\manim_videos\choco_portable\config\chocolatey.config"
+ with "O:\D temp\manim_videos\choco_portable\config\chocolatey.config.31824.update".
+ Backup placed at "O:\D temp\manim_videos\choco_portable\config\chocolatey.config.backup".
+2025-10-25 17:03:46,584 31824 [DEBUG] - Attempting to copy "O:\D temp\manim_videos\choco_portable\config\chocolatey.config.31824.update"
+ to "O:\D temp\manim_videos\choco_portable\config\chocolatey.config".
+2025-10-25 17:03:46,587 31824 [DEBUG] - Attempting to delete file "O:\D temp\manim_videos\choco_portable\config\chocolatey.config.31824.update".
+2025-10-25 17:03:46,590 31824 [INFO ] - Chocolatey v2.2.2
+2025-10-25 17:03:46,597 31824 [DEBUG] - Chocolatey is running on Windows v 10.0.27965.0
+2025-10-25 17:03:46,598 31824 [DEBUG] - Attempting to delete file "C:/ProgramData/chocolatey/choco.exe.old".
+2025-10-25 17:03:46,599 31824 [DEBUG] - Attempting to delete file "C:\ProgramData\chocolatey\choco.exe.old".
+2025-10-25 17:03:46,603 31824 [DEBUG] - Attempting to create directory "O:\D temp\manim_videos\choco_portable\helpers".
+2025-10-25 17:03:46,604 31824 [DEBUG] - Attempting to create directory "O:\D temp\manim_videos\choco_portable\helpers\functions".
+2025-10-25 17:03:46,628 31824 [DEBUG] - Attempting to create directory "O:\D temp\manim_videos\choco_portable\redirects".
+2025-10-25 17:03:46,629 31824 [DEBUG] - Attempting to create directory "O:\D temp\manim_videos\choco_portable\tools".
+2025-10-25 17:03:46,642 31824 [DEBUG] - Command line: "C:\ProgramData\chocolatey\choco.exe" install miktex --force --force-dependencies -y "--install-directory=O:\D temp\manim_videos\miktex_portable"
+2025-10-25 17:03:46,644 31824 [DEBUG] - Received arguments: install miktex --force --force-dependencies -y --install-directory=O:\D temp\manim_videos\miktex_portable
+2025-10-25 17:03:46,693 31824 [DEBUG] - RemovePendingPackagesTask is now ready and waiting for PreRunMessage.
+2025-10-25 17:03:46,700 31824 [DEBUG] - Sending message 'PreRunMessage' out if there are subscribers...
+2025-10-25 17:03:46,707 31824 [DEBUG] - [Pending] Removing all pending packages that should not be considered installed...
+2025-10-25 17:03:46,707 31824 [WARN ] - Directory 'O:\D temp\manim_videos\choco_portable\lib' does not exist.
+2025-10-25 17:03:46,739 31824 [DEBUG] - Performing validation checks.
+2025-10-25 17:03:46,743 31824 [DEBUG] - Sending message 'PostRunMessage' out if there are subscribers...
+2025-10-25 17:03:46,747 31824 [ERROR] - It appears you are attempting to use options that may be only available in licensed versions of Chocolatey ('--install-directory=o:\d'). There may be ways in the open source edition to achieve what you are looking to do. Please remove the argument and consult the documentation.
+2025-10-25 17:03:46,748 31824 [ERROR] - More Details: System.ApplicationException: It appears you are attempting to use options that may be only available in licensed versions of Chocolatey ('--install-directory=o:\d'). There may be ways in the open source edition to achieve what you are looking to do. Please remove the argument and consult the documentation.
+   at chocolatey.infrastructure.app.commands.ChocolateyInstallCommand.Validate(ChocolateyConfiguration configuration)
+   at chocolatey.infrastructure.app.runners.ConsoleApplication.<>c__DisplayClass0_1.<Run>b__6()
+   at chocolatey.infrastructure.app.configuration.ConfigurationOptions.ParseArgumentsAndUpdateConfiguration(ICollection`1 args, ChocolateyConfiguration configuration, Action`1 setOptions, Action`1 afterParse, Action validateConfiguration, Action helpMessage)
+   at chocolatey.infrastructure.app.runners.ConsoleApplication.<>c__DisplayClass0_0.<Run>b__3(ICommand command)
+   at chocolatey.infrastructure.app.runners.GenericRunner.FindCommand(ChocolateyConfiguration config, Container container, Boolean isConsole, Action`1 parseArgs)
+   at chocolatey.infrastructure.app.runners.GenericRunner.Run(ChocolateyConfiguration config, Container container, Boolean isConsole, Action`1 parseArgs)
+   at chocolatey.infrastructure.app.runners.ConsoleApplication.Run(String[] args, ChocolateyConfiguration config, Container container)
+   at chocolatey.console.Program.Main(String[] args)
+2025-10-25 17:03:46,749 31824 [DEBUG] - Exiting with 1

@@ -1,0 +1,13 @@
+2025-10-25 17:03:46,504 31824 [INFO ] - ============================================================
+2025-10-25 17:03:46,590 31824 [INFO ] - Chocolatey v2.2.2
+2025-10-25 17:03:46,707 31824 [WARN ] - Directory 'O:\D temp\manim_videos\choco_portable\lib' does not exist.
+2025-10-25 17:03:46,747 31824 [ERROR] - It appears you are attempting to use options that may be only available in licensed versions of Chocolatey ('--install-directory=o:\d'). There may be ways in the open source edition to achieve what you are looking to do. Please remove the argument and consult the documentation.
+2025-10-25 17:03:46,748 31824 [ERROR] - More Details: System.ApplicationException: It appears you are attempting to use options that may be only available in licensed versions of Chocolatey ('--install-directory=o:\d'). There may be ways in the open source edition to achieve what you are looking to do. Please remove the argument and consult the documentation.
+   at chocolatey.infrastructure.app.commands.ChocolateyInstallCommand.Validate(ChocolateyConfiguration configuration)
+   at chocolatey.infrastructure.app.runners.ConsoleApplication.<>c__DisplayClass0_1.<Run>b__6()
+   at chocolatey.infrastructure.app.configuration.ConfigurationOptions.ParseArgumentsAndUpdateConfiguration(ICollection`1 args, ChocolateyConfiguration configuration, Action`1 setOptions, Action`1 afterParse, Action validateConfiguration, Action helpMessage)
+   at chocolatey.infrastructure.app.runners.ConsoleApplication.<>c__DisplayClass0_0.<Run>b__3(ICommand command)
+   at chocolatey.infrastructure.app.runners.GenericRunner.FindCommand(ChocolateyConfiguration config, Container container, Boolean isConsole, Action`1 parseArgs)
+   at chocolatey.infrastructure.app.runners.GenericRunner.Run(ChocolateyConfiguration config, Container container, Boolean isConsole, Action`1 parseArgs)
+   at chocolatey.infrastructure.app.runners.ConsoleApplication.Run(String[] args, ChocolateyConfiguration config, Container container)
+   at chocolatey.console.Program.Main(String[] args)
